@@ -15,7 +15,7 @@
 ## 安裝
 
 ```bash
-/plugin install lawyer@jurislm-plugins
+/plugin install jurislm-claude-plugins-lawyer@jurislm-plugins
 ```
 
 ## 技術棧

@@ -14,7 +14,7 @@
 ## 安裝
 
 ```
-/plugin install stock@jurislm-plugins
+/plugin install jurislm-claude-plugins-stock@jurislm-plugins
 ```
 
 ## 適用場景

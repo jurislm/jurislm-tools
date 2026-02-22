@@ -17,7 +17,7 @@
 ## 安裝
 
 ```
-/plugin install github-release@jurislm-plugins
+/plugin install jurislm-claude-plugins-github-release@jurislm-plugins
 ```
 
 ## 使用方式
