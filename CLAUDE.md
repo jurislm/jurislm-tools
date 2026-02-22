@@ -35,7 +35,7 @@ plugins/
 
 **Plugin 類型**：
 - **MCP Server**：`.mcp.json` + `plugin.json` + `README.md`（純 MCP，目前無此類型）
-- **Skill Only**：`plugin.json` + `README.md` + `skills/`（如 lawyer, stock, jurislm-dev）
+- **Skill Only**：`plugin.json` + `README.md` + `skills/`（如 lawyer, stock, entire）
 - **Hybrid**：`.mcp.json` + `plugin.json` + `README.md` + `skills/`（如 hetzner, coolify）
 
 ## 新增 Plugin
@@ -85,7 +85,7 @@ plugins/
 | jurislm-claude-plugins-coolify | 1.3.3 | MCP + Skill | jurislm-coolify-mcp（35 工具）+ coolify skill |
 | jurislm-claude-plugins-lawyer | 1.2.1 | Skill Only | Payload CMS + 部署 + E2E 測試指南 |
 | jurislm-claude-plugins-stock | 1.1.1 | Skill Only | TWSE/Yahoo API + 投資組合 + E2E 測試 |
-| jurislm-claude-plugins-jurislm-dev | 1.2.0 | Skill Only | Unified Agent + CLI + Dashboard + 資料同步 + 法律分類（3 skills） |
+| jurislm-claude-plugins-entire | 1.2.0 | Skill Only | Unified Agent + CLI + Dashboard + 資料同步 + 法律分類（3 skills） |
 | jurislm-claude-plugins-github-release | 1.2.0 | Skill Only | Release Please + Claude Code Review + Release Notes + Husky pre-commit |
 | jurislm-claude-plugins-lessons-learned | 1.8.0 | Skill Only | 68 經驗模式（持續更新）：診斷除錯、測試、基礎設施、安全、架構、業務邏輯、Git 工作流、雲端遷移、前端工具鏈、Docker 部署、資料匯入 |
 
@@ -94,7 +94,7 @@ plugins/
 - **版本號必須同步**：`marketplace.json` 和 `plugin.json` 的版本必須一致
 - **環境變數名稱**：hetzner 用 `HETZNER_API_TOKEN`（不是 `HCLOUD_TOKEN`）
 - **description 語言**：使用繁體中文
-- **Plugin 名稱不可與 marketplace 同名**：`jurislm` plugin 在 `jurislm-plugins` marketplace 內會造成歧義，對話中無法區分指的是哪個。命名時加後綴區分（如 `jurislm-dev`）
+- **Plugin 名稱不可與 marketplace 同名**：`jurislm` plugin 在 `jurislm-plugins` marketplace 內會造成歧義，對話中無法區分指的是哪個。命名時加後綴區分（如 `entire`）
 - **Skill-Only plugin 不需要 `.mcp.json`**：只有 MCP Server 類型的 plugin 需要 `.mcp.json`。Skill-Only plugin 結構為 `plugin.json` + `README.md` + `skills/` 目錄
 
 ## 經驗教訓
@@ -122,7 +122,7 @@ plugins/
 
 **命名陷阱**
 - Plugin 名稱不可與 marketplace 名稱重疊（例：`jurislm` plugin 在 `jurislm-plugins` marketplace → 歧義）
-- 解法：加後綴 `-dev`、`-platform` 等區分，例 `jurislm-dev`
+- 解法：加後綴 `-dev`、`-platform` 等區分，例 `entire`
 - 來源：jurislm plan-a 遷移 — 初次命名 `jurislm` 造成對話混淆，事後改名
 
 **遷移內容必須更新過時引用**
@@ -141,7 +141,7 @@ plugins/<name>/
         └── references/          # 參考文件（可選）
 ```
 - 無需 `.mcp.json`（MCP Server 類型才需要）
-- 一個 plugin 可包含多個 skills（如 jurislm-dev 包含 3 個）
+- 一個 plugin 可包含多個 skills（如 entire 包含 3 個）
 
 **安裝流程**
 1. `git push` 到 marketplace repo
