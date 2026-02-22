@@ -1,28 +1,28 @@
 ---
-name: jurislm-shared-sync
+name: entire-shared-sync
 description: >-
   This skill should be used when the user asks to "sync shared database",
-  "synchronize jurislm_shared_db", "full database sync", "complete shared db sync",
+  "synchronize entire_shared_db", "full database sync", "complete shared db sync",
   "sync judicial and law data", "refresh shared database", "initialize shared db",
-  "run full sync", "populate shared database", "setup jurislm_shared_db from scratch",
+  "run full sync", "populate shared database", "setup entire_shared_db from scratch",
   "reset and resync shared db", "full judicial sync", "complete law import",
   "同步共用資料庫", "初始化共用資料庫", "完整同步", "同步司法資料",
   "sync all categories", "sync 051-054", "import law data to shared".
-  Provides step-by-step workflow to complete full synchronization of jurislm_shared_db
+  Provides step-by-step workflow to complete full synchronization of entire_shared_db
   including Judicial (051-054), Law, and Taxonomy data.
 version: 1.3.0
 ---
 
 # Shared Database Full Sync Workflow
 
-Synchronize jurislm_shared_db (PostgreSQL 18 + pgvector) with judicial, law, and taxonomy data.
+Synchronize entire_shared_db (PostgreSQL 18 + pgvector) with judicial, law, and taxonomy data.
 
 ## Quick Start
 
-For experienced users, execute these commands in order from `jurislm_cli`:
+For experienced users, execute these commands in order from `entire_cli`:
 
 ```bash
-cd jurislm_cli
+cd entire_cli
 bun run src/index.ts db migrate --target shared        # Step 1: Apply migrations
 bun run src/index.ts sync judicial                     # Step 2: Judicial 9-stage pipeline (auto DB upload + cleanup)
 bun run src/index.ts sync law                          # Step 3: Law 9-stage pipeline (auto import + cleanup)
@@ -124,7 +124,7 @@ Verify before starting:
 
 3. **Database connection**:
    ```bash
-   cd jurislm_cli
+   cd entire_cli
    bun run src/index.ts db status --target shared
    ```
 
@@ -135,10 +135,10 @@ Verify before starting:
 
 ## Sync Workflow (4 Steps)
 
-Execute from `jurislm_cli` directory:
+Execute from `entire_cli` directory:
 
 ```bash
-cd jurislm_cli
+cd entire_cli
 ```
 
 ### Step 1: Database Migration

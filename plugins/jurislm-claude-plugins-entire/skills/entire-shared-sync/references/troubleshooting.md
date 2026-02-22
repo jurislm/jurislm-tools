@@ -1,6 +1,6 @@
 # Shared Database Sync Troubleshooting
 
-Common issues and solutions for jurislm_shared_db synchronization.
+Common issues and solutions for entire_shared_db synchronization.
 
 ## Connection Issues
 
@@ -20,10 +20,10 @@ docker compose -f docker-compose.shared.yml ps
 docker compose -f docker-compose.shared.yml up -d
 
 # 3. Check container logs
-docker compose -f docker-compose.shared.yml logs jurislm_shared_db
+docker compose -f docker-compose.shared.yml logs entire_shared_db
 
 # 4. Verify port mapping
-docker port jurislm_shared_db
+docker port entire_shared_db
 ```
 
 ### Ollama Connection Failed
@@ -224,14 +224,14 @@ Error: No space left on device
 df -h
 
 # 2. Clean up temporary files
-rm -rf jurislm_cli/data/judicial/*/raw/*.json
-rm -rf jurislm_cli/data/law/raw/*.json
+rm -rf entire_cli/data/judicial/*/raw/*.json
+rm -rf entire_cli/data/law/raw/*.json
 
 # 3. Clean Docker
 docker system prune -a
 
 # 4. Remove old embeddings
-rm -rf jurislm_cli/data/judicial/*/embeddings/*.zip.old
+rm -rf entire_cli/data/judicial/*/embeddings/*.zip.old
 ```
 
 ## Data Integrity Issues
@@ -299,7 +299,7 @@ cp .env.shared.example .env.shared
 grep SHARED_DATABASE_URL .env.shared
 
 # 4. Export manually for testing
-export SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/jurislm_shared_db
+export SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/entire_shared_db
 ```
 
 ### Wrong Database Target
@@ -335,8 +335,8 @@ pkill -f "sync law"
 bun run src/index.ts db reset --target shared
 
 # 3. Clean local data
-rm -rf jurislm_cli/data/judicial/
-rm -rf jurislm_cli/data/law/
+rm -rf entire_cli/data/judicial/
+rm -rf entire_cli/data/law/
 
 # 4. Start fresh sync
 bun run src/index.ts db migrate --target shared
@@ -356,7 +356,7 @@ DELETE FROM documents_051;
 "
 
 # 2. Clear local files
-rm -rf jurislm_cli/data/judicial/051/
+rm -rf entire_cli/data/judicial/051/
 
 # 3. Re-sync category
 bun run src/index.ts sync judicial --category 051

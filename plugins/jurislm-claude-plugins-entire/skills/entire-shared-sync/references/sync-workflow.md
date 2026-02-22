@@ -1,6 +1,6 @@
 # Shared Database Sync Workflow - Complete Reference
 
-Detailed command reference for full synchronization of jurislm_shared_db.
+Detailed command reference for full synchronization of entire_shared_db.
 
 ## Complete Table List (25 Tables)
 
@@ -81,10 +81,10 @@ docker compose -f docker-compose.shared.yml up -d
 
 # Verify running
 docker compose -f docker-compose.shared.yml ps
-# Expected: jurislm_shared_db (Port 5442), jurislm-tei-shared (Port 8090)
+# Expected: entire_shared_db (Port 5442), jurislm-tei-shared (Port 8090)
 
 # Check logs if issues
-docker compose -f docker-compose.shared.yml logs jurislm_shared_db
+docker compose -f docker-compose.shared.yml logs entire_shared_db
 ```
 
 ### 2. Ollama Embedding Service
@@ -112,7 +112,7 @@ Required variables in `.env.shared`:
 
 ```bash
 # Database
-SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/jurislm_shared_db
+SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/entire_shared_db
 
 # Embedding
 OLLAMA_BASE_URL=http://localhost:11434
@@ -129,13 +129,13 @@ NAS_BASE_PATH=/volume1/jurislm
 ### 4. Database Connection Test
 
 ```bash
-cd jurislm_cli
+cd entire_cli
 
 # Test connection
 bun run src/index.ts db status --target shared
 
 # Expected output:
-# Database: jurislm_shared_db (shared)
+# Database: entire_shared_db (shared)
 # Status: Connected
 # Migrations: X applied, Y pending
 ```
@@ -367,7 +367,7 @@ Execute all sync steps in order (pipelines now include auto DB upload/import + c
 #!/bin/bash
 set -e
 
-cd jurislm_cli
+cd entire_cli
 
 echo "=== Step 1: Database Migration ==="
 bun run src/index.ts db migrate --target shared
@@ -526,9 +526,9 @@ Monitor disk usage during sync:
 
 ```bash
 # Check data directory size
-du -sh jurislm_cli/data/
+du -sh entire_cli/data/
 
 # Clean up old files
-rm -rf jurislm_cli/data/judicial/*/raw/*.json
-rm -rf jurislm_cli/data/law/raw/*.json
+rm -rf entire_cli/data/judicial/*/raw/*.json
+rm -rf entire_cli/data/law/raw/*.json
 ```

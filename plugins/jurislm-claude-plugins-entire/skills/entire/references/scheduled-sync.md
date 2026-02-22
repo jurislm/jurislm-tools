@@ -55,7 +55,7 @@ run-sync.sh (wrapper)
 ### Install Steps
 
 ```bash
-cd jurislm_cli
+cd entire_cli
 
 # 1. Configure environment
 cp ../.env.shared.example ../.env.shared
@@ -296,8 +296,8 @@ If `node` or `bun` not found:
 
 | Placeholder | Replaced With |
 |-------------|---------------|
-| `__SCRIPTS_DIR__` | Absolute path to `jurislm_cli/scripts/` |
-| `__CLI_DIR__` | Absolute path to `jurislm_cli/` |
+| `__SCRIPTS_DIR__` | Absolute path to `entire_cli/scripts/` |
+| `__CLI_DIR__` | Absolute path to `entire_cli/` |
 | `__LOG_DIR__` | `~/Library/Logs/jurislm` |
 | `__EXTRA_PATH__` | Detected node/bun bin directories |
 

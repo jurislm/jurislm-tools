@@ -56,7 +56,7 @@ Apply spec number suffix to all Docker resources:
 
 | Resource | Main Project | Worktree (spec 014) |
 |----------|--------------|---------------------|
-| Container | `jurislm_db` | `jurislm_db_014` |
+| Container | `entire_db` | `entire_db_014` |
 | Volume | `jurislm_data` | `jurislm_data_014` |
 | Network | `jurislm_network` | `jurislm_network_014` |
 
@@ -65,18 +65,18 @@ Apply spec number suffix to all Docker resources:
 ```yaml
 # docker-compose.014.yml
 services:
-  jurislm_db_014:
+  entire_db_014:
     build:
-      context: ./jurislm_db
+      context: ./entire_db
       dockerfile: Dockerfile
-    image: jurislm_db_014
-    container_name: jurislm_db_014
+    image: entire_db_014
+    container_name: entire_db_014
     ports:
       - "6432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: jurislm_db
+      POSTGRES_DB: entire_db
     volumes:
       - jurislm_data_014:/var/lib/postgresql/data
     healthcheck:
@@ -103,10 +103,10 @@ Update environment variables for worktree ports:
 
 ```bash
 # Local database for worktree
-DATABASE_URL=postgresql://postgres:postgres@localhost:6432/jurislm_db
+DATABASE_URL=postgresql://postgres:postgres@localhost:6432/entire_db
 
 # Shared database (same for all worktrees)
-SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/jurislm_shared_db
+SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/entire_shared_db
 
 # Embedding provider (ollama = default, tei = backup)
 EMBEDDING_PROVIDER=ollama
@@ -136,7 +136,7 @@ docker compose -f docker-compose.014.yml ps
 ### View Logs
 
 ```bash
-docker compose -f docker-compose.014.yml logs -f jurislm_db_014
+docker compose -f docker-compose.014.yml logs -f entire_db_014
 ```
 
 ### Clean Up
@@ -166,7 +166,7 @@ Docker Compose may reuse existing volumes. Always use unique volume names with s
 
 ```yaml
 volumes:
-  jurislm_db_data_014:  # Not jurislm_db_data
+  entire_db_data_014:  # Not entire_db_data
 ```
 
 ### Network Isolation
@@ -175,13 +175,13 @@ Each worktree has its own network. Services communicate differently depending on
 
 ```yaml
 # Container-to-container (within Docker network)
-DATABASE_URL: postgresql://postgres:postgres@jurislm_db_014:5432/jurislm_db
+DATABASE_URL: postgresql://postgres:postgres@entire_db_014:5432/entire_db
 
 # Host machine access (outside Docker network)
-# Use: postgresql://postgres:postgres@localhost:6432/jurislm_db
+# Use: postgresql://postgres:postgres@localhost:6432/entire_db
 ```
 
-> Note: Use service names (e.g., `jurislm_db_014`) for container-to-container communication. Use `localhost:<external_port>` when accessing from the host machine.
+> Note: Use service names (e.g., `entire_db_014`) for container-to-container communication. Use `localhost:<external_port>` when accessing from the host machine.
 
 ### Shared Database Access
 
@@ -189,7 +189,7 @@ To access shared database from worktree containers:
 
 ```yaml
 environment:
-  SHARED_DATABASE_URL: postgresql://postgres:<password>@46.225.58.202:5442/jurislm_shared_db
+  SHARED_DATABASE_URL: postgresql://postgres:<password>@46.225.58.202:5442/entire_shared_db
 ```
 
 ## Best Practices
@@ -205,7 +205,7 @@ environment:
 ```
 jurislm.worktrees/
 ├── main/                    # Main project
-│   └── docker-compose.yml   # Main compose file (jurislm_db)
+│   └── docker-compose.yml   # Main compose file (entire_db)
 │
 ├── plan-a/                  # Worktree for spec 014
 │   ├── docker-compose.014.yml

@@ -19,12 +19,12 @@ JurisLM uses two separate PostgreSQL databases:
 
 | Database | Port | Purpose |
 |----------|------|---------|
-| jurislm_db | 5443 (prod) / 5444 (dev) | Application data (auth, NextAuth, chat) |
-| jurislm_shared_db | 5442 | Shared judicial/law/taxonomy data (25 tables) |
+| entire_db | 5443 (prod) / 5444 (dev) | Application data (auth, NextAuth, chat) |
+| entire_shared_db | 5442 | Shared judicial/law/taxonomy data (25 tables) |
 
 **Database Location**: Hosted on Hetzner (46.225.58.202), managed by Coolify.
 
-## jurislm_db Tables (8 tables)
+## entire_db Tables (8 tables)
 
 ### Authentication & Users (3 tables)
 
@@ -55,7 +55,7 @@ JurisLM uses two separate PostgreSQL databases:
 |-------|---------|------------|
 | migrations | Migration tracking | id, migration_name, checksum, created_at |
 
-## jurislm_shared_db Tables (25 tables)
+## entire_shared_db Tables (25 tables)
 
 ### Judicial Open Data (13 tables)
 
@@ -268,7 +268,7 @@ FROM legal_synonyms GROUP BY category ORDER BY groups DESC;
 
 ## Migration Strategy
 
-**Total Migrations**: 72 files in `jurislm_db/migrations/`
+**Total Migrations**: 72 files in `entire_db/migrations/`
 
 ### Naming Convention
 
@@ -285,13 +285,13 @@ YYYYMMDDHHmm_description.sql
 | 202512021901 | Create admin_users table |
 | 202512021902 | Create refresh_tokens table |
 | 202601012317 | Remove sync progress tables (6 tables) |
-| 202601020030 | Remove shared tables from jurislm_db (23 tables) |
+| 202601020030 | Remove shared tables from entire_db (23 tables) |
 | 202601020130 | Remove inheritance tables (4 tables) |
 
 ### Migration Commands
 
 ```bash
-cd jurislm_cli
+cd entire_cli
 bun run src/index.ts db status              # View migration status
 bun run src/index.ts db migrate             # Execute pending migrations
 bun run src/index.ts db reset               # Reset database (data loss)

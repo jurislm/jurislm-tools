@@ -41,7 +41,7 @@ The CHUNK phase uses **Metadata Context** strategy:
 ## Quick Start
 
 ```bash
-cd jurislm_cli
+cd entire_cli
 
 # Sync all categories (default behavior)
 bun run src/index.ts sync judicial
@@ -68,7 +68,7 @@ docker compose ps
 ```
 
 **Required Services**:
-- PostgreSQL (jurislm_db, port 5433) - healthy
+- PostgreSQL (entire_db, port 5433) - healthy
 - Embedding service - required for vector generation:
   - Ollama (port 11434) if `EMBEDDING_PROVIDER=ollama` (default)
   - TEI (port 8090) if `EMBEDDING_PROVIDER=tei`
@@ -90,10 +90,10 @@ curl -s http://localhost:11434/api/tags | jq
 ### 2. Database Validation
 
 ```bash
-docker exec jurislm_shared_db psql -U postgres -d jurislm_shared_db -c "\dt documents_*"
+docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "\dt documents_*"
 ```
 
-**Required Tables** (in jurislm_shared_db):
+**Required Tables** (in entire_shared_db):
 - `documents_{category}` (e.g., documents_051)
 - `document_embeddings_{category}`
 - `categories`, `datasets`, `filesets`
@@ -101,7 +101,7 @@ docker exec jurislm_shared_db psql -U postgres -d jurislm_shared_db -c "\dt docu
 ### 3. Current Data Status
 
 ```bash
-docker exec jurislm_shared_db psql -U postgres -d jurislm_shared_db -c "
+docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
 SELECT 'documents_051' as tbl, COUNT(*) FROM documents_051
 UNION ALL SELECT 'document_embeddings_051', COUNT(*) FROM document_embeddings_051;
 "
@@ -198,13 +198,13 @@ Verify final status in `status.json` files:
 
 ```bash
 # Update database statistics
-docker exec jurislm_shared_db psql -U postgres -d jurislm_shared_db -c "
+docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
 ANALYZE documents_051;
 ANALYZE document_embeddings_051;
 "
 
 # Verify HNSW index
-docker exec jurislm_shared_db psql -U postgres -d jurislm_shared_db -c "
+docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
 SELECT indexname, pg_size_pretty(pg_relation_size(indexname::regclass))
 FROM pg_indexes WHERE tablename = 'document_embeddings_051' AND indexdef LIKE '%hnsw%';
 "
@@ -226,7 +226,7 @@ FROM pg_indexes WHERE tablename = 'document_embeddings_051' AND indexdef LIKE '%
 ### Download Failures
 
 ```bash
-cd jurislm_cli
+cd entire_cli
 bun run src/index.ts sync judicial --category 051 --mode download --fileset {FILESET_ID}
 ```
 
@@ -246,7 +246,7 @@ curl -s http://localhost:11434/api/tags
 ollama serve
 
 # Retry embedding phase only
-cd jurislm_cli
+cd entire_cli
 bun run src/index.ts sync judicial --category 051 --mode embed
 ```
 
@@ -316,7 +316,7 @@ Tested with fileset 58452 (Category 051, 1,130 documents, 1,197 chunks):
 # Required - Judicial Yuan API
 JUDICIAL_USERNAME=your_username
 JUDICIAL_PASSWORD=your_password
-SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/jurislm_shared_db
+SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/entire_shared_db
 
 # Embedding Provider Configuration (Required)
 # ollama = primary (default), tei = backup

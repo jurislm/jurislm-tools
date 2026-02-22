@@ -216,4 +216,4 @@ def extract_pcode(law_url: str) -> str:
 
 - 法務部全國法規資料庫：https://law.moj.gov.tw/
 - Open API 首頁：https://law.moj.gov.tw/api/
-- 資料流程圖：`jurislm_db/docs/data-flow.md`
+- 資料流程圖：`entire_db/docs/data-flow.md`

@@ -5,11 +5,11 @@ Complete reference for `jurislm` CLI commands.
 ## Command Structure
 
 ```bash
-cd jurislm_cli
+cd entire_cli
 bun run src/index.ts [OPTIONS] COMMAND [SUBCOMMAND] [ARGS]
 ```
 
-**Note**: Execute from `jurislm_cli` directory. Alternatively, from root: `bun run jurislm_cli/src/index.ts <command>`
+**Note**: Execute from `entire_cli` directory. Alternatively, from root: `bun run entire_cli/src/index.ts <command>`
 
 ## Turborepo Integration
 
@@ -23,7 +23,7 @@ bun run typecheck     # TypeScript check (all projects)
 
 # Filter specific project
 bunx turbo lint --filter=jurislm-cli
-bunx turbo test --filter=jurislm-app
+bunx turbo test --filter=entire-app
 ```
 
 ## Database Commands (db)
@@ -71,7 +71,7 @@ bun run src/index.ts db reset --target shared  # Reset shared database
 **Warning**: Destroys all data. Use only in development.
 
 **Operations**:
-1. Stop jurislm_db container
+1. Stop entire_db container
 2. Remove Docker volume
 3. Rebuild container
 4. Execute all migrations
@@ -88,7 +88,7 @@ bun run src/index.ts db push staging --target shared  # Shared database
 ```
 
 **Requirements**:
-- Remote credentials in `jurislm_db/.env.staging` or `.env.production`
+- Remote credentials in `entire_db/.env.staging` or `.env.production`
 
 ### db pull
 
@@ -335,10 +335,10 @@ bun run src/index.ts evaluate baseline-expanded -k 5 -s 0.7 -e 5
 
 ```bash
 # Database
-DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5444/jurislm_db
+DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5444/entire_db
 
 # Shared database
-SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/jurislm_shared_db
+SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/entire_shared_db
 
 # Judicial API
 JUDICIAL_USERNAME=your_username
@@ -377,7 +377,7 @@ EMBEDDING_URL=http://localhost:11434
 ## CLI Architecture
 
 ```
-jurislm_cli/
+entire_cli/
 ├── src/
 │   ├── index.ts             # Entry point
 │   ├── config.ts            # Configuration (Zod schema, lazy loaded)
@@ -418,14 +418,14 @@ jurislm_cli/
 docker compose up -d
 
 # 2. Check migration status
-cd jurislm_cli
+cd entire_cli
 bun run src/index.ts db status
 
 # 3. Execute migrations
 bun run src/index.ts db migrate
 
 # 4. Verify tables
-docker exec jurislm_db psql -U postgres -d jurislm_db -c "\dt"
+docker exec entire_db psql -U postgres -d entire_db -c "\dt"
 ```
 
 ### Full Data Sync
@@ -435,14 +435,14 @@ docker exec jurislm_db psql -U postgres -d jurislm_db -c "\dt"
 docker compose -f docker-compose.shared.yml up -d
 
 # 2. Sync judicial data (auto DB upload + cleanup)
-cd jurislm_cli
+cd entire_cli
 bun run src/index.ts sync judicial
 
 # 3. Sync law data (auto import + cleanup)
 bun run src/index.ts sync law
 
 # 4. Verify counts
-docker exec jurislm_shared_db psql -U postgres -d jurislm_shared_db -c "
+docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
 SELECT 'documents_051' as tbl, COUNT(*) FROM documents_051
 UNION ALL SELECT 'laws', COUNT(*) FROM laws;
 "

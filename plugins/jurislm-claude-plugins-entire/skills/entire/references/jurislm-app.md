@@ -1,4 +1,4 @@
-# jurislm_app Architecture Reference
+# entire_app Architecture Reference
 
 Complete architecture reference for the JurisLM Web Application.
 
@@ -17,7 +17,7 @@ Complete architecture reference for the JurisLM Web Application.
 ## Directory Structure
 
 ```
-jurislm_app/
+entire_app/
 +-- app/                            # Next.js App Router
 |   +-- (app)/                      # Route group (requires auth)
 |   |   +-- page.tsx                # Dashboard
@@ -169,7 +169,7 @@ Creates Anthropic SDK client instances:
 
 ```typescript
 import Anthropic from "@anthropic-ai/sdk";
-import { getModelId, validateAnthropicApiKey } from "@jurislm/llm-config";
+import { getModelId, validateAnthropicApiKey } from "@entire/llm-config";
 
 export function createAnthropicClient(): Anthropic {
   const apiKey = validateAnthropicApiKey();
@@ -306,7 +306,7 @@ export const messages = pgTable('messages', {
 
 ### Vector Search
 
-Vector search queries against jurislm_shared_db:
+Vector search queries against entire_shared_db:
 
 ```typescript
 // Example: Law vector search
@@ -326,8 +326,8 @@ const results = await db.execute(sql`
 
 ```bash
 # Database
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/jurislm_db
-SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/jurislm_shared_db
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/entire_db
+SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/entire_shared_db
 
 # Authentication
 GOOGLE_CLIENT_ID=xxx
@@ -335,7 +335,7 @@ GOOGLE_CLIENT_SECRET=xxx
 NEXTAUTH_SECRET=xxx
 NEXTAUTH_URL=http://localhost:3000
 
-# LLM (uses @jurislm/llm-config for model-to-provider mapping)
+# LLM (uses @entire/llm-config for model-to-provider mapping)
 ANTHROPIC_API_KEY=sk-ant-xxx
 OLLAMA_MODEL=ministral-3:latest
 OLLAMA_BASE_URL=http://localhost:11434
@@ -353,7 +353,7 @@ LANGFUSE_HOST=https://cloud.langfuse.com
 ## Development Commands
 
 ```bash
-cd jurislm_app
+cd entire_app
 
 # Development
 bun run dev                    # Start dev server (port 3000)

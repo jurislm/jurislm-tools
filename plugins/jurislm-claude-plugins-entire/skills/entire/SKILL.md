@@ -1,14 +1,14 @@
 ---
-name: jurislm
+name: entire
 description: >-
-  This skill should be used when the user asks about JurisLM platform development, architecture, or operations.
-  Trigger phrases include: "jurislm_app", "jurislm_cli", "jurislm_db",
+  This skill should be used when the user asks about Entire platform development, architecture, or operations.
+  Trigger phrases include: "entire_app", "entire_cli", "entire_db",
   "db status", "db migrate", "db reset", "sync judicial", "sync law", "9-stage pipeline",
   "Unified Agent", "SKILL.md", "tool-registry", "agentic loop", "runUnifiedAgent",
-  "shared database", "jurislm_shared_db",
-  "jurislm_dashboard", "dashboard", "Hono", "Vite 7", "postgres.js", "admin dashboard",
+  "shared database", "entire_shared_db",
+  "entire_dashboard", "dashboard", "Hono", "Vite 7", "postgres.js", "admin dashboard",
   "pg_class.reltuples", "idleTimeout", "dashboard.jurislm.com",
-  "Turborepo", "bun workspace", "packages/@jurislm", "Langfuse",
+  "Turborepo", "bun workspace", "packages/@entire", "Langfuse",
   "TEI embedding", "Ollama", "worktree docker", "pcode", "categories 051-054",
   "constitution rules", "Drizzle ORM", "SSE streaming", "legal RAG",
   "metadata-context", "chunk strategy", "hybrid search", "RRF fusion",
@@ -20,7 +20,7 @@ description: >-
   "evaluate", "embedding similarity", "baseline evaluation", "baseline-expanded", "Recall@5",
   "knowledge base", "user documents", "Google Drive", "connectors",
   "contract analysis", "document generation", "case management",
-  "@jurislm/llm-config", "LLM factory", "createLLM", "MODEL_IDS", "MODEL_PROVIDERS",
+  "@entire/llm-config", "LLM factory", "createLLM", "MODEL_IDS", "MODEL_PROVIDERS",
   "Extended Thinking", "thinkMode", "thinking budget", "thinkingContent",
   "project documents", "projectContext", "documentSources", "project files",
   "search_knowledge", "parse_contract", "analyze_clause", "render_contract_report",
@@ -40,10 +40,10 @@ Taiwan legal AI platform using Bun + Turborepo Monorepo architecture with 4 sub-
 
 | Component | Technology | Port | Purpose |
 |-----------|------------|------|---------|
-| jurislm_app | Next.js 16 + shadcn/ui + Anthropic SDK | 3000 | Web application (Legal RAG, Knowledge Base, Contract/Document) |
-| jurislm_dashboard | Hono + React 19 + Vite 7 + postgres.js | 3001 | Admin dashboard (DB stats, sync monitoring, system health) |
-| jurislm_cli | TypeScript + Bun + Commander.js | - | CLI commands (db, sync, taxonomy, evaluate) |
-| jurislm_db | PostgreSQL 18 + pgvector | 5433* | Database Schema |
+| entire_app | Next.js 16 + shadcn/ui + Anthropic SDK | 3000 | Web application (Legal RAG, Knowledge Base, Contract/Document) |
+| entire_dashboard | Hono + React 19 + Vite 7 + postgres.js | 3001 | Admin dashboard (DB stats, sync monitoring, system health) |
+| entire_cli | TypeScript + Bun + Commander.js | - | CLI commands (db, sync, taxonomy, evaluate) |
+| entire_db | PostgreSQL 18 + pgvector | 5433* | Database Schema |
 
 *Port varies by worktree (main: 5432, plan-a: 5433, plan-b: 5434)
 
@@ -55,24 +55,24 @@ docker compose -f docker-compose.shared.yml up -d
 
 | Service | Port | Purpose |
 |---------|------|---------|
-| jurislm_shared_db | 5442 | PostgreSQL (Judicial + Law + Taxonomy, 25 tables) |
+| entire_shared_db | 5442 | PostgreSQL (Judicial + Law + Taxonomy, 25 tables) |
 | jurislm-tei-shared | 8090 | TEI Embedding (backup, BAAI/bge-m3) |
 
 ### Shared Packages (packages/)
 
-9 internal packages with `@jurislm/` namespace:
+9 internal packages with `@entire/` namespace:
 
 | Package | Purpose |
 |---------|---------|
-| @jurislm/config | Unified environment configuration (Zod validation + Worktree detection) |
-| @jurislm/types | Common TypeScript type definitions |
-| @jurislm/logging | Structured logging system |
-| @jurislm/api-types | API request/response types |
-| @jurislm/auth | Authentication module (Judicial API Token) |
-| @jurislm/embedding | Embedding factory (TEI/Ollama) |
-| @jurislm/errors | Custom error types |
-| @jurislm/llm-config | LLM model IDs, providers, validation utilities |
-| @jurislm/eslint-config | Shared ESLint configuration |
+| @entire/config | Unified environment configuration (Zod validation + Worktree detection) |
+| @entire/types | Common TypeScript type definitions |
+| @entire/logging | Structured logging system |
+| @entire/api-types | API request/response types |
+| @entire/auth | Authentication module (Judicial API Token) |
+| @entire/embedding | Embedding factory (TEI/Ollama) |
+| @entire/errors | Custom error types |
+| @entire/llm-config | LLM model IDs, providers, validation utilities |
+| @entire/eslint-config | Shared ESLint configuration |
 
 Reference packages with `workspace:*` in package.json.
 
@@ -88,12 +88,12 @@ bun run dev           # Development servers
 
 # Filter specific project
 bunx turbo lint --filter=jurislm-cli
-bunx turbo test --filter=jurislm-app
+bunx turbo test --filter=entire-app
 ```
 
 ## Sub-Projects
 
-### jurislm_app (Web Application)
+### entire_app (Web Application)
 
 Next.js 16 + React 19 + Drizzle ORM + Anthropic SDK (Unified Agent) + Langfuse:
 
@@ -131,9 +131,9 @@ Next.js 16 + React 19 + Drizzle ORM + Anthropic SDK (Unified Agent) + Langfuse:
 | `lib/db/` | Drizzle ORM schema and queries |
 | `components/chat/` | Chat interface components |
 
-See **`references/jurislm-app.md`** for detailed architecture.
+See **`references/entire-app.md`** for detailed architecture.
 
-### jurislm_dashboard (Admin Dashboard)
+### entire_dashboard (Admin Dashboard)
 
 Hono + React 19 + Vite 7 + Tailwind CSS v4 + postgres.js:
 
@@ -144,7 +144,7 @@ Hono + React 19 + Vite 7 + Tailwind CSS v4 + postgres.js:
 | Styling | Tailwind CSS v4 (requires `@tailwindcss/vite` plugin) |
 | Database Client | postgres.js (direct SQL) |
 | Port | 3001 |
-| Design System | Shared with jurislm_app (Noto Sans TC, amber accents, warm beige) |
+| Design System | Shared with entire_app (Noto Sans TC, amber accents, warm beige) |
 
 **Deployment**:
 
@@ -156,7 +156,7 @@ Hono + React 19 + Vite 7 + Tailwind CSS v4 + postgres.js:
 **Key Features**:
 - Shared DB statistics (document counts, embedding coverage via `pg_class.reltuples`)
 - Sync monitoring and system health
-- Direct postgres.js queries to jurislm_shared_db
+- Direct postgres.js queries to entire_shared_db
 
 **Staging Protection** (3-layer, aligned with lawyer project):
 - Layer 1: `robots.txt` returns `Disallow: /` when `STAGING=true`
@@ -168,9 +168,9 @@ Hono + React 19 + Vite 7 + Tailwind CSS v4 + postgres.js:
 
 **Configuration Notes**:
 - `Bun.serve` `idleTimeout` defaults to 10s; set to 120s for remote DB queries
-- Uses CSS variables from `globals.css` consistent with jurislm_app's design system
+- Uses CSS variables from `globals.css` consistent with entire_app's design system
 
-### jurislm_cli (CLI Tool)
+### entire_cli (CLI Tool)
 
 9-stage pipeline orchestration with lazy loading architecture:
 
@@ -195,14 +195,14 @@ Download -> Unzip -> Parse -> Chunk -> Embed -> Zip -> NAS -> DB_Upload -> Clean
 
 See **`references/cli-commands.md`** for complete reference.
 
-### jurislm_db (Database)
+### entire_db (Database)
 
 Two databases with separate migrations:
 
 | Database | Port | Tables | Migrations |
 |----------|------|--------|------------|
-| jurislm_db | 5433 | Auth + NextAuth + Chat + Knowledge + Contract + Case | `migrations/` (77 files) |
-| jurislm_shared_db | 5442 | Judicial + Law + Taxonomy (25 tables) | `migrations-shared/` (15 files) |
+| entire_db | 5433 | Auth + NextAuth + Chat + Knowledge + Contract + Case | `migrations/` (77 files) |
+| entire_shared_db | 5442 | Judicial + Law + Taxonomy (25 tables) | `migrations-shared/` (15 files) |
 
 **Local Database Tables**:
 - Auth: users, accounts, sessions, verification_tokens
@@ -217,10 +217,10 @@ See **`references/database-schema.md`** for table details.
 
 ## CLI Commands
 
-Execute from `jurislm_cli` directory:
+Execute from `entire_cli` directory:
 
 ```bash
-cd jurislm_cli
+cd entire_cli
 
 # Database management
 bun run src/index.ts db status                    # View migration status
@@ -237,7 +237,7 @@ See **`references/cli-commands.md`** for complete reference.
 
 ## LLM Configuration
 
-### @jurislm/llm-config Package
+### @entire/llm-config Package
 
 Cross-project shared LLM configuration:
 
@@ -291,7 +291,7 @@ Query expansion using synonym and hierarchy tables:
 ### CLI Commands
 
 ```bash
-cd jurislm_cli
+cd entire_cli
 
 # Build synonyms (generate -> review -> import)
 bun run src/index.ts taxonomy build                    # Claude Haiku 4.5 + Batch API
@@ -526,7 +526,7 @@ scope: nda
 Execute all Git operations from root directory:
 
 ```bash
-git add jurislm_cli/src jurislm_app/lib
+git add entire_cli/src entire_app/lib
 git commit -m "feat: cross-project feature"
 ```
 
@@ -547,7 +547,7 @@ See **`references/scheduled-sync.md`** for complete setup.
 
 ## Reference Files
 
-- **`references/jurislm-app.md`** - Web application architecture (Unified Agent)
+- **`references/entire-app.md`** - Web application architecture (Unified Agent)
 - **`references/cli-commands.md`** - Complete CLI reference
 - **`references/database-schema.md`** - Table relationships
 - **`references/judicial-sync.md`** - 9-stage pipeline
