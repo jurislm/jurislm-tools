@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.0](https://github.com/terry90918/jurislm-claude-plugins/compare/v1.5.0...v1.6.0) (2026-02-22)
+
+
+### Features
+
+* hetzner MCP + Skill 與文檔維護 ([e0cfe1d](https://github.com/terry90918/jurislm-claude-plugins/commit/e0cfe1d5278da952044cff2411e47f2f845cca65))
+* **hetzner:** 新增 hetzner skill，升級為 MCP + Skill (v1.3.0) ([43af2eb](https://github.com/terry90918/jurislm-claude-plugins/commit/43af2eb42af9fe0f2076c044ba97342040d87f44))
+
 ## [1.5.0](https://github.com/terry90918/jurislm-plugins/compare/v1.4.0...v1.5.0) (2026-02-12)
 
 
