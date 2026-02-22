@@ -20,15 +20,3 @@ jobs:
           release-type: simple
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update release notes with PR label categorization
-        if: ${{ steps.release.outputs.release_created }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ steps.release.outputs.tag_name }}
-          REPO: ${{ github.repository }}
-        run: |
-          gh release edit "$TAG_NAME" \
-            --notes "$(gh api "repos/$REPO/releases/generate-notes" \
-              --method POST \
-              --field "tag_name=$TAG_NAME" \
-              --jq '.body')"
