@@ -224,9 +224,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v4
+        id: release
         with:
           release-type: node
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update release notes with PR label categorization
+        if: ${{ steps.release.outputs.release_created }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ steps.release.outputs.tag_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh release edit "$TAG_NAME" \
+            --notes "$(gh api "repos/$REPO/releases/generate-notes" \
+              --method POST \
+              --field "tag_name=$TAG_NAME" \
+              --jq '.body')"
 ```
 
 **Conventional Commits 規則**：
@@ -420,6 +434,7 @@ bunx husky init
 |------|------|
 | terry90918/stock | 5 檔齊全 |
 | terry90918/lawyer-app | 5 檔齊全 |
+| terry90918/jurislm-claude-plugins | 5 檔齊全 |
 
 ## PR 必做項目
 
