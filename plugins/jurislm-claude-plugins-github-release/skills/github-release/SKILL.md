@@ -19,10 +19,17 @@ gh repo view --json nameWithOwner -q '.nameWithOwner'
 
 ### Step 2：同步 GitHub Labels
 
-**移除** GitHub 預設但不需要的 labels：
+**移除** GitHub 預設但不需要的 labels（先確認未被使用）：
 ```bash
 for label in "bug" "documentation" "duplicate" "enhancement" "good first issue" "help wanted" "invalid" "question" "wontfix"; do
-  gh label delete "$label" --yes 2>/dev/null || true
+  # 檢查當前 repo 是否有 issue/PR 使用此 label（gh issue list 限定當前 repo）
+  in_use=$(gh issue list --label "$label" --state all --limit 1 --json number 2>/dev/null | python3 -c "import json,sys; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "0")
+  if [ "$in_use" -gt 0 ]; then
+    echo "Skip: label '$label' is in use, not deleting"
+  else
+    gh label delete "$label" --yes 2>/dev/null || true
+    echo "Deleted: $label"
+  fi
 done
 ```
 
@@ -60,16 +67,18 @@ gh label create "patch" --color "#0e8a16" --description "Patch version bump" 2>/
 
 ### Step 3：建立缺少的 workflow 檔案
 
-檢查並建立（已存在則跳過）：
+先確保目錄存在，再檢查並建立（已存在則跳過）：
 
 ```bash
-ls .github/workflows/release.yml 2>/dev/null || echo "MISSING"
-ls .github/workflows/claude.yml 2>/dev/null || echo "MISSING"
-ls .github/workflows/claude-code-review.yml 2>/dev/null || echo "MISSING"
-ls .github/release.yml 2>/dev/null || echo "MISSING"
+mkdir -p .github/workflows
+
+ls .github/workflows/release.yml 2>/dev/null || echo "MISSING: .github/workflows/release.yml"
+ls .github/workflows/claude.yml 2>/dev/null || echo "MISSING: .github/workflows/claude.yml"
+ls .github/workflows/claude-code-review.yml 2>/dev/null || echo "MISSING: .github/workflows/claude-code-review.yml"
+ls .github/release.yml 2>/dev/null || echo "MISSING: .github/release.yml"
 ```
 
-對每個缺少的檔案，使用下方模板建立。
+對每個輸出 `MISSING` 的檔案，使用下方模板建立。
 
 ### Step 4：設定 Husky（僅當 `package.json` 存在時）
 
@@ -77,7 +86,23 @@ ls .github/release.yml 2>/dev/null || echo "MISSING"
 ls package.json 2>/dev/null && echo "HAS_PACKAGE_JSON" || echo "SKIP_HUSKY"
 ```
 
-若有 `package.json`，檢查 `.husky/pre-commit` 是否存在，缺少則建立。
+若有 `package.json`：
+
+1. **確認 Husky 是否已初始化**（`.husky/_/husky.sh` 存在代表已初始化）：
+   ```bash
+   ls .husky/_/husky.sh 2>/dev/null && echo "HUSKY_INIT_OK" || echo "HUSKY_NOT_INIT"
+   ```
+   若未初始化，先執行：
+   ```bash
+   bun add -D husky && bunx husky init
+   ```
+
+2. **確認 `.husky/pre-commit` 是否存在**，缺少則依模板建立。
+
+3. **確保執行權限**：
+   ```bash
+   chmod +x .husky/pre-commit
+   ```
 
 ### Step 5：回報結果
 
