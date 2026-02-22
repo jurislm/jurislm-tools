@@ -153,7 +153,7 @@ plugins/<name>/
 **清理 project skills**
 - `git rm -r .claude/skills/<name>` 刪除舊 skills
 - 保留同目錄下不相關的 skills（如 `openspec-*`、`document-generation`）
-- 分開 commit：plugin 建立（jurislm-plugins repo）和 skill 刪除（app repo）應各自獨立 commit
+- 分開 commit：plugin 建立（jurislm-claude-plugins repo）和 skill 刪除（app repo）應各自獨立 commit
 
 ---
 
