@@ -26,7 +26,7 @@
 ## 安裝
 
 ```
-/plugin install coolify@jurislm-plugins
+/plugin install jurislm-claude-plugins-coolify@jurislm-plugins
 ```
 
 ## 設定

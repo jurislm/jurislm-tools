@@ -13,7 +13,7 @@ JurisLM 台灣法律 AI 平台（jurislm.com）的 Claude Code 開發 Skill。
 ## 安裝
 
 ```
-/plugin install jurislm-dev@jurislm-plugins
+/plugin install jurislm-claude-plugins-jurislm-dev@jurislm-plugins
 ```
 
 ## 適用場景

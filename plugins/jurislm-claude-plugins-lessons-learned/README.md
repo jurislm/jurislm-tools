@@ -11,7 +11,7 @@
 ## 安裝
 
 ```
-/plugin install lessons-learned@jurislm-plugins
+/plugin install jurislm-claude-plugins-lessons-learned@jurislm-plugins
 ```
 
 ## 適用場景

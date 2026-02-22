@@ -28,7 +28,7 @@
 ## 安裝
 
 ```
-/plugin install hetzner@jurislm-plugins
+/plugin install jurislm-claude-plugins-hetzner@jurislm-plugins
 ```
 
 ## 設定

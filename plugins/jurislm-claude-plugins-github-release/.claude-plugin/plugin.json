@@ -1,5 +1,5 @@
 {
-  "name": "github-release",
+  "name": "jurislm-claude-plugins-github-release",
   "description": "GitHub Actions 標準化工作流 Skill，涵蓋 Release Please、Claude Code Review、Release Notes、Husky pre-commit 配置",
   "version": "1.2.0",
   "author": {
