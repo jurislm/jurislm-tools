@@ -1,5 +1,5 @@
 {
-  "name": "jurislm-claude-plugins-jurislm-dev",
+  "name": "jurislm-claude-plugins-entire",
   "description": "JurisLM 台灣法律 AI 平台開發 Skill，涵蓋 Unified Agent、CLI、Dashboard、資料同步、法律分類",
   "version": "1.2.0",
   "author": {
