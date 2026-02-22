@@ -7,6 +7,84 @@ description: This skill should be used when the user asks to "set up GitHub Acti
 
 為所有專案提供一致的 GitHub Actions 配置與 Git Hook 設定，涵蓋自動版本管理、Claude Code 整合、Release Notes 分類與 pre-commit 品質檢查。
 
+## 執行流程（每次使用此 Skill 必須執行）
+
+呼叫此 Skill 時，**自動完成**以下步驟，無需等待用戶確認：
+
+### Step 1：確認目標 repo
+
+```bash
+gh repo view --json nameWithOwner -q '.nameWithOwner'
+```
+
+### Step 2：同步 GitHub Labels
+
+**移除** GitHub 預設但不需要的 labels：
+```bash
+for label in "bug" "documentation" "duplicate" "enhancement" "good first issue" "help wanted" "invalid" "question" "wontfix"; do
+  gh label delete "$label" --yes 2>/dev/null || true
+done
+```
+
+**確保**以下 labels 存在（已存在則跳過）：
+
+| Label | 顏色 | 說明 |
+|-------|------|------|
+| `feat` | `#0075ca` | New feature |
+| `fix` | `#d73a4a` | Bug fix |
+| `docs` | `#0075ca` | Documentation changes |
+| `refactor` | `#e4e669` | Code refactoring |
+| `test` | `#0e8a16` | Tests |
+| `ci` | `#1d76db` | CI/CD changes |
+| `chore` | `#e4e669` | Maintenance |
+| `perf` | `#0075ca` | Performance improvement |
+| `breaking` | `#b60205` | Breaking change |
+| `major` | `#b60205` | Major version bump |
+| `minor` | `#0075ca` | Minor version bump |
+| `patch` | `#0e8a16` | Patch version bump |
+
+```bash
+gh label create "feat" --color "#0075ca" --description "New feature" 2>/dev/null || true
+gh label create "fix" --color "#d73a4a" --description "Bug fix" 2>/dev/null || true
+gh label create "docs" --color "#0075ca" --description "Documentation changes" 2>/dev/null || true
+gh label create "refactor" --color "#e4e669" --description "Code refactoring" 2>/dev/null || true
+gh label create "test" --color "#0e8a16" --description "Tests" 2>/dev/null || true
+gh label create "ci" --color "#1d76db" --description "CI/CD changes" 2>/dev/null || true
+gh label create "chore" --color "#e4e669" --description "Maintenance" 2>/dev/null || true
+gh label create "perf" --color "#0075ca" --description "Performance improvement" 2>/dev/null || true
+gh label create "breaking" --color "#b60205" --description "Breaking change" 2>/dev/null || true
+gh label create "major" --color "#b60205" --description "Major version bump" 2>/dev/null || true
+gh label create "minor" --color "#0075ca" --description "Minor version bump" 2>/dev/null || true
+gh label create "patch" --color "#0e8a16" --description "Patch version bump" 2>/dev/null || true
+```
+
+### Step 3：建立缺少的 workflow 檔案
+
+檢查並建立（已存在則跳過）：
+
+```bash
+ls .github/workflows/release.yml 2>/dev/null || echo "MISSING"
+ls .github/workflows/claude.yml 2>/dev/null || echo "MISSING"
+ls .github/workflows/claude-code-review.yml 2>/dev/null || echo "MISSING"
+ls .github/release.yml 2>/dev/null || echo "MISSING"
+```
+
+對每個缺少的檔案，使用下方模板建立。
+
+### Step 4：設定 Husky（僅當 `package.json` 存在時）
+
+```bash
+ls package.json 2>/dev/null && echo "HAS_PACKAGE_JSON" || echo "SKIP_HUSKY"
+```
+
+若有 `package.json`，檢查 `.husky/pre-commit` 是否存在，缺少則建立。
+
+### Step 5：回報結果
+
+列出所有已建立 / 已存在 / 跳過的項目。
+
+---
+
 ## 標準配置檔清單
 
 每個專案應包含以下 5 個檔案：
