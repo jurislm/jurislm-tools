@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/terry90918/jurislm-claude-plugins/compare/v1.6.1...v1.7.0) (2026-02-22)
+
+
+### Features
+
+* **github-release:** 使用 PR labels 產生 Release Notes 分類 ([#13](https://github.com/terry90918/jurislm-claude-plugins/issues/13)) ([adacf3f](https://github.com/terry90918/jurislm-claude-plugins/commit/adacf3f2b6f25dc57a4f34e9afc53bc9d6e627e5))
+
 ## [1.6.1](https://github.com/terry90918/jurislm-claude-plugins/compare/v1.6.0...v1.6.1) (2026-02-22)
 
 
