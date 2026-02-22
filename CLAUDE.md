@@ -34,8 +34,9 @@ plugins/
 ```
 
 **Plugin 類型**：
-- **MCP Server**：`.mcp.json` + `plugin.json` + `README.md`（如 hetzner, coolify）
+- **MCP Server**：`.mcp.json` + `plugin.json` + `README.md`（如 hetzner）
 - **Skill Only**：`plugin.json` + `README.md` + `skills/`（如 lawyer, stock, jurislm-dev）
+- **Hybrid**：`.mcp.json` + `plugin.json` + `README.md` + `skills/`（如 coolify）
 
 ## 新增 Plugin
 
@@ -81,7 +82,7 @@ plugins/
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
 | hetzner | 1.2.0 | MCP Server | hetzner-mcp-server（14 工具） |
-| coolify | 1.3.3 | MCP Server | jurislm-coolify-mcp（35 工具） |
+| coolify | 1.3.3 | MCP + Skill | jurislm-coolify-mcp（35 工具）+ coolify skill |
 | lawyer | 1.2.1 | Skill Only | Payload CMS + 部署 + E2E 測試指南 |
 | stock | 1.1.1 | Skill Only | TWSE/Yahoo API + 投資組合 + E2E 測試 |
 | jurislm-dev | 1.2.0 | Skill Only | Unified Agent + CLI + Dashboard + 資料同步 + 法律分類（3 skills） |
@@ -164,7 +165,7 @@ plugins/<name>/
 - 診斷與除錯、測試策略、基礎設施與部署
 - 安全與錯誤處理、業務邏輯、架構與重構
 - Git 工作流、工具與工作流、雲端遷移與環境配置
-- 前端工具鏈與框架、Turborepo Docker 部署
+- 前端工具鏈與框架、Turborepo Docker 部署、資料匯入與 Migration
 
 **使用方式**：
 ```bash
