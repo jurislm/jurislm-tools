@@ -62,6 +62,26 @@ coolify_deploy with force=true
 - 確保健康檢查端點回傳 200
 - 增加啟動延遲時間
 
+## Application 域名問題
+
+### fqdn 與 domains 欄位
+
+**背景知識**：Coolify API 自 beta.307（2024-06-28）起，Application 的域名設定 API 欄位一直是 `domains`，而非 `fqdn`。`fqdn` 只是 Coolify 資料庫內部的欄位名稱。
+
+| 欄位 | 說明 |
+|------|------|
+| `domains` | Coolify API 正式輸入欄位（自 beta.307 起） |
+| `fqdn` | DB 欄位名稱，**從未是合法的 API request 欄位** |
+
+**`jurislm-coolify-mcp` 處理方式（v2.7.2 起）**：
+- TypeScript types 中使用 `fqdn` 欄位（向後相容）
+- MCP client 在送出 API 請求前，自動將 `fqdn` 映射為 `domains`
+- 呼叫端傳入 `fqdn` 即可，不需要直接傳 `domains`
+
+**如果遇到 `"This field is not allowed"` 錯誤**：
+- 這是 Coolify beta.307 之後的嚴格驗證，傳入不支援的欄位就會觸發
+- 確認使用的是 `jurislm-coolify-mcp` v2.7.2+，舊版本不含自動映射
+
 ## Service 配置問題
 
 ### Service FQDN 無法更新
@@ -389,6 +409,7 @@ cmd = "bun run start"
 | `Build context too large` | .dockerignore 缺失 | 新增 .dockerignore |
 | `Found argument 'run'` | NIXPACKS_*_CMD 解析錯誤 | 改用 nixpacks.toml |
 | `npm ci` 失敗 | Nixpacks 用錯 package manager | 移除多餘 lock file |
+| `This field is not allowed` | 傳入了不支援的 API 欄位（如 `fqdn`） | 升級至 `jurislm-coolify-mcp` v2.7.2+（自動映射） |
 
 ## MCP Server 遷移問題
 
