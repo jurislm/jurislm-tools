@@ -86,12 +86,17 @@ bun run src/index.ts db status --target shared
 
 ### 2. Embedding Service
 
-Only Ollama is supported. Verify it is running:
+**本地環境（首選）：MLX** (port 11435)
 
 ```bash
-curl -s http://localhost:11434/api/tags | jq '.models[].name'
-# Pull bge-m3 if needed: ollama pull bge-m3
+# Check MLX service status
+curl http://localhost:11435/health
+# Expected: {"status":"ok"}
 ```
+
+**雲端環境：OpenAI** (text-embedding-3-small, dimensions=1024)
+
+- 設定 `EMBEDDING_PROVIDER=openai` 與 `OPENAI_API_KEY` 即可，無需本地服務
 
 ### 3. Environment Variables
 
@@ -101,15 +106,20 @@ Required variables in `.env.shared`:
 # Database
 SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/entire_shared_db
 
-# Embedding (ollama only)
-EMBEDDING_PROVIDER=ollama     # Only option: ollama
-EMBEDDING_URL=                # Defaults to http://localhost:11434
+# Embedding（本地環境）
+EMBEDDING_PROVIDER=mlx
+EMBEDDING_URL=http://localhost:11435
 
-# NAS Upload (Synology) - optional, skipped if not set
-SYNOLOGY_BASE_URL=https://xxx.quickconnect.to:5001
-SYNOLOGY_ACCOUNT=your-account
+# Embedding（雲端環境，擇一使用）
+# EMBEDDING_PROVIDER=openai
+# OPENAI_API_KEY=sk-...
+# OPENAI_DAILY_BATCH_LIMIT=10     # 每日最大 batch 數（預設 10）
+
+# NAS Upload (Synology)
+SYNOLOGY_BASE_URL=http://your-nas-host:5000
+SYNOLOGY_ACCOUNT=jurislm
 SYNOLOGY_PASSWORD=your-password
-SYNOLOGY_UPLOAD_PATH=/home/jurislm-embedding  # Default root path
+SYNOLOGY_UPLOAD_PATH=/home/entire-embedding/{model}
 ```
 
 ### 4. Database Connection Test
@@ -318,8 +328,8 @@ bun run src/index.ts sync law --info
 # Build with Claude Haiku 4.5 Batch API (default)
 bun run src/index.ts taxonomy build
 
-# Use Ollama (local, no API cost)
-bun run src/index.ts taxonomy build --provider ollama
+# Use MLX (local, no API cost)
+bun run src/index.ts taxonomy build --provider mlx
 
 # Verbose output
 bun run src/index.ts taxonomy build --info
