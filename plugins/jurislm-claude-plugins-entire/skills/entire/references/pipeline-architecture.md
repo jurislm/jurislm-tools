@@ -86,12 +86,14 @@ All INSERTs have ON CONFLICT protection:
 
 Atomic operations within a single transaction:
 
-| Table | Strategy |
-|-------|----------|
-| `laws` | ON CONFLICT (pcode) DO UPDATE |
-| `law_articles` | DELETE + INSERT within transaction |
-| `law_attachments` | DELETE + INSERT within transaction |
-| `law_embeddings` | DELETE + INSERT within transaction |
+| Table | Strategy | Condition |
+|-------|----------|-----------|
+| `laws` | ON CONFLICT (pcode) DO UPDATE | Always (all pcodes with source.json) |
+| `law_articles` | DELETE + INSERT within transaction | Only when `content_hash` changed |
+| `law_attachments` | DELETE + INSERT within transaction | Only when `content_hash` changed |
+| `law_embeddings` | DELETE + INSERT within transaction | Only when `embed_*.json` exists |
+
+**IMPORT Decoupling** (important): IMPORT runs for **all pcodes with `source.json`**, regardless of whether `embed_*.json` exists. This ensures `laws` metadata (`law_histories`, `foreword`, `content_hash`) is always updated — even for pcodes skipped by DB CHECK (which don't generate embed files). `law_embeddings` is only modified when new embed files are present.
 
 ## Cleanup Behavior
 
@@ -108,6 +110,27 @@ Atomic operations within a single transaction:
 - Deletes: `ChLaw.json` (~200MB) and `ChOrder.json` (~500MB)
 - Preserves: `ChLaw.zip` (~25MB) and `ChOrder.zip` (~111MB) for re-extraction
 - Preserves: `status.json` and `embeddings_{strategy}.jsonl.gz`
+
+## DB CHECK (Law Pipeline)
+
+Between PARSE and CHUNK stages, the Law Pipeline queries the shared DB to skip pcodes that are already complete.
+
+```
+PARSE → [DB CHECK] → CHUNK (only for incomplete/changed pcodes)
+```
+
+**Logic** (`DbStateChecker.filterCompleteLawPcodes`):
+1. Reads `source.json` for each pcode, computes `content_hash = SHA-256(merged_content + articles + attachments + law_histories + foreword)` via `computeLawContentHash()` (`adapters/law/hash.ts`)
+2. Queries DB with UNNEST double-array JOIN: only pcodes where `laws.content_hash` matches AND `law_embeddings` exist are skipped
+3. If `content_hash` differs (law was amended) → pcode NOT skipped → triggers CHUNK+EMBED+IMPORT
+
+**Key behavior**:
+| Scenario | DB CHECK Result | CHUNK+EMBED | IMPORT |
+|----------|----------------|-------------|--------|
+| Hash match + embeddings exist | Skip | No | Yes (metadata UPSERT only) |
+| Hash mismatch (law amended) | Don't skip | Yes | Yes (full rebuild) |
+| New pcode (not in DB) | Don't skip | Yes | Yes (full insert) |
+| DB unavailable | Don't skip (graceful) | Yes | Yes |
 
 ## NAS Stage — Skip 優化（nasCache）
 

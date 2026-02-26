@@ -81,7 +81,7 @@ JurisLM uses two separate PostgreSQL databases:
 
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
-| laws | Law master table (includes foreword) | law_id, pcode, law_name, foreword |
+| laws | Law master table | law_id, pcode, law_name, law_histories, foreword, content_hash |
 | law_articles | Law articles | article_id, law_id, article_no, article_content |
 | law_attachments | Law attachments | attachment_id, law_id, file_name, file_url |
 | law_embeddings | Law vectors | embedding_id, law_id, chunk_index, embedding |

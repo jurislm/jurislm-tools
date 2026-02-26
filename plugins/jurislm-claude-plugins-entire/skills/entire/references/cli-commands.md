@@ -208,13 +208,16 @@ bun run src/index.ts sync law --info
 **Pipeline Stages** (9-stage, auto import + cleanup):
 1. **DOWNLOAD** - Fetch ChLaw.zip + ChOrder.zip from MOJ API
 2. **UNZIP** - Extract JSON files
-3. **PARSE** - Parse JSON, extract pcode, merge article content, output source.json
-4. **CHUNK** - Text splitting with Metadata Context (no LLM calls)
-5. **EMBED** - Generate embeddings (Ollama bge-m3, 1024 dim)
-6. **ZIP** - Compress output files
-7. **NAS** - Upload to Synology NAS
-8. **IMPORT** - Import to database (laws, law_articles, law_attachments, law_embeddings)
-9. **CLEANUP** - Remove intermediate files (pcode dirs, ChLaw.json, ChOrder.json)
+3. **PARSE** - Parse JSON, extract pcode, merge article content, write `source.json` (includes `law_histories`, `foreword`)
+4. **[DB CHECK]** - Query shared DB; skip pcodes where `laws.content_hash` matches AND embeddings exist
+5. **CHUNK** - Text splitting with Metadata Context (no LLM calls) — only for non-skipped pcodes
+6. **EMBED** - Generate embeddings (Ollama bge-m3, 1024 dim) — only for non-skipped pcodes
+7. **ZIP** - Compress output files
+8. **NAS** - Upload to Synology NAS
+9. **IMPORT** - UPSERT `laws` for **all** pcodes with `source.json`; rebuild articles/attachments if `content_hash` changed; update `law_embeddings` only if embed files exist
+10. **CLEANUP** - Remove intermediate files (pcode dirs, ChLaw.json, ChOrder.json)
+
+> **DB CHECK behavior**: Only pcodes with matching `content_hash` AND existing embeddings are skipped. Amended laws (different hash) always re-trigger CHUNK+EMBED.
 
 ## Taxonomy Commands (taxonomy)
 
