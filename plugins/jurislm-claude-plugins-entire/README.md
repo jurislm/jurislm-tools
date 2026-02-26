@@ -38,7 +38,7 @@ JurisLM 台灣法律 AI 平台（jurislm.com）的 Claude Code 開發 Skill。
 
 ## 相關連結
 
-- [JurisLM Dashboard](https://dashboard.jurislm.com)
+- [JurisLM Dashboard](https://dashboard-entire.jurislm.com)
 - [GitHub Repo](https://github.com/terry90918/entire)
 
 ## 授權

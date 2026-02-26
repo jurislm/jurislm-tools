@@ -111,27 +111,21 @@ Step 5: Taxonomy (independent, no dependencies)
 
 Verify before starting:
 
-1. **Docker services running**:
-   ```bash
-   docker compose -f docker-compose.shared.yml up -d
-   docker compose -f docker-compose.shared.yml ps
-   ```
-
-2. **Ollama available** (for embedding):
+1. **Ollama running** (only supported embedding provider):
    ```bash
    curl -s http://localhost:11434/api/tags | head -1
    ```
 
-3. **Database connection**:
+2. **Database connection** (Hetzner cloud, not local Docker):
    ```bash
    cd entire_cli
    bun run src/index.ts db status --target shared
    ```
 
-4. **Environment variables** (`.env.shared`):
-   - `SHARED_DATABASE_URL`
-   - `OLLAMA_BASE_URL`
-   - `SYNOLOGY_BASE_URL`, `SYNOLOGY_ACCOUNT`, `SYNOLOGY_PASSWORD`
+3. **Environment variables** (`.env.shared`):
+   - `SHARED_DATABASE_URL` — required
+   - `EMBEDDING_PROVIDER=ollama` — only supported provider
+   - `SYNOLOGY_BASE_URL`, `SYNOLOGY_ACCOUNT`, `SYNOLOGY_PASSWORD` — optional NAS
 
 ## Sync Workflow (4 Steps)
 

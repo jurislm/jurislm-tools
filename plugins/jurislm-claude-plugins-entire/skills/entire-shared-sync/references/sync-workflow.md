@@ -71,39 +71,26 @@ Taxonomy:
 
 ## Prerequisites Verification
 
-### 1. Docker Services
+### 1. Shared DB Connection
 
-Start shared services:
+entire_shared_db is hosted on Hetzner cloud (not local Docker). Verify connectivity:
 
 ```bash
-# Start services
-docker compose -f docker-compose.shared.yml up -d
+# Test connection
+psql -h 46.225.58.202 -p 5442 -U postgres -d entire_shared_db -c "SELECT 1"
 
-# Verify running
-docker compose -f docker-compose.shared.yml ps
-# Expected: entire_shared_db (Port 5442), jurislm-tei-shared (Port 8090)
-
-# Check logs if issues
-docker compose -f docker-compose.shared.yml logs entire_shared_db
+# Or via CLI
+cd entire_cli
+bun run src/index.ts db status --target shared
 ```
 
-### 2. Ollama Embedding Service
+### 2. Embedding Service
 
-Verify Ollama is running with bge-m3 model:
+Only Ollama is supported. Verify it is running:
 
 ```bash
-# Check Ollama status
 curl -s http://localhost:11434/api/tags | jq '.models[].name'
-
-# Pull bge-m3 if needed
-ollama pull bge-m3
-
-# Test embedding
-curl -s http://localhost:11434/api/embeddings -d '{
-  "model": "bge-m3",
-  "prompt": "test"
-}' | jq '.embedding | length'
-# Expected: 1024
+# Pull bge-m3 if needed: ollama pull bge-m3
 ```
 
 ### 3. Environment Variables
@@ -114,16 +101,15 @@ Required variables in `.env.shared`:
 # Database
 SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/entire_shared_db
 
-# Embedding
-OLLAMA_BASE_URL=http://localhost:11434
-EMBEDDING_PROVIDER=ollama
+# Embedding (ollama only)
+EMBEDDING_PROVIDER=ollama     # Only option: ollama
+EMBEDDING_URL=                # Defaults to http://localhost:11434
 
-# NAS Upload (Synology)
-NAS_HOST=your-nas-host
-NAS_PORT=22
-NAS_USERNAME=jurislm
-NAS_PASSWORD=your-password
-NAS_BASE_PATH=/volume1/jurislm
+# NAS Upload (Synology) - optional, skipped if not set
+SYNOLOGY_BASE_URL=https://xxx.quickconnect.to:5001
+SYNOLOGY_ACCOUNT=your-account
+SYNOLOGY_PASSWORD=your-password
+SYNOLOGY_UPLOAD_PATH=/home/jurislm-embedding  # Default root path
 ```
 
 ### 4. Database Connection Test
@@ -416,7 +402,7 @@ ORDER BY table_name;
 
 | Table | Expected Count | Notes |
 |-------|----------------|-------|
-| migrations | ~12 | Migration files applied |
+| migrations | ~21 | Migration files applied (migrations-shared/) |
 | categories | 4 | Fixed (051-054) |
 | datasets | ~100+ | Varies by API |
 | filesets | ~1000+ | Varies by API |

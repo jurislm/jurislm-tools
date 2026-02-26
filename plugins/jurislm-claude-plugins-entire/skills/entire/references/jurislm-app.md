@@ -340,9 +340,9 @@ ANTHROPIC_API_KEY=sk-ant-xxx
 OLLAMA_MODEL=ministral-3:latest
 OLLAMA_BASE_URL=http://localhost:11434
 
-# Embedding (ollama = primary, tei = backup)
-EMBEDDING_PROVIDER=ollama           # Options: ollama | tei
-EMBEDDING_URL=http://localhost:11434  # Ollama default
+# Embedding (ollama only)
+EMBEDDING_PROVIDER=ollama           # Only option: ollama
+EMBEDDING_URL=http://localhost:11434
 
 # Observability (Langfuse - optional, tracing disabled if not set)
 LANGFUSE_SECRET_KEY=sk-lf-xxx

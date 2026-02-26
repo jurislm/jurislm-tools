@@ -68,20 +68,13 @@ docker compose ps
 ```
 
 **Required Services**:
-- PostgreSQL (entire_db, port 5433) - healthy
-- Embedding service - required for vector generation:
-  - Ollama (port 11434) if `EMBEDDING_PROVIDER=ollama` (default)
-  - TEI (port 8090) if `EMBEDDING_PROVIDER=tei`
-- Shared database (port 5442) - required for data storage
+- Ollama (port 11434) - required for vector generation (`EMBEDDING_PROVIDER=ollama`)
+- Shared database (port 5442, Hetzner cloud) - required for data storage
 
-**Note**: Text chunking is performed locally using @langchain/textsplitters (no external service required).
+**Note**: Text chunking is performed locally using @langchain/textsplitters (no external service required). entire_db local Docker container is not required for sync.
 
 **Embedding Provider Health Check**:
 ```bash
-# For TEI
-curl -s http://localhost:8090/health | jq
-
-# For Ollama
 curl -s http://localhost:11434/api/tags | jq
 ```
 
@@ -90,7 +83,7 @@ curl -s http://localhost:11434/api/tags | jq
 ### 2. Database Validation
 
 ```bash
-docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "\dt documents_*"
+psql -h 46.225.58.202 -p 5442 -U postgres -d entire_shared_db -c "\dt documents_*"
 ```
 
 **Required Tables** (in entire_shared_db):
@@ -101,7 +94,7 @@ docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "\dt docume
 ### 3. Current Data Status
 
 ```bash
-docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
+psql -h 46.225.58.202 -p 5442 -U postgres -d entire_shared_db -c "
 SELECT 'documents_051' as tbl, COUNT(*) FROM documents_051
 UNION ALL SELECT 'document_embeddings_051', COUNT(*) FROM document_embeddings_051;
 "
@@ -135,15 +128,15 @@ The NAS phase uploads embeddings to Synology NAS (replaced GCS in 2026-01):
 
 **NAS Upload Path**:
 ```
-/home/jurislm-embedding/{category}/{dataset}/{fileset}/embeddings.jsonl.gz
+{SYNOLOGY_UPLOAD_PATH}/{category}/{dataset}/{fileset}/embeddings.jsonl.gz
+# Default: /home/jurislm-embedding/{category}/{dataset}/{fileset}/embeddings.jsonl.gz
 ```
 
 **Behavior**:
 - If `SYNOLOGY_BASE_URL` is not set, NAS upload is skipped
-- Automatic retry with exponential backoff (3 attempts)
-- Creates parent directories automatically
-
-**Backward Compatibility**: The `--mode gcs` option is still accepted as an alias for `--mode nas`.
+- Automatic retry with exponential backoff (3 attempts, 5s interval)
+- Creates parent directories automatically (`create_parents=true`)
+- When EMBED uses NAS cache hit (`nasCache=true`), NAS stage skips re-upload and verifies file still exists via `fileExists()` API
 
 ## Progress Monitoring
 
@@ -198,13 +191,13 @@ Verify final status in `status.json` files:
 
 ```bash
 # Update database statistics
-docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
+psql -h 46.225.58.202 -p 5442 -U postgres -d entire_shared_db -c "
 ANALYZE documents_051;
 ANALYZE document_embeddings_051;
 "
 
 # Verify HNSW index
-docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
+psql -h 46.225.58.202 -p 5442 -U postgres -d entire_shared_db -c "
 SELECT indexname, pg_size_pretty(pg_relation_size(indexname::regclass))
 FROM pg_indexes WHERE tablename = 'document_embeddings_051' AND indexdef LIKE '%hnsw%';
 "
@@ -233,13 +226,7 @@ bun run src/index.ts sync judicial --category 051 --mode download --fileset {FIL
 ### Embedding Failures
 
 ```bash
-# Check embedding provider configuration
-echo $EMBEDDING_PROVIDER  # Should be 'tei' or 'ollama'
-
-# Check TEI service health (if EMBEDDING_PROVIDER=tei)
-curl -s http://localhost:8090/health
-
-# Check Ollama service health (if EMBEDDING_PROVIDER=ollama)
+# Check Ollama service health
 curl -s http://localhost:11434/api/tags
 
 # Start Ollama if not running
@@ -318,13 +305,10 @@ JUDICIAL_USERNAME=your_username
 JUDICIAL_PASSWORD=your_password
 SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/entire_shared_db
 
-# Embedding Provider Configuration (Required)
-# ollama = primary (default), tei = backup
-EMBEDDING_PROVIDER=ollama       # Options: ollama | tei
+# Embedding Provider Configuration
+EMBEDDING_PROVIDER=ollama       # Only option: ollama
 
-# Embedding URL (Optional - has sensible defaults per provider)
-# Ollama default: http://localhost:11434
-# TEI default: http://localhost:8090
+# Embedding URL (Optional, defaults to http://localhost:11434)
 EMBEDDING_URL=http://localhost:11434
 
 # NAS Configuration (Synology) - Optional
@@ -332,27 +316,23 @@ EMBEDDING_URL=http://localhost:11434
 SYNOLOGY_BASE_URL=https://xxx.quickconnect.to:5001
 SYNOLOGY_ACCOUNT=your_account
 SYNOLOGY_PASSWORD=your_password
+SYNOLOGY_UPLOAD_PATH=/home/jurislm-embedding  # Default NAS root path
 ```
 
-### Embedding Provider Selection
+### Embedding Provider
+
+Only Ollama is supported:
 
 | Provider | Default URL | Batch Size | Use Case |
 |----------|-------------|------------|----------|
-| `ollama` | http://localhost:11434 | 16 | **Primary** - Fast startup, recommended |
-| `tei` | http://localhost:8090 | 32 | Backup - GPU recommended |
+| `ollama` | http://localhost:11434 | 16 | **Default** - only supported provider |
 
-**Ollama** (Primary - Recommended):
-- Fast startup (seconds)
-- Default provider for daily development
+**Ollama**:
+- Works on any platform
 - BAAI/bge-m3 model (1024 dimensions)
-- Smaller batch size (16) for quality preservation
+- Correctly supports up to 8192 token context window
 
-**TEI** (Backup - Text Embeddings Inference):
-- Better for production with GPU acceleration
-- Longer cold start (~7 min on CPU)
-- Higher throughput with larger batch sizes
-
-**Note**: Context generation now uses structured JSON metadata (no LLM calls), independent of embedding provider.
+**Note**: Context generation uses structured JSON metadata (no LLM calls), independent of embedding provider.
 
 ## Disk Space Management
 

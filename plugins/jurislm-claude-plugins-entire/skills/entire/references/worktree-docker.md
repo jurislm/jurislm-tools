@@ -108,7 +108,7 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:6432/entire_db
 # Shared database (same for all worktrees)
 SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/entire_shared_db
 
-# Embedding provider (ollama = default, tei = backup)
+# Embedding provider (ollama only)
 EMBEDDING_PROVIDER=ollama
 EMBEDDING_URL=http://localhost:11434
 ```

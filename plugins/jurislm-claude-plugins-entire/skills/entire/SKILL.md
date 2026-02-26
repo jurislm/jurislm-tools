@@ -7,9 +7,9 @@ description: >-
   "Unified Agent", "SKILL.md", "tool-registry", "agentic loop", "runUnifiedAgent",
   "shared database", "entire_shared_db",
   "entire_dashboard", "dashboard", "Hono", "Vite 7", "postgres.js", "admin dashboard",
-  "pg_class.reltuples", "idleTimeout", "dashboard.jurislm.com",
+  "pg_class.reltuples", "idleTimeout", "dashboard-entire.jurislm.com",
   "Turborepo", "bun workspace", "packages/@entire", "Langfuse",
-  "TEI embedding", "Ollama", "worktree docker", "pcode", "categories 051-054",
+  "Ollama", "worktree docker", "pcode", "categories 051-054",
   "constitution rules", "Drizzle ORM", "SSE streaming", "legal RAG",
   "metadata-context", "chunk strategy", "hybrid search", "RRF fusion",
   "bge-m3 embedding", "NAS upload", "Synology", "pipeline performance",
@@ -49,14 +49,11 @@ Taiwan legal AI platform using Bun + Turborepo Monorepo architecture with 4 sub-
 
 ### Shared Services (docker-compose.shared.yml)
 
-```bash
-docker compose -f docker-compose.shared.yml up -d
-```
+**entire_shared_db** is hosted on Hetzner cloud (46.225.58.202:5442) — no local Docker needed.
 
 | Service | Port | Purpose |
 |---------|------|---------|
-| entire_shared_db | 5442 | PostgreSQL (Judicial + Law + Taxonomy, 25 tables) |
-| jurislm-tei-shared | 8090 | TEI Embedding (backup, BAAI/bge-m3) |
+| entire_shared_db | 5442 | PostgreSQL (Judicial + Law + Taxonomy, 25 tables) — Hetzner cloud |
 
 ### Shared Packages (packages/)
 
@@ -69,7 +66,7 @@ docker compose -f docker-compose.shared.yml up -d
 | @entire/logging | Structured logging system |
 | @entire/api-types | API request/response types |
 | @entire/auth | Authentication module (Judicial API Token) |
-| @entire/embedding | Embedding factory (TEI/Ollama) |
+| @entire/embedding | Embedding factory (Ollama) |
 | @entire/errors | Custom error types |
 | @entire/llm-config | LLM model IDs, providers, validation utilities |
 | @entire/eslint-config | Shared ESLint configuration |
@@ -150,8 +147,8 @@ Hono + React 19 + Vite 7 + Tailwind CSS v4 + postgres.js:
 
 | Environment | URL | Coolify UUID | Branch |
 |-------------|-----|-------------|--------|
-| Production | https://dashboard.jurislm.com | x0ck84okoggcoswcsoc8cggk | main |
-| Development | https://dashboard-dev.jurislm.com | h48okgk0o44wgs4wo8cwgkkg | develop |
+| Production | https://dashboard-entire.jurislm.com | x0ck84okoggcoswcsoc8cggk | main |
+| Development | https://dashboard-entire-dev.jurislm.com | h48okgk0o44wgs4wo8cwgkkg | develop |
 
 **Key Features**:
 - Shared DB statistics (document counts, embedding coverage via `pg_class.reltuples`)
@@ -201,8 +198,8 @@ Two databases with separate migrations:
 
 | Database | Port | Tables | Migrations |
 |----------|------|--------|------------|
-| entire_db | 5433 | Auth + NextAuth + Chat + Knowledge + Contract + Case | `migrations/` (77 files) |
-| entire_shared_db | 5442 | Judicial + Law + Taxonomy (25 tables) | `migrations-shared/` (15 files) |
+| entire_db | 5433 | Auth + NextAuth + Chat + Knowledge + Contract + Case | `migrations/` (83 files) |
+| entire_shared_db | 5442 | Judicial + Law + Taxonomy (25 tables) | `migrations-shared/` (21 files) |
 
 **Local Database Tables**:
 - Auth: users, accounts, sessions, verification_tokens
@@ -279,8 +276,7 @@ Extended Thinking allows the model to work through complex legal analysis step-b
 
 | Provider | Default URL | Use Case |
 |----------|-------------|----------|
-| `ollama` | localhost:11434 | **Primary** - Fast startup |
-| `tei` | localhost:8090 | Backup - GPU recommended |
+| `ollama` | localhost:11434 | **Default** - only supported provider |
 
 **Model**: BAAI/bge-m3 (1024 dimensions)
 

@@ -141,6 +141,11 @@ bun run src/index.ts sync judicial --category 051 --info
 | `--info` | Verbose output | false |
 | `--categories` | Download and display all categories | false |
 
+**`--force` 注意事項**：
+- `--force` 會跳過 DB checker（DB 已有完整資料時仍重新執行）
+- NAS skip 優化**不受** `--force` 影響——若 EMBED 的 `nasCache=true`，NAS 階段仍會跳過（符合 EMBED 本身的一致性語義）
+- 若需強制重新上傳 NAS，需手動清除 status.json 中 EMBED 的 `nasCache` 欄位
+
 **Chunk Strategy** (Metadata Context):
 - Only strategy: `metadata-context`
 - Uses structured JSON metadata for context prefix (no LLM calls)
@@ -344,10 +349,9 @@ SHARED_DATABASE_URL=postgresql://postgres:<password>@46.225.58.202:5442/entire_s
 JUDICIAL_USERNAME=your_username
 JUDICIAL_PASSWORD=your_password
 
-# Embedding Provider (ollama = primary, tei = backup)
-EMBEDDING_PROVIDER=ollama           # Options: ollama | mlx | tei
+# Embedding Provider (ollama only)
+EMBEDDING_PROVIDER=ollama           # Only option: ollama
 # Ollama default URL: http://localhost:11434
-# TEI default URL: http://localhost:8090
 ```
 
 ### Optional
@@ -357,10 +361,9 @@ EMBEDDING_PROVIDER=ollama           # Options: ollama | mlx | tei
 SYNOLOGY_BASE_URL=https://your-nas.synology.me:5001
 SYNOLOGY_ACCOUNT=your-account
 SYNOLOGY_PASSWORD=your-password
+SYNOLOGY_UPLOAD_PATH=/home/jurislm-embedding  # NAS 根目錄（可自訂）
 
-# Embedding URL (optional, has sensible defaults)
-# Ollama default: http://localhost:11434
-# TEI default: http://localhost:8090
+# Embedding URL (optional, defaults to http://localhost:11434)
 EMBEDDING_URL=http://localhost:11434
 ```
 
@@ -398,7 +401,7 @@ entire_cli/
 │   │   ├── phase.ts         # Phase definitions
 │   │   ├── pipeline/         # Pipeline orchestrator
 │   │   │   └── sync-pipeline.ts
-│   │   └── embedding-providers/  # Ollama/MLX/TEI providers
+│   │   └── embedding-providers/  # Ollama provider
 │   └── adapters/
 │       ├── db/              # Database adapters
 │       └── worker/          # Worker adapters (9 phases)
@@ -431,18 +434,16 @@ docker exec entire_db psql -U postgres -d entire_db -c "\dt"
 ### Full Data Sync
 
 ```bash
-# 1. Start shared services
-docker compose -f docker-compose.shared.yml up -d
-
-# 2. Sync judicial data (auto DB upload + cleanup)
+# entire_shared_db is on Hetzner cloud — no local Docker needed
+# 1. Sync judicial data (auto DB upload + cleanup)
 cd entire_cli
 bun run src/index.ts sync judicial
 
-# 3. Sync law data (auto import + cleanup)
+# 2. Sync law data (auto import + cleanup)
 bun run src/index.ts sync law
 
-# 4. Verify counts
-docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
+# 3. Verify counts
+psql -h 46.225.58.202 -p 5442 -U postgres -d entire_shared_db -c "
 SELECT 'documents_051' as tbl, COUNT(*) FROM documents_051
 UNION ALL SELECT 'laws', COUNT(*) FROM laws;
 "
