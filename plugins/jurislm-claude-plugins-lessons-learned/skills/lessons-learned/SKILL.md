@@ -5,7 +5,7 @@ description: This skill should be used when encountering bugs, debugging issues,
 
 # 跨專案開發經驗模式庫
 
-從實際踩坑中提煉的 68 個關鍵教訓與改進方案，按主題分類。每個模式包含問題描述、根因分析、正確解法。
+從實際踩坑中提煉的 69 個關鍵教訓與改進方案，按主題分類。每個模式包含問題描述、根因分析、正確解法。
 
 ---
 
@@ -1183,3 +1183,53 @@ if (config.STAGING === "true") {
 3. 搜尋引擎防護（robots.txt + X-Robots-Tag）和認證（Basic Auth）是兩個獨立的防護層，不可省略
 
 > 來源：jurislm dashboard staging 防護 — 對齊 lawyer 三層防護模式（2026-02-10）
+
+### 模式 69：Claude Code Action CI Permission Mode — 工具權限必須明確授權
+
+**問題**：`claude-code-action@v1.0.70` 在 GitHub Actions 中，Claude 嘗試使用 `Write` 建立 review 檔案、`Bash` 執行 `gh pr comment` 時被擋住，`permission_denials_count: 4`。原本 PR #158 用 `code-review@claude-code-plugins` plugin 可以正常留言，升級版本後失效。
+
+**根本原因**：Claude Code 在 CI（非互動式）環境有 **permission mode** 機制：
+
+| 工具 | 預設權限 | 說明 |
+|------|---------|------|
+| `Read`, `Edit`, `Glob`, `Grep` | ✅ 允許 | 檔案讀取與編輯 |
+| `Write` | ❌ 需核准 | 建立新檔案（注意：和 `Edit` 不同） |
+| `Bash(*)` | ❌ 需核准 | 執行命令 |
+| Git（唯讀） | ✅ 允許 | `git log`, `git diff` 等 |
+| Comment MCP tools | ✅ 允許 | GitHub 留言操作（僅 tag mode） |
+
+CI 環境無人可互動核准 → 未授權的工具被自動拒絕。
+
+**官方解法**（`claude_args` 的 `--allowedTools`）：
+```yaml
+- uses: anthropics/claude-code-action@v1.0.70
+  with:
+    claude_args: '--allowedTools "Bash(gh:*),Write"'
+```
+
+**替代方式**（`settings` input）：
+```yaml
+settings: |
+  {
+    "permissions": {
+      "allow": ["Bash(gh:*)", "Write"]
+    }
+  }
+```
+
+**為什麼 `code-review@claude-code-plugins` 失效**：
+1. Plugin 內部用 `gh pr comment --body "## Review\n### ..."` 發布留言
+2. `\n#` 模式被 Claude Code 新版 bash 安全過濾器攔截
+3. 即使加了 `--allowedTools "Bash(gh:*)"`，plugin 的 bash 命令格式仍被安全過濾器阻擋
+
+**安全最佳實踐**：
+- `Bash(gh:*)` 比 `Bash` 更安全 — 只授權 `gh` 開頭的命令
+- `Bash(npm:*)` 只授權 `npm` 命令
+- 避免使用 `Bash`（無限制）除非確實需要
+
+**錯誤排查方式**：
+1. 開啟 `show_full_output: true` 查看完整 Claude 執行日誌
+2. 搜尋 `permission_denials_count` 確認是否有被拒工具
+3. 查看 Action run log 的 `SDK options` 確認 `allowedTools` 是否正確傳入
+
+> 來源：jurislm PR #195 Claude Code Review 除錯，20+ 次 workflow 修改後找到官方文件解法（2026-03-12）
