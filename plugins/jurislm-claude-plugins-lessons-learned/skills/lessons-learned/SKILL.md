@@ -5,7 +5,7 @@ description: This skill should be used when encountering bugs, debugging issues,
 
 # 跨專案開發經驗模式庫
 
-從實際踩坑中提煉的 69 個關鍵教訓與改進方案，按主題分類。每個模式包含問題描述、根因分析、正確解法。
+從實際踩坑中提煉的 70 個關鍵教訓與改進方案，按主題分類。每個模式包含問題描述、根因分析、正確解法。
 
 ---
 
@@ -1233,3 +1233,27 @@ settings: |
 3. 查看 Action run log 的 `SDK options` 確認 `allowedTools` 是否正確傳入
 
 > 來源：jurislm PR #195 Claude Code Review 除錯，20+ 次 workflow 修改後找到官方文件解法（2026-03-12）
+
+### 模式 70：Release Please v4 — 簡單模式 vs Manifest 模式的版本重置陷阱
+
+**問題**：Release Please PR 顯示 `release 1.0.0`，但現有 git tag 已是 `v3.0.0`。版本號無故從 1.0.0 重新開始。
+
+**根本原因**：在 workflow 中直接設定 `release-type: node`（簡單模式），Release Please v4 會從 `package.json` 的 `name` 欄位衍生 **component name**（如 `jurislm`），然後搜尋 `{component}-v*` 格式的 git tag（如 `jurislm-v3.0.0`）。但實際 tag 是 `v3.0.0`（無前綴）→ 搜尋不到 → 版本從 1.0.0 重新開始。
+
+| 模式 | 配置方式 | tag 搜尋格式 | 風險 |
+|------|---------|-------------|------|
+| 簡單模式 | `release-type: node` in workflow | `{package.json.name}-v*` | 找不到現有 tag → 版本重置 |
+| Manifest 模式 | config + manifest 檔案 | 依 `include-component-in-tag` 設定 | 可控 |
+
+**正確做法**：使用 Manifest 模式（3 個檔案）：
+
+1. `.github/workflows/release.yml` — **不要**加 `release-type`，只設 `token`
+2. `release-please-config.json` — `"include-component-in-tag": false` 讓 tag 格式為 `v*`
+3. `.release-please-manifest.json` — 手動填入當前版本（如 `{ ".": "3.0.0" }`）
+
+**教訓**：
+1. Release Please 簡單模式看似方便，但 component name 推導行為是隱式的且難以預測
+2. `include-component-in-tag: false` 對單一套件專案至關重要 — 避免 tag 前綴不匹配
+3. 初次設定 manifest 時，版本號必須與最新 git tag 一致，否則 Release Please 會產生錯誤的版本跳躍
+
+> 來源：jurislm PR #198 Release Please 版本重置，改用 manifest 模式修正（2026-03-13）
