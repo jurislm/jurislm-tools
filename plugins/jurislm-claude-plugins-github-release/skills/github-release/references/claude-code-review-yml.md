@@ -33,18 +33,18 @@ jobs:
           fetch-depth: 0
 
       - name: Run Claude Code Review
-        id: claude-review
         uses: anthropics/claude-code-action@v1.0.70
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: '--allowedTools "Bash(gh:*),Write"'
           prompt: |
             You are a code reviewer. Review the changes in PR #${{ github.event.pull_request.number }}.
 
             1. Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff
             2. Analyze the changes
-            3. Write your review to /tmp/review.md using the Write tool
+            3. Write your review to the file "review.md" using the Write tool
 
-            The review must be in Traditional Chinese (繁體中文) with this format:
+            The review must be in Traditional Chinese with this format:
 
             ## Code Review
 
@@ -55,58 +55,56 @@ jobs:
             (what's good about these changes)
 
             ### 問題與建議
-            (issues with file:line references, or "無" if none)
+            (issues with file:line references, or 無 if none)
 
             ### 結論
             (can merge / needs changes)
 
-            IMPORTANT: You MUST write the review to /tmp/review.md using the Write tool. Do not try to post it yourself.
-
-      - name: Post Review Comment
-        if: always() && hashFiles('/tmp/review.md') != ''
-        run: gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/review.md
-        env:
-          GH_TOKEN: ${{ github.token }}
+            After writing review.md, post it as a PR comment:
+            gh pr comment ${{ github.event.pull_request.number }} --body-file review.md
 ```
 
-## 關鍵設計說明
+## 關鍵配置說明
 
-### 兩步驟架構：Claude 寫檔、Actions 發留言
+### `claude_args: '--allowedTools "Bash(gh:*),Write"'`
 
-**這是最關鍵的設計。** 不讓 Claude 自己執行 `gh pr comment`，改為：
+**這是最關鍵的配置。** Claude Code 在 CI 環境中有 permission mode 機制：
 
-1. Claude 用 `Write` 工具把 review 寫到 `/tmp/review.md`
-2. 獨立的 GitHub Actions step 用 `github.token` 發留言
+| 工具 | 預設權限 | 說明 |
+|------|---------|------|
+| `Read`, `Edit`, `Glob`, `Grep` | ✅ 允許 | 檔案讀取與編輯 |
+| `Write` | ❌ 需核准 | 建立新檔案 |
+| `Bash(*)` | ❌ 需核准 | 執行命令 |
+| Git（唯讀） | ✅ 允許 | `git log`, `git diff` 等 |
 
-**為什麼這樣做：**
+CI 環境無人互動核准 → 未授權的工具會被拒絕（`permission_denials_count > 0`）。
 
-| 方法 | 問題 |
-|------|------|
-| Claude 執行 `gh pr comment --body "## Review\n### ..."` | `\n#` 模式被 bash 安全過濾器攔截 |
-| Claude 執行 `gh pr comment --body-file review.md` | `Bash(gh:*)` 需要 `claude_args` 授權，且 Claude 用的是 temp sandbox，`review.md` 路徑不穩定 |
-| **Claude 寫 `/tmp/review.md`，Actions step 發留言** | ✅ 完全繞過 bash 安全過濾器問題 |
+`--allowedTools` 明確授權：
+- `Write`：讓 Claude 可以建立 `review.md` 檔案
+- `Bash(gh:*)`：只允許 `gh` 開頭的命令（安全限制），用於 `gh pr comment --body-file review.md`
 
 ### 為什麼不用 `code-review@claude-code-plugins`
 
 官方 `code-review` plugin 在 `@v1.0.70+` 版本因以下原因失效：
-1. **Bash 安全過濾器**：plugin 內部用 `gh pr comment --body "## Review\n### ..."` 發布留言，`\n#` 模式被攔截
+1. **Bash 安全過濾器**：plugin 內部用 `gh pr comment --body "## Review\n### ..."` 發布留言，`\n#` 模式被 Claude Code 的 bash 安全過濾器攔截
 2. **Permission mode**：plugin 的 bash 命令需要互動核准，CI 無法核准
+
+本方案改用 `--body-file review.md`，由 Claude 先寫檔再用 file 發留言，完全避開 `\n#` 問題。
 
 ### 其他配置
 
-- **`pull-requests: write`**：`Post Review Comment` step 的 `gh pr comment` 需要此權限
+- **`pull-requests: write`**：GitHub Actions token 需要寫入權限才能發 PR 留言
 - **`issues: read`**（非 `write`）：review 只需讀取，不需建立 issue
 - **`fetch-depth: 0`**：完整 git history，讓 `gh pr diff` 能正確取得 diff
 - **版本固定 `@v1.0.70`**：`@v1` 浮動 tag 可能因版本更新導致 401 錯誤
-- **`if: always() && hashFiles('/tmp/review.md') != ''`**：即使 Claude step 失敗仍嘗試發留言，且確認檔案存在才執行
-- **`GH_TOKEN: ${{ github.token }}`**：使用 GitHub 內建 token，不需額外 secret
+- **`CLAUDE_CODE_OAUTH_TOKEN`**：與 claude.yml 共用同一個 secret
 
 ## 自訂指引
 
 - **路徑篩選**：加入 `paths:` 可限制只在特定檔案變更時觸發（如 `src/**/*.ts`）
 - **Review 格式**：修改 prompt 中的格式模板即可自訂 review 輸出
-- **語言**：prompt 中指定 `Traditional Chinese (繁體中文)`，可改為其他語言
+- **語言**：prompt 中指定 `Traditional Chinese`，可改為其他語言
 
 ## 來源
 
-`entire/.github/workflows/claude-code-review.yml`（2026-03-12 驗證通過）
+`jurislm PR #195 Claude Code Review 除錯`（2026-03-12 驗證通過）

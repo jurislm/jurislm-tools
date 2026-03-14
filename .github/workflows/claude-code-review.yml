@@ -20,18 +20,18 @@ jobs:
           fetch-depth: 0
 
       - name: Run Claude Code Review
-        id: claude-review
         uses: anthropics/claude-code-action@v1.0.70
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: '--allowedTools "Bash(gh:*),Write"'
           prompt: |
             You are a code reviewer. Review the changes in PR #${{ github.event.pull_request.number }}.
 
             1. Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff
             2. Analyze the changes
-            3. Write your review to /tmp/review.md using the Write tool
+            3. Write your review to the file "review.md" using the Write tool
 
-            The review must be in Traditional Chinese (繁體中文) with this format:
+            The review must be in Traditional Chinese with this format:
 
             ## Code Review
 
@@ -42,15 +42,10 @@ jobs:
             (what's good about these changes)
 
             ### 問題與建議
-            (issues with file:line references, or "無" if none)
+            (issues with file:line references, or 無 if none)
 
             ### 結論
             (can merge / needs changes)
 
-            IMPORTANT: You MUST write the review to /tmp/review.md using the Write tool. Do not try to post it yourself.
-
-      - name: Post Review Comment
-        if: always() && hashFiles('/tmp/review.md') != ''
-        run: gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/review.md
-        env:
-          GH_TOKEN: ${{ github.token }}
+            After writing review.md, post it as a PR comment:
+            gh pr comment ${{ github.event.pull_request.number }} --body-file review.md
