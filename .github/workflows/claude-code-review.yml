@@ -3,42 +3,54 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
-      issues: write
+      issues: read
       id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Run Claude Code Review
         id: claude-review
-        uses: anthropics/claude-code-action@v1
+        uses: anthropics/claude-code-action@v1.0.70
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
+          prompt: |
+            You are a code reviewer. Review the changes in PR #${{ github.event.pull_request.number }}.
 
+            1. Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff
+            2. Analyze the changes
+            3. Write your review to /tmp/review.md using the Write tool
+
+            The review must be in Traditional Chinese (繁體中文) with this format:
+
+            ## Code Review
+
+            ### 變更摘要
+            (bullet points)
+
+            ### 優點
+            (what's good about these changes)
+
+            ### 問題與建議
+            (issues with file:line references, or "無" if none)
+
+            ### 結論
+            (can merge / needs changes)
+
+            IMPORTANT: You MUST write the review to /tmp/review.md using the Write tool. Do not try to post it yourself.
+
+      - name: Post Review Comment
+        if: always() && hashFiles('/tmp/review.md') != ''
+        run: gh pr comment ${{ github.event.pull_request.number }} --body-file /tmp/review.md
+        env:
+          GH_TOKEN: ${{ github.token }}
