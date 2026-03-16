@@ -1,7 +1,7 @@
 {
   "name": "jurislm-claude-plugins-lessons-learned",
-  "description": "跨專案開發經驗模式庫，涵蓋診斷除錯、測試策略、基礎設施、安全防護、架構重構、雲端遷移、前端工具鏈、Docker 部署、資料匯入與 Migration 的關鍵教訓",
-  "version": "1.10.0",
+  "description": "跨專案開發經驗模式庫，具備動態學習與成長機制（Confidence Scoring + 品質閘門 + 模式演化），涵蓋診斷除錯、測試策略、基礎設施、安全防護、架構重構、雲端遷移、前端工具鏈、Docker 部署、資料匯入的 70 個經驗模式",
+  "version": "2.0.0",
   "author": {
     "name": "Terry Chen"
   }
