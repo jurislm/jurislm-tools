@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "tw-stock-data": {
+      "type": "stdio",
+      "command": "python3",
+      "args": ["${pluginDir}/mcp-server/tw_stock_server.py"],
+      "env": {}
+    }
+  }
+}
