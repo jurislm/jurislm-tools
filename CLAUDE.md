@@ -85,6 +85,7 @@ plugins/
 | jurislm-claude-plugins-coolify | 1.3.3 | MCP + Skill | jurislm-coolify-mcp（35 工具）+ coolify skill |
 | jurislm-claude-plugins-lawyer | 1.2.1 | Skill Only | Payload CMS + 部署 + E2E 測試指南 |
 | jurislm-claude-plugins-stock | 1.1.1 | Skill Only | TWSE/Yahoo API + 投資組合 + E2E 測試 |
+| jurislm-claude-plugins-stock-expert | 1.3.0 | MCP + Skill | 台股投資專家（5 skills + 6 MCP 工具）：個股分析、每日決策、投資策略、組合管理、市場資訊 |
 | jurislm-claude-plugins-entire | 1.2.0 | Skill Only | Unified Agent + CLI + Dashboard + 資料同步 + 法律分類（3 skills） |
 | jurislm-claude-plugins-github-release | 1.2.0 | Skill Only | Release Please + Claude Code Review + Release Notes + Husky pre-commit |
 | jurislm-claude-plugins-lessons-learned | 1.8.0 | Skill Only | 68 經驗模式（持續更新）：診斷除錯、測試、基礎設施、安全、架構、業務邏輯、Git 工作流、雲端遷移、前端工具鏈、Docker 部署、資料匯入 |
