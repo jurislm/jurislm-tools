@@ -3,7 +3,7 @@
     "tw-stock-data": {
       "type": "stdio",
       "command": "python3",
-      "args": ["${BASH_SOURCE%/*}/mcp-server/tw_stock_server.py"],
+      "args": ["${pluginDir}/mcp-server/tw_stock_server.py"],
       "env": {}
     }
   }
