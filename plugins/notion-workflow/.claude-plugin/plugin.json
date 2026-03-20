@@ -1,0 +1,9 @@
+{
+  "name": "notion-workflow",
+  "version": "1.1.1",
+  "description": "Terry Chen 的 Notion Workspace 工作流程管理 plugin，涵蓋 MEMORY 同步、習慣追蹤、任務記錄與每日日誌",
+  "author": {
+    "name": "Terry Chen"
+  },
+  "keywords": ["notion", "workflow", "habits", "daily-log", "memory", "productivity"]
+}

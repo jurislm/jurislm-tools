@@ -5,7 +5,7 @@ description: >
   「該不該換股」、「風險管理」、「停利停損」、「持股比例」、「分散投資」、「再平衡」時觸發。
   協助使用者檢視、優化和管理投資組合。
 metadata:
-  version: "1.3.0"
+  version: "4.0.0"
 ---
 
 # 投資組合管理
@@ -22,9 +22,44 @@ metadata:
 
 1. **自動讀取交易紀錄**：使用 `Glob` 搜尋 `Stock/**/*.md`，讀取該使用者所有持股的交易紀錄
 2. 使用 **Bash + Python** 計算每檔股票的持倉張數、成本、損益
-3. 逐一使用 WebSearch 查詢各持股的最新股價
-4. 評估各持股的目前體質
-5. 分析整體組合的配置是否合理
+3. **使用 MCP 工具批次查詢所有持股最新數據**（優先於 WebSearch）：
+   - `get_stock_quote`：一次取得所有持股的即時股價、今日漲跌、成交量
+   - `get_financials`：取得各持股財務健康度（EPS、ROE、負債比）
+   - `calculate_technical_indicators`：取得各持股的技術指標（KD、MACD、RSI、布林通道），替代之前需要 Python 計算的步驟
+   - `get_monthly_revenue`：取得各持股月營收（MOPS），檢視持股基本面健康度
+   - `get_dividend_calendar`：取得近期除權息行事曆，提醒即將到來的除息機會
+   - `get_institutional_trading`：取得各持股近期法人動向
+   - `get_commodity_quote`：若持有原物料 ETF（如 00635U 黃金、00738U 白銀），取得追蹤標的即時報價以比對 ETF 溢價/折價
+   - `get_institutional_daily`：取得當日三大法人整體買賣超，掌握市場資金面
+   - `get_stock_history`：取得各持股的歷史 K 線，用於技術面趨勢判斷（均線排列、支撐壓力位）
+   - `get_sector_performance`：取得各持股所在類股的漲跌排行，評估組合的產業輪動機會
+   - `compare_stocks`：將所有持股代號一次傳入，取得橫向比較數據（PE、ROE、殖利率、營收成長），快速辨識組合中的強弱股
+   - `get_twse_market_summary`：取得大盤即時概況，作為判斷組合調整方向的市場背景
+   - `get_margin_trading`：取得融資融券餘額變化，評估當前市場是否過度槓桿，輔助決定現金水位
+   - `get_us_market_quote`：取得美股指數即時報價（`["SP500", "NASDAQ", "費半", "VIX"]`），評估國際市場風險
+4. 使用 WebSearch 補充個股最新新聞與重大消息
+5. 評估各持股的目前體質
+6. 分析整體組合的配置是否合理
+
+## 資料來源優先順序
+
+| 資料類型 | 優先工具 | 補充工具 |
+|----------|----------|----------|
+| 各持股現價（計算損益用） | `get_stock_quote`（MCP） | WebSearch |
+| 財務健康度 | `get_financials`（MCP） | WebSearch |
+| 技術指標（KD、MACD、RSI、布林通道） | `calculate_technical_indicators`（MCP） | — |
+| 各持股月營收（基本面追蹤） | `get_monthly_revenue`（MCP） | WebSearch |
+| 近期除權息提醒 | `get_dividend_calendar`（MCP） | — |
+| 法人持股動向 | `get_institutional_trading`（MCP） | WebSearch |
+| 三大法人每日買賣超 | `get_institutional_daily`（MCP） | WebSearch |
+| 原物料 ETF 追蹤標的報價 | `get_commodity_quote`（MCP） | WebSearch |
+| 各持股歷史 K 線（技術面趨勢） | `get_stock_history`（MCP） | — |
+| 持股所在類股漲跌排行 | `get_sector_performance`（MCP） | — |
+| 持股橫向比較（PE、ROE、殖利率） | `compare_stocks`（MCP） | — |
+| 大盤即時概況（市場背景） | `get_twse_market_summary`（MCP） | WebSearch |
+| 融資融券餘額（市場槓桿水位） | `get_margin_trading`（MCP） | WebSearch |
+| 美股指數、VIX（國際風險） | `get_us_market_quote`（MCP） | WebSearch |
+| 個股最新新聞 | WebSearch | — |
 
 **交易紀錄資料來源**：
 
@@ -158,6 +193,8 @@ def analyze_stock(trades, current_price, stock_name):
 
 ### 3. 資產配置建議
 
+> 📌 **商品 ETF 倉位上限**：商品 ETF（00xxxU 系列）建議合計倉位不超過投資組合的 15%，且持有商品 ETF 時必須搭配 black-swan-radar 週報監控。
+
 根據使用者的投資目標和風險承受度建議配置：
 
 **積極型（承受較高風險）**：
@@ -202,6 +239,15 @@ def analyze_stock(trades, current_price, stock_name):
 5. **具體建議**：哪些批次該賣出、哪些該持有、哪些該加碼
 6. **行動計畫**：按優先順序列出建議的操作步驟（先處理獲利最高和虧損最深的批次）
 
+## 與其他 Skill 的關係
+
+| 新增 Skill | 本 Skill 如何整合 |
+|------------|------------------|
+| **daily-decision** | 每日決策是組合管理的行動面延伸，收盤後的行動清單會直接參考本 skill 的損益資料 |
+| **trade-logger** | 完成買賣操作後，提醒使用者用 trade-logger 記錄交易，保持紀錄最新 |
+| **risk-monitor** | risk-monitor 是組合管理的自動化預警版，可搭配 scheduled task 定期執行 |
+| **sector-analysis** | 檢視組合產業集中度時，可用 sector-analysis 深入分析 |
+
 ## 注意事項
 
 - 如果使用者沒有提供持股明細，先嘗試用 `Glob` 搜尋 `Stock/**/*.md` 自動讀取
@@ -212,3 +258,25 @@ def analyze_stock(trades, current_price, stock_name):
 - 強調投資組合管理是持續的過程，需要定期檢視
 - **逐筆批次分析是最重要的功能**，使用者想知道「我某天買的那一筆現在賺了多少」
 - **使用 Bash + Python 精確計算，禁止手算**
+
+## 投資組合健康度檢查清單
+
+定期檢視投資組合時，確認以下面向：
+
+- [ ] **分散度**：單一個股不超過總投資金額的 30%
+- [ ] **產業分散**：不超過 50% 資金集中在同一產業
+- [ ] **損益驗算**：FIFO 計算結果經 Python 驗證，成本 + 損益 = 市值
+- [ ] **停損紀律**：所有虧損超過 -10% 的批次已標記並給出建議
+- [ ] **現金部位**：保留適當現金比例（建議 10-30%）以應對機會或風險
+- [ ] **風險報酬比**：整體投資組合的預期報酬合理（非全壓高風險標的）
+- [ ] **更新頻率**：交易紀錄與實際持股一致，無遺漏
+
+### 投資組合指標追蹤
+
+| 指標 | 定義 | 健康範圍 |
+|------|------|----------|
+| 勝率 | 已實現獲利筆數 / 總已實現筆數 | ≥ 50% |
+| 盈虧比 | 平均獲利金額 / 平均虧損金額 | ≥ 1.5 |
+| 最大單筆虧損 | 已實現中最大虧損金額 | ≤ 總資金 5% |
+| 持股集中度 | 最大單一持股佔比 | ≤ 30% |
+| 平均持有天數 | 所有未平倉批次的平均持有天數 | 依策略而定 |

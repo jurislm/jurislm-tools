@@ -5,7 +5,7 @@ description: >
   「存股推薦」、「定期定額」、「景氣循環」、「大盤走勢判斷」、「投資策略」、
   「該怎麼佈局」、「進場時機」時觸發。提供基於市場狀況的選股策略與進出場時機建議。
 metadata:
-  version: "1.3.0"
+  version: "4.0.0"
 ---
 
 # 台股投資策略建議
@@ -16,9 +16,45 @@ metadata:
 
 ## 工作流程
 
-1. 使用 WebSearch 搜尋台股大盤最新走勢、景氣指標、國際市場動態
-2. 判斷目前市場階段（多頭/空頭/盤整）
-3. 根據市場階段與使用者需求，提供對應的投資策略
+1. **使用 MCP 工具取得結構化數據**（優先）：
+   - `get_twse_market_summary`：取得大盤指數、量能現況
+   - `get_financials`：若使用者詢問特定股票，取得財務指標（PE、PB、ROE、殖利率）
+   - `compare_stocks`：若需比較多檔股票優劣，一次取得比較數據
+   - `get_margin_trading`：取得融資融券餘額變化，評估市場資金面與散戶槓桿水位
+   - `get_institutional_daily`：取得三大法人每日買賣超，掌握法人資金動向
+   - `get_futures_oi`：取得期貨未平倉籌碼面，評估市場方向信號
+   - `get_sector_performance`：取得類股漲跌排行，評估產業輪動機會
+   - `get_exchange_rate`：取得台幣匯率走勢，評估國際資本流向
+   - `get_monthly_revenue`：若篩選候選股票，取得月營收驗證個股體質
+   - `get_us_market_quote`：取得美股指數即時報價，判斷國際情勢
+   - `get_commodity_quote`：取得原物料與美元指數報價，評估國際資金流向
+   - `get_stock_quote`：若使用者提及特定候選股票，取得即時報價與基本面快照
+   - `get_stock_history`：取得候選股票或大盤的歷史 K 線，確認技術面趨勢與支撐壓力
+   - `get_institutional_trading`：若推薦特定個股，查詢該股的法人持股與近期買賣超，確認法人態度
+2. 使用 WebSearch 補充景氣指標（景氣燈號）、產業趨勢、政策消息等 MCP 無法涵蓋的資訊
+3. 判斷目前市場階段（多頭/空頭/盤整）
+4. 根據市場階段與使用者需求，提供對應的投資策略
+
+## 資料來源優先順序
+
+| 資料類型 | 優先工具 | 補充工具 |
+|----------|----------|----------|
+| 大盤現況 | `get_twse_market_summary`（MCP） | WebSearch |
+| 個股財務指標（PE、ROE、殖利率） | `get_financials`（MCP） | WebSearch |
+| 多股比較 | `compare_stocks`（MCP） | — |
+| 融資融券餘額（資金面） | `get_margin_trading`（MCP） | WebSearch |
+| 三大法人每日買賣超 | `get_institutional_daily`（MCP） | WebSearch |
+| 期貨未平倉籌碼面 | `get_futures_oi`（MCP） | — |
+| 類股漲跌排行 | `get_sector_performance`（MCP） | — |
+| 台幣匯率 | `get_exchange_rate`（MCP） | WebSearch |
+| 個股月營收 | `get_monthly_revenue`（MCP） | WebSearch |
+| 美股指數、VIX | `get_us_market_quote`（MCP） | WebSearch |
+| 國際原物料、美元指數 | `get_commodity_quote`（MCP） | WebSearch |
+| 候選個股即時報價 | `get_stock_quote`（MCP） | WebSearch |
+| 候選個股技術面趨勢 | `get_stock_history`（MCP） | — |
+| 候選個股法人態度 | `get_institutional_trading`（MCP） | WebSearch |
+| 景氣燈號 | WebSearch | — |
+| 產業趨勢、政策消息 | WebSearch | — |
 
 ## 市場階段判斷
 
@@ -27,7 +63,7 @@ metadata:
 - **加權指數位階**：相對於年線的位置、距離前高的幅度
 - **景氣對策信號**：景氣燈號（紅/黃紅/綠/黃藍/藍）
 - **國際情勢**：美股走勢、美元指數、聯準會政策、地緣政治
-- **資金動能**：外資動向、融資水位、成交量變化
+- **資金動能**：外資動向（`get_institutional_daily`）、融資水位（`get_margin_trading`）、成交量變化
 - **經濟數據**：GDP 成長率、PMI、出口數據、消費者信心指數
 
 ## 策略類型
@@ -80,10 +116,31 @@ metadata:
 4. **風險提醒**：目前市場最大的風險因素
 5. **資金配置建議**：建議的持股/現金比例
 
+## 與其他 Skill 的關係
+
+| 新增 Skill | 本 Skill 如何整合 |
+|------------|------------------|
+| **daily-decision** | 每日決策的明日展望會參考本 skill 的市場階段判斷框架 |
+| **sector-analysis** | 選股策略可搭配 sector-analysis 評估產業輪動機會 |
+| **pre-market-analysis** | 進場時機可參考 pre-market-analysis 的盤前評估 |
+
 ## 注意事項
 
+- 📌 **反泡沫原則**：當持股 RSI > 75 且偏離 MA20 > 15% 時，停止加碼，無論基本面多強。歷史案例：2026 年 1 月白銀（RSI 86.7, MA偏離+29.1%）在信號出現後 3 日崩跌 36%。
 - 絕對不直接說「買某某股票一定賺」，而是提供分析框架讓使用者自行判斷
 - 始終加上免責聲明：「以上策略僅供參考，不構成投資建議。請依個人風險承受能力與投資目標做出決策。」
 - 鼓勵分散投資，不要把所有資金壓在單一標的
 - 提醒使用者注意自身的風險承受度和投資期限
 - 參考 `references/tw-stock-knowledge.md`（來自 stock-analysis skill）取得台股基礎知識
+- 參考 `references/us-stock-knowledge.md`（來自 stock-analysis skill）取得美股市場基礎知識與台美股連動判讀框架
+
+## 投資策略品質檢查清單
+
+策略建議完成後，確認以下標準：
+
+- [ ] **市場階段判斷有據**：判斷多頭/空頭/盤整有具體數據支撐
+- [ ] **策略適配性**：建議的策略與當前市場階段一致
+- [ ] **選股條件量化**：選股條件為可驗證的數字（如 PE < 15、ROE > 15%）
+- [ ] **風險評估**：每個策略建議附上可能的風險和最大虧損估計
+- [ ] **資金配置具體**：建議的投入比例有具體數字，非「適度配置」
+- [ ] **退場機制**：每個進場建議都附有停損條件和退場計畫
