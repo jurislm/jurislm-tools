@@ -1,7 +1,7 @@
 {
   "name": "jurislm-claude-plugins-stock",
-  "description": "台股看盤應用開發 Skill，涵蓋 TWSE/Yahoo API 整合、投資組合管理、E2E 測試指南",
-  "version": "1.1.1",
+  "description": "台股投資專家 v4.1 — 12 個 Skills + 5 個 Commands + 16 項 MCP 工具的完整投資決策系統。涵蓋盤前分析、個股分析、產業鏈分析、每日決策、投資策略、組合管理、風險監控（六維度含頂部超買偵測）、交易紀錄管理、市場資訊、商品 ETF 分析、黑天鵝雷達系統、應用開發指南。v4.1.0：合併 stock app 開發 Skill（架構、API、測試策略）。",
+  "version": "4.1.0",
   "author": {
     "name": "Terry Chen"
   }

@@ -1,5 +1,5 @@
 ---
-name: stock
+name: stock-app-dev
 description: This skill should be used when the user asks to develop features for the "台股看盤" stock app, work with TWSE/Yahoo Finance APIs, manage portfolio or watchlist functionality, build ETF analysis features, or debug stock-related components. Activate when user mentions stock.jurislm.com, terry90918/stock repo, or Taiwan stock market app development.
 ---
 

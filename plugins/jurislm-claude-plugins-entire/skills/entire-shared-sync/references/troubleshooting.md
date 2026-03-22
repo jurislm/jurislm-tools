@@ -13,20 +13,21 @@ Error: Connection refused to 46.225.58.202:5442
 
 **Solution**:
 ```bash
-# 1. Check if container is running
-docker compose -f docker-compose.shared.yml ps
+# entire_shared_db is hosted on Hetzner cloud (not local Docker)
+# 1. Check network connectivity to Hetzner
+ping 46.225.58.202
 
-# 2. Start if not running
-docker compose -f docker-compose.shared.yml up -d
+# 2. Verify port is open
+nc -zv 46.225.58.202 5442
 
-# 3. Check container logs
-docker compose -f docker-compose.shared.yml logs entire_shared_db
+# 3. Test DB connection directly
+psql -h 46.225.58.202 -p 5442 -U postgres -d entire_shared_db -c "SELECT 1"
 
-# 4. Verify port mapping
-docker port entire_shared_db
+# 4. Check credentials in .env.shared
+grep SHARED_DATABASE_URL .env.shared
 ```
 
-### Ollama Connection Failed
+### Embedding Service Connection Failed
 
 **Symptom**:
 ```
@@ -35,38 +36,28 @@ Error: Cannot connect to Ollama at localhost:11434
 
 **Solution**:
 ```bash
-# 1. Check Ollama status
 ollama list
-
-# 2. Start Ollama if needed
-ollama serve &
-
-# 3. Verify bge-m3 model
-ollama list | grep bge-m3
-
-# 4. Pull model if missing
-ollama pull bge-m3
+ollama serve &  # Start if not running
+ollama pull bge-m3  # Pull model if missing
 ```
 
 ### NAS Connection Failed
 
 **Symptom**:
 ```
-Error: SSH connection to NAS failed
+Error: Synology NAS 連線失敗
 ```
 
 **Solution**:
 ```bash
-# 1. Test SSH connection manually
-ssh -p $NAS_PORT $NAS_USERNAME@$NAS_HOST
+# 1. Verify SYNOLOGY_BASE_URL is accessible
+curl -I $SYNOLOGY_BASE_URL/webapi/query.cgi
 
-# 2. Check SSH key authentication
-ssh-add -l
+# 2. Check credentials
+grep SYNOLOGY_ .env.shared
 
-# 3. Verify NAS service is running
-ping $NAS_HOST
-
-# 4. Check firewall rules on NAS
+# 3. If NAS unreachable, sync still proceeds (NAS phase is skipped automatically)
+# Pipeline completes without NAS upload when SYNOLOGY_BASE_URL is unset or unreachable
 ```
 
 ## Migration Issues
@@ -178,18 +169,15 @@ EMBED phase takes much longer than expected (< 3.4 embeddings/s).
 
 **Solution**:
 ```bash
-# 1. Check Ollama GPU usage
-nvidia-smi  # If GPU available
+# 1. Check Ollama health
+curl -s http://localhost:11434/api/tags
+ollama list     # Verify model loaded
 
-# 2. Restart Ollama to clear memory
+# 2. Restart Ollama if frozen
 killall ollama && ollama serve &
 
 # 3. Reduce concurrent load
 # Run only one sync at a time
-
-# 4. Consider using TEI (GPU optimized)
-export EMBEDDING_PROVIDER=tei
-bun run src/index.ts sync judicial --category 051
 ```
 
 ### Out of Memory
@@ -227,10 +215,7 @@ df -h
 rm -rf entire_cli/data/judicial/*/raw/*.json
 rm -rf entire_cli/data/law/raw/*.json
 
-# 3. Clean Docker
-docker system prune -a
-
-# 4. Remove old embeddings
+# 3. Remove old embeddings
 rm -rf entire_cli/data/judicial/*/embeddings/*.zip.old
 ```
 

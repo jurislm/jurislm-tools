@@ -10,7 +10,7 @@ description: >-
   "sync all categories", "sync 051-054", "import law data to shared".
   Provides step-by-step workflow to complete full synchronization of entire_shared_db
   including Judicial (051-054), Law, and Taxonomy data.
-version: 1.3.0
+version: 1.4.0
 ---
 
 # Shared Database Full Sync Workflow
@@ -111,26 +111,22 @@ Step 5: Taxonomy (independent, no dependencies)
 
 Verify before starting:
 
-1. **Docker services running**:
+1. **MLX embedding service available** (for local embedding):
    ```bash
-   docker compose -f docker-compose.shared.yml up -d
-   docker compose -f docker-compose.shared.yml ps
+   curl http://localhost:11435/health
    ```
+   > 本地環境首選 `mlx`（port 11435）。雲端環境使用 `EMBEDDING_PROVIDER=openai`（需 `OPENAI_API_KEY`）。
 
-2. **Ollama available** (for embedding):
-   ```bash
-   curl -s http://localhost:11434/api/tags | head -1
-   ```
-
-3. **Database connection**:
+2. **Database connection** (Hetzner cloud, not local Docker):
    ```bash
    cd entire_cli
    bun run src/index.ts db status --target shared
    ```
 
-4. **Environment variables** (`.env.shared`):
+3. **Environment variables** (`.env.shared`):
    - `SHARED_DATABASE_URL`
-   - `OLLAMA_BASE_URL`
+   - 本地環境：`EMBEDDING_PROVIDER=mlx`、`EMBEDDING_URL=http://localhost:11435`
+   - 雲端環境：`EMBEDDING_PROVIDER=openai`、`OPENAI_API_KEY=sk-...`
    - `SYNOLOGY_BASE_URL`, `SYNOLOGY_ACCOUNT`, `SYNOLOGY_PASSWORD`
 
 ## Sync Workflow (4 Steps)

@@ -26,7 +26,7 @@ This skill enables Claude Code to generate Taiwan legal synonyms without calling
 ### Step 1: Query Current Progress
 
 ```bash
-docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
+psql -h 46.225.58.202 -p 5442 -U postgres -d entire_shared_db -c "
 SELECT category, COUNT(DISTINCT canonical_term) as current_count,
   CASE category
     WHEN 'civil_debt' THEN 300 WHEN 'criminal' THEN 300
@@ -45,7 +45,7 @@ FROM legal_synonyms GROUP BY category ORDER BY category;
 Avoid duplicates by checking existing terms first:
 
 ```bash
-docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
+psql -h 46.225.58.202 -p 5442 -U postgres -d entire_shared_db -c "
 SELECT DISTINCT canonical_term FROM legal_synonyms
 WHERE category = '<CATEGORY>' ORDER BY canonical_term;
 "
@@ -70,7 +70,7 @@ See **`references/category-definitions.md`** for detailed category descriptions 
 
 ```bash
 GROUP_ID=$(uuidgen)
-docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
+psql -h 46.225.58.202 -p 5442 -U postgres -d entire_shared_db -c "
 INSERT INTO legal_synonyms (group_id, canonical_term, synonym, category, source)
 VALUES
   ('$GROUP_ID', '押金', '押金', 'civil_debt', 'claude-code-generated'),
@@ -86,7 +86,7 @@ ON CONFLICT (category, canonical_term, synonym) DO NOTHING;
 
 ```bash
 # Verify results
-docker exec entire_shared_db psql -U postgres -d entire_shared_db -c "
+psql -h 46.225.58.202 -p 5442 -U postgres -d entire_shared_db -c "
 SELECT category, COUNT(DISTINCT canonical_term) as groups, COUNT(*) as total
 FROM legal_synonyms WHERE source = 'claude-code-generated'
 GROUP BY category ORDER BY category;

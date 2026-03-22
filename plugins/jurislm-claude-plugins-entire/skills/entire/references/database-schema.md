@@ -7,8 +7,8 @@ Complete database structure reference for JurisLM.
 | Metric | Value |
 |--------|-------|
 | Total Tables | 8 (local) + 19 (shared) = 27 (shared includes deleted_judgments) |
-| Local Migrations | 72 files |
-| Shared Migrations | 15 files |
+| Local Migrations | 83 files |
+| Shared Migrations | 21 files |
 | Total Indexes | 30+ |
 | Vector Dimension | 1024 (BAAI/bge-m3) |
 | Database | PostgreSQL 18 + pgvector |
@@ -81,7 +81,7 @@ JurisLM uses two separate PostgreSQL databases:
 
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
-| laws | Law master table (includes foreword) | law_id, pcode, law_name, foreword |
+| laws | Law master table | law_id, pcode, law_name, law_histories, foreword, content_hash |
 | law_articles | Law articles | article_id, law_id, article_no, article_content |
 | law_attachments | Law attachments | attachment_id, law_id, file_name, file_url |
 | law_embeddings | Law vectors | embedding_id, law_id, chunk_index, embedding |
@@ -268,7 +268,7 @@ FROM legal_synonyms GROUP BY category ORDER BY groups DESC;
 
 ## Migration Strategy
 
-**Total Migrations**: 72 files in `entire_db/migrations/`
+**Total Migrations**: 83 files in `entire_db/migrations/` + 21 files in `migrations-shared/`
 
 ### Naming Convention
 

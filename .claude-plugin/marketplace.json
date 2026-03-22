@@ -18,7 +18,61 @@
       "name": "jurislm-claude-plugins-coolify",
       "source": "./plugins/jurislm-claude-plugins-coolify",
       "description": "Coolify MCP 伺服器，管理自託管 PaaS（35 個最佳化工具）",
-      "version": "1.3.3",
+      "version": "1.3.4",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "jurislm-claude-plugins-github-release",
+      "source": "./plugins/jurislm-claude-plugins-github-release",
+      "description": "GitHub Actions 標準化工作流 Skill，涵蓋 Release Please、Claude Code Review、Release Notes、Husky pre-commit 配置",
+      "version": "1.5.0",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "jurislm-claude-plugins-stock",
+      "source": "./plugins/jurislm-claude-plugins-stock",
+      "description": "台股投資專家（12 skills + 5 commands + MCP Server）：個股分析、每日決策、投資策略、組合管理、市場資訊、盤前分析、類股分析、風險監控、原物料分析、交易日誌、黑天鵝雷達、應用開發指南",
+      "version": "4.1.0",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "jurislm-claude-plugins-lessons-learned",
+      "source": "./plugins/jurislm-claude-plugins-lessons-learned",
+      "description": "跨專案開發經驗模式庫，涵蓋診斷除錯、測試策略、基礎設施、安全防護、架構重構、雲端遷移、前端工具鏈、Docker 部署、資料匯入與 Migration 的關鍵教訓",
+      "version": "1.10.0",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "notion-workflow",
+      "source": "./plugins/notion-workflow",
+      "description": "Notion 工作流自動化（7 skills + hooks）：每日日誌、習慣追蹤、記憶同步、任務管理",
+      "version": "1.1.1",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "podcast-to-blog",
+      "source": "./plugins/podcast-to-blog",
+      "description": "Podcast 轉部落格文章工作流",
+      "version": "0.1.0",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "jurislm-claude-plugins-entire",
+      "source": "./plugins/jurislm-claude-plugins-entire",
+      "description": "Entire 台灣法律 AI 平台開發 Skill，涵蓋 Unified Agent、CLI、Dashboard、資料同步、法律分類",
+      "version": "1.3.0",
       "author": {
         "name": "Terry Chen"
       }
@@ -28,42 +82,6 @@
       "source": "./plugins/jurislm-claude-plugins-lawyer",
       "description": "劉尹惠律師事務所網站開發 Skill，涵蓋 Payload CMS、部署、測試工作流",
       "version": "1.2.1",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
-      "name": "jurislm-claude-plugins-stock",
-      "source": "./plugins/jurislm-claude-plugins-stock",
-      "description": "台股看盤應用開發 Skill，涵蓋 TWSE/Yahoo API 整合、投資組合管理、E2E 測試指南",
-      "version": "1.1.1",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
-      "name": "jurislm-claude-plugins-entire",
-      "source": "./plugins/jurislm-claude-plugins-entire",
-      "description": "JurisLM 台灣法律 AI 平台開發 Skill，涵蓋 Unified Agent、CLI、Dashboard、資料同步、法律分類",
-      "version": "1.2.0",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
-      "name": "jurislm-claude-plugins-github-release",
-      "source": "./plugins/jurislm-claude-plugins-github-release",
-      "description": "GitHub Actions 標準化工作流 Skill，涵蓋 Release Please、Claude Code Review、Release Notes、Husky pre-commit 配置",
-      "version": "1.3.0",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
-      "name": "jurislm-claude-plugins-lessons-learned",
-      "source": "./plugins/jurislm-claude-plugins-lessons-learned",
-      "description": "跨專案開發經驗模式庫，涵蓋診斷除錯、測試策略、基礎設施、安全防護、架構重構、雲端遷移、前端工具鏈、Docker 部署、資料匯入與 Migration 的關鍵教訓",
-      "version": "1.8.0",
       "author": {
         "name": "Terry Chen"
       }

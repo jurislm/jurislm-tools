@@ -27,16 +27,18 @@ plugins/
     .claude-plugin/plugin.json   # Plugin 元資料（名稱、描述、版本、作者）
     .mcp.json                    # MCP Server 配置（僅 MCP Server 類型）
     README.md                    # Plugin 文件
-    skills/                      # Skill 定義（僅 Skill Only 類型）
+    skills/                      # Skill 定義
       <skill-name>/
         SKILL.md                 # 含 YAML frontmatter 的 Skill 定義
         references/              # 參考文件（可選）
+    commands/                    # 快捷命令（可選，如 stock）
+    hooks/                       # Hook 定義（可選，如 notion-workflow）
+    mcp-server/                  # 自建 MCP Server 原始碼（可選）
 ```
 
 **Plugin 類型**：
-- **MCP Server**：`.mcp.json` + `plugin.json` + `README.md`（純 MCP，目前無此類型）
-- **Skill Only**：`plugin.json` + `README.md` + `skills/`（如 lawyer, stock, entire）
-- **Hybrid**：`.mcp.json` + `plugin.json` + `README.md` + `skills/`（如 hetzner, coolify）
+- **Skill Only**：`plugin.json` + `README.md` + `skills/`（如 github-release, lessons-learned, podcast-to-blog）
+- **Hybrid**：`.mcp.json` + `plugin.json` + `README.md` + `skills/`（如 hetzner, coolify, stock, notion-workflow）
 
 ## 新增 Plugin
 
@@ -50,13 +52,28 @@ plugins/
      "author": { "name": "..." }
    }
    ```
-3. 新增 `.mcp.json`（MCP Server 配置）：
+3. 新增 `.mcp.json`（MCP Server 配置，兩種格式）：
    ```json
+   // stdio 類型（本地進程）
    {
-     "<plugin-name>": {
-       "command": "npx",
-       "args": ["-y", "<npm-package>"],
-       "env": { "API_TOKEN": "${API_TOKEN}" }
+     "mcpServers": {
+       "<server-name>": {
+         "type": "stdio",
+         "command": "npx",
+         "args": ["-y", "<npm-package>"],
+         "env": { "API_TOKEN": "${API_TOKEN}" }
+       }
+     }
+   }
+   ```
+   ```json
+   // HTTP 類型（遠端服務）
+   {
+     "mcpServers": {
+       "<server-name>": {
+         "type": "http",
+         "url": "https://mcp.example.com/mcp"
+       }
      }
    }
    ```
@@ -81,13 +98,15 @@ plugins/
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| jurislm-claude-plugins-hetzner | 1.3.0 | MCP + Skill | hetzner-mcp-server（14 工具）+ hetzner skill |
-| jurislm-claude-plugins-coolify | 1.3.3 | MCP + Skill | jurislm-coolify-mcp（35 工具）+ coolify skill |
-| jurislm-claude-plugins-lawyer | 1.2.1 | Skill Only | Payload CMS + 部署 + E2E 測試指南 |
-| jurislm-claude-plugins-stock | 1.1.1 | Skill Only | TWSE/Yahoo API + 投資組合 + E2E 測試 |
-| jurislm-claude-plugins-entire | 1.2.0 | Skill Only | Unified Agent + CLI + Dashboard + 資料同步 + 法律分類（3 skills） |
-| jurislm-claude-plugins-github-release | 1.2.0 | Skill Only | Release Please + Claude Code Review + Release Notes + Husky pre-commit |
-| jurislm-claude-plugins-lessons-learned | 1.8.0 | Skill Only | 68 經驗模式（持續更新）：診斷除錯、測試、基礎設施、安全、架構、業務邏輯、Git 工作流、雲端遷移、前端工具鏈、Docker 部署、資料匯入 |
+| jurislm-claude-plugins-hetzner | 1.3.0 | Hybrid | hetzner-mcp-server（14 工具）+ hetzner skill |
+| jurislm-claude-plugins-coolify | 1.3.4 | Hybrid | jurislm-coolify-mcp（35 工具）+ coolify skill |
+| jurislm-claude-plugins-stock | 4.1.0 | Hybrid | 台股投資專家（12 skills + 5 commands + MCP Server）：個股分析、每日決策、投資策略、組合管理、市場資訊、盤前分析、類股分析、風險監控、原物料分析、交易日誌、黑天鵝雷達、應用開發指南 |
+| jurislm-claude-plugins-entire | 1.3.0 | Skill Only | Entire 台灣法律 AI 平台開發 Skill（3 skills + 10 references） |
+| jurislm-claude-plugins-lawyer | 1.2.1 | Skill Only | 劉尹惠律師事務所網站開發 Skill（Payload CMS、部署、測試） |
+| jurislm-claude-plugins-github-release | 1.5.0 | Skill Only | Release Please + Claude Code Review + Release Notes + Husky pre-commit |
+| jurislm-claude-plugins-lessons-learned | 1.10.0 | Skill Only | 經驗模式（持續更新）：診斷除錯、測試、基礎設施、安全、架構、業務邏輯、Git 工作流、雲端遷移、前端工具鏈、Docker 部署、資料匯入 |
+| notion-workflow | 1.1.1 | Hybrid | Notion HTTP MCP + 7 skills（daily-log、habit-tracker、memory-sync 等）+ hooks |
+| podcast-to-blog | 0.1.0 | Skill Only | Podcast 轉部落格文章 |
 
 ## 注意事項
 
@@ -97,79 +116,10 @@ plugins/
 - **Plugin 名稱不可與 marketplace 同名**：`jurislm` plugin 在 `jurislm-plugins` marketplace 內會造成歧義，對話中無法區分指的是哪個。命名時加後綴區分（如 `entire`）
 - **Skill-Only plugin 不需要 `.mcp.json`**：只有 MCP Server 類型的 plugin 需要 `.mcp.json`。Skill-Only plugin 結構為 `plugin.json` + `README.md` + `skills/` 目錄
 
-## 經驗教訓
+## 安裝流程
 
-### MCP 獨立安裝 → Plugin 遷移
-
-從獨立 MCP Server（`.claude.json` 的 `mcpServers`）遷移到 Plugin 系統時，舊配置**不會自動移除**。
-
-**症狀**：`/plugin` → Installed 中出現 disabled 的舊 MCP Server
-
-**必須手動清除**：
-1. `.claude.json` 中該專案的 `mcpServers` 物件（刪除整個 server 定義）
-2. `.claude.json` 中該專案的 `disabledMcpServers` 陣列（移除對應條目）
-
-**驗證**：重啟 Claude Code → `/plugin` → Installed 確認只有 Plugin 版
-
-### 環境變數配置注意
-
-- 環境變數定義在 `~/.zshenv`（推薦）而非 `~/.zshrc`，確保非互動式 shell 也能讀取
-- Claude Code 的 MCP Server 是子進程，`~/.zshrc` 可能不會被 source
-
-### Project Skills → Plugin 遷移
-
-從 project-scoped skills（`.claude/skills/`）遷移到 marketplace plugin 時：
-
-**命名陷阱**
-- Plugin 名稱不可與 marketplace 名稱重疊（例：`jurislm` plugin 在 `jurislm-plugins` marketplace → 歧義）
-- 解法：加後綴 `-dev`、`-platform` 等區分，例 `entire`
-- 來源：jurislm plan-a 遷移 — 初次命名 `jurislm` 造成對話混淆，事後改名
-
-**遷移內容必須更新過時引用**
-- SKILL.md 中的觸發詞、技術棧表、目錄結構必須反映當前架構
-- reference 檔案若描述舊架構（如 LangGraph 12-Node → Unified Agent），必須重寫而非原封複製
-- 原封複製的檔案（CLI commands、database schema 等穩定內容）可直接 `cp`
-
-**Skill-Only plugin 結構**
-```
-plugins/<name>/
-├── .claude-plugin/plugin.json   # name, description, version, author
-├── README.md                    # 安裝指令、適用場景、技術棧
-└── skills/
-    └── <skill-name>/
-        ├── SKILL.md             # 含 YAML frontmatter（name, description, version）
-        └── references/          # 參考文件（可選）
-```
-- 無需 `.mcp.json`（MCP Server 類型才需要）
-- 一個 plugin 可包含多個 skills（如 entire 包含 3 個）
-
-**安裝流程**
 1. `git push` 到 marketplace repo
-2. `/plugin marketplace update <marketplace-name>` — 必須先更新 marketplace 索引
-3. `/plugin install <plugin-name>@<marketplace-name>` — 才能安裝
+2. `/plugin marketplace update jurislm-plugins` — 必須先更新 marketplace 索引
+3. `/plugin install <plugin-name>@jurislm-plugins` — 才能安裝
 4. 重啟 Claude Code — skills 才會載入
 - 跳過步驟 2 會導致 `Plugin not found`
-
-**清理 project skills**
-- `git rm -r .claude/skills/<name>` 刪除舊 skills
-- 保留同目錄下不相關的 skills（如 `openspec-*`、`document-generation`）
-- 分開 commit：plugin 建立（jurislm-claude-plugins repo）和 skill 刪除（app repo）應各自獨立 commit
-
----
-
-## 跨專案開發經驗模式
-
-> 更多詳細的開發經驗模式（68 個模式，12 個分類）已整合至 **lessons-learned plugin**。
-
-包含主題：
-- 診斷與除錯、測試策略、基礎設施與部署
-- 安全與錯誤處理、業務邏輯、架構與重構
-- Git 工作流、工具與工作流、雲端遷移與環境配置
-- 前端工具鏈與框架、Turborepo Docker 部署、資料匯入與 Migration
-
-**使用方式**：
-```bash
-/plugin install lessons-learned@jurislm-plugins
-```
-
-安裝後可在任何專案中使用這些經驗模式，涵蓋從除錯、測試、部署到架構重構的完整開發生命週期。

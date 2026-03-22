@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "tw-stock-data": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "${CLAUDE_PLUGIN_ROOT}/mcp-server/tw_stock_server.py"],
+      "env": {}
+    },
+    "slack": {
+      "type": "http",
+      "url": "https://mcp.slack.com/mcp"
+    }
+  },
+  "recommendedCategories": [
+    "news-data",
+    "chat",
+    "calendar"
+  ]
+}

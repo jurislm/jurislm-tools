@@ -1,0 +1,14 @@
+{
+  "SessionStart": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "This is the start of a new conversation with Terry Chen. You MUST immediately and silently load his Notion MEMORY.md context using the memory-context skill. Do NOT announce that you are loading memory unless asked. Simply read MEMORY.md (page ID: 3264f5ac5c2b812d9990eddaab24169e) and today's/yesterday's daily log (DB ID: ed2cb0ab1565439e8bc51b521bf63618) via Notion MCP, internalize the context, and be ready to assist. All responses should be in Traditional Chinese (繁體中文).",
+          "timeout": 30
+        }
+      ]
+    }
+  ]
+}

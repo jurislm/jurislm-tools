@@ -7,9 +7,9 @@ description: >-
   "Unified Agent", "SKILL.md", "tool-registry", "agentic loop", "runUnifiedAgent",
   "shared database", "entire_shared_db",
   "entire_dashboard", "dashboard", "Hono", "Vite 7", "postgres.js", "admin dashboard",
-  "pg_class.reltuples", "idleTimeout", "dashboard.jurislm.com",
+  "pg_class.reltuples", "idleTimeout", "dashboard-entire.jurislm.com",
   "Turborepo", "bun workspace", "packages/@entire", "Langfuse",
-  "TEI embedding", "Ollama", "worktree docker", "pcode", "categories 051-054",
+  "Ollama", "worktree docker", "pcode", "categories 051-054",
   "constitution rules", "Drizzle ORM", "SSE streaming", "legal RAG",
   "metadata-context", "chunk strategy", "hybrid search", "RRF fusion",
   "bge-m3 embedding", "NAS upload", "Synology", "pipeline performance",
@@ -27,9 +27,11 @@ description: >-
   "load_playbook", "parse_nda", "check_nda", "render_nda_report",
   "extract_document_info", "generate_legal_document", "sanitize_content",
   "Playbook", "NDA Triage", "Classification", "GREEN", "YELLOW", "RED",
-  "escalation triggers", "risk assessment", "lib/agents/shared", "lib/agents/unified".
+  "escalation triggers", "risk assessment", "lib/agents/shared", "lib/agents/unified",
+  "laws page", "/laws", "semantic search laws", "LawQuickAccess", "LawSearchBar",
+  "LawSemanticSearch", "law-search-redesign", "法規搜尋", "語意搜尋法規".
   Provides comprehensive guidance for Taiwan legal AI platform development.
-version: 4.2.0
+version: 4.3.0
 ---
 
 # JurisLM Platform Guide
@@ -49,14 +51,11 @@ Taiwan legal AI platform using Bun + Turborepo Monorepo architecture with 4 sub-
 
 ### Shared Services (docker-compose.shared.yml)
 
-```bash
-docker compose -f docker-compose.shared.yml up -d
-```
+**entire_shared_db** is hosted on Hetzner cloud (46.225.58.202:5442) — no local Docker needed.
 
 | Service | Port | Purpose |
 |---------|------|---------|
-| entire_shared_db | 5442 | PostgreSQL (Judicial + Law + Taxonomy, 25 tables) |
-| jurislm-tei-shared | 8090 | TEI Embedding (backup, BAAI/bge-m3) |
+| entire_shared_db | 5442 | PostgreSQL (Judicial + Law + Taxonomy, 25 tables) — Hetzner cloud |
 
 ### Shared Packages (packages/)
 
@@ -69,7 +68,7 @@ docker compose -f docker-compose.shared.yml up -d
 | @entire/logging | Structured logging system |
 | @entire/api-types | API request/response types |
 | @entire/auth | Authentication module (Judicial API Token) |
-| @entire/embedding | Embedding factory (TEI/Ollama) |
+| @entire/embedding | Embedding factory (Ollama) |
 | @entire/errors | Custom error types |
 | @entire/llm-config | LLM model IDs, providers, validation utilities |
 | @entire/eslint-config | Shared ESLint configuration |
@@ -109,6 +108,7 @@ Next.js 16 + React 19 + Drizzle ORM + Anthropic SDK (Unified Agent) + Langfuse:
 | `(app)/projects/new` | page.tsx | Create project |
 | `(app)/projects/[id]` | page.tsx | Project detail |
 | `(app)/projects/[id]/edit` | page.tsx | Edit project |
+| `(app)/laws` | page.tsx | 法規搜尋（關鍵字 + 語意搜尋） |
 | `(app)/settings` | page.tsx | Settings home |
 | `(app)/settings/connectors` | page.tsx | Google Drive connectors |
 | `c/[uuid]` | page.tsx | Conversation (UUID-based URL) |
@@ -150,8 +150,8 @@ Hono + React 19 + Vite 7 + Tailwind CSS v4 + postgres.js:
 
 | Environment | URL | Coolify UUID | Branch |
 |-------------|-----|-------------|--------|
-| Production | https://dashboard.jurislm.com | x0ck84okoggcoswcsoc8cggk | main |
-| Development | https://dashboard-dev.jurislm.com | h48okgk0o44wgs4wo8cwgkkg | develop |
+| Production | https://dashboard-entire.jurislm.com | x0ck84okoggcoswcsoc8cggk | main |
+| Development | https://dashboard-entire-dev.jurislm.com | h48okgk0o44wgs4wo8cwgkkg | develop |
 
 **Key Features**:
 - Shared DB statistics (document counts, embedding coverage via `pg_class.reltuples`)
@@ -201,8 +201,8 @@ Two databases with separate migrations:
 
 | Database | Port | Tables | Migrations |
 |----------|------|--------|------------|
-| entire_db | 5433 | Auth + NextAuth + Chat + Knowledge + Contract + Case | `migrations/` (77 files) |
-| entire_shared_db | 5442 | Judicial + Law + Taxonomy (25 tables) | `migrations-shared/` (15 files) |
+| entire_db | 5433 | Auth + NextAuth + Chat + Knowledge + Contract + Case | `migrations/` (83 files) |
+| entire_shared_db | 5442 | Judicial + Law + Taxonomy (25 tables) | `migrations-shared/` (21 files) |
 
 **Local Database Tables**:
 - Auth: users, accounts, sessions, verification_tokens
@@ -279,10 +279,16 @@ Extended Thinking allows the model to work through complex legal analysis step-b
 
 | Provider | Default URL | Use Case |
 |----------|-------------|----------|
-| `ollama` | localhost:11434 | **Primary** - Fast startup |
-| `tei` | localhost:8090 | Backup - GPU recommended |
+| `ollama` | localhost:11434 | 本地開發（bge-m3 via Ollama :11434） |
+| `openai` | api.openai.com | Dev/Prod 環境（text-embedding-3-small, dimensions=1024） |
 
 **Model**: BAAI/bge-m3 (1024 dimensions)
+
+**Embedding Provider 切換：**
+- 本地開發：`EMBEDDING_PROVIDER=ollama`（bge-m3 via Ollama :11434）
+- Dev/Prod 環境：`EMBEDDING_PROVIDER=openai`（text-embedding-3-small, dimensions=1024）
+- 切換邏輯：`entire_app/lib/embedding/client.ts` 的 `generateQueryEmbedding()`
+- 語意搜尋 API（`/api/laws/semantic-search`）依賴此環境變數
 
 ## Legal Taxonomy
 
@@ -385,6 +391,13 @@ bun run src/index.ts taxonomy stats --info   # Show statistics
 |----------|--------|---------|
 | `/api/risk/assess` | POST | Calculate risk assessment |
 | `/api/risk/assessments` | GET | Risk assessment history |
+
+### Law APIs
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/api/laws` | GET | 法規列表（params: q, sort, page, limit, category） |
+| `/api/laws/semantic-search` | GET | 語意搜尋（params: q, limit；使用 law_embeddings） |
 
 ## Legal Plugin Integration
 
@@ -498,6 +511,23 @@ scope: nda
 8. 雙方權利義務
 9. 爭議解決
 10. 其他特殊條款
+
+## Laws Page Architecture
+
+### /laws 頁面架構（laws-search-redesign）
+
+- **Tab UI**：關鍵字搜尋 / 語意搜尋（`?mode=semantic`）
+- **LawQuickAccess**：12 張常用法律快捷卡，`hasQuery=true` 時隱藏
+- **LawSearchBar**：搜尋輸入框 + 放大鏡按鈕，更新 URL `q=` 參數
+- **LawFilterBar**：排序下拉（關聯度 `score`/日期 `date`）
+- **LawSemanticSearch**：語意搜尋輸入框（`mode=semantic` 時渲染）
+- **LawPagination**：上一頁/下一頁，顯示「第 X 頁 / 共 Y 頁」
+- **LawListItem**：法規列表項目，顯示 pcode + lawName + category + date
+
+**重要行為：**
+- `q` 參數存在時 → 隱藏 LawQuickAccess，顯示搜尋結果列表
+- `mode=semantic` → 渲染 LawSemanticSearch 代替 LawSearchBar
+- 語意搜尋 SEARCH_MIN_SCORE = 0.6（bge-m3 對長法律文字的分數偏低）
 
 ## Key Concepts
 
