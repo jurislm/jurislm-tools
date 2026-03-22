@@ -35,8 +35,8 @@
     {
       "name": "jurislm-claude-plugins-stock-expert",
       "source": "./plugins/jurislm-claude-plugins-stock-expert",
-      "description": "台股投資專家（11 skills + 5 commands + MCP Server）：個股分析、每日決策、投資策略、組合管理、市場資訊、盤前分析、類股分析、風險監控、原物料分析、交易日誌、黑天鵝雷達",
-      "version": "4.0.0",
+      "description": "台股投資專家（12 skills + 5 commands + MCP Server）：個股分析、每日決策、投資策略、組合管理、市場資訊、盤前分析、類股分析、風險監控、原物料分析、交易日誌、黑天鵝雷達、應用開發指南",
+      "version": "4.1.0",
       "author": {
         "name": "Terry Chen"
       }
@@ -64,6 +64,24 @@
       "source": "./plugins/podcast-to-blog",
       "description": "Podcast 轉部落格文章工作流",
       "version": "0.1.0",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "jurislm-claude-plugins-entire",
+      "source": "./plugins/jurislm-claude-plugins-entire",
+      "description": "Entire 台灣法律 AI 平台開發 Skill，涵蓋 Unified Agent、CLI、Dashboard、資料同步、法律分類",
+      "version": "1.3.0",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "jurislm-claude-plugins-lawyer",
+      "source": "./plugins/jurislm-claude-plugins-lawyer",
+      "description": "劉尹惠律師事務所網站開發 Skill，涵蓋 Payload CMS、部署、測試工作流",
+      "version": "1.2.1",
       "author": {
         "name": "Terry Chen"
       }
