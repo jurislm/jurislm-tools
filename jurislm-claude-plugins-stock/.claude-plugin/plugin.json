@@ -1,8 +1,0 @@
-{
-  "name": "jurislm-claude-plugins-stock",
-  "description": "台股投資專家 Skill，涵蓋個股三大面向分析（FIFO 逐筆損益）、每日操作決策、投資策略、組合管理、市場資訊整理，內建 MCP 數據服務",
-  "version": "1.3.0",
-  "author": {
-    "name": "Terry Chen"
-  }
-}
