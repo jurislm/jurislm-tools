@@ -1,4 +1,4 @@
-# Stock Expert Plugin
+# Stock Plugin
 
 台股投資專家 AI 助手，提供個股分析、每日操作決策、投資策略、組合管理與市場資訊整理。
 
@@ -47,7 +47,7 @@
 ## 安裝
 
 ```
-/plugin install jurislm-claude-plugins-stock-expert@jurislm-plugins
+/plugin install jurislm-claude-plugins-stock@jurislm-plugins
 ```
 
 ## Skill 之間的關係

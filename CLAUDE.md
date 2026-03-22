@@ -31,14 +31,14 @@ plugins/
       <skill-name>/
         SKILL.md                 # 含 YAML frontmatter 的 Skill 定義
         references/              # 參考文件（可選）
-    commands/                    # 快捷命令（可選，如 stock-expert）
+    commands/                    # 快捷命令（可選，如 stock）
     hooks/                       # Hook 定義（可選，如 notion-workflow）
     mcp-server/                  # 自建 MCP Server 原始碼（可選）
 ```
 
 **Plugin 類型**：
 - **Skill Only**：`plugin.json` + `README.md` + `skills/`（如 github-release, lessons-learned, podcast-to-blog）
-- **Hybrid**：`.mcp.json` + `plugin.json` + `README.md` + `skills/`（如 hetzner, coolify, stock-expert, notion-workflow）
+- **Hybrid**：`.mcp.json` + `plugin.json` + `README.md` + `skills/`（如 hetzner, coolify, stock, notion-workflow）
 
 ## 新增 Plugin
 
@@ -100,7 +100,9 @@ plugins/
 |--------|------|------|------|
 | jurislm-claude-plugins-hetzner | 1.3.0 | Hybrid | hetzner-mcp-server（14 工具）+ hetzner skill |
 | jurislm-claude-plugins-coolify | 1.3.4 | Hybrid | jurislm-coolify-mcp（35 工具）+ coolify skill |
-| jurislm-claude-plugins-stock-expert | 4.0.0 | Hybrid | 台股投資專家（11 skills + 5 commands + MCP Server）：個股分析、每日決策、投資策略、組合管理、市場資訊、盤前分析、類股分析、風險監控、原物料分析、交易日誌、黑天鵝雷達 |
+| jurislm-claude-plugins-stock | 4.1.0 | Hybrid | 台股投資專家（12 skills + 5 commands + MCP Server）：個股分析、每日決策、投資策略、組合管理、市場資訊、盤前分析、類股分析、風險監控、原物料分析、交易日誌、黑天鵝雷達、應用開發指南 |
+| jurislm-claude-plugins-entire | 1.3.0 | Skill Only | Entire 台灣法律 AI 平台開發 Skill（3 skills + 10 references） |
+| jurislm-claude-plugins-lawyer | 1.2.1 | Skill Only | 劉尹惠律師事務所網站開發 Skill（Payload CMS、部署、測試） |
 | jurislm-claude-plugins-github-release | 1.5.0 | Skill Only | Release Please + Claude Code Review + Release Notes + Husky pre-commit |
 | jurislm-claude-plugins-lessons-learned | 1.10.0 | Skill Only | 經驗模式（持續更新）：診斷除錯、測試、基礎設施、安全、架構、業務邏輯、Git 工作流、雲端遷移、前端工具鏈、Docker 部署、資料匯入 |
 | notion-workflow | 1.1.1 | Hybrid | Notion HTTP MCP + 7 skills（daily-log、habit-tracker、memory-sync 等）+ hooks |

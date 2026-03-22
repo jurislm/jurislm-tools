@@ -33,8 +33,8 @@
       }
     },
     {
-      "name": "jurislm-claude-plugins-stock-expert",
-      "source": "./plugins/jurislm-claude-plugins-stock-expert",
+      "name": "jurislm-claude-plugins-stock",
+      "source": "./plugins/jurislm-claude-plugins-stock",
       "description": "台股投資專家（12 skills + 5 commands + MCP Server）：個股分析、每日決策、投資策略、組合管理、市場資訊、盤前分析、類股分析、風險監控、原物料分析、交易日誌、黑天鵝雷達、應用開發指南",
       "version": "4.1.0",
       "author": {
