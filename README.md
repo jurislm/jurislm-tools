@@ -108,16 +108,6 @@ GitHub Actions 標準化工作流 Skill。
 - Claude Code 自動 PR Review
 - GitHub Release Notes 分類配置
 
-#### lessons-learned
-
-跨專案開發經驗模式庫（目前 68 個模式，持續更新）。
-
-**涵蓋：**
-- 診斷除錯（8）、測試策略（15）、基礎設施與部署（7）
-- 安全與錯誤處理（6）、業務邏輯（4）、架構與重構（5）
-- Git 工作流（3）、工具與工作流（2）、雲端遷移與環境配置（6）
-- 前端工具鏈與框架（3）、Turborepo Docker 部署（4）、資料匯入與 Migration（4）
-
 ## 授權
 
 MIT

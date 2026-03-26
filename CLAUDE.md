@@ -37,7 +37,7 @@ plugins/
 ```
 
 **Plugin 類型**：
-- **Skill Only**：`plugin.json` + `README.md` + `skills/`（如 github-release, lessons-learned, podcast-to-blog）
+- **Skill Only**：`plugin.json` + `README.md` + `skills/`（如 github-release, podcast-to-blog）
 - **Hybrid**：`.mcp.json` + `plugin.json` + `README.md` + `skills/`（如 hetzner, coolify, stock, notion-workflow）
 
 ## 新增 Plugin
@@ -104,7 +104,6 @@ plugins/
 | jurislm-claude-plugins-entire | 1.3.0 | Skill Only | Entire 台灣法律 AI 平台開發 Skill（3 skills + 10 references） |
 | jurislm-claude-plugins-lawyer | 1.2.1 | Skill Only | 劉尹惠律師事務所網站開發 Skill（Payload CMS、部署、測試） |
 | jurislm-claude-plugins-github-release | 1.5.0 | Skill Only | Release Please + Claude Code Review + Release Notes + Husky pre-commit |
-| jurislm-claude-plugins-lessons-learned | 1.10.0 | Skill Only | 經驗模式（持續更新）：診斷除錯、測試、基礎設施、安全、架構、業務邏輯、Git 工作流、雲端遷移、前端工具鏈、Docker 部署、資料匯入 |
 | notion-workflow | 1.1.1 | Hybrid | Notion HTTP MCP + 7 skills（daily-log、habit-tracker、memory-sync 等）+ hooks |
 | podcast-to-blog | 0.1.0 | Skill Only | Podcast 轉部落格文章 |
 
