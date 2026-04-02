@@ -1,9 +1,0 @@
-{
-  "name": "podcast-to-blog",
-  "version": "0.1.0",
-  "description": "將 Podcast 音檔自動轉錄為逐字稿，並生成部落格文章，支援存到 Notion。使用本地開源 Whisper 模型，免費離線運行。",
-  "author": {
-    "name": "Terry Chen"
-  },
-  "keywords": ["podcast", "transcription", "whisper", "blog", "notion"]
-}
