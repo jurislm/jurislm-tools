@@ -9,7 +9,7 @@
       "name": "jurislm-tools",
       "source": "./plugins/jurislm-tools",
       "description": "JurisLM 內部工具集 — Coolify 部署管理、Hetzner VPS 管理、Podcast 轉部落格",
-      "version": "1.0.0",
+      "version": "1.7.0",
       "author": {
         "name": "Terry Chen"
       }

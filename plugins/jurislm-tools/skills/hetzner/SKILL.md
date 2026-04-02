@@ -1,7 +1,7 @@
 ---
 name: hetzner
 description: This skill should be used when the user asks to "create a Hetzner server", "manage Hetzner Cloud infrastructure", "list Hetzner servers", "add SSH key to Hetzner", "check Hetzner server types", "provision a VPS", or mentions Hetzner Cloud server management, infrastructure provisioning, or cloud resource operations.
-version: 1.0.0
+argument-hint: "[action] [server-name/id]"
 ---
 
 # Hetzner Cloud MCP 使用指南
