@@ -4,5 +4,9 @@
   "version": "1.0.0",
   "author": {
     "name": "Terry Chen"
-  }
+  },
+  "homepage": "https://github.com/terry90918/jurislm-tools",
+  "repository": "https://github.com/terry90918/jurislm-tools",
+  "license": "MIT",
+  "keywords": ["coolify", "hetzner", "podcast", "mcp", "tools", "deployment"]
 }

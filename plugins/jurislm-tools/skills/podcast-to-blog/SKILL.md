@@ -5,9 +5,7 @@ description: >
   "podcast 轉文章", "幫我把這集 podcast 寫成文章", "podcast 逐字稿",
   "轉錄 podcast", "podcast to blog", "聽這集幫我寫筆記",
   or provides an Apple Podcasts URL and wants a blog post or transcript generated from it.
-metadata:
-  version: "0.1.0"
-  author: "Terry Chen"
+argument-hint: "<apple-podcasts-url>"
 ---
 
 # Podcast to Blog — 完整工作流
