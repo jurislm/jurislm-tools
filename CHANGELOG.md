@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.8.0](https://github.com/terry90918/jurislm-claude-plugins/compare/v1.7.0...v1.8.0) (2026-04-02)
+
+
+### Features
+
+* add .plugin bundles for all plugins ([ae8e170](https://github.com/terry90918/jurislm-claude-plugins/commit/ae8e1707d2463b79a2e19c1b8a33e39b0f28b72e))
+* add jurislm-claude-plugins-stock-expert v1.3.0 ([b556050](https://github.com/terry90918/jurislm-claude-plugins/commit/b556050cf6cb47860c0e3a813d8c3f5b055f8982))
+* **entire:** 新增 /laws 頁面架構、法規 API、embedding provider 切換說明 (v4.3.0) ([6f11344](https://github.com/terry90918/jurislm-claude-plugins/commit/6f113448ebf5e5b038fdc070e15d6cfeda852415))
+* **entire:** 更新 entire-shared-sync SKILL.md v1.3.0 → v1.4.0 ([d9b2f2d](https://github.com/terry90918/jurislm-claude-plugins/commit/d9b2f2d35346e1ff5bd7aeafb9131e1848c22206))
+* restore entire & lawyer plugins, merge stock into stock-expert v4.1.0 ([e53ab2c](https://github.com/terry90918/jurislm-claude-plugins/commit/e53ab2ca58c653f4cbb67517a07e46aa8cf80cdf))
+* **stock-expert:** add jurislm-claude-plugins-stock-expert plugin v1.3.0 ([2a9c133](https://github.com/terry90918/jurislm-claude-plugins/commit/2a9c133b46454aa9aff71e490bf2a09391c96e52))
+* **stock-expert:** update plugin.json and .mcp.json for improved requirements and argument handling ([4793668](https://github.com/terry90918/jurislm-claude-plugins/commit/4793668020a11bbfe2b10e8c46ef92ed329a704e))
+* upgrade stock-expert to v4.0.0, add notion-workflow and podcast-to-blog plugins ([0604c0e](https://github.com/terry90918/jurislm-claude-plugins/commit/0604c0e69a05e8a8d4fa0b540fd4e400a020efaa))
+
+
+### Bug Fixes
+
+* **github-release:** correct Claude Code Review to claude_args approach ([37b1a9b](https://github.com/terry90918/jurislm-claude-plugins/commit/37b1a9b11c3c5402326109ffc708f2bc4174b0e5))
+* **github-release:** update Claude Code Review to two-step approach ([d396ab5](https://github.com/terry90918/jurislm-claude-plugins/commit/d396ab547b0b289cea193f5dd5aa04c4071905c1))
+* **stock-expert:** remove unsupported requirements field from plugin.json ([486accf](https://github.com/terry90918/jurislm-claude-plugins/commit/486accfa184d822de6983c60c61019b7f173f6f1))
+* **stock-expert:** use ${CLAUDE_PLUGIN_ROOT} in .mcp.json, rebuild all .plugin bundles ([a400364](https://github.com/terry90918/jurislm-claude-plugins/commit/a400364c1b08b41a7dacdb50e4e1a77eed3f0282))
+
 ## [1.7.0](https://github.com/terry90918/jurislm-claude-plugins/compare/v1.6.1...v1.7.0) (2026-02-22)
 
 
