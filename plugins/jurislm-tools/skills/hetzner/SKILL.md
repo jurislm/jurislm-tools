@@ -6,7 +6,7 @@ argument-hint: "[action] [server-name/id]"
 
 # Hetzner Cloud MCP 使用指南
 
-透過 `hetzner-mcp-server` MCP 工具管理 Hetzner Cloud 基礎設施。
+透過 `hetzner-mcp`（`github:terry90918/hetzner-mcp`）MCP 工具管理 Hetzner Cloud 基礎設施。
 
 ## MCP 工具概覽（14 個工具）
 
