@@ -10,7 +10,7 @@
     },
     "hetzner": {
       "command": "npx",
-      "args": ["-y", "hetzner-mcp-server@1.0.0"],
+      "args": ["-y", "github:terry90918/hetzner-mcp"],
       "env": {
         "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}"
       }
