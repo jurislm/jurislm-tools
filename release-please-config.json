@@ -17,8 +17,7 @@
         {
           "type": "json",
           "path": ".claude-plugin/marketplace.json",
-          "jsonpath": "$.plugins[0].version",
-          "$comment": "jurislm-tools must remain the first plugin in marketplace.json"
+          "jsonpath": "$.plugins[0].version"
         }
       ],
       "changelog-sections": [
