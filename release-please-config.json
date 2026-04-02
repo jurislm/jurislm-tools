@@ -8,6 +8,19 @@
       "bump-patch-for-minor-pre-major": true,
       "include-component-in-tag": false,
       "include-v-in-tag": true,
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "plugins/jurislm-tools/.claude-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": ".claude-plugin/marketplace.json",
+          "jsonpath": "$.plugins[0].version",
+          "$comment": "jurislm-tools must remain the first plugin in marketplace.json"
+        }
+      ],
       "changelog-sections": [
         { "type": "feat", "section": "🚀 New Features" },
         { "type": "fix", "section": "🐛 Bug Fixes" },
