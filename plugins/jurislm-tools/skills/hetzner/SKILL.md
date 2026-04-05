@@ -115,4 +115,3 @@ export HETZNER_API_TOKEN="your_token_here"
 
 - [Hetzner Cloud 官方文件](https://docs.hetzner.cloud/)
 - [jurislm/hetzner-mcp GitHub](https://github.com/jurislm/hetzner-mcp)
-- [Hetzner Cloud Console](https://console.hetzner.cloud/)
