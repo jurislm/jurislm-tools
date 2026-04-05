@@ -6,7 +6,7 @@ argument-hint: "[action] [server-name/id]"
 
 # Hetzner Cloud MCP 使用指南
 
-透過 `hetzner-mcp-server` MCP 工具管理 Hetzner Cloud 基礎設施。
+透過 `hetzner-mcp`（`github:jurislm/hetzner-mcp#v1.0.0`）MCP 工具管理 Hetzner Cloud 基礎設施。
 
 ## MCP 工具概覽（14 個工具）
 
@@ -110,3 +110,8 @@ export HETZNER_API_TOKEN="your_token_here"
 ```
 
 取得 Token：[Hetzner Cloud Console](https://console.hetzner.cloud/) → 專案 → Security → API Tokens
+
+## 外部連結
+
+- [Hetzner Cloud 官方文件](https://docs.hetzner.cloud/)
+- [jurislm/hetzner-mcp GitHub](https://github.com/jurislm/hetzner-mcp)
