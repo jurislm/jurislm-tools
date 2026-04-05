@@ -110,3 +110,9 @@ export HETZNER_API_TOKEN="your_token_here"
 ```
 
 取得 Token：[Hetzner Cloud Console](https://console.hetzner.cloud/) → 專案 → Security → API Tokens
+
+## 外部連結
+
+- [Hetzner Cloud 官方文件](https://docs.hetzner.cloud/)
+- [jurislm/hetzner-mcp GitHub](https://github.com/jurislm/hetzner-mcp)
+- [Hetzner Cloud Console](https://console.hetzner.cloud/)
