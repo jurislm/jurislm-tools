@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.9.0](https://github.com/jurislm/jurislm-tools/compare/v1.8.0...v1.9.0) (2026-04-06)
+
+
+### Features
+
+* switch hetzner MCP to fork github:jurislm/hetzner-mcp#v1.0.0 ([db57a10](https://github.com/jurislm/jurislm-tools/commit/db57a10f10c8726a06c3eb9f3769bcf9a7983b8f))
+
+
+### Bug Fixes
+
+* align plugin.json and SKILL.md frontmatter with official Claude Code spec ([#19](https://github.com/jurislm/jurislm-tools/issues/19)) ([9c03560](https://github.com/jurislm/jurislm-tools/commit/9c03560644090a6316dde3aa436f615dafc3fc13))
+
 ## [1.8.0](https://github.com/terry90918/jurislm-claude-plugins/compare/v1.7.0...v1.8.0) (2026-04-02)
 
 
