@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/jurislm/jurislm-tools/compare/v1.9.0...v1.9.1) (2026-04-08)
+
+
+### Bug Fixes
+
+* **deps:** MCP Server 版本升級 — coolify [@3](https://github.com/3) + hetzner npm 發布 ([1d14ca4](https://github.com/jurislm/jurislm-tools/commit/1d14ca488dc7f508893177ea76b1e8c20b62a88e))
+
 ## [1.9.0](https://github.com/jurislm/jurislm-tools/compare/v1.8.0...v1.9.0) (2026-04-06)
 
 
