@@ -1,0 +1,44 @@
+name: Version Consistency Check
+
+on:
+  pull_request:
+    paths:
+      - 'plugins/jurislm-tools/.claude-plugin/plugin.json'
+      - '.claude-plugin/marketplace.json'
+      - '.release-please-manifest.json'
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check version consistency
+        run: |
+          PLUGIN_VER=$(jq -r '.version' plugins/jurislm-tools/.claude-plugin/plugin.json)
+          MARKET_VER=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
+          MANIFEST_VER=$(jq -r '.[""]' .release-please-manifest.json 2>/dev/null || jq -r '.["."]' .release-please-manifest.json)
+
+          echo "plugin.json:    $PLUGIN_VER"
+          echo "marketplace:    $MARKET_VER"
+          echo "manifest:       $MANIFEST_VER"
+
+          ERRORS=0
+
+          if [ "$PLUGIN_VER" != "$MARKET_VER" ]; then
+            echo "::error::plugin.json ($PLUGIN_VER) != marketplace.json ($MARKET_VER)"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          if [ "$PLUGIN_VER" != "$MANIFEST_VER" ]; then
+            echo "::error::plugin.json ($PLUGIN_VER) != manifest ($MANIFEST_VER)"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          if [ $ERRORS -gt 0 ]; then
+            echo ""
+            echo "版本號不一致。這三個檔案的版本號應由 Release Please 統一管理，不要手動修改。"
+            exit 1
+          fi
+
+          echo "✅ 版本一致：$PLUGIN_VER"
