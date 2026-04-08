@@ -70,7 +70,7 @@
 - `build_pack` - 建置類型（nixpacks/dockerfile/static）
 - `fqdn` - 域名（MCP client 自動映射為 API 的 `domains` 欄位）
 
-> ℹ️ **`fqdn` vs `domains`**：Coolify API 實際使用 `domains` 欄位（自 beta.307/2024-06-28 起），`fqdn` 只是 DB 欄位名稱。`jurislm-coolify-mcp` v2.7.2+ 在送出請求前自動將 `fqdn` 映射為 `domains`，不需要直接傳 `domains`。
+> ℹ️ **`fqdn` vs `domains`**：Coolify API 實際使用 `domains` 欄位（自 beta.307/2024-06-28 起），`fqdn` 只是 DB 欄位名稱。`@jurislm/coolify-mcp` v3.0.0+ 在送出請求前自動將 `fqdn` 映射為 `domains`，不需要直接傳 `domains`。
 
 ### coolify_update_application
 更新應用程式設定。支援 `fqdn` 欄位（自動映射為 `domains`）。
