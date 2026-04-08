@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.2](https://github.com/jurislm/jurislm-tools/compare/v1.9.1...v1.9.2) (2026-04-08)
+
+
+### Bug Fixes
+
+* **deps:** bump version to 1.10.0 — coolify [@3](https://github.com/3) + hetzner npm ([97cbbc2](https://github.com/jurislm/jurislm-tools/commit/97cbbc2d188f5be4a4bea5ae3ca4cc36c7a38615))
+
 ## [1.9.1](https://github.com/jurislm/jurislm-tools/compare/v1.9.0...v1.9.1) (2026-04-08)
 
 
