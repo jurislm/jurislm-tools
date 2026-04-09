@@ -28,14 +28,16 @@ plugins/jurislm-tools/
 └── skills/
     ├── coolify/SKILL.md
     ├── hetzner/SKILL.md
-    └── podcast-to-blog/SKILL.md
+    ├── podcast-to-blog/SKILL.md
+    ├── repo-standards/SKILL.md
+    └── codebase-sync/SKILL.md
 ```
 
 ## 目前 Plugins
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| jurislm-tools | 1.7.0 | Hybrid | Coolify MCP（35 工具）+ Hetzner MCP（14 工具）+ podcast-to-blog skill |
+| jurislm-tools | 1.10.0 | Hybrid | Coolify MCP（35 工具）+ Hetzner MCP（14 工具）+ 5 skills |
 
 ## 版本管理
 
