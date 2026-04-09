@@ -233,20 +233,53 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ---
 
+## 開發工作流程
+
+### Git Worktree 規則
+
+**所有開發一律在 `.worktrees/develop` 進行，不直接在 repo 根目錄（main）做 feature commits。**
+
+```bash
+# 確認 develop worktree 是否存在
+git worktree list
+
+# 若不存在，建立 develop worktree
+git fetch origin
+git worktree add .worktrees/develop develop
+# 若 develop 分支尚未建立：
+git worktree add -b develop .worktrees/develop main
+```
+
+**開發流程**：
+```
+.worktrees/develop → commit → push origin develop → PR develop→main → merge
+```
+
+**規則**：
+- main 分支連接正式環境（Coolify 自動部署），直接 push main = 意外觸發生產部署
+- feature 開發、bug fix、設定調整一律在 develop worktree 內操作
+- merge 到 main 前必須經過 PR（不可 fast-forward 直接 push）
+
+---
+
 ## 新增 Repo Checklist
 
+### Git Worktree
+1. [ ] 建立 develop 分支並設定 worktree：`git worktree add .worktrees/develop develop`
+2. [ ] 確認 `.gitignore` 或 `.prettierignore` 排除 `.worktrees/`
+
 ### Release
-1. [ ] 建立 `.github/workflows/release.yml`（依標準格式，**不指定 `release-type`**）
-2. [ ] 建立 `release-please-config.json`（依統一模板，`release-type` 寫在這裡）
-3. [ ] Plugin repo：加 `extra-files`，確認目標在陣列第一位
+3. [ ] 建立 `.github/workflows/release.yml`（依標準格式，**不指定 `release-type`**）
+4. [ ] 建立 `release-please-config.json`（依統一模板，`release-type` 寫在這裡）
+5. [ ] Plugin repo：加 `extra-files`，確認目標在陣列第一位
 
 ### ESLint
-4. [ ] 依類型建立 `eslint.config.mjs`（Next.js）或 `eslint.config.js`（Node/TS）
-5. [ ] `package.json` 加 `"lint": "eslint --max-warnings=0"`
-6. [ ] 安裝必要套件
-7. [ ] `.prettierignore` 加 `.worktrees/`
-8. [ ] `vitest.config.ts`（若有）的 `exclude` 加 `.worktrees/**`
-9. [ ] 執行 `npm run lint` 確認 0 errors 0 warnings
+6. [ ] 依類型建立 `eslint.config.mjs`（Next.js）或 `eslint.config.js`（Node/TS）
+7. [ ] `package.json` 加 `"lint": "eslint --max-warnings=0"`
+8. [ ] 安裝必要套件
+9. [ ] `.prettierignore` 加 `.worktrees/`
+10. [ ] `vitest.config.ts`（若有）的 `exclude` 加 `.worktrees/**`
+11. [ ] 執行 `npm run lint` 確認 0 errors 0 warnings
 
 ### Code Review
-10. [ ] 建立 `.github/workflows/claude-code-review.yml`（依統一格式）
+12. [ ] 建立 `.github/workflows/claude-code-review.yml`（依統一格式）
