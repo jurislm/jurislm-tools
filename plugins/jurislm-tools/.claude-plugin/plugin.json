@@ -1,12 +1,23 @@
 {
   "name": "jurislm-tools",
   "description": "JurisLM 內部工具集 — Coolify 部署管理、Hetzner VPS 管理、Podcast 轉部落格",
-  "version": "1.10.0",
+  "version": "1.11.1",
   "author": {
     "name": "Terry Chen"
   },
   "homepage": "https://github.com/terry90918/jurislm-tools",
   "repository": "https://github.com/terry90918/jurislm-tools",
   "license": "UNLICENSED",
-  "keywords": ["coolify", "hetzner", "podcast", "mcp", "tools", "deployment", "vps", "paas", "infrastructure", "blog"]
+  "keywords": [
+    "coolify",
+    "hetzner",
+    "podcast",
+    "mcp",
+    "tools",
+    "deployment",
+    "vps",
+    "paas",
+    "infrastructure",
+    "blog"
+  ]
 }
