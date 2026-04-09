@@ -43,9 +43,11 @@ jobs:
 
             ### 問題與建議
             (issues with file:line references, or 無 if none)
+            IMPORTANT: Do NOT suggest deferring fixes to follow-up PRs. Every suggestion you make is expected to be fixed in the current PR before merge. Never use phrases like "可在後續 PR 處理", "not blocking merge", or "can be addressed later".
 
             ### 結論
-            (can merge / needs changes)
+            (can merge / needs changes — if there are any suggestions above, the conclusion must be "needs changes")
 
             After writing review.md, post it as a PR comment:
             gh pr comment ${{ github.event.pull_request.number }} --body-file review.md
+

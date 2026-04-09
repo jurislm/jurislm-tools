@@ -16,7 +16,7 @@ grep '"version"' plugins/jurislm-tools/.claude-plugin/plugin.json
 
 ## Repository 概覽
 
-此為 Claude Code Plugin Marketplace（`jurislm-plugins`），GitHub repo：`terry90918/jurislm-tools`。
+此為 Claude Code Plugin Marketplace（`jurislm-tools`），GitHub repo：`jurislm/jurislm-tools`。
 
 ## 結構
 
@@ -56,12 +56,13 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 
 ## 安裝流程
 
-1. `git push` 到 marketplace repo
-2. `/plugin marketplace update jurislm-plugins` — 必須先更新 marketplace 索引
-3. `/plugin install jurislm-tools@jurislm-plugins` — 才能安裝
-4. 重啟 Claude Code — skills 才會載入
+1. `git push` 到 marketplace repo（`main` 分支）
+2. `/plugin marketplace add https://github.com/jurislm/jurislm-tools.git` — 首次使用需註冊 marketplace
+3. `/plugin marketplace update jurislm-tools` — 更新 marketplace 索引
+4. `/plugin install jurislm-tools@jurislm-tools` — 安裝 plugin
+5. 重啟 Claude Code — skills 才會載入
 
-跳過步驟 2 會導致 `Plugin not found`。
+步驟 2 只需首次執行；之後更新只需步驟 3-5。跳過步驟 3 會導致 `Plugin not found`。
 
 ## 注意事項
 
