@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.10.0](https://github.com/jurislm/jurislm-tools/compare/v1.9.2...v1.10.0) (2026-04-09)
+
+
+### Features
+
+* add codebase-sync skill ([ad56ed5](https://github.com/jurislm/jurislm-tools/commit/ad56ed5bd01be440446adb2aba9fb5206e78f997))
+* add codebase-sync skill — explore and update README/CLAUDE.md ([7cba889](https://github.com/jurislm/jurislm-tools/commit/7cba8890c4c69c1f71669f5f72d392296548149c))
+* add lint-config skill — ESLint 統一設定規範 ([e98f44d](https://github.com/jurislm/jurislm-tools/commit/e98f44df5918d6f3043157ce37f700550d1b1483))
+* add release-workflow skill ([e055262](https://github.com/jurislm/jurislm-tools/commit/e055262eedd1acd4384f26d8128712a28982542a))
+* merge release-workflow + lint-config into repo-standards skill ([ac7819e](https://github.com/jurislm/jurislm-tools/commit/ac7819e62f7749cb488fe3b9d50ff3face184c8d))
+* repo-standards skill + rename marketplace to jurislm-tools ([632d2cb](https://github.com/jurislm/jurislm-tools/commit/632d2cbdcc4bd1fc219b76ee1d7558d52f281cbe))
+
 ## [1.9.2](https://github.com/jurislm/jurislm-tools/compare/v1.9.1...v1.9.2) (2026-04-08)
 
 
