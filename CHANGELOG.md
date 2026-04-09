@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.12.0](https://github.com/jurislm/jurislm-tools/compare/v1.11.1...v1.12.0) (2026-04-09)
+
+
+### 🚀 New Features
+
+* add develop worktree workflow rule to repo-standards skill ([0021bc5](https://github.com/jurislm/jurislm-tools/commit/0021bc58a43925c072a9ab2c5cfdb059c63df8f4))
+* add develop worktree workflow rule to repo-standards skill ([018f3a8](https://github.com/jurislm/jurislm-tools/commit/018f3a8377844bf5942f795eb8035f44ddec34d2))
+
+
+### 🐛 Bug Fixes
+
+* update repo-standards skill — release-type must not be in workflow ([370e146](https://github.com/jurislm/jurislm-tools/commit/370e146f4baaa4cf0b8011b95102e42cff0c6e85))
+* update repo-standards skill — release-type must not be in workflow when using extra-files ([5cda142](https://github.com/jurislm/jurislm-tools/commit/5cda1420e036236e13ecb7af9a199c9925cf3e93))
+
 ## [1.11.1](https://github.com/jurislm/jurislm-tools/compare/v1.11.0...v1.11.1) (2026-04-09)
 
 
