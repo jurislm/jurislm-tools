@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/jurislm/jurislm-tools/compare/v1.10.0...v1.11.0) (2026-04-09)
+
+
+### Features
+
+* update CLAUDE.md — add repo-standards and codebase-sync skills to structure ([5d1d0dc](https://github.com/jurislm/jurislm-tools/commit/5d1d0dccaec28a0a3e62a5ab699431fa79fd177a))
+
 ## [1.10.0](https://github.com/jurislm/jurislm-tools/compare/v1.9.2...v1.10.0) (2026-04-09)
 
 
