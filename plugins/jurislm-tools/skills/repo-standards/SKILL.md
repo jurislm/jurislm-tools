@@ -42,14 +42,15 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
-          release-type: node   # 或 simple，見 Repo 分類表
           token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 **規則**：
 - `workflow_dispatch` 必填（允許手動觸發）
 - `permissions` 放在 top 層級（非 job 層級）
-- `release-type` 必須明確指定
+- **`release-type` 不可寫在 workflow** — 必須只放在 `release-please-config.json`
+
+⚠️ **重要**：若在 workflow 的 `with:` 區塊指定 `release-type`，Release Please 會忽略 `release-please-config.json` 的 `extra-files` 設定，導致 `plugin.json` 和 `marketplace.json` 版本號不會被自動更新。
 
 ### release-type 選擇
 
@@ -235,8 +236,8 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 ## 新增 Repo Checklist
 
 ### Release
-1. [ ] 建立 `.github/workflows/release.yml`（依標準格式，指定正確 `release-type`）
-2. [ ] 建立 `release-please-config.json`（依統一模板）
+1. [ ] 建立 `.github/workflows/release.yml`（依標準格式，**不指定 `release-type`**）
+2. [ ] 建立 `release-please-config.json`（依統一模板，`release-type` 寫在這裡）
 3. [ ] Plugin repo：加 `extra-files`，確認目標在陣列第一位
 
 ### ESLint
