@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.1](https://github.com/jurislm/jurislm-tools/compare/v1.11.0...v1.11.1) (2026-04-09)
+
+
+### 🐛 Bug Fixes
+
+* remove release-type from workflow — let release-please-config.json drive extra-files ([fccb20d](https://github.com/jurislm/jurislm-tools/commit/fccb20d413a6f99682a1de8aefe92eee4f29a068))
+
 ## [1.11.0](https://github.com/jurislm/jurislm-tools/compare/v1.10.0...v1.11.0) (2026-04-09)
 
 
