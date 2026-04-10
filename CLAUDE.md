@@ -55,6 +55,7 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 
 - **coolify**：`COOLIFY_ACCESS_TOKEN`、`COOLIFY_BASE_URL`
 - **hetzner**：`HETZNER_API_TOKEN`（不是 `HCLOUD_TOKEN`）
+- **langfuse**：`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`、`LANGFUSE_HOST`（JurisLM 使用 `https://us.cloud.langfuse.com`）
 
 ## 安裝流程
 
