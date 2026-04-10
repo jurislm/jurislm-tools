@@ -1,7 +1,7 @@
 ---
 name: pr
 description: 自動輪詢 PR 的 CI 狀態與 Bot Code Review feedback，分析並修正後合併。
-argument-hint: "[interval=3m] [loop=5] [repo=current] [pr=current]"
+argument-hint: "[interval=3] [loop=5] [repo=current] [pr=current]"
 ---
 
 Apply the `pr-review-loop` skill to monitor and resolve a pull request.
@@ -11,7 +11,7 @@ Apply the `pr-review-loop` skill to monitor and resolve a pull request.
 $ARGUMENTS
 
 Parse the arguments as follows (all optional, use defaults if not provided):
-- `interval`: interval between each round (e.g. `3m`, `5m`) — default: `3m`
+- `interval`: interval between each round in minutes (e.g. `3`, `5`) — default: `3`
 - `loop`: maximum number of rounds — default: `5`
 - `repo`: target GitHub repo in `owner/repo` format — default: current working directory's repo (`gh repo view --json nameWithOwner`)
 - `pr`: PR number (e.g. `#12` or `12`) — default: current branch's open PR (`gh pr view --json number`)
