@@ -49,7 +49,7 @@ gh pr checks <PR> --repo <REPO>
 | CI 狀態 | 做法 |
 |---------|------|
 | 仍有 `pending` / `in_progress` | 設 `SEEN_PENDING=true`（已確認 CI 觸發）；`PENDING_POLLS += 1`；若 `PENDING_POLLS >= MAX_PENDING_POLLS` → **停止，執行「前置等待超時」流程（依 `SEEN_PENDING` 判斷情境，見下方）**；否則等待 `time` 分鐘（同執行參數），重新執行 `gh pr checks` |
-| 有 `failure` / `error` | 修正 CI 錯誤，push 後重置輪詢計數（`PENDING_POLLS=0`、`SEEN_PENDING=false`），繼續等待 CI 重新觸發（詳見下方說明） |
+| 有 `failure` / `error` | 修正 CI 錯誤，commit + push；更新 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`，繼續等待 CI 重新觸發（詳見下方說明） |
 | 全部 `pass` / `success` | **本輪正式開始**（記錄 `ROUND_START`，重置 `PENDING_POLLS=0`，`SEEN_PENDING=false`），進入 Step 1 |
 | 無任何 check 項目（無 CI 設定） | **本輪正式開始**（記錄 `ROUND_START`），進入 Step 1 |
 
@@ -113,7 +113,7 @@ PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
 gh pr view <PR> --repo <REPO> --json mergeable,mergeStateStatus,baseRefName
 ```
 
-- `CONFLICTING` → **立即解決衝突**（見下方衝突處理），commit + push，才繼續
+- `CONFLICTING` → **立即解決衝突**（見下方衝突處理），commit + push，更新 `LAST_PUSH_TIME`，才繼續
 - `BLOCKED` / `UNKNOWN` → 等待 CI，繼續
 - `MERGEABLE` → 繼續
 
@@ -131,7 +131,7 @@ gh pr checks <PR> --repo <REPO>
 |---------|------|
 | 全部 pass | 繼續 Step 3 |
 | 無任何 check 項目（無 CI 設定） | 視為通過，繼續 Step 3 |
-| 有 failure（預期外） | 前置等待已確保 CI 通過，此處出現 failure 通常表示 Step 1 衝突解決產生了新 push，導致 CI 重新觸發並失敗；**重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`**，回到「前置等待」重新處理 |
+| 有 failure（預期外） | 前置等待已確保 CI 通過，此處出現 failure 通常表示 Step 1 衝突解決產生了新 push，導致 CI 重新觸發並失敗；Step 1 push 時已更新 `LAST_PUSH_TIME`（見 Step 1 說明）；**重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`**，回到「前置等待」重新處理 |
 
 ### Step 3 — 閱讀 Bot Feedback（每輪必做）
 
