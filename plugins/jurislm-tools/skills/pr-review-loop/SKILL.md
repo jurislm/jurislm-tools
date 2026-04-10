@@ -32,7 +32,7 @@ Loop 開始前初始化一次（不在每輪重置）：
 LAST_PUSH_TIME=""    # 每次 push 後更新，作為 feedback 篩選基準
 ROUND_COUNT=0        # 計數「有效輪次」
 PENDING_POLLS=0      # 計數前置等待的輪詢次數
-MAX_PENDING_POLLS=30 # 每次等待 time 分鐘，30 次約等待 30×time 分鐘
+MAX_PENDING_POLLS=30 # 搭配執行參數 `time`（預設 3 分鐘），30 次約等待 90 分鐘
 ```
 
 ### 前置等待：確認 CI 通過後，才開始本輪
@@ -48,7 +48,7 @@ gh pr checks <PR> --repo <REPO>
 | CI 狀態 | 做法 |
 |---------|------|
 | 仍有 `pending` / `in_progress` | `PENDING_POLLS += 1`；若 `PENDING_POLLS >= MAX_PENDING_POLLS` → **停止，執行「前置等待超時」流程（見下方）**；否則等待 `time` 分鐘（同執行參數），重新執行 `gh pr checks` |
-| 有 `failure` / `error` | 閱讀 CI 錯誤日誌，分析根本原因，修正後 `commit + push`；記錄 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`；**等待直到 `gh pr checks` 出現至少一筆 `pending` / `in_progress` 項目**（避免立即讀到舊的失敗狀態），再繼續正常輪詢 |
+| 有 `failure` / `error` | 閱讀 CI 錯誤日誌，分析根本原因，修正後 `commit + push`；記錄 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`；**持續執行 `gh pr checks`，直到出現至少一筆 `pending` / `in_progress` 項目**（此等待同樣計入 `PENDING_POLLS`，超過上限則執行超時流程），再繼續正常輪詢 |
 | 全部 `pass` / `success` | **本輪正式開始**（記錄 `ROUND_START`，重置 `PENDING_POLLS=0`），進入 Step 1 |
 | 無任何 check 項目（無 CI 設定） | **本輪正式開始**（記錄 `ROUND_START`），進入 Step 1 |
 
@@ -195,7 +195,7 @@ PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
 3. 通知使用者介入：
 
 ```
-⚠️ PR #<PR> 的 CI 已持續 pending 超過 <MAX_PENDING_POLLS> 次輪詢（約等待 <MAX_PENDING_POLLS × time> 分鐘），可能為 Runner 故障或 CI 設定問題，已停止等待。
+⚠️ PR #<PR> 的 CI 已持續 pending 超過 <MAX_PENDING_POLLS> 次輪詢（<MAX_PENDING_POLLS> 次 × <time> 分鐘/次，約等待 <ELAPSED_MINUTES> 分鐘），可能為 Runner 故障或 CI 設定問題，已停止等待。
 
 請 @<PR_AUTHOR> 手動檢查以下項目：
 - GitHub Actions Runner 是否正常運行
