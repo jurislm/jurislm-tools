@@ -37,6 +37,8 @@ ROUND_COUNT=0      # 計數「有效輪次」（CI pending 輪不計入）
 ROUND_START=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 ```
 
+**每輪結束前（Step 6 之後）**：若本輪為有效輪次（非 CI pending），將 `ROUND_COUNT` 加 1。若 `ROUND_COUNT >= loop`，執行「超過輪次停止」流程（見下方），不再進入下一輪。
+
 ### Step 1 — 優先：檢查 Merge Conflict
 
 ```bash
