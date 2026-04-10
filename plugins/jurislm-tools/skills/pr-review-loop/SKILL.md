@@ -34,7 +34,7 @@ ROUND_COUNT=0        # 計數「有效輪次」
 PENDING_POLLS=0      # 計數前置等待的輪詢次數
 MAX_PENDING_POLLS=30 # 搭配 TIME 參數，達上限時約等待 MAX_PENDING_POLLS * TIME 分鐘
 SEEN_PENDING=false   # 超時情境判斷：false = 尚未觀察到 pending（或重置後 CI 未重新觸發）; true = CI 已觸發但長時間未完成
-TIME=${interval:-3}  # 每輪輪詢間隔（分鐘）；呼叫時以 interval=N（小寫）傳入，skill 內部統一用 TIME（大寫，預設 3）
+TIME=<interval 參數值，若未提供則預設 3>  # 從 $ARGUMENTS 解析 interval 參數；skill 內部統一用 TIME（大寫）
 ```
 
 ### 前置等待：確認 CI 通過後，才開始本輪
@@ -62,7 +62,7 @@ gh pr checks <PR> --repo <REPO>
    - 所有 check 均已完成（全部 pass 或有 failure）→ 直接進入前置等待表格對應分支（pass 列或 failure 列）繼續處理
    - `PENDING_POLLS >= MAX_PENDING_POLLS` **且 `SEEN_PENDING=false`**（此 sub-loop 結束時 `SEEN_PENDING` 仍為 `false`，即 push 後從未出現 pending）→ 觸發**情境 B** 超時
 
-> **說明**：子步驟 c 的 `PENDING_POLLS` 計數延續自子步驟 b 重置後的值（初始為 0）。情境 B 超時的判斷條件（`SEEN_PENDING=false`）以「子步驟 c 結束時」的狀態為準，而非前置等待全程的 `SEEN_PENDING`——一旦子步驟 c 觀察到 pending（`SEEN_PENDING=true`），便回到表格頂端的正常輪詢流程，不再觸發情境 B。
+> **說明**：子步驟 c 的 `PENDING_POLLS` 計數延續自子步驟 b 重置後的值（初始為 0）。情境 B 超時的判斷條件（`SEEN_PENDING=false`）以「子步驟 c 結束時」的狀態為準，而非前置等待全程的 `SEEN_PENDING`——一旦子步驟 c 觀察到 pending（`SEEN_PENDING=true`），便回到表格頂端的正常輪詢流程，不再觸發情境 B。注：`PENDING_POLLS >= MAX_PENDING_POLLS` 時 `SEEN_PENDING` 必為 `false`（若為 `true` 則第一個條件已先觸發 sub-loop 退出），此第四種組合在邏輯上不可達。
 
 **CI 通過後，本輪正式開始**（對應表格「全部 pass」列）：
 
