@@ -227,13 +227,69 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ## Code Review 設定
 
-所有 repo 的 `.github/workflows/claude-code-review.yml` 統一格式，關鍵規則：
-- 使用 `anthropics/claude-code-action@v1.0.70`
-- `claude_args: '--allowedTools "Bash(gh:*),Write"'`
-- prompt 中「問題與建議」需包含：
-  > IMPORTANT: Do NOT suggest deferring fixes to follow-up PRs. Every suggestion you make is expected to be fixed in the current PR before merge.
-- 「結論」需包含：
-  > if there are any suggestions above, the conclusion must be "needs changes"
+### 標準 .github/workflows/claude-code-review.yml
+
+```yaml
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Code Review
+        uses: anthropics/claude-code-action@v1.0.70
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: '--allowedTools "Bash(gh:*),Write"'
+          prompt: |
+            You are a code reviewer. Review the changes in PR #${{ github.event.pull_request.number }}.
+
+            1. Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff
+            2. Analyze the changes
+            3. Write your review to the file "review.md" using the Write tool
+
+            The review must be in Traditional Chinese with this format:
+
+            ## Code Review
+
+            ### 變更摘要
+            (bullet points)
+
+            ### 優點
+            (what's good about these changes)
+
+            ### 問題與建議
+            (issues with file:line references, or 無 if none)
+            IMPORTANT: Do NOT suggest deferring fixes to follow-up PRs. Every suggestion you make is expected to be fixed in the current PR before merge. Never use phrases like "可在後續 PR 處理", "not blocking merge", or "can be addressed later".
+
+            ### 結論
+            (can merge / needs changes — if there are any suggestions above, the conclusion must be "needs changes")
+
+            After writing review.md, post it as a PR comment:
+            gh pr comment ${{ github.event.pull_request.number }} --body-file review.md
+```
+
+**關鍵規則**：
+- 使用 `anthropics/claude-code-action@v1.0.70`（不升版，避免 `@v1.0.70+` 的 bash 安全過濾器問題）
+- `claude_args: '--allowedTools "Bash(gh:*),Write"'`（最小權限：只允許 `gh` 命令與 Write）
+- `CLAUDE_CODE_OAUTH_TOKEN` 必須在 repo Secrets 設定
+- `synchronize` trigger 確保每次 push 後重新 review
+- `fetch-depth: 0` 確保完整 git history
 
 ---
 
