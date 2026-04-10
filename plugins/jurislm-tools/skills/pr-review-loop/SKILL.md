@@ -50,7 +50,7 @@ gh pr checks <PR> --repo <REPO>
 | CI 狀態 | 做法 |
 |---------|------|
 | 仍有 `pending` / `in_progress` | 設 `SEEN_PENDING=true`（已確認 CI 觸發）；`PENDING_POLLS += 1`；若 `PENDING_POLLS >= MAX_PENDING_POLLS` → **停止，執行「前置等待超時」流程（依 `SEEN_PENDING` 判斷情境，見下方）**；否則等待 `TIME` 分鐘，重新執行 `gh pr checks` |
-| 有 `failure` / `error` | 修正 CI 錯誤，commit + push；更新 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`，**進入「CI failure 修正後等待新 CI 觸發」sub-loop（見下方說明）** |
+| 有 `failure` / `error` | **進入「CI failure 修正後等待新 CI 觸發」sub-loop（見下方說明）** |
 | 全部 `pass` / `success` | **本輪正式開始**（記錄 `ROUND_START`，重置 `PENDING_POLLS=0`，`SEEN_PENDING=false`），進入 Step 1 |
 | 無任何 check 項目（無 CI 設定） | **本輪正式開始**（記錄 `ROUND_START`），進入 Step 1 |
 
