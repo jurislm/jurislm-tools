@@ -83,7 +83,7 @@ gh pr checks <PR> --repo <REPO>
 |---------|------|
 | 全部 pass | 繼續 Step 3 |
 | 無任何 check 項目（無 CI 設定） | 視為通過，繼續 Step 3 |
-| 有 failure（預期外） | 前置等待已確保 CI 通過，此處出現 failure 通常表示 Step 1 衝突解決產生了新 push，導致 CI 重新觸發並失敗；回到「前置等待」重新處理 |
+| 有 failure（預期外） | 前置等待已確保 CI 通過，此處出現 failure 通常表示 Step 1 衝突解決產生了新 push，導致 CI 重新觸發並失敗；**重置 `PENDING_POLLS=0`**，回到「前置等待」重新處理 |
 
 ### Step 3 — 閱讀 Bot Feedback（每輪必做）
 
@@ -192,15 +192,28 @@ gh pr merge <PR> --repo <REPO> --squash --delete-branch
 PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
 ```
 
-3. 通知使用者介入：
+3. 依超時情境通知使用者介入（依觸發來源選擇對應訊息）：
+
+**情境 A：一般 pending 輪詢超時**（CI 已觸發但長時間未完成）
 
 ```
-⚠️ PR #<PR> 的 CI 已持續 pending 超過 <MAX_PENDING_POLLS> 次輪詢（已輪詢 <PENDING_POLLS> 次，每次等待 <time> 分鐘，共約 <PENDING_POLLS × time> 分鐘），可能為 Runner 故障或 CI 設定問題，已停止等待。
+⚠️ PR #<PR> 的 CI 已持續 pending 超過 <PENDING_POLLS> 次輪詢（每次等待 <time> 分鐘，共約 <PENDING_POLLS × time> 分鐘），可能為 Runner 故障或 workflow 超時，已停止等待。
 
-請 @<PR_AUTHOR> 手動檢查以下項目：
+請 @<PR_AUTHOR> 手動檢查：
 - GitHub Actions Runner 是否正常運行
-- CI workflow 是否有錯誤設定
+- CI workflow 是否有超時或設定問題
 - 確認後請手動重跑 CI 或調整後重新觸發。
+```
+
+**情境 B：CI failure 修正 push 後未觸發超時**（push 後 CI 長時間未出現新的 pending）
+
+```
+⚠️ PR #<PR> 在修正並 push 後，CI 長時間未重新觸發（已等待約 <PENDING_POLLS × time> 分鐘），可能為 workflow trigger 設定問題，已停止等待。
+
+請 @<PR_AUTHOR> 手動檢查：
+- GitHub Actions trigger 設定是否正確（on.push, on.pull_request）
+- 是否有 branch filter 導致 workflow 未觸發
+- 確認後請手動重跑 CI 或調整 trigger 設定後重新推送。
 ```
 
 ---
