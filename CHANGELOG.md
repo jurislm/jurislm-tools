@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.1](https://github.com/jurislm/jurislm-tools/compare/v1.15.0...v1.15.1) (2026-04-10)
+
+
+### 🐛 Bug Fixes
+
+* add skills and commands discovery to plugin.json ([#43](https://github.com/jurislm/jurislm-tools/issues/43)) ([4966955](https://github.com/jurislm/jurislm-tools/commit/496695549feaa8f6f9cf82695a4ff2a497df5a7f))
+
 ## [1.15.0](https://github.com/jurislm/jurislm-tools/compare/v1.14.0...v1.15.0) (2026-04-10)
 
 
