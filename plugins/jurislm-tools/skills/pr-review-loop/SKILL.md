@@ -34,7 +34,7 @@ ROUND_COUNT=0        # 計數「有效輪次」
 PENDING_POLLS=0      # 計數前置等待的輪詢次數
 MAX_PENDING_POLLS=30 # 搭配 TIME 參數，達上限時約等待 MAX_PENDING_POLLS * TIME 分鐘
 SEEN_PENDING=false   # 超時情境判斷：false = 尚未觀察到 pending（或重置後 CI 未重新觸發）; true = CI 已觸發但長時間未完成
-TIME=3               # 每輪輪詢間隔（分鐘）；執行參數 `time` 會賦值給此變數（預設 3 分鐘）
+TIME=3               # 每輪輪詢間隔（分鐘）；呼叫時以 time=N（小寫）傳入，skill 內部統一用 TIME（大寫）
 ```
 
 ### 前置等待：確認 CI 通過後，才開始本輪
@@ -57,12 +57,9 @@ gh pr checks <PR> --repo <REPO>
 **CI failure 修正後等待新 CI 觸發的詳細步驟**：
 1. 閱讀 CI 錯誤日誌，分析根本原因，修正後 `commit + push`
 2. 記錄 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`
-3. 持續執行 `gh pr checks`，直到符合以下任一條件：
-   - 出現至少一筆 `pending` / `in_progress`（設 `SEEN_PENDING=true`，繼續正常輪詢）
+3. 持續執行 `gh pr checks`，直到符合以下任一條件（注意：此步驟無 `PENDING_POLLS += 1`，超時由回到前置等待表格後的 pending 行負責）：
+   - 出現至少一筆 `pending` / `in_progress`（設 `SEEN_PENDING=true`，回到前置等待表格頂端繼續正常輪詢）
    - 所有 check 均已完成（全部 pass 或有 failure，直接進入對應的前置等待表格分支處理）
-   - `PENDING_POLLS` 超過上限 → 依 `SEEN_PENDING` 選超時通知情境：
-     - `SEEN_PENDING=false` → 情境 B（CI push 後從未觸發）
-     - `SEEN_PENDING=true` → 情境 A（CI 已觸發但 Runner 卡住）
 4. 繼續正常輪詢（回到前置等待表格頂端）
 
 **CI 通過後，本輪正式開始**（對應表格「全部 pass」列）：
