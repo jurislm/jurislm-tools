@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.3](https://github.com/jurislm/jurislm-tools/compare/v1.15.2...v1.15.3) (2026-04-10)
+
+
+### 🐛 Bug Fixes
+
+* rename pr command to pr-review for autocomplete visibility ([#47](https://github.com/jurislm/jurislm-tools/issues/47)) ([2639534](https://github.com/jurislm/jurislm-tools/commit/26395340bb038ff7106a415a0f6e6ec3970c0b4c))
+
 ## [1.15.2](https://github.com/jurislm/jurislm-tools/compare/v1.15.1...v1.15.2) (2026-04-10)
 
 

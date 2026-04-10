@@ -1,7 +1,7 @@
 {
   "name": "jt",
   "description": "JurisLM 內部工具集 — Coolify 部署管理、Hetzner VPS 管理、Langfuse 可觀測性、Podcast 轉部落格、PR 自動化審查與合併",
-  "version": "1.15.2",
+  "version": "1.15.3",
   "author": {
     "name": "Terry Chen"
   },
