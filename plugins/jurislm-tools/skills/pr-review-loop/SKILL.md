@@ -52,14 +52,20 @@ gh pr checks <PR> --repo <REPO>
 gh pr view <PR> --repo <REPO> --json comments,reviews
 ```
 
-每次 push 後，GitHub Copilot 和 Claude Bot **都可能重新觸發 review**，因此每輪都必須重讀。
-
 讀取來源：
 - **GitHub Copilot** → `reviews` 欄位（formal review，含 `APPROVED` / `CHANGES_REQUESTED` 狀態）
 - **Claude Bot** → `comments` 欄位（inline 留言）
 
 篩選方式：以 `createdAt` timestamp 過濾，只處理**上一輪 commit 時間之後**的新留言；
 第一輪沒有上一輪，讀取所有留言。
+
+> **注意 — Copilot 重新 review 的前提條件**：
+> Copilot 預設**每個 PR 只 review 一次**。若要每次 push 都觸發重新 review，需要：
+> 1. **GitHub Team 方案**（私人 repo 的 Ruleset 需要付費方案）
+> 2. Ruleset 中啟用 **「Review new pushes」** 選項（非預設）
+>
+> 若未啟用，Copilot 在第一輪後不會再出現新 feedback，可跳過等待 Copilot 重新 review。
+> Claude Bot（`claude-code-review.yml` workflow）則每次 push 後仍會觸發。
 
 ### Step 4 — 分析與修正
 
@@ -81,7 +87,9 @@ git push
 
 ### Step 5 — 等待 `time` 分鐘（讓 Bot 完成 re-review）
 
-commit + push 後，GitHub Copilot 和 Claude Bot 需要時間重新跑 review，等待 `time` 後再進入下一輪（預設 3 分鐘）。
+commit + push 後，Claude Bot 需要時間重新跑 review，等待 `time` 後再進入下一輪（預設 3 分鐘）。
+
+> Copilot 是否重新 review 取決於是否已啟用「Review new pushes」（見 Step 3 說明）。
 
 ### Step 6 — 檢查合併狀態
 
