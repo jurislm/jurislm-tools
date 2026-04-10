@@ -1,7 +1,7 @@
 ---
 name: pr-review-loop
 version: 1.0.0
-description: PR 開啟後自動輪詢 CI 狀態與 Bot Code Review feedback，分析合理建議並修正，最多 5 輪，通過後自動合併。當使用者說「幫我看 PR review」、「等 CI 通過」、「自動處理 PR feedback」、「loop PR」時觸發。
+description: PR 開啟後自動輪詢 CI 狀態與 Bot Code Review feedback，分析合理建議並修正，達到指定輪次上限後停止，通過後自動合併。當使用者說「幫我看 PR review」、「等 CI 通過」、「自動處理 PR feedback」、「loop PR」時觸發。
 argument-hint: "[time=3m] [loop=5] [repo=current] [pr=current]"
 ---
 
@@ -53,10 +53,11 @@ gh pr view <PR> --repo <REPO> --json comments,reviews
 ```
 
 讀取來源：
-- **GitHub Copilot** 的 code review 留言
-- **Claude Bot** 的 code review 留言
+- **GitHub Copilot** 的 code review 留言（`reviews` 欄位）
+- **Claude Bot** 的 code review 留言（`comments` 欄位）
 
-> **第一輪必讀**；後續若有新留言才重讀。
+每輪都重讀，以 `createdAt` timestamp 篩選出**上一輪 commit 之後**的新留言優先處理；
+第一輪則讀取所有留言。
 
 ### Step 4 — 分析與修正
 
@@ -86,8 +87,11 @@ git push
 gh pr view <PR> --repo <REPO> --json reviewDecision,mergeable,statusCheckRollup
 ```
 
+CI 全 pass 的判斷：`statusCheckRollup` 陣列中所有 item 的 `conclusion` 為 `SUCCESS`、`NEUTRAL` 或 `SKIPPED`（無任何 `FAILURE` / `TIMED_OUT` / `CANCELLED`）。
+
 - `reviewDecision: APPROVED` + CI 全 pass → **執行合併**（見下方合併步驟）
-- 仍有 `CHANGES_REQUESTED` 或 CI pending → 進入下一輪
+- `reviewDecision: null`（無需 review 的 repo）+ CI 全 pass → **執行合併**
+- 仍有 `CHANGES_REQUESTED` 或 CI pending/failure → 進入下一輪
 
 ---
 
