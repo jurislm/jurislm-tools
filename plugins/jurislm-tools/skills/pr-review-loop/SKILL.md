@@ -32,7 +32,7 @@ Loop 開始前初始化一次（不在每輪重置）：
 LAST_PUSH_TIME=""    # 每次 push 後更新，作為 feedback 篩選基準
 ROUND_COUNT=0        # 計數「有效輪次」
 PENDING_POLLS=0      # 計數前置等待的輪詢次數
-MAX_PENDING_POLLS=30 # 超過此次數仍為 pending，停止並通知使用者（約 loop × time 的 6 倍）
+MAX_PENDING_POLLS=30 # 每次等待 time 分鐘，30 次約等待 30×time 分鐘
 ```
 
 ### 前置等待：確認 CI 已完成，才開始本輪
@@ -183,12 +183,18 @@ gh pr merge <PR> --repo <REPO> --squash --delete-branch
 當 `PENDING_POLLS >= MAX_PENDING_POLLS`，CI 長時間卡在 pending 狀態：
 
 1. **立即停止所有自動操作**
-2. 通知使用者介入：
+2. 取得 PR 作者：
+
+```bash
+PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
+```
+
+3. 通知使用者介入：
 
 ```
 ⚠️ PR #<PR> 的 CI 已持續 pending 超過 <MAX_PENDING_POLLS> 次輪詢，可能為 Runner 故障或 CI 設定問題，已停止等待。
 
-請 @terry90918 手動檢查以下項目：
+請 @<PR_AUTHOR> 手動檢查以下項目：
 - GitHub Actions Runner 是否正常運行
 - CI workflow 是否有錯誤設定
 - 確認後請手動重跑 CI 或調整後重新觸發。
@@ -201,12 +207,18 @@ gh pr merge <PR> --repo <REPO> --squash --delete-branch
 當有效輪次（`ROUND_COUNT`）達到 `loop` 上限，且 PR **仍未達到可合併狀態**時：
 
 1. **立即停止所有自動操作，不執行合併**
-2. 通知使用者介入：
+2. 取得 PR 作者：
+
+```bash
+PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
+```
+
+3. 通知使用者介入：
 
 ```
 ⚠️ PR #<PR> 已達最大輪次（<loop> 輪）仍未獲得核准，已停止自動處理。
 
-請 @terry90918 手動檢查以下項目：
+請 @<PR_AUTHOR> 手動檢查以下項目：
 - Bot feedback 是否仍有 needs changes（是否有需要人工判斷的建議）
 - CI 是否持續失敗（原因為何）
 - 是否涉及設計決策需要人工介入
