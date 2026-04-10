@@ -131,6 +131,7 @@ gh pr checks <PR> --repo <REPO>
 |---------|------|
 | 全部 pass | 繼續 Step 3 |
 | 無任何 check 項目（無 CI 設定） | 視為通過，繼續 Step 3 |
+| 仍有 `pending` / `in_progress`（預期外） | Step 1 push 可能觸發新 CI；**重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`**，回到「前置等待」重新等待 CI 完成 |
 | 有 failure（預期外） | 前置等待已確保 CI 通過，此處出現 failure 通常表示 Step 1 衝突解決產生了新 push，導致 CI 重新觸發並失敗；Step 1 push 時已更新 `LAST_PUSH_TIME`（見 Step 1 說明）；**重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`**，回到「前置等待」重新處理 |
 
 ### Step 3 — 閱讀 Bot Feedback（每輪必做）
