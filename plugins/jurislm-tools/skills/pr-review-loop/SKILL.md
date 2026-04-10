@@ -60,8 +60,10 @@ gh pr checks <PR> --repo <REPO>
 3. 持續執行 `gh pr checks`（每次輪詢後等待 `TIME` 分鐘，`PENDING_POLLS += 1`），直到符合以下任一條件：
    - 出現至少一筆 `pending` / `in_progress`（設 `SEEN_PENDING=true`，回到前置等待表格頂端繼續正常輪詢）
    - 所有 check 均已完成（全部 pass 或有 failure，直接進入對應的前置等待表格分支處理）
-   - `PENDING_POLLS >= MAX_PENDING_POLLS` **且 `SEEN_PENDING=false`**（CI push 後從未出現 pending）→ 觸發**情境 B** 超時
+   - `PENDING_POLLS >= MAX_PENDING_POLLS` **且 `SEEN_PENDING=false`**（此 sub-loop 結束時 `SEEN_PENDING` 仍為 `false`，即 push 後從未出現 pending）→ 觸發**情境 B** 超時
 4. 繼續正常輪詢（回到前置等待表格頂端）
+
+> **說明**：步驟 3 的 `PENDING_POLLS` 計數延續自步驟 2 重置後的值（初始為 0）。情境 B 超時的判斷條件（`SEEN_PENDING=false`）以「步驟 3 結束時」的狀態為準，而非前置等待全程的 `SEEN_PENDING`——一旦步驟 3 觀察到 pending（`SEEN_PENDING=true`），便回到表格頂端的正常輪詢流程，不再觸發情境 B。
 
 **CI 通過後，本輪正式開始**（對應表格「全部 pass」列）：
 
