@@ -90,7 +90,7 @@ PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
 **情境 A：一般 pending 輪詢超時**（`SEEN_PENDING=true`，CI 已觸發但長時間未完成）
 
 ```
-⚠️ PR #<PR> 的 CI 已持續 pending 超過 <PENDING_POLLS> 次輪詢（已等待約 $(( PENDING_POLLS * TIME )) 分鐘（即 <PENDING_POLLS> 次 × <TIME> 分鐘/次，MAX_PENDING_POLLS=<MAX_PENDING_POLLS>，TIME=<TIME>）），可能為 Runner 故障或 workflow 超時，已停止等待。
+⚠️ PR #<PR> 的 CI 已持續 pending 超過 <PENDING_POLLS> 次輪詢（已等待約 <PENDING_POLLS × TIME> 分鐘（即 <PENDING_POLLS> 次 × <TIME> 分鐘/次，MAX_PENDING_POLLS=<MAX_PENDING_POLLS>，TIME=<TIME>）），可能為 Runner 故障或 workflow 超時，已停止等待。
 
 請 @<PR_AUTHOR> 手動檢查：
 - GitHub Actions Runner 是否正常運行
@@ -101,7 +101,7 @@ PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
 **情境 B：CI failure 修正 push 後未觸發超時**（`SEEN_PENDING=false`，push 後 CI 長時間未出現新的 pending）
 
 ```
-⚠️ PR #<PR> 在修正並 push 後，CI 長時間未重新觸發（已等待約 $(( PENDING_POLLS * TIME )) 分鐘（即 <PENDING_POLLS> 次 × <TIME> 分鐘/次，MAX_PENDING_POLLS=<MAX_PENDING_POLLS>，TIME=<TIME>）），可能為 workflow trigger 設定問題，已停止等待。
+⚠️ PR #<PR> 在修正並 push 後，CI 長時間未重新觸發（已等待約 <PENDING_POLLS × TIME> 分鐘（即 <PENDING_POLLS> 次 × <TIME> 分鐘/次，MAX_PENDING_POLLS=<MAX_PENDING_POLLS>，TIME=<TIME>）），可能為 workflow trigger 設定問題，已停止等待。
 
 請 @<PR_AUTHOR> 手動檢查：
 - GitHub Actions trigger 設定是否正確（on.push, on.pull_request）
@@ -135,7 +135,7 @@ gh pr checks <PR> --repo <REPO>
 |---------|------|
 | 全部 pass | 繼續 Step 3 |
 | 無任何 check 項目（無 CI 設定） | 視為通過，繼續 Step 3 |
-| 仍有 `pending` / `in_progress`（預期外） | Step 1 push 可能觸發新 CI；**重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`**，回到「前置等待」重新等待 CI 完成 |
+| 仍有 `pending` / `in_progress`（預期外） | Step 1 **衝突解決** push 可能觸發新 CI；**重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`**，回到「前置等待」重新等待 CI 完成 |
 | 有 failure（預期外） | 前置等待已確保 CI 通過，此處出現 failure 可能原因：① Step 1 衝突解決產生了新 push，CI 重新觸發並失敗（Step 1 push 時已更新 `LAST_PUSH_TIME`）；② CI 本身不穩定（flaky test）；無論何種原因，**重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`**，回到前置等待表格頂端（前置等待的 failure 列將負責修正或重新等待）|
 
 ### Step 3 — 閱讀 Bot Feedback（每輪必做）
