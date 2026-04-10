@@ -37,8 +37,6 @@ ROUND_COUNT=0      # 計數「有效輪次」（CI pending 輪不計入）
 ROUND_START=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 ```
 
-**每輪結束前（Step 6 之後）**：若本輪為有效輪次（非 CI pending），將 `ROUND_COUNT` 加 1。若 `ROUND_COUNT >= loop`，執行「超過輪次停止」流程（見下方），不再進入下一輪。
-
 ### Step 1 — 優先：檢查 Merge Conflict
 
 ```bash
@@ -59,7 +57,7 @@ gh pr checks <PR> --repo <REPO>
 
 - 全部 pass → 繼續 Step 3
 - 有 failure → 閱讀錯誤，分析並修正，commit + push
-- 仍有 pending / in_progress → **跳過 Step 3 & Step 4，直接進入 Step 5 等待**（此輪不計入 `loop` 上限，避免 CI 執行時間過長耗盡輪次）
+- 仍有 pending / in_progress → **本輪視為「未完成」，跳過 Step 3 & Step 4，直接進入 Step 5 等待，不計入 `ROUND_COUNT`**
 - 無任何 check 項目（repo 未設定 CI）→ 記錄為「無 CI 設定」，繼續 Step 3
 
 ### Step 3 — 閱讀 Bot Feedback（每輪必做）
@@ -121,7 +119,9 @@ CI 全 pass 的判斷：
 
 - `reviewDecision: APPROVED` + CI 全 pass → **執行合併**（見下方合併步驟）
 - `reviewDecision: null`（無需 review 的 repo）+ CI 全 pass → **通知使用者「此 repo 無需 reviewer 核准，即將自動合併」，隨即執行合併**
-- 仍有 `CHANGES_REQUESTED` 或 CI pending/failure → 進入下一輪
+- 仍有 `CHANGES_REQUESTED` 或 CI failure → 本輪完成，`ROUND_COUNT += 1`，判斷是否繼續：
+  - `ROUND_COUNT < loop` → 進入下一輪
+  - `ROUND_COUNT >= loop` → **停止，執行「超過輪次停止」流程（見下方）**
 
 ---
 
