@@ -1,5 +1,6 @@
 ---
 name: podcast-to-blog
+version: 1.0.0
 description: >
   將 Podcast 轉成部落格文章的完整工作流。Use this skill when the user says
   "podcast 轉文章", "幫我把這集 podcast 寫成文章", "podcast 逐字稿",

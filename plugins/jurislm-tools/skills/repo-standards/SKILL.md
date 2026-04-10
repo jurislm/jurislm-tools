@@ -1,5 +1,6 @@
 ---
 name: repo-standards
+version: 1.0.0
 description: JurisLM 各 repo 的統一設定規範，涵蓋 Release 工作流程與 ESLint 設定。當使用者詢問「如何設定新 repo」、「release workflow 怎麼寫」、「release-please 怎麼用」、「lint 怎麼設定」、「eslint config 怎麼寫」、「新增 repo 要怎麼設定」時觸發。
 argument-hint: "[repo-name]"
 ---
