@@ -1,7 +1,7 @@
 ---
 name: pr-review-loop
 version: 1.0.0
-description: PR 開啟後自動輪詢 CI 狀態與 Bot Code Review feedback，分析合理建議並修正，達到指定輪次上限後停止，通過後自動合併。當使用者說「幫我看 PR review」、「等 CI 通過」、「自動處理 PR feedback」、「loop PR」時觸發。
+description: PR 開啟後自動輪詢 CI 狀態與 Bot Code Review feedback，分析合理建議並修正，Bot 核准且 CI 通過後自動合併；達到輪次上限仍未核准則停止並通知使用者介入。當使用者說「幫我看 PR review」、「等 CI 通過」、「自動處理 PR feedback」、「loop PR」時觸發。
 argument-hint: "[time=3m] [loop=5] [repo=current] [pr=current]"
 ---
 
@@ -28,9 +28,10 @@ Loop 開始前初始化一次（不在每輪重置）：
 
 ```bash
 LAST_PUSH_TIME=""  # 每次 push 後更新，作為 feedback 篩選基準
+ROUND_COUNT=0      # 計數「有效輪次」（CI pending 輪不計入）
 ```
 
-每輪開始時記錄當前時間戳（第一輪 fallback 用）：
+每輪開始時：
 
 ```bash
 ROUND_START=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -56,7 +57,7 @@ gh pr checks <PR> --repo <REPO>
 
 - 全部 pass → 繼續 Step 3
 - 有 failure → 閱讀錯誤，分析並修正，commit + push
-- 仍有 pending / in_progress → **跳過 Step 3 & Step 4，直接進入 Step 5 等待**（此輪不計入 `loop` 上限，避免 CI 執行時間過長耗盡輪次）
+- 仍有 pending / in_progress → **本輪視為「未完成」，跳過 Step 3 & Step 4，直接進入 Step 5 等待，不計入 `ROUND_COUNT`**
 - 無任何 check 項目（repo 未設定 CI）→ 記錄為「無 CI 設定」，繼續 Step 3
 
 ### Step 3 — 閱讀 Bot Feedback（每輪必做）
@@ -118,7 +119,9 @@ CI 全 pass 的判斷：
 
 - `reviewDecision: APPROVED` + CI 全 pass → **執行合併**（見下方合併步驟）
 - `reviewDecision: null`（無需 review 的 repo）+ CI 全 pass → **通知使用者「此 repo 無需 reviewer 核准，即將自動合併」，隨即執行合併**
-- 仍有 `CHANGES_REQUESTED` 或 CI pending/failure → 進入下一輪
+- 仍有 `CHANGES_REQUESTED` 或 CI failure → 本輪完成，`ROUND_COUNT += 1`，判斷是否繼續：
+  - `ROUND_COUNT < loop` → 進入下一輪
+  - `ROUND_COUNT >= loop` → **停止，執行「超過輪次停止」流程（見下方）**
 
 ---
 
@@ -156,20 +159,23 @@ gh pr merge <PR> --repo <REPO> --squash --delete-branch
 
 ## 超過 `loop` 輪停止
 
-若達到最大輪次（`loop` 參數，預設 5）後 Bot 仍未核准：
+當有效輪次（`ROUND_COUNT`）達到 `loop` 上限，且 PR **仍未達到可合併狀態**時：
 
-1. 停止所有自動操作
-2. 通知使用者：
+1. **立即停止所有自動操作，不執行合併**
+2. 通知使用者介入：
 
 ```
-⚠️ PR #<PR> 已達最大輪次（<loop> 輪）仍未獲得核准。
-停止原因可能為：
-- Bot feedback 持續回覆 needs changes（請檢查未解決的建議）
-- CI 持續失敗（請檢查 CI 錯誤原因）
-- 涉及需要人工判斷的設計決策
+⚠️ PR #<PR> 已達最大輪次（<loop> 輪）仍未獲得核准，已停止自動處理。
 
-請手動檢查並處理後再繼續。
+請 @terry90918 手動檢查以下項目：
+- Bot feedback 是否仍有 needs changes（是否有需要人工判斷的建議）
+- CI 是否持續失敗（原因為何）
+- 是否涉及設計決策需要人工介入
+
+確認後請手動合併或調整後重新觸發。
 ```
+
+> ⚠️ **重要**：達到輪次上限後，**不可自行判斷合併**。即使認為所有建議都已處理，仍須等待使用者確認才能合併。
 
 ---
 
