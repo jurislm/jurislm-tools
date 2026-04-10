@@ -350,7 +350,7 @@ jobs:
 **關鍵規則**：
 - `CLAUDE_CODE_OAUTH_TOKEN` 與 `claude-code-review.yml` 共用同一個 Secret
 - `actions: read` 讓 Claude 可讀取 CI 結果
-- `claude.yml` 使用 `@v1`（跟最新版），因為互動式用途風險較低
+- `claude.yml` 使用 `@v1`（浮動版本），因為互動式用途風險較低；若遇行為異常，應檢查 release notes，必要時改為鎖定特定版本（如 `@v1.0.70`）
 
 ---
 
