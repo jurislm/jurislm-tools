@@ -178,7 +178,7 @@ git push
 LAST_PUSH_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")  # 記錄 push 時間，供下一輪 feedback 篩選使用
 ```
 
-### Step 5 — 等待 `interval` 分鐘（讓 Bot 完成 re-review）
+### Step 5 — 等待 `TIME` 分鐘（即 `interval` 參數，讓 Bot 完成 re-review）
 
 每輪結束時等待 `TIME` 分鐘，讓 CI 執行完畢或 Claude Bot 完成 re-review（若本輪有 push，等待 Bot 重新 review；若本輪無修改，等待 CI 狀態更新）。
 
