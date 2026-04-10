@@ -59,7 +59,9 @@ gh pr checks <PR> --repo <REPO>
 3. 持續執行 `gh pr checks`，直到出現至少一筆 `pending` / `in_progress` 項目
    - 此期間 `SEEN_PENDING` 仍為 `false`；一旦出現 pending 即設為 `true`
    - `PENDING_POLLS` 同步計入，超過上限依 `SEEN_PENDING` 選通知情境（見下方「前置等待超時」）
-4. 繼續正常輪詢
+4. 繼續正常輪詢（回到前置等待表格頂端）
+
+**CI 通過後，本輪正式開始**（對應表格「全部 pass」列）：
 
 ```bash
 ROUND_START=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -67,6 +69,43 @@ ROUND_START=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 > 前置等待只有在 CI 通過後才會離開。CI failure 在此階段修正，不計入 `ROUND_COUNT`；CI pending 也不計入 `ROUND_COUNT`。  
 > 若 Step 1（衝突解決）或 Step 4（Bot feedback 修正）產生新的 push，CI 會重新觸發，後續輪次將再次經過前置等待。
+
+### 前置等待超時
+
+當 `PENDING_POLLS >= MAX_PENDING_POLLS`，CI 長時間未完成或未觸發：
+
+1. **立即停止所有自動操作**
+2. 取得 PR 作者：
+
+```bash
+PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
+```
+
+3. 依 `SEEN_PENDING` 選擇通知情境（`false` = CI 從未觸發；`true` = CI 觸發後卡住）：
+
+**情境 A：一般 pending 輪詢超時**（`SEEN_PENDING=true`，CI 已觸發但長時間未完成）
+
+```
+⚠️ PR #<PR> 的 CI 已持續 pending 超過 <PENDING_POLLS> 次輪詢（每次等待 <time> 分鐘，共約 <PENDING_POLLS × time> 分鐘），可能為 Runner 故障或 workflow 超時，已停止等待。
+
+請 @<PR_AUTHOR> 手動檢查：
+- GitHub Actions Runner 是否正常運行
+- CI workflow 是否有超時或設定問題
+- 確認後請手動重跑 CI 或調整後重新觸發。
+```
+
+**情境 B：CI failure 修正 push 後未觸發超時**（`SEEN_PENDING=false`，push 後 CI 長時間未出現新的 pending）
+
+```
+⚠️ PR #<PR> 在修正並 push 後，CI 長時間未重新觸發（已等待約 <PENDING_POLLS × time> 分鐘），可能為 workflow trigger 設定問題，已停止等待。
+
+請 @<PR_AUTHOR> 手動檢查：
+- GitHub Actions trigger 設定是否正確（on.push, on.pull_request）
+- 是否有 branch filter 導致 workflow 未觸發
+- 確認後請手動重跑 CI 或調整 trigger 設定後重新推送。
+```
+
+---
 
 ### Step 1 — 優先：檢查 Merge Conflict
 
@@ -187,43 +226,6 @@ gh pr merge <PR> --repo <REPO> --squash --delete-branch
 ```
 
 或依 repo 規範選擇 `--merge` / `--rebase`。
-
----
-
-## 前置等待超時
-
-當 `PENDING_POLLS >= MAX_PENDING_POLLS`，CI 長時間卡在 pending 狀態：
-
-1. **立即停止所有自動操作**
-2. 取得 PR 作者：
-
-```bash
-PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
-```
-
-3. 依 `SEEN_PENDING` 選擇通知情境（`false` = CI 從未觸發；`true` = CI 觸發後卡住）：
-
-**情境 A：一般 pending 輪詢超時**（CI 已觸發但長時間未完成）
-
-```
-⚠️ PR #<PR> 的 CI 已持續 pending 超過 <PENDING_POLLS> 次輪詢（每次等待 <time> 分鐘，共約 <PENDING_POLLS × time> 分鐘），可能為 Runner 故障或 workflow 超時，已停止等待。
-
-請 @<PR_AUTHOR> 手動檢查：
-- GitHub Actions Runner 是否正常運行
-- CI workflow 是否有超時或設定問題
-- 確認後請手動重跑 CI 或調整後重新觸發。
-```
-
-**情境 B：CI failure 修正 push 後未觸發超時**（push 後 CI 長時間未出現新的 pending）
-
-```
-⚠️ PR #<PR> 在修正並 push 後，CI 長時間未重新觸發（已等待約 <PENDING_POLLS × time> 分鐘），可能為 workflow trigger 設定問題，已停止等待。
-
-請 @<PR_AUTHOR> 手動檢查：
-- GitHub Actions trigger 設定是否正確（on.push, on.pull_request）
-- 是否有 branch filter 導致 workflow 未觸發
-- 確認後請手動重跑 CI 或調整 trigger 設定後重新推送。
-```
 
 ---
 
