@@ -285,7 +285,7 @@ jobs:
 ```
 
 **關鍵規則**：
-- 使用 `anthropics/claude-code-action@v1.0.70`（不升版，避免 `@v1.0.70+` 的 bash 安全過濾器問題）
+- 使用 `anthropics/claude-code-action@v1.0.70`（不升版，v1.0.70 之後的版本引入 bash 安全過濾器，會導致 `Bash(gh:*)` 受限）
 - `claude_args: '--allowedTools "Bash(gh:*),Write"'`（最小權限：只允許 `gh` 命令與 Write）
 - `CLAUDE_CODE_OAUTH_TOKEN` 必須在 repo Secrets 設定
 - `synchronize` trigger 確保每次 push 後重新 review
