@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.14.0](https://github.com/jurislm/jurislm-tools/compare/v1.13.0...v1.14.0) (2026-04-10)
+
+
+### 🚀 New Features
+
+* 新增 jt:langfuse plugin — Langfuse MCP 可觀測性工具集 ([d157408](https://github.com/jurislm/jurislm-tools/commit/d15740825abce7d68be44537716fe1627022da73))
+* 新增 jt:langfuse plugin 並將所有 MCP server 改用 [@latest](https://github.com/latest) ([f0ce146](https://github.com/jurislm/jurislm-tools/commit/f0ce14655b5c46ee0bc8b716e009e0c3489eff18))
+
+
+### 🐛 Bug Fixes
+
+* 所有 MCP server 改用 [@latest](https://github.com/latest) 版本 ([f01e1d4](https://github.com/jurislm/jurislm-tools/commit/f01e1d4af4140f56456ec663e76c7a91caa782a2))
+
 ## [1.13.0](https://github.com/jurislm/jurislm-tools/compare/v1.12.0...v1.13.0) (2026-04-10)
 
 
