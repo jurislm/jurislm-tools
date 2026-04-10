@@ -60,7 +60,7 @@ gh pr checks <PR> --repo <REPO>
 3. 持續執行 `gh pr checks`（每次輪詢後等待 `TIME` 分鐘，`PENDING_POLLS += 1`），直到符合以下任一條件：
    - 出現至少一筆 `pending` / `in_progress`（設 `SEEN_PENDING=true`，回到前置等待表格頂端繼續正常輪詢）
    - 所有 check 均已完成（全部 pass 或有 failure，直接進入對應的前置等待表格分支處理）
-   - `PENDING_POLLS >= MAX_PENDING_POLLS`（此時 `SEEN_PENDING=false`）→ 觸發情境 B 超時（CI push 後從未觸發）
+   - `PENDING_POLLS >= MAX_PENDING_POLLS` **且 `SEEN_PENDING=false`**（CI push 後從未出現 pending）→ 觸發**情境 B** 超時
 4. 繼續正常輪詢（回到前置等待表格頂端）
 
 **CI 通過後，本輪正式開始**（對應表格「全部 pass」列）：
@@ -88,7 +88,7 @@ PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
 **情境 A：一般 pending 輪詢超時**（`SEEN_PENDING=true`，CI 已觸發但長時間未完成）
 
 ```
-⚠️ PR #<PR> 的 CI 已持續 pending 超過 <PENDING_POLLS> 次輪詢（已等待約 <PENDING_POLLS * TIME> 分鐘，即 <PENDING_POLLS> 次 × <TIME> 分鐘/次，MAX_PENDING_POLLS=<MAX_PENDING_POLLS>，TIME=<TIME>），可能為 Runner 故障或 workflow 超時，已停止等待。
+⚠️ PR #<PR> 的 CI 已持續 pending 超過 <PENDING_POLLS> 次輪詢（已等待約 $(( PENDING_POLLS * TIME )) 分鐘（即 <PENDING_POLLS> 次 × <TIME> 分鐘/次，MAX_PENDING_POLLS=<MAX_PENDING_POLLS>，TIME=<TIME>）），可能為 Runner 故障或 workflow 超時，已停止等待。
 
 請 @<PR_AUTHOR> 手動檢查：
 - GitHub Actions Runner 是否正常運行
@@ -99,7 +99,7 @@ PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
 **情境 B：CI failure 修正 push 後未觸發超時**（`SEEN_PENDING=false`，push 後 CI 長時間未出現新的 pending）
 
 ```
-⚠️ PR #<PR> 在修正並 push 後，CI 長時間未重新觸發（已等待約 <PENDING_POLLS * TIME> 分鐘，即 <PENDING_POLLS> 次 × <TIME> 分鐘/次，MAX_PENDING_POLLS=<MAX_PENDING_POLLS>，TIME=<TIME>），可能為 workflow trigger 設定問題，已停止等待。
+⚠️ PR #<PR> 在修正並 push 後，CI 長時間未重新觸發（已等待約 $(( PENDING_POLLS * TIME )) 分鐘（即 <PENDING_POLLS> 次 × <TIME> 分鐘/次，MAX_PENDING_POLLS=<MAX_PENDING_POLLS>，TIME=<TIME>）），可能為 workflow trigger 設定問題，已停止等待。
 
 請 @<PR_AUTHOR> 手動檢查：
 - GitHub Actions trigger 設定是否正確（on.push, on.pull_request）
@@ -190,7 +190,7 @@ gh pr view <PR> --repo <REPO> --json reviewDecision,mergeable,statusCheckRollup
 
 CI 全 pass 的判斷：
 - `statusCheckRollup` **不為空**，且所有 item 的 `conclusion` 為 `SUCCESS`、`NEUTRAL` 或 `SKIPPED`（無任何 `FAILURE` / `TIMED_OUT` / `CANCELLED`）→ CI passed
-- `statusCheckRollup` **為空陣列** → 搭配 Step 2 的判斷：若 `gh pr checks` 無任何項目（無 CI 設定），視為通過；若有項目但尚未回報結論，視為 pending，回到「前置等待」
+- `statusCheckRollup` **為空陣列** → 搭配 Step 2 的判斷：若 `gh pr checks` 無任何項目（無 CI 設定），視為通過；若有項目但尚未回報結論，視為 pending，回到「前置等待」（此路徑在 Step 5 等待期間 CI 被新 push 觸發、但 Step 6 查詢時尚未回報 conclusion 時可能出現）
 
 - `reviewDecision: APPROVED` + CI 全 pass → **執行合併**（見下方合併步驟）
 - `reviewDecision: null`（無需 review 的 repo）+ CI 全 pass → **通知使用者「此 repo 無需 reviewer 核准，即將自動合併」，隨即執行合併**
