@@ -23,5 +23,11 @@
     "observability",
     "tracing",
     "prompts"
+  ],
+  "skills": [
+    "./skills/"
+  ],
+  "commands": [
+    "./commands/"
   ]
 }

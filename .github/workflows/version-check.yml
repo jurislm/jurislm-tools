@@ -17,7 +17,7 @@ jobs:
         run: |
           PLUGIN_VER=$(jq -r '.version' plugins/jurislm-tools/.claude-plugin/plugin.json)
           MARKET_VER=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
-          MANIFEST_VER=$(jq -r '.[""]' .release-please-manifest.json 2>/dev/null || jq -r '.["."]' .release-please-manifest.json)
+          MANIFEST_VER=$(jq -r '.["."]' .release-please-manifest.json)
 
           echo "plugin.json:    $PLUGIN_VER"
           echo "marketplace:    $MARKET_VER"
