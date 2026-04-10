@@ -293,6 +293,67 @@ jobs:
 
 ---
 
+### 標準 .github/workflows/claude.yml
+
+用於在 Issue / PR 留言中用 `@claude` 觸發 Claude Code 執行任務（互動式，非自動 review）。
+
+```yaml
+name: Claude Code
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          additional_permissions: |
+            actions: read
+```
+
+**與 `claude-code-review.yml` 的差異**：
+
+| | `claude-code-review.yml` | `claude.yml` |
+|---|---|---|
+| 觸發方式 | PR 開啟 / 每次 push 自動 | `@claude` 留言觸發 |
+| 用途 | 自動 code review | 互動式任務執行 |
+| action 版本 | `@v1.0.70`（鎖版） | `@v1`（跟最新） |
+| `claude_args` | 限定 `Bash(gh:*),Write` | 不限（依留言指示） |
+
+**關鍵規則**：
+- `CLAUDE_CODE_OAUTH_TOKEN` 與 `claude-code-review.yml` 共用同一個 Secret
+- `actions: read` 讓 Claude 可讀取 CI 結果
+- `claude.yml` 使用 `@v1`（跟最新版），因為互動式用途風險較低
+
+---
+
 ## 開發工作流程
 
 ### Git Worktree 規則
@@ -343,3 +404,5 @@ git worktree add -b develop .worktrees/develop main
 
 ### Code Review
 12. [ ] 建立 `.github/workflows/claude-code-review.yml`（依統一格式）
+13. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發）
+14. [ ] 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
