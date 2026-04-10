@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.13.0](https://github.com/jurislm/jurislm-tools/compare/v1.12.0...v1.13.0) (2026-04-10)
+
+
+### 🚀 New Features
+
+* add commands directory and fix plugin structure compliance ([ff31250](https://github.com/jurislm/jurislm-tools/commit/ff31250f49204c2889fb43497b772a3db0fabf8c))
+* plugin structure compliance + slash commands ([0bc7fa1](https://github.com/jurislm/jurislm-tools/commit/0bc7fa1eda11bd31bff3948a1622415c4a090ed2))
+* rename plugin from jurislm-tools to jt — enables /jt:xxx slash commands ([95892a8](https://github.com/jurislm/jurislm-tools/commit/95892a813bea3fc2a56b188529db2db615b3651e))
+
+
+### 📚 Documentation
+
+* update repo-standards — wire workflow to config-file, remove emoji from changelog sections ([8de4222](https://github.com/jurislm/jurislm-tools/commit/8de4222074974ca3b265e909eea24dcb594f1397))
+
 ## [1.12.0](https://github.com/jurislm/jurislm-tools/compare/v1.11.1...v1.12.0) (2026-04-09)
 
 
