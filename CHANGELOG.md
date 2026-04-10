@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.15.0](https://github.com/jurislm/jurislm-tools/compare/v1.14.0...v1.15.0) (2026-04-10)
+
+
+### 🚀 New Features
+
+* add pr-review-loop skill and /jt:pr command ([#39](https://github.com/jurislm/jurislm-tools/issues/39)) ([671a772](https://github.com/jurislm/jurislm-tools/commit/671a7721da2149b6ef565696e96e9fbfcb036b5c))
+* **repo-standards:** add .github/copilot-instructions.md standard ([#41](https://github.com/jurislm/jurislm-tools/issues/41)) ([2cbdcfb](https://github.com/jurislm/jurislm-tools/commit/2cbdcfbb3606d22c8fcd80e5ff87b9c6b1dd8adc))
+
+
+### 🐛 Bug Fixes
+
+* 修正 pr-review-loop CI pending 邏輯為前置等待模式 ([#42](https://github.com/jurislm/jurislm-tools/issues/42)) ([c329d1d](https://github.com/jurislm/jurislm-tools/commit/c329d1d3b86369cfb062989a3334ad45dc60deff))
+
 ## [1.14.0](https://github.com/jurislm/jurislm-tools/compare/v1.13.0...v1.14.0) (2026-04-10)
 
 
