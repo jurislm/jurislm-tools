@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.2](https://github.com/jurislm/jurislm-tools/compare/v1.15.1...v1.15.2) (2026-04-10)
+
+
+### 🐛 Bug Fixes
+
+* remove redundant skills/commands fields from plugin.json ([#45](https://github.com/jurislm/jurislm-tools/issues/45)) ([66cd013](https://github.com/jurislm/jurislm-tools/commit/66cd0131c6ef6b15dd174f36d2daca5791df5e78))
+
 ## [1.15.1](https://github.com/jurislm/jurislm-tools/compare/v1.15.0...v1.15.1) (2026-04-10)
 
 
