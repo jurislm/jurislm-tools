@@ -37,7 +37,7 @@ plugins/jurislm-tools/
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| jurislm-tools | 1.10.0 | Hybrid | Coolify MCP（35 工具）+ Hetzner MCP（14 工具）+ 5 skills |
+| jt | 1.10.0 | Hybrid | Coolify MCP（35 工具）+ Hetzner MCP（14 工具）+ 5 skills + 5 commands |
 
 ## 版本管理
 
@@ -61,7 +61,7 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 1. `git push` 到 marketplace repo（`main` 分支）
 2. `/plugin marketplace add https://github.com/jurislm/jurislm-tools.git` — 首次使用需註冊 marketplace
 3. `/plugin marketplace update jurislm-tools` — 更新 marketplace 索引
-4. `/plugin install jurislm-tools@jurislm-tools` — 安裝 plugin
+4. `/plugin install jurislm-tools@jt` — 安裝 plugin
 5. 重啟 Claude Code — skills 才會載入
 
 步驟 2 只需首次執行；之後更新只需步驟 3-5。跳過步驟 3 會導致 `Plugin not found`。
