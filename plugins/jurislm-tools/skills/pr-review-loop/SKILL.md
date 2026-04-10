@@ -58,10 +58,9 @@ gh pr checks <PR> --repo <REPO>
 - **a.** 閱讀 CI 錯誤日誌，分析根本原因，修正後 `commit + push`
 - **b.** 記錄 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`
 - **c.** 持續執行 `gh pr checks`（每次輪詢後等待 `TIME` 分鐘，`PENDING_POLLS += 1`），直到符合以下任一條件：
-   - 出現至少一筆 `pending` / `in_progress`（設 `SEEN_PENDING=true`，回到前置等待表格頂端繼續正常輪詢）
-   - 所有 check 均已完成（全部 pass 或有 failure，直接進入對應的前置等待表格分支處理）
+   - 出現至少一筆 `pending` / `in_progress`（設 `SEEN_PENDING=true`）→ 回到前置等待表格頂端繼續正常輪詢
+   - 所有 check 均已完成（全部 pass 或有 failure）→ 直接進入前置等待表格對應分支（pass 列或 failure 列）繼續處理
    - `PENDING_POLLS >= MAX_PENDING_POLLS` **且 `SEEN_PENDING=false`**（此 sub-loop 結束時 `SEEN_PENDING` 仍為 `false`，即 push 後從未出現 pending）→ 觸發**情境 B** 超時
-- **d.** 繼續正常輪詢（回到前置等待表格頂端）
 
 > **說明**：子步驟 c 的 `PENDING_POLLS` 計數延續自子步驟 b 重置後的值（初始為 0）。情境 B 超時的判斷條件（`SEEN_PENDING=false`）以「子步驟 c 結束時」的狀態為準，而非前置等待全程的 `SEEN_PENDING`——一旦子步驟 c 觀察到 pending（`SEEN_PENDING=true`），便回到表格頂端的正常輪詢流程，不再觸發情境 B。
 
@@ -178,7 +177,7 @@ git push
 LAST_PUSH_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")  # 記錄 push 時間，供下一輪 feedback 篩選使用
 ```
 
-### Step 5 — 等待 `TIME` 分鐘（即 `interval` 參數，讓 Bot 完成 re-review）
+### Step 5 — 等待 `interval` 分鐘（即 `TIME` 內部變數，讓 Bot 完成 re-review）
 
 每輪結束時等待 `TIME` 分鐘，讓 CI 執行完畢或 Claude Bot 完成 re-review（若本輪有 push，等待 Bot 重新 review；若本輪無修改，等待 CI 狀態更新）。
 
