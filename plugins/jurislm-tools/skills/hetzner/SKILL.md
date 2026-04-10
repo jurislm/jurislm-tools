@@ -1,5 +1,6 @@
 ---
 name: hetzner
+version: 1.0.0
 description: This skill should be used when the user asks to "create a Hetzner server", "manage Hetzner Cloud infrastructure", "list Hetzner servers", "add SSH key to Hetzner", "check Hetzner server types", "provision a VPS", or mentions Hetzner Cloud server management, infrastructure provisioning, or cloud resource operations.
 argument-hint: "[action] [server-name/id]"
 ---

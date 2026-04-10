@@ -1,5 +1,5 @@
 {
-  "name": "jurislm-tools",
+  "name": "jt",
   "description": "JurisLM 內部工具集 — Coolify 部署管理、Hetzner VPS 管理、Podcast 轉部落格",
   "version": "1.12.0",
   "author": {

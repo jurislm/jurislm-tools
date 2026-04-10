@@ -1,5 +1,6 @@
 ---
 name: repo-standards
+version: 1.0.0
 description: JurisLM 各 repo 的統一設定規範，涵蓋 Release 工作流程與 ESLint 設定。當使用者詢問「如何設定新 repo」、「release workflow 怎麼寫」、「release-please 怎麼用」、「lint 怎麼設定」、「eslint config 怎麼寫」、「新增 repo 要怎麼設定」時觸發。
 argument-hint: "[repo-name]"
 ---
@@ -43,12 +44,15 @@ jobs:
       - uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 ```
 
 **規則**：
 - `workflow_dispatch` 必填（允許手動觸發）
 - `permissions` 放在 top 層級（非 job 層級）
 - **`release-type` 不可寫在 workflow** — 必須只放在 `release-please-config.json`
+- **`config-file` + `manifest-file` 必填** — 明確讓 workflow 引用 config，避免隱性 drift
 
 ⚠️ **重要**：若在 workflow 的 `with:` 區塊指定 `release-type`，Release Please 會忽略 `release-please-config.json` 的 `extra-files` 設定，導致 `plugin.json` 和 `marketplace.json` 版本號不會被自動更新。
 
@@ -73,14 +77,14 @@ jobs:
       "include-component-in-tag": false,
       "include-v-in-tag": true,
       "changelog-sections": [
-        { "type": "feat", "section": "🚀 New Features" },
-        { "type": "fix", "section": "🐛 Bug Fixes" },
-        { "type": "perf", "section": "⚡ Performance" },
-        { "type": "docs", "section": "📚 Documentation" },
-        { "type": "refactor", "section": "♻️ Refactoring" },
-        { "type": "style", "section": "🎨 Styles" },
-        { "type": "test", "section": "🧪 Tests" },
-        { "type": "chore", "section": "🏠 Maintenance", "hidden": true }
+        { "type": "feat", "section": "Features" },
+        { "type": "fix", "section": "Bug Fixes" },
+        { "type": "perf", "section": "Performance" },
+        { "type": "docs", "section": "Documentation" },
+        { "type": "refactor", "section": "Refactoring" },
+        { "type": "style", "section": "Styles" },
+        { "type": "test", "section": "Tests" },
+        { "type": "chore", "section": "Maintenance", "hidden": true }
       ]
     }
   }

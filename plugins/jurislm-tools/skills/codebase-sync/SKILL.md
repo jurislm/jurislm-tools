@@ -1,5 +1,6 @@
 ---
 name: codebase-sync
+version: 1.0.0
 description: 探索 codebase 現況，更新 README.md 與 CLAUDE.md，移除過時內容。當使用者說「更新 README」、「更新 CLAUDE.md」、「同步文件」、「移除過時內容」、「explore codebase and update docs」、「codebase 文件已過時」時觸發。
 argument-hint: "[repo-path]"
 ---
