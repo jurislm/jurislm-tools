@@ -48,7 +48,7 @@ gh pr checks <PR> --repo <REPO>
 | CI 狀態 | 做法 |
 |---------|------|
 | 仍有 `pending` / `in_progress` | `PENDING_POLLS += 1`；若 `PENDING_POLLS >= MAX_PENDING_POLLS` → **停止，執行「前置等待超時」流程（見下方）**；否則等待 `time` 分鐘（同執行參數），重新執行 `gh pr checks` |
-| 有 `failure` / `error` | 閱讀 CI 錯誤日誌，分析根本原因，修正後 `commit + push`；記錄 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`；**持續執行 `gh pr checks`，直到出現至少一筆 `pending` / `in_progress` 項目**（此等待同樣計入 `PENDING_POLLS`，超過上限則執行超時流程），再繼續正常輪詢 |
+| 有 `failure` / `error` | 閱讀 CI 錯誤日誌，分析根本原因，修正後 `commit + push`；記錄 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`；**持續執行 `gh pr checks`，直到出現至少一筆 `pending` / `in_progress` 項目**（避免立即讀到舊的失敗狀態）；此等待同樣計入 `PENDING_POLLS`，若觸發超時則原因為「CI push 後長時間未重新觸發（trigger 問題）」，非 Runner 卡住，通知應反映此情況；再繼續正常輪詢 |
 | 全部 `pass` / `success` | **本輪正式開始**（記錄 `ROUND_START`，重置 `PENDING_POLLS=0`），進入 Step 1 |
 | 無任何 check 項目（無 CI 設定） | **本輪正式開始**（記錄 `ROUND_START`），進入 Step 1 |
 
@@ -83,7 +83,7 @@ gh pr checks <PR> --repo <REPO>
 |---------|------|
 | 全部 pass | 繼續 Step 3 |
 | 無任何 check 項目（無 CI 設定） | 視為通過，繼續 Step 3 |
-| 有 failure（異常） | 回到「前置等待」重新處理 |
+| 有 failure（預期外） | 前置等待已確保 CI 通過，此處出現 failure 通常表示 Step 1 衝突解決產生了新 push，導致 CI 重新觸發並失敗；回到「前置等待」重新處理 |
 
 ### Step 3 — 閱讀 Bot Feedback（每輪必做）
 
@@ -195,7 +195,7 @@ PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
 3. 通知使用者介入：
 
 ```
-⚠️ PR #<PR> 的 CI 已持續 pending 超過 <MAX_PENDING_POLLS> 次輪詢（<MAX_PENDING_POLLS> 次 × <time> 分鐘/次，約等待 <ELAPSED_MINUTES> 分鐘），可能為 Runner 故障或 CI 設定問題，已停止等待。
+⚠️ PR #<PR> 的 CI 已持續 pending 超過 <MAX_PENDING_POLLS> 次輪詢（已輪詢 <PENDING_POLLS> 次，每次等待 <time> 分鐘，共約 <PENDING_POLLS × time> 分鐘），可能為 Runner 故障或 CI 設定問題，已停止等待。
 
 請 @<PR_AUTHOR> 手動檢查以下項目：
 - GitHub Actions Runner 是否正常運行
