@@ -32,8 +32,8 @@ Loop 開始前初始化一次（不在每輪重置）：
 LAST_PUSH_TIME=""    # 每次 push 後更新，作為 feedback 篩選基準
 ROUND_COUNT=0        # 計數「有效輪次」
 PENDING_POLLS=0      # 計數前置等待的輪詢次數
-MAX_PENDING_POLLS=30 # 搭配執行參數 `time`（預設 3 分鐘），30 次約等待 90 分鐘
-SEEN_PENDING=false   # 超時情境判斷：false = CI push 後從未出現 pending（觸發問題）; true = CI 觸發後卡住（Runner 問題）
+MAX_PENDING_POLLS=30 # 搭配執行參數 `time`（分鐘/次，預設 3），達上限時約等待 MAX_PENDING_POLLS × time 分鐘
+SEEN_PENDING=false   # 超時情境判斷：false = 尚未觀察到 pending（或重置後 CI 未重新觸發）; true = CI 已觸發但長時間未完成
 ```
 
 ### 前置等待：確認 CI 通過後，才開始本輪
@@ -49,9 +49,17 @@ gh pr checks <PR> --repo <REPO>
 | CI 狀態 | 做法 |
 |---------|------|
 | 仍有 `pending` / `in_progress` | 設 `SEEN_PENDING=true`（已確認 CI 觸發）；`PENDING_POLLS += 1`；若 `PENDING_POLLS >= MAX_PENDING_POLLS` → **停止，執行「前置等待超時」流程（依 `SEEN_PENDING` 判斷情境，見下方）**；否則等待 `time` 分鐘（同執行參數），重新執行 `gh pr checks` |
-| 有 `failure` / `error` | 閱讀 CI 錯誤日誌，分析根本原因，修正後 `commit + push`；記錄 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`，`SEEN_PENDING=false`；持續執行 `gh pr checks`，直到出現至少一筆 `pending` / `in_progress` 項目（此期間 `SEEN_PENDING` 仍為 `false`，一旦出現 pending 即設為 `true`；`PENDING_POLLS` 同步計入，超過上限依 `SEEN_PENDING` 選通知情境）；再繼續正常輪詢 |
+| 有 `failure` / `error` | 修正 CI 錯誤，push 後重置輪詢計數（`PENDING_POLLS=0`、`SEEN_PENDING=false`），繼續等待 CI 重新觸發（詳見下方說明） |
 | 全部 `pass` / `success` | **本輪正式開始**（記錄 `ROUND_START`，重置 `PENDING_POLLS=0`，`SEEN_PENDING=false`），進入 Step 1 |
 | 無任何 check 項目（無 CI 設定） | **本輪正式開始**（記錄 `ROUND_START`），進入 Step 1 |
+
+**CI failure 修正後等待新 CI 觸發的詳細步驟**：
+1. 閱讀 CI 錯誤日誌，分析根本原因，修正後 `commit + push`
+2. 記錄 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`
+3. 持續執行 `gh pr checks`，直到出現至少一筆 `pending` / `in_progress` 項目
+   - 此期間 `SEEN_PENDING` 仍為 `false`；一旦出現 pending 即設為 `true`
+   - `PENDING_POLLS` 同步計入，超過上限依 `SEEN_PENDING` 選通知情境（見下方「前置等待超時」）
+4. 繼續正常輪詢
 
 ```bash
 ROUND_START=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
