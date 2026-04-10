@@ -1,4 +1,5 @@
 ---
+name: pr
 description: 自動輪詢 PR 的 CI 狀態與 Bot Code Review feedback，分析並修正後合併。
 argument-hint: "[time=3m] [loop=5] [repo=current] [pr=current]"
 ---
