@@ -51,7 +51,8 @@ gh pr checks <PR> --repo <REPO>
 
 - 全部 pass → 繼續 Step 3
 - 有 failure → 閱讀錯誤，分析並修正，commit + push
-- 未觸發 → 若確認無衝突，繼續 Step 3（並記錄警告：CI 可能因 workflow 設定或 GitHub 延遲未觸發）
+- 仍有 pending / in_progress → **跳過 Step 3 & Step 4，直接進入 Step 5 等待**
+- 無任何 check 項目（repo 未設定 CI）→ 記錄為「無 CI 設定」，繼續 Step 3
 
 ### Step 3 — 閱讀 Bot Feedback（每輪必做）
 
@@ -106,8 +107,9 @@ gh pr view <PR> --repo <REPO> --json reviewDecision,mergeable,statusCheckRollup
 ```
 
 CI 全 pass 的判斷：
-- `statusCheckRollup` **不為空**，且所有 item 的 `conclusion` 為 `SUCCESS`、`NEUTRAL` 或 `SKIPPED`（無任何 `FAILURE` / `TIMED_OUT` / `CANCELLED`）
-- `statusCheckRollup` **為空陣列**或仍有 `PENDING` / `IN_PROGRESS` → CI 尚未完成，本輪跳過 Step 4，直接進入 Step 5 等待
+- `statusCheckRollup` **不為空**，且所有 item 的 `conclusion` 為 `SUCCESS`、`NEUTRAL` 或 `SKIPPED`（無任何 `FAILURE` / `TIMED_OUT` / `CANCELLED`）→ CI passed
+- `statusCheckRollup` **為空陣列** → 搭配 Step 2 的判斷：若 `gh pr checks` 無任何項目（無 CI 設定），視為通過；若有項目但尚未回報結論，視為 pending，進入下一輪等待
+- 仍有 `PENDING` / `IN_PROGRESS` → 進入下一輪（Step 2 已攔截，不應到達此處）
 
 - `reviewDecision: APPROVED` + CI 全 pass → **執行合併**（見下方合併步驟）
 - `reviewDecision: null`（無需 review 的 repo）+ CI 全 pass → **告知使用者「此 repo 無需 reviewer 核准，即將自動合併」，確認後執行合併**
