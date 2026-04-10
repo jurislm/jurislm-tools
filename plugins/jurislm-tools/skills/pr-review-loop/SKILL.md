@@ -32,8 +32,9 @@ Loop 開始前初始化一次（不在每輪重置）：
 LAST_PUSH_TIME=""    # 每次 push 後更新，作為 feedback 篩選基準
 ROUND_COUNT=0        # 計數「有效輪次」
 PENDING_POLLS=0      # 計數前置等待的輪詢次數
-MAX_PENDING_POLLS=30 # 搭配執行參數 `time`（分鐘/次，預設 3），達上限時約等待 MAX_PENDING_POLLS × time 分鐘
+MAX_PENDING_POLLS=30 # 搭配 TIME 參數，達上限時約等待 MAX_PENDING_POLLS × TIME 分鐘
 SEEN_PENDING=false   # 超時情境判斷：false = 尚未觀察到 pending（或重置後 CI 未重新觸發）; true = CI 已觸發但長時間未完成
+TIME=3               # 每輪輪詢間隔（分鐘），可由執行參數 `time` 覆蓋（預設 3 分鐘）
 ```
 
 ### 前置等待：確認 CI 通過後，才開始本輪
@@ -49,7 +50,7 @@ gh pr checks <PR> --repo <REPO>
 | CI 狀態 | 做法 |
 |---------|------|
 | 仍有 `pending` / `in_progress` | 設 `SEEN_PENDING=true`（已確認 CI 觸發）；`PENDING_POLLS += 1`；若 `PENDING_POLLS >= MAX_PENDING_POLLS` → **停止，執行「前置等待超時」流程（依 `SEEN_PENDING` 判斷情境，見下方）**；否則等待 `time` 分鐘（同執行參數），重新執行 `gh pr checks` |
-| 有 `failure` / `error` | 修正 CI 錯誤，commit + push；更新 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`，繼續等待 CI 重新觸發（詳見下方說明） |
+| 有 `failure` / `error` | 修正 CI 錯誤，commit + push；更新 `LAST_PUSH_TIME`，重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`，回到前置等待表格頂端（詳見下方說明） |
 | 全部 `pass` / `success` | **本輪正式開始**（記錄 `ROUND_START`，重置 `PENDING_POLLS=0`，`SEEN_PENDING=false`），進入 Step 1 |
 | 無任何 check 項目（無 CI 設定） | **本輪正式開始**（記錄 `ROUND_START`），進入 Step 1 |
 
@@ -59,7 +60,9 @@ gh pr checks <PR> --repo <REPO>
 3. 持續執行 `gh pr checks`，直到符合以下任一條件：
    - 出現至少一筆 `pending` / `in_progress`（設 `SEEN_PENDING=true`，繼續正常輪詢）
    - 所有 check 均已完成（全部 pass 或有 failure，直接進入對應的前置等待表格分支處理）
-   - `PENDING_POLLS` 超過上限（依 `SEEN_PENDING` 選超時通知情境）
+   - `PENDING_POLLS` 超過上限 → 依 `SEEN_PENDING` 選超時通知情境：
+     - `SEEN_PENDING=false` → 情境 B（CI push 後從未觸發）
+     - `SEEN_PENDING=true` → 情境 A（CI 已觸發但 Runner 卡住）
 4. 繼續正常輪詢（回到前置等待表格頂端）
 
 **CI 通過後，本輪正式開始**（對應表格「全部 pass」列）：
@@ -133,7 +136,7 @@ gh pr checks <PR> --repo <REPO>
 | 全部 pass | 繼續 Step 3 |
 | 無任何 check 項目（無 CI 設定） | 視為通過，繼續 Step 3 |
 | 仍有 `pending` / `in_progress`（預期外） | Step 1 push 可能觸發新 CI；**重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`**，回到「前置等待」重新等待 CI 完成 |
-| 有 failure（預期外） | 前置等待已確保 CI 通過，此處出現 failure 通常表示 Step 1 衝突解決產生了新 push，導致 CI 重新觸發並失敗；Step 1 push 時已更新 `LAST_PUSH_TIME`（見 Step 1 說明）；**重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`**，回到「前置等待」重新處理 |
+| 有 failure（預期外） | 前置等待已確保 CI 通過，此處出現 failure 通常表示 Step 1 衝突解決產生了新 push，導致 CI 重新觸發並失敗；Step 1 push 時已更新 `LAST_PUSH_TIME`（見 Step 1 說明）；**重置 `PENDING_POLLS=0`、`SEEN_PENDING=false`**，回到前置等待表格頂端 |
 
 ### Step 3 — 閱讀 Bot Feedback（每輪必做）
 
