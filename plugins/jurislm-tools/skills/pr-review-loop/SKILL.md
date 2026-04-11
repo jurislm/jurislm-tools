@@ -97,9 +97,9 @@ gh pr checks <PR> --repo <REPO>
 gh pr checks <PR> --repo <REPO> --watch
 ```
 
-Monitor 會阻塞直到所有 checks 完成，將每行輸出串流回 Claude。
+Monitor 以**背景任務**方式執行，將每行輸出作為事件串流回 Claude；Claude 可在事件到達時繼續處理其他邏輯（如超時判斷）。所有 checks 完成後 Monitor 自動退出，Claude 收到結束通知。
 
-> **超時保護**：若 Monitor 已執行超過 `MAX_WAIT_MINUTES` 分鐘仍未完成，使用 `TaskStop` tool 中斷 Monitor task，然後執行「CI 等待超時」通知（見下方）。Monitor tool 一律回傳 task ID，`TaskStop` 保證可用。
+> **超時保護**：若 Monitor 已執行超過 `MAX_WAIT_MINUTES` 分鐘仍未完成，使用 `TaskStop` tool 搭配 Monitor 回傳的 task ID 中斷任務，然後執行「CI 等待超時」通知（見下方）。
 
 **根據輸出結果：**
 
@@ -138,7 +138,7 @@ Monitor 會阻塞直到所有 checks 完成，將每行輸出串流回 Claude。
 
 ### 步驟二：讀取 Bot Feedback
 
-Bot review（如 `claude-review`）以 CI check 形式執行；步驟一 Monitor 等待所有 checks 完成時已包含 bot review check。Monitor exit 0 即代表 bot comment 已貼出，**無需額外等待，直接讀取**：
+Bot review（如 `claude-review`）以 CI check 形式執行；步驟一 Monitor 等待所有 checks 完成時已包含 bot review check。Monitor exit 0 後，等待 **10–15 秒**（GitHub webhook 傳播延遲），再讀取 feedback：
 
 ```bash
 gh pr view <PR> --repo <REPO> --json comments,reviews
@@ -149,6 +149,8 @@ gh pr view <PR> --repo <REPO> --json comments,reviews
 - **Claude Bot / CodeRabbit** → `comments` 欄位（inline 留言）
 
 篩選方式：只處理 `createdAt` 晚於 `LAST_PUSH_TIME` 的新留言（`LAST_PUSH_TIME` 初始值為 skill 啟動時間，確保第一輪不會讀入歷史舊留言）。
+
+> **注意（GitHub Copilot）**：Copilot 預設每個 PR 只 review 一次。第二輪後不會有新的 Copilot `reviews` feedback；若 `reviews` 為空，視為無新 review，不影響合併判斷。若需每次 push 都觸發 Copilot 重新 review，需 GitHub Team 方案並在 Ruleset 啟用「Review new pushes」。
 
 ---
 
@@ -238,7 +240,7 @@ PR_AUTHOR=$(gh pr view <PR> --repo <REPO> --json author --jq '.author.login')
 確認後請手動重跑 CI 或調整後重新觸發。
 ```
 
-**push 後 CI 未觸發**（步驟一查到 checks 存在，但 Monitor 立即返回空輸出且 CI 仍未出現）：
+**push 後 CI 未觸發**（步驟一 `gh pr checks` 確認有 check 項目（`CI_RAN = true`），但 Monitor 啟動後 30 秒內未收到任何輸出，視為 CI 未觸發）：
 
 ```
 ⚠️ PR #<PR> 在 push 後，CI 長時間未重新觸發，可能為 workflow trigger 設定問題。
