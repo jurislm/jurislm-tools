@@ -1,6 +1,5 @@
 ---
 name: pr-review-loop
-version: 2.0.0
 description: PR 開啟後使用 Monitor tool 即時監控 CI，自動讀取 Bot Code Review feedback 並修正，通過後合併。當使用者說「幫我看 PR review」、「等 CI 通過」、「自動處理 PR feedback」、「loop PR」時觸發。
 argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
 ---
@@ -107,7 +106,10 @@ Monitor 以**背景任務**方式執行，將每行輸出作為事件串流回 C
 |------|------|
 | 全部 pass（exit 0） | 進入步驟二 |
 | 有 failure（exit 非 0） | 進入「CI failure 修正」（見下方） |
+| Monitor 啟動後 30 秒內無任何輸出（`CI_RAN = true`） | CI 未觸發，執行「CI 等待超時」情境 B（見下方） |
 | Monitor 本身失敗（gh CLI 錯誤、網路問題） | 等待 30 秒後重試一次；仍失敗則停止並通知使用者 |
+
+> **exit code 語義**：`gh pr checks --watch` 在所有 check 狀態為 `pass`、`SKIPPED` 或 `NEUTRAL` 時 exit 0；只要有任一 check 為 `failure` 或 `error` 即 exit 非 0。`SKIPPED`/`NEUTRAL` 視為通過，不觸發 CI failure 修正。
 
 > **注意**：push 後需等待約 30 秒，GitHub 才會為新 commit 建立 checks，再呼叫 Monitor。
 
