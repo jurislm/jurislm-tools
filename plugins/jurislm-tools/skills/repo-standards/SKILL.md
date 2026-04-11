@@ -227,14 +227,29 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ## Code Review 設定
 
-### 標準 .github/copilot-instructions.md
+### Copilot 自訂指示檔案
 
-GitHub Copilot 在進行 code review 與程式碼補全時，會自動讀取此檔案作為指引。
+GitHub Copilot 支援兩種層級的自訂指示：
+
+| 檔案路徑 | 套用範圍 | 說明 |
+|---------|---------|------|
+| `.github/copilot-instructions.md` | 整個 repo | 全域指引，適用所有請求 |
+| `.github/instructions/*.instructions.md` | 依 glob 路徑 | 需加 frontmatter `applyTo`，精準控制套用範圍 |
+
+**路徑特定指示範例**（`.github/instructions/typescript.instructions.md`）：
+
+```markdown
+---
+applyTo: "**/*.ts,**/*.tsx"
+---
+
+禁止使用 `any` 類型。使用 `unknown` + type guard 代替。
+```
 
 **格式規則**：
-- 純 Markdown，不需要 frontmatter 或 YAML
-- 保持在 500 字以內（過長 Copilot 可能截斷）
-- 直接下指令（如 `使用 const`），避免模糊描述（如 `寫好的程式碼`）
+- 純 Markdown；路徑特定指示需加 frontmatter（`applyTo` glob）
+- 無硬性字數限制，但保持精簡（直接下指令，避免模糊描述）
+- `.github/copilot-instructions.md` 放整個 repo 通用的規則；語言/框架專屬規則放 `.github/instructions/`
 
 **Node.js/CommonJS Repo 標準模板**：
 
@@ -515,4 +530,5 @@ git worktree add -b develop .worktrees/develop main
 12. [ ] 建立 `.github/workflows/claude-code-review.yml`（依統一格式）
 13. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發）
 14. [ ] 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
-15. [ ] 建立 `.github/copilot-instructions.md`（GitHub Copilot 審核指引）
+15. [ ] 建立 `.github/copilot-instructions.md`（全域 Copilot 指引）
+16. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
