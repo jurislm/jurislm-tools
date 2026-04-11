@@ -227,14 +227,49 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ## Code Review 設定
 
-### 標準 .github/copilot-instructions.md
+### Copilot 自訂指示檔案
 
-GitHub Copilot 在進行 code review 與程式碼補全時，會自動讀取此檔案作為指引。
+GitHub Copilot 支援三種層級的指示，**同時**提供給 Copilot（非互斥）：
+
+| 檔案路徑 | 套用範圍 | 說明 |
+|---------|---------|------|
+| `.github/copilot-instructions.md` | 整個 repo | 全域指引，適用所有 Copilot 請求 |
+| `.github/instructions/*.instructions.md` | 依 glob 路徑 | 需加 frontmatter `applyTo`，精準控制套用範圍 |
+| `.github/prompts/*.prompt.md` | 手動觸發 | VS Code / Visual Studio / JetBrains 可用，以 `/promptname` 呼叫 |
+
+**優先順序**：Personal > Repository > Organization（均會提供，Personal 最優先）
+
+**環境支援矩陣**：
+
+| 環境 | repo-wide | path-specific | prompt files |
+|------|-----------|--------------|-------------|
+| GitHub.com | ✅ | ✅ | ✅ |
+| VS Code | ✅ | ✅ | ✅ |
+| Visual Studio | ✅ | ❌ | ✅ |
+| JetBrains | ✅ | ❌ | ❌ |
+
+**路徑特定指示 frontmatter 欄位**：
+
+| 欄位 | 必填 | 說明 |
+|------|------|------|
+| `applyTo` | ✓ | Glob 語法，多個模式用逗號分隔（如 `"**/*.ts,**/*.tsx"`） |
+| `excludeAgent` | ✗ | 防止指定 agent 使用此檔案：`"code-review"` 或 `"cloud-agent"` |
+
+**路徑特定指示範例**（`.github/instructions/typescript.instructions.md`）：
+
+```markdown
+---
+applyTo: "**/*.ts,**/*.tsx"
+excludeAgent: "code-review"
+---
+
+禁止使用 `any` 類型。使用 `unknown` + type guard 代替。
+```
 
 **格式規則**：
-- 純 Markdown，不需要 frontmatter 或 YAML
-- 保持在 500 字以內（過長 Copilot 可能截斷）
-- 直接下指令（如 `使用 const`），避免模糊描述（如 `寫好的程式碼`）
+- 純 Markdown；路徑特定指示需加 frontmatter
+- 無硬性字數限制，但保持精簡（直接下指令，避免模糊描述）
+- `.github/copilot-instructions.md` 放 repo 通用規則；語言/框架專屬規則放 `.github/instructions/`
 
 **Node.js/CommonJS Repo 標準模板**：
 
@@ -311,7 +346,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      issues: read
       id-token: write
 
     steps:
@@ -328,26 +362,67 @@ jobs:
           prompt: |
             You are a code reviewer. Review the changes in PR #${{ github.event.pull_request.number }}.
 
-            1. Run `gh pr diff ${{ github.event.pull_request.number }}` to get the diff
-            2. Analyze the changes
-            3. Write your review to the file "review.md" using the Write tool
+            ## Phase 1 — FETCH
 
+            Get PR metadata and diff:
+            ```
+            gh pr view ${{ github.event.pull_request.number }} --json number,title,body,author,baseRefName,headRefName,changedFiles,additions,deletions
+            gh pr diff ${{ github.event.pull_request.number }} --name-only
+            gh pr diff ${{ github.event.pull_request.number }}
+            ```
+
+            ## Phase 2 — CONTEXT
+
+            Read CLAUDE.md for project conventions (if it exists):
+            ```
+            gh api "repos/${{ github.repository }}/contents/CLAUDE.md?ref=${{ github.event.pull_request.head.sha }}" --jq '.content' | base64 -d
+            ```
+
+            For each changed file, read its full content at the PR head (not just the diff):
+            ```
+            gh api "repos/${{ github.repository }}/contents/{file}?ref=${{ github.event.pull_request.head.sha }}" --jq '.content' | base64 -d
+            ```
+
+            ## Phase 3 — REVIEW
+
+            Review each changed file in full. Check across these categories:
+
+            | Category | What to Check |
+            |---|---|
+            | **Correctness** | Logic errors, off-by-ones, null handling, edge cases |
+            | **Type Safety** | Type mismatches, unsafe casts, `any` usage |
+            | **Pattern Compliance** | Matches project conventions from CLAUDE.md |
+            | **Security** | Injection, auth gaps, secret exposure, XSS |
+            | **Performance** | N+1 queries, unbounded loops, memory leaks |
+            | **Completeness** | Missing tests, missing error handling |
+            | **Maintainability** | Dead code, magic numbers, deep nesting |
+
+            Assign severity to each finding:
+            - **[CRITICAL]** Security vulnerability or data loss risk — must fix before merge
+            - **[HIGH]** Bug or logic error likely to cause issues — should fix before merge
+            - **[MEDIUM]** Code quality issue — fix recommended
+            - **[LOW]** Style nit — optional
+
+            ## Phase 4 — WRITE REVIEW
+
+            Write your review to "review.md" using the Write tool.
             The review must be in Traditional Chinese with this format:
 
             ## Code Review
 
             ### 變更摘要
-            (bullet points)
+            (bullet points summarizing what changed)
 
             ### 優點
             (what's good about these changes)
 
             ### 問題與建議
-            (issues with file:line references, or 無 if none)
-            IMPORTANT: Do NOT suggest deferring fixes to follow-up PRs. Every suggestion you make is expected to be fixed in the current PR before merge. Never use phrases like "可在後續 PR 處理", "not blocking merge", or "can be addressed later".
+            For each issue: `[SEVERITY] file:line — description and suggested fix`
+            Write 無 if no issues found.
+            IMPORTANT: Do NOT suggest deferring fixes to follow-up PRs. Every suggestion must be fixed in the current PR before merge. Never use phrases like "可在後續 PR 處理", "not blocking merge", or "can be addressed later".
 
             ### 結論
-            (can merge / needs changes — if there are any suggestions above, the conclusion must be "needs changes")
+            (可合併 / 需修改 — if there are ANY suggestions above, the conclusion MUST be "需修改")
 
             After writing review.md, post it as a PR comment:
             gh pr comment ${{ github.event.pull_request.number }} --body-file review.md
@@ -475,4 +550,5 @@ git worktree add -b develop .worktrees/develop main
 12. [ ] 建立 `.github/workflows/claude-code-review.yml`（依統一格式）
 13. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發）
 14. [ ] 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
-15. [ ] 建立 `.github/copilot-instructions.md`（GitHub Copilot 審核指引）
+15. [ ] 建立 `.github/copilot-instructions.md`（全域 Copilot 指引）
+16. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
