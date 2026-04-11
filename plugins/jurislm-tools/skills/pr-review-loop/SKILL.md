@@ -100,7 +100,7 @@ gh pr checks <PR> --repo <REPO> --watch
 
 Monitor 以**背景任務**方式執行，將每行輸出作為事件串流回 Claude；Claude 可在事件到達時繼續處理其他邏輯（如超時判斷）。所有 checks 完成後 Monitor 自動退出，Claude 收到結束通知。
 
-> **超時保護**：若 Monitor 已執行超過 `MAX_WAIT_MINUTES` 分鐘仍未完成，使用 `TaskStop` tool 中斷任務，然後執行「CI 等待超時」通知（見下方）。Monitor 啟動時會回傳 8 字元的 task ID（如 `bncmjylb5`），將此 ID 傳入 `TaskStop` 的 `id` 參數即可中斷。
+> **超時保護**：若 Monitor 已執行超過 `MAX_WAIT_MINUTES` 分鐘仍未完成，使用 `TaskStop` tool 中斷任務，然後執行「CI 等待超時」通知（見下方）。Monitor 啟動時會回傳 8 字元的 task ID（如 `4b5ba404`），將此 ID 傳入 `TaskStop` 的 `id` 參數即可中斷。
 
 **根據輸出結果：**
 
