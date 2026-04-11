@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.16.0](https://github.com/jurislm/jurislm-tools/compare/v1.15.3...v1.16.0) (2026-04-11)
+
+
+### 🚀 New Features
+
+* improve claude-code-review prompt with full file context and severity levels ([9a92e39](https://github.com/jurislm/jurislm-tools/commit/9a92e39a8600ef2019541e3650ae89d002511fe7))
+* refactor pr-review-loop to use Monitor tool for event-driven CI watching ([#49](https://github.com/jurislm/jurislm-tools/issues/49)) ([30e1589](https://github.com/jurislm/jurislm-tools/commit/30e1589dd733ccbfce5668f75ad56d6e15aac092))
+
+
+### 🐛 Bug Fixes
+
+* remove unnecessary permissions from claude-code-review workflow ([94a2bef](https://github.com/jurislm/jurislm-tools/commit/94a2bef96b8fed9769b93c563b64c43d1f3aedcb))
+* restore id-token:write permission required by claude-code-action ([2130021](https://github.com/jurislm/jurislm-tools/commit/2130021c7d06d6d4f36f8bf16c732f7a69b29027))
+
 ## [1.15.3](https://github.com/jurislm/jurislm-tools/compare/v1.15.2...v1.15.3) (2026-04-10)
 
 
