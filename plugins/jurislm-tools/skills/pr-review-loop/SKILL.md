@@ -84,7 +84,7 @@ gh pr checks <PR> --repo <REPO> --watch
 
 Monitor 會阻塞直到所有 checks 完成，將每行輸出串流回 Claude。
 
-> **超時保護**：若 Monitor 已執行超過 `MAX_WAIT_MINUTES` 分鐘仍未完成，立即中斷並執行「CI 等待超時」通知（見下方）。
+> **超時保護**：若 Monitor 已執行超過 `MAX_WAIT_MINUTES` 分鐘仍未完成，使用 `TaskStop` tool 中斷 Monitor task，然後執行「CI 等待超時」通知（見下方）。若 Monitor 非以 Task 方式執行而無法透過 `TaskStop` 中斷，則依已記錄的啟動時間自行判斷是否超時並停止等待。
 
 **根據輸出結果：**
 
@@ -117,7 +117,7 @@ Monitor 會阻塞直到所有 checks 完成，將每行輸出串流回 Claude。
    ```
 
 4. 分析根本原因，修正後 commit + push；更新 `LAST_PUSH_TIME`
-5. 等待 30 秒後重新執行步驟一（Monitor CI）
+5. **等待 30 秒**（讓 GitHub 為新 commit 建立 checks），然後重新執行步驟一（Monitor CI）
 
 ---
 
@@ -153,7 +153,7 @@ gh pr view <PR> --repo <REPO> --json reviewDecision,statusCheckRollup
 |------|------|
 | `reviewDecision: APPROVED` + CI 全 pass | **執行合併**（見「合併步驟」） |
 | `reviewDecision: null`（無需 reviewer 核准）+ CI 全 pass | 通知使用者「此 repo 無需 reviewer 核准，即將自動合併」，隨即**執行合併** |
-| `CHANGES_REQUESTED` 或有需修正的 Bot feedback | 根據 feedback 判斷（見下方）；`ROUND_COUNT += 1`；若 `ROUND_COUNT < MAX_ROUNDS` → 回到步驟一；否則 → **停止，執行「超過輪次停止」** |
+| `CHANGES_REQUESTED` 或有需修正的 Bot feedback | 根據 feedback 判斷（見下方）；修正後 commit + push，更新 `LAST_PUSH_TIME`；**等待 30 秒**（讓 GitHub 建立新 checks）；`ROUND_COUNT += 1`；若 `ROUND_COUNT < MAX_ROUNDS` → 回到步驟一；否則 → **停止，執行「超過輪次停止」** |
 
 **Feedback 判斷原則（不盲目接受）**：
 
@@ -181,7 +181,7 @@ git diff HEAD...origin/$BASE
 git rebase origin/$BASE
 # 若有衝突：手動解決 → git add → git rebase --continue
 
-# 4. push
+# 4. push（--force-with-lease 確保不覆蓋遠端其他人的 push；若 lease 失敗代表有人在你之後 push，需先 pull 再處理）
 git push --force-with-lease
 ```
 
