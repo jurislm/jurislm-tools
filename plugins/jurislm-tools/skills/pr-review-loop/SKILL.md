@@ -106,7 +106,7 @@ Monitor 以**背景任務**方式執行，將每行輸出作為事件串流回 C
 |------|------|
 | 全部 pass（exit 0） | 進入步驟二 |
 | 有 failure（exit 非 0） | 進入「CI failure 修正」（見下方） |
-| Monitor 啟動後 30 秒內無任何輸出（`CI_RAN = true`） | CI 未觸發，執行「CI 等待超時」情境 B（見下方） |
+| Monitor 啟動後 **90 秒**內無任何輸出（`CI_RAN = true`） | CI 未觸發，執行「CI 等待超時」情境 B（見下方）；若確認 CI 已觸發只是 runner 冷啟動較慢，可直接重新執行 skill |
 | Monitor 本身失敗（gh CLI 錯誤、網路問題） | 等待 30 秒後重試一次；仍失敗則停止並通知使用者 |
 
 > **exit code 語義**：`gh pr checks --watch` 在所有 check 狀態為 `pass`、`SKIPPED` 或 `NEUTRAL` 時 exit 0；只要有任一 check 為 `failure` 或 `error` 即 exit 非 0。`SKIPPED`/`NEUTRAL` 視為通過，不觸發 CI failure 修正。
@@ -134,7 +134,7 @@ Monitor 以**背景任務**方式執行，將每行輸出作為事件串流回 C
    ```
 
 4. 分析根本原因，修正後 commit + push；更新 `LAST_PUSH_TIME`
-5. **等待 30 秒**（讓 GitHub 為新 commit 建立 checks），然後重新執行步驟一（Monitor CI）
+5. **等待 30 秒**（讓 GitHub 為新 commit 建立 checks），然後**回到前置檢查**（重新確認 PR 狀態與 merge 衝突），再進入步驟一
 
 ---
 
@@ -172,7 +172,7 @@ gh pr view <PR> --repo <REPO> --json reviewDecision,statusCheckRollup
 |------|------|
 | `reviewDecision: APPROVED` + CI 全 pass | **執行合併**（見「合併步驟」） |
 | `reviewDecision: null`（無需 reviewer 核准）+ CI 全 pass | 通知使用者「此 repo 無需 reviewer 核准，即將自動合併」，隨即**執行合併** |
-| `CHANGES_REQUESTED` 或有需修正的 Bot feedback | 根據 feedback 判斷（見下方）；修正後 commit + push，更新 `LAST_PUSH_TIME`；**等待 30 秒**（讓 GitHub 建立新 checks）；`ROUND_COUNT += 1`；若 `ROUND_COUNT < MAX_ROUNDS` → 回到步驟一；否則 → **停止，執行「超過輪次停止」** |
+| `CHANGES_REQUESTED` 或有需修正的 Bot feedback | 根據 feedback 判斷（見下方）；修正後 commit + push，更新 `LAST_PUSH_TIME`；**等待 30 秒**（讓 GitHub 建立新 checks）；`ROUND_COUNT += 1`；若 `ROUND_COUNT < MAX_ROUNDS` → **回到前置檢查**（重新確認 PR 狀態與 merge 衝突），再進入步驟一；否則 → **停止，執行「超過輪次停止」** |
 
 **Feedback 判斷原則（不盲目接受）**：
 
