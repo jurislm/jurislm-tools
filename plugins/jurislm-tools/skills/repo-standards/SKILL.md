@@ -229,27 +229,38 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ### Copilot 自訂指示檔案
 
-GitHub Copilot 支援兩種層級的自訂指示：
+GitHub Copilot 支援三種層級的指示，**同時**提供給 Copilot（非互斥）：
 
 | 檔案路徑 | 套用範圍 | 說明 |
 |---------|---------|------|
-| `.github/copilot-instructions.md` | 整個 repo | 全域指引，適用所有請求 |
+| `.github/copilot-instructions.md` | 整個 repo | 全域指引，適用所有 Copilot 請求 |
 | `.github/instructions/*.instructions.md` | 依 glob 路徑 | 需加 frontmatter `applyTo`，精準控制套用範圍 |
+| `.github/prompts/*.prompt.md` | 手動觸發 | VS Code / Visual Studio / JetBrains 可用，以 `/promptname` 呼叫 |
+
+**優先順序**：Personal > Repository > Organization（均會提供，Personal 最優先）
+
+**路徑特定指示 frontmatter 欄位**：
+
+| 欄位 | 必填 | 說明 |
+|------|------|------|
+| `applyTo` | ✓ | Glob 語法，多個模式用逗號分隔（如 `"**/*.ts,**/*.tsx"`） |
+| `excludeAgent` | ✗ | 排除特定功能：`"code-review"` 或 `"cloud-agent"` |
 
 **路徑特定指示範例**（`.github/instructions/typescript.instructions.md`）：
 
 ```markdown
 ---
 applyTo: "**/*.ts,**/*.tsx"
+excludeAgent: "code-review"
 ---
 
 禁止使用 `any` 類型。使用 `unknown` + type guard 代替。
 ```
 
 **格式規則**：
-- 純 Markdown；路徑特定指示需加 frontmatter（`applyTo` glob）
+- 純 Markdown；路徑特定指示需加 frontmatter
 - 無硬性字數限制，但保持精簡（直接下指令，避免模糊描述）
-- `.github/copilot-instructions.md` 放整個 repo 通用的規則；語言/框架專屬規則放 `.github/instructions/`
+- `.github/copilot-instructions.md` 放 repo 通用規則；語言/框架專屬規則放 `.github/instructions/`
 
 **Node.js/CommonJS Repo 標準模板**：
 
