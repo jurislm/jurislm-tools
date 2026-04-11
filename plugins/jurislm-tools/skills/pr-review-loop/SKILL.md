@@ -37,27 +37,21 @@ MAX_ROUNDS = <loop 參數值，預設 5>
 MAX_WAIT_MINUTES = <timeout 參數值，預設 60>
 LAST_PUSH_TIME = ""        # 每次 push 後更新，作為 feedback 篩選基準
 CI_RAN = false             # 本輪是否實際執行過 CI checks
-BRANCH = <從 gh pr view 取得當前 PR 的 headRefName>
+BRANCH = ""                # 從前置檢查取得 headRefName 後賦值
 ```
 
 ---
 
 ## 前置檢查（每輪開始前）
 
-確認 PR 存在且為開啟狀態：
+確認 PR 狀態、取得 branch 名稱、並檢查合併衝突（單次 API 呼叫）：
 
 ```bash
-gh pr view <PR> --repo <REPO> --json state,number,headRefName
+gh pr view <PR> --repo <REPO> --json state,number,headRefName,mergeable
 ```
 
-- `state: OPEN` → 繼續；同時取得 `headRefName` 存為 `BRANCH`
+- `state: OPEN` → 繼續；取得 `headRefName` 存為 `BRANCH`
 - `state: MERGED` / `CLOSED` → 停止，通知使用者 PR 已關閉
-
-檢查是否有合併衝突：
-
-```bash
-gh pr view <PR> --repo <REPO> --json mergeable
-```
 
 若 `CONFLICTING` → 立即執行「衝突處理」（見下方），commit + push，更新 `LAST_PUSH_TIME`；衝突解決後重新執行 `gh pr view --json mergeable` 確認 `CONFLICTING` 已清除。若仍為 `CONFLICTING`，停止並通知使用者手動介入。確認清除後繼續執行步驟一（Monitor CI）。
 
@@ -104,14 +98,17 @@ Monitor 會阻塞直到所有 checks 完成，將每行輸出串流回 Claude。
 
 **CI failure 修正**：
 
-1. 從 Monitor 輸出讀取失敗的 check 名稱 `<CHECK_NAME>`
-2. 查出對應的 failing workflow run id（加上 `--branch` 過濾確保精確）：
+1. 從 Monitor 輸出讀取失敗的 check 名稱作為參考
+2. 用當前 commit SHA 精確鎖定失敗的 workflow run（避免 check 名稱與 workflow 名稱格式不符的問題）：
 
    ```bash
-   gh run list --repo <REPO> --branch <BRANCH> --limit 10 --json databaseId,name,status,conclusion
+   HEAD_SHA=$(gh pr view <PR> --repo <REPO> --json headRefOid --jq '.headRefOid')
+   gh run list --repo <REPO> --branch <BRANCH> --limit 10 \
+     --json databaseId,name,headSha,conclusion \
+     | jq --arg sha "$HEAD_SHA" '[.[] | select(.headSha == $sha and .conclusion == "failure")]'
    ```
 
-   依 `<CHECK_NAME>` 篩選 `conclusion == "failure"` 的最新一筆，取其 `databaseId` 作為 `<run-id>`。
+   取第一筆的 `databaseId` 作為 `<run-id>`。
 
 3. 取得詳細日誌：
 
