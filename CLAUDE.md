@@ -26,18 +26,20 @@ plugins/jurislm-tools/
 ├── .claude-plugin/plugin.json        # Plugin 元資料
 ├── .mcp.json                         # MCP Server 配置
 └── skills/
+    ├── codebase-sync/SKILL.md
     ├── coolify/SKILL.md
     ├── hetzner/SKILL.md
+    ├── langfuse/SKILL.md
     ├── podcast-to-blog/SKILL.md
-    ├── repo-standards/SKILL.md
-    └── codebase-sync/SKILL.md
+    ├── pr-review/SKILL.md
+    └── repo-standards/SKILL.md
 ```
 
 ## 目前 Plugins
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| jt | 1.10.0 | Hybrid | Coolify MCP（35 工具）+ Hetzner MCP（14 工具）+ 5 skills + 5 commands |
+| jt | 1.10.0 | Hybrid | Coolify MCP（35 工具）+ Hetzner MCP（14 工具）+ 7 skills + 7 commands |
 
 ## 版本管理
 
