@@ -3,7 +3,7 @@ description: 使用 Monitor tool 即時監控 PR 的 CI 狀態與 Bot Code Revie
 argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
 ---
 
-Apply the `pr-review-loop` skill to monitor and resolve a pull request.
+Apply the `pr-review` skill to monitor and resolve a pull request.
 
 ## Arguments
 
@@ -17,7 +17,7 @@ Parse the arguments as follows (all optional, use defaults if not provided):
 
 ## Delegation
 
-Follow the `pr-review-loop` skill with the resolved parameters:
+Follow the `pr-review` skill with the resolved parameters:
 - Use the resolved `repo` and `pr` number for all `gh` commands
 - Use `loop` as the maximum fix rounds limit
 - Use `timeout` as the Monitor wait limit in minutes

@@ -1,5 +1,5 @@
 ---
-name: pr-review-loop
+name: pr-review
 description: PR 開啟後使用 Monitor tool 即時監控 CI，自動讀取 Bot Code Review feedback 並修正，通過後合併。當使用者說「幫我看 PR review」、「等 CI 通過」、「自動處理 PR feedback」、「loop PR」時觸發。
 argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
 ---
