@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-`jurislm-tools` 是 Claude Code Plugin Marketplace，提供 `jt` plugin（Hybrid 類型）：整合 Coolify MCP（35 工具）、Hetzner MCP（14 工具）、5 個 skills 和 5 個 commands。
+`jurislm-tools` 是 Claude Code Plugin Marketplace，提供 `jt` plugin（Hybrid 類型）：整合 Coolify MCP（35 工具）、Hetzner MCP（14 工具）、7 個 skills 和 7 個 commands。
 
 ## Git Workflow
 
@@ -18,11 +18,13 @@ plugins/jurislm-tools/
 ├── .claude-plugin/plugin.json             # Plugin 元資料（version 由 Release Please 管理）
 ├── .mcp.json                              # MCP Server 配置
 └── skills/
+    ├── codebase-sync/SKILL.md
     ├── coolify/SKILL.md
     ├── hetzner/SKILL.md
+    ├── langfuse/SKILL.md
     ├── podcast-to-blog/SKILL.md
-    ├── repo-standards/SKILL.md
-    └── codebase-sync/SKILL.md
+    ├── pr-review/SKILL.md
+    └── repo-standards/SKILL.md
 ```
 
 ## Version Management（關鍵）
