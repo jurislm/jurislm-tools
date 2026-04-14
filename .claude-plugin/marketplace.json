@@ -9,7 +9,7 @@
       "name": "jt",
       "source": "./plugins/jurislm-tools",
       "description": "JurisLM 內部工具集 — Coolify 部署管理、Hetzner VPS 管理、Langfuse 可觀測性、Podcast 轉部落格、PR 自動化審查與合併",
-      "version": "1.16.1",
+      "version": "1.17.0",
       "author": {
         "name": "Terry Chen"
       }
