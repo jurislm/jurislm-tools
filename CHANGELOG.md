@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/jurislm/jurislm-tools/compare/v1.16.1...v1.17.0) (2026-04-14)
+
+
+### 🚀 New Features
+
+* improve plugin quality — bilingual triggers, progressive disclosure, review fixes ([#56](https://github.com/jurislm/jurislm-tools/issues/56)) ([aeecd71](https://github.com/jurislm/jurislm-tools/commit/aeecd71091cd3eacaf16f676c763d3cfedcf1a1e))
+
 ## [1.16.1](https://github.com/jurislm/jurislm-tools/compare/v1.16.0...v1.16.1) (2026-04-12)
 
 
