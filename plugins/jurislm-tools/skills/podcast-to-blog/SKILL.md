@@ -2,9 +2,9 @@
 name: podcast-to-blog
 version: 1.0.0
 description: >
-  將 Podcast 轉成部落格文章的完整工作流。Use this skill when the user says
-  "podcast 轉文章", "幫我把這集 podcast 寫成文章", "podcast 逐字稿",
-  "轉錄 podcast", "podcast to blog", "聽這集幫我寫筆記",
+  This skill should be used when the user says "podcast 轉文章",
+  "幫我把這集 podcast 寫成文章", "podcast 逐字稿", "轉錄 podcast",
+  "podcast to blog", "聽這集幫我寫筆記",
   or provides an Apple Podcasts URL and wants a blog post or transcript generated from it.
 argument-hint: "<apple-podcasts-url>"
 ---
@@ -84,7 +84,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/podcast-to-blog/scripts/transcribe.py /tmp/
 
 語言：繁體中文（除非使用者指定其他語言）
 
-將完成的文章存為 Markdown 檔案至 `/sessions/friendly-amazing-gates/mnt/outputs/podcast-blog-YYYYMMDD.md`。
+將完成的文章存為 Markdown 檔案至 `/tmp/podcast-blog-YYYYMMDD.md`。
 
 ### Step 4：存入 Notion（可選）
 

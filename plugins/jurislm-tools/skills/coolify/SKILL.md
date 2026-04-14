@@ -1,7 +1,13 @@
 ---
 name: coolify
 version: 1.0.0
-description: This skill should be used when the user asks to "deploy to Coolify", "manage Coolify applications", "check Coolify status", "create database on Coolify", "manage Coolify servers", "diagnose Coolify issues", "update environment variables on Coolify", or mentions Coolify deployment, infrastructure management, or self-hosted PaaS operations.
+description: >
+  This skill should be used when the user asks to "deploy to Coolify", "manage Coolify applications",
+  "check Coolify status", "create database on Coolify", "manage Coolify servers",
+  "diagnose Coolify issues", "update environment variables on Coolify",
+  "部署到 Coolify", "查看 Coolify 狀態", "建立 Coolify 資料庫", "診斷 Coolify 問題",
+  "更新環境變數", or mentions Coolify deployment, infrastructure management,
+  or self-hosted PaaS operations.
 argument-hint: "[action] [app-name/domain/uuid]"
 ---
 

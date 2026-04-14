@@ -1,9 +1,10 @@
 ---
+name: pr-review
 description: 使用 Monitor tool 即時監控 PR 的 CI 狀態與 Bot Code Review feedback，分析並修正後合併。
 argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
 ---
 
-Apply the `pr-review-loop` skill to monitor and resolve a pull request.
+Apply the `pr-review` skill to monitor and resolve a pull request.
 
 ## Arguments
 
