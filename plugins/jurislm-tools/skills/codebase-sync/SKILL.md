@@ -6,7 +6,7 @@ description: >
   "移除過時內容", "explore codebase and update docs", "codebase 文件已過時",
   "update README", "sync documentation", "docs are outdated",
   or wants to audit and refresh README.md and CLAUDE.md to match the current codebase state.
-argument-hint: ""
+argument-hint: "(no arguments — runs on current directory)"
 ---
 
 # Codebase Sync — 探索並更新 README.md 與 CLAUDE.md

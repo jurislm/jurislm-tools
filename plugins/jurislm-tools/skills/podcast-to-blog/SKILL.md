@@ -18,7 +18,7 @@ argument-hint: "<apple-podcasts-url>"
 在開始前，執行以下檢查：
 
 ```bash
-python3 -c "import whisper; print('Whisper OK')" 2>/dev/null || echo "NEED_INSTALL"
+python3 -m pip show openai-whisper >/dev/null 2>&1 && echo "Whisper OK" || echo "NEED_INSTALL"
 ```
 
 若輸出 `NEED_INSTALL`，執行安裝：
@@ -30,17 +30,24 @@ pip install openai-whisper --break-system-packages
 同時確認 `ffmpeg` 已安裝：
 
 ```bash
-ffmpeg -version 2>/dev/null || (apt-get update && apt-get install -y ffmpeg)
+ffmpeg -version 2>/dev/null || echo "NEED_FFMPEG"
 ```
+
+若輸出 `NEED_FFMPEG`，依作業系統安裝：`brew install ffmpeg`（macOS）或 `sudo apt-get install -y ffmpeg`（Ubuntu）。
 
 ## 工作流程
 
 ### Step 1：解析 Apple Podcasts URL 取得音檔
 
-執行 plugin 內附的 Python 腳本來解析 Apple Podcasts 連結並下載音檔：
+先找到 plugin 安裝的腳本目錄，再執行腳本下載音檔：
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/podcast-to-blog/scripts/fetch_podcast_audio.py "<APPLE_PODCASTS_URL>" /tmp/podcast_audio.mp3
+SCRIPT_DIR=$(find ~/.claude/plugins -path "*/podcast-to-blog/scripts" -type d 2>/dev/null | head -1)
+if [ -z "$SCRIPT_DIR" ]; then
+  echo "ERROR: 找不到 podcast-to-blog scripts，請確認 plugin 已正確安裝（/plugin install jurislm-tools@jt）"
+  exit 1
+fi
+python3 "${SCRIPT_DIR}/fetch_podcast_audio.py" "<APPLE_PODCASTS_URL>" /tmp/podcast_audio.mp3
 ```
 
 腳本會：
@@ -53,10 +60,10 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/podcast-to-blog/scripts/fetch_podcast_audio
 
 ### Step 2：用 Whisper 轉錄
 
-執行 plugin 內附的轉錄腳本：
+使用同一 `$SCRIPT_DIR`（步驟一已取得）執行轉錄腳本：
 
 ```bash
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/podcast-to-blog/scripts/transcribe.py /tmp/podcast_audio.mp3 /tmp/podcast_transcript.txt --language zh --model medium
+python3 "${SCRIPT_DIR}/transcribe.py" /tmp/podcast_audio.mp3 /tmp/podcast_transcript.txt --language zh --model medium
 ```
 
 參數說明：

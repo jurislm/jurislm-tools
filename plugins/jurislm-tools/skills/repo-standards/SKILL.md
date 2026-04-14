@@ -4,9 +4,11 @@ version: 1.0.0
 description: >
   This skill should be used when the user asks "如何設定新 repo", "release workflow 怎麼寫",
   "release-please 怎麼用", "lint 怎麼設定", "eslint config 怎麼寫", "新增 repo 要怎麼設定",
+  "git worktree 怎麼設定", "設定 code review workflow", "設定 GitHub Actions",
   "set up new repo", "configure ESLint", "set up release workflow",
-  or needs to set up release automation, ESLint configuration, or code review workflows
-  for a JurisLM repository.
+  "set up git worktree", "configure Claude code review", "add GitHub Actions workflow",
+  or needs to set up release automation, ESLint configuration, git worktree, or code review
+  workflows for a JurisLM repository.
 argument-hint: "[repo-name]"
 ---
 

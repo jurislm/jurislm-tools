@@ -8,7 +8,7 @@ description: >
   "管理 SSH 金鑰", "查看伺服器規格",
   or mentions Hetzner Cloud server management, infrastructure provisioning,
   or cloud resource operations.
-argument-hint: "[action] [server-id]"
+argument-hint: "[action] [server-name/id]"
 ---
 
 # Hetzner Cloud MCP 使用指南

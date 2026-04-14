@@ -14,6 +14,11 @@ argument-hint: "[action] [prompt-name/trace-id]"
 
 Langfuse 是一個開源的 LLM 可觀測性平台，提供 Prompt 版本管理、執行追蹤（Traces）、觀測點（Observations）與評分（Scores）功能。此 skill 提供透過 MCP 工具管理 Langfuse 的完整指南。
 
+**核心用途**：
+- **Prompt 管理**：版本化管理 LLM prompts，透過 labels（如 `production`）控制上線版本，不中斷服務地安全升版
+- **可觀測性**：追蹤每次 LLM 呼叫的 input/output、token 用量、延遲時間，定位效能瓶頸
+- **評估（Evals）**：為 traces 建立評分記錄，用於 A/B 測試不同 prompt 版本的效果
+
 ## MCP 工具概覽
 
 `@jurislm/langfuse-mcp` 提供 **13 個工具**，分為 5 個類別：
