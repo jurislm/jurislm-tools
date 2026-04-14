@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.16.1](https://github.com/jurislm/jurislm-tools/compare/v1.16.0...v1.16.1) (2026-04-12)
+
+
+### 📚 Documentation
+
+* add copilot instructions and .prettierignore ([#53](https://github.com/jurislm/jurislm-tools/issues/53)) ([9319360](https://github.com/jurislm/jurislm-tools/commit/93193604d07cd284e0a08a7e305fd2a7afbf289e))
+* update repo-standards with improved claude-code-review prompt ([#51](https://github.com/jurislm/jurislm-tools/issues/51)) ([7c0f7e6](https://github.com/jurislm/jurislm-tools/commit/7c0f7e674223e9757f96e4b35aa84dcdb7f8088a))
+
 ## [1.16.0](https://github.com/jurislm/jurislm-tools/compare/v1.15.3...v1.16.0) (2026-04-11)
 
 

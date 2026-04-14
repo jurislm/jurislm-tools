@@ -6,7 +6,7 @@ description: >
   "自動處理 PR feedback", "loop PR", "自動合併 PR", "monitor CI", "merge PR after CI passes",
   or wants to automatically watch CI status, read bot code review feedback,
   fix issues, and merge a pull request.
-argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
+argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current] [auto-merge=false]"
 ---
 
 # PR Review Loop
