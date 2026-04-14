@@ -1,18 +1,19 @@
 ---
-description: 透過 Langfuse MCP 管理 Prompt 版本、查詢 Traces、Observations、Scores 與 Sessions。
+name: langfuse
+description: 管理 Langfuse 可觀測性平台 — Prompt 版本管理、執行追蹤、評分。
 argument-hint: "[action] [prompt-name/trace-id]"
 ---
 
-Apply the `langfuse` skill to interact with the Langfuse observability platform.
+Apply the `langfuse` skill to manage Langfuse observability via MCP tools.
 
 ## Arguments
 
 $ARGUMENTS
 
 Parse the arguments as follows (all optional):
-- `action`: the operation to perform (e.g. `list-prompts`, `get-trace`, `create-score`)
-- `prompt-name` or `trace-id`: target resource identifier
+- `action`: what to do (e.g. list prompts, get trace, create score, update labels) — inferred from context if omitted
+- `prompt-name` / `trace-id`: target resource identifier — omit to list all
 
 ## Delegation
 
-Follow the `langfuse` skill with the resolved parameters.
+Follow the `langfuse` skill workflow using available Langfuse MCP tools (listPrompts, getPrompt, createTextPrompt, listTraces, getTrace, createScore, etc.).
