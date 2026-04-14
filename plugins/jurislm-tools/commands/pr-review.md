@@ -18,7 +18,7 @@ Parse the arguments as follows (all optional, use defaults if not provided):
 
 ## Delegation
 
-Follow the `pr-review-loop` skill with the resolved parameters:
+Follow the `pr-review` skill with the resolved parameters:
 - Use the resolved `repo` and `pr` number for all `gh` commands
 - Use `loop` as the maximum fix rounds limit
 - Use `timeout` as the Monitor wait limit in minutes
