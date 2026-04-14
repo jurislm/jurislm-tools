@@ -1,8 +1,12 @@
 ---
 name: codebase-sync
 version: 1.0.0
-description: 探索 codebase 現況，更新 README.md 與 CLAUDE.md，移除過時內容。當使用者說「更新 README」、「更新 CLAUDE.md」、「同步文件」、「移除過時內容」、「explore codebase and update docs」、「codebase 文件已過時」時觸發。
-argument-hint: "[repo-path]"
+description: >
+  This skill should be used when the user says "更新 README", "更新 CLAUDE.md", "同步文件",
+  "移除過時內容", "explore codebase and update docs", "codebase 文件已過時",
+  "update README", "sync documentation", "docs are outdated",
+  or wants to audit and refresh README.md and CLAUDE.md to match the current codebase state.
+argument-hint: "(no arguments — runs on current directory)"
 ---
 
 # Codebase Sync — 探索並更新 README.md 與 CLAUDE.md

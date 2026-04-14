@@ -1,13 +1,23 @@
 ---
 name: langfuse
 version: 1.0.0
-description: This skill should be used when the user asks to "manage Langfuse prompts", "view traces", "check LLM observations", "query Langfuse", "list prompts", "get trace details", "create scores", "analyze LLM performance", or mentions Langfuse, prompt management, LLM observability, or trace analysis.
+description: >
+  This skill should be used when the user asks to "manage Langfuse prompts", "view traces",
+  "check LLM observations", "query Langfuse", "list prompts", "get trace details",
+  "create scores", "analyze LLM performance", "查看 LLM 追蹤記錄", "列出 Langfuse prompts",
+  "分析 LLM 用量", "查 traces", "查 Langfuse",
+  or mentions Langfuse, prompt management, LLM observability, or trace analysis.
 argument-hint: "[action] [prompt-name/trace-id]"
 ---
 
 # Langfuse MCP Server 使用指南
 
 Langfuse 是一個開源的 LLM 可觀測性平台，提供 Prompt 版本管理、執行追蹤（Traces）、觀測點（Observations）與評分（Scores）功能。此 skill 提供透過 MCP 工具管理 Langfuse 的完整指南。
+
+**核心用途**：
+- **Prompt 管理**：版本化管理 LLM prompts，透過 labels（如 `production`）控制上線版本，不中斷服務地安全升版
+- **可觀測性**：追蹤每次 LLM 呼叫的 input/output、token 用量、延遲時間，定位效能瓶頸
+- **評估（Evals）**：為 traces 建立評分記錄，用於 A/B 測試不同 prompt 版本的效果
 
 ## MCP 工具概覽
 
@@ -29,125 +39,7 @@ Langfuse 的 Prompt 是**不可變的**：
 - 標籤在版本間是唯一的：設定新版本為 `production` 會自動移除舊版本的 `production` 標籤
 - 取得 prompt 時預設使用 `production` 標籤
 
-## 工具詳解
-
-### 1. Prompt Management（6 工具）
-
-#### `listPrompts`
-列舉所有 prompts，支援分頁與篩選：
-```
-page: 頁碼（預設 1）
-limit: 每頁數量（1-100，預設 50）
-name: 精確名稱篩選
-label: 標籤篩選（如 "production"）
-tag: 標籤篩選
-```
-
-#### `getPrompt`
-取得指定 prompt 的完整內容（自動解析依賴）：
-```
-name: Prompt 名稱（必要）
-label: 版本標籤（預設 production）
-version: 指定版本號
-```
-
-#### `createTextPrompt`
-建立新的文字 prompt 版本，支援 `{{variable}}` 語法：
-```
-name: Prompt 名稱
-prompt: Prompt 文字內容
-labels: 標籤陣列（如 ["production"]）
-config: JSON 配置（如 {model, temperature}）
-tags: 組織用標籤
-commitMessage: 版本說明
-```
-
-#### `createChatPrompt`
-建立新的聊天 prompt（role-based messages）：
-```
-name: Prompt 名稱
-prompt: 訊息陣列 [{role: "system/user/assistant", content: "..."}]
-labels, config, tags, commitMessage: 同上
-```
-
-#### `getPromptUnresolved`
-取得 prompt 但**不解析依賴**（用於偵錯 prompt composition）：
-```
-name, label, version: 同 getPrompt
-```
-
-#### `updatePromptLabels`
-更新 prompt 版本的標籤（升版 / 降版）：
-```
-name: Prompt 名稱
-version: 要更新的版本號
-newLabels: 新標籤陣列（空陣列 = 移除所有標籤）
-```
-
-### 2. Traces（2 工具）
-
-#### `listTraces`
-列舉執行追蹤，支援多重篩選：
-```
-page, limit: 分頁
-name: trace 名稱篩選
-userId: 使用者篩選
-tags: 標籤篩選
-fromTimestamp, toTimestamp: 時間範圍（ISO 8601）
-```
-
-#### `getTrace`
-取得單個 trace 的完整詳情（含所有 observations 和 scores）：
-```
-traceId: Trace ID（必要）
-```
-
-### 3. Observations（2 工具）
-
-#### `listObservations`
-列舉觀測點（GENERATION / SPAN / EVENT）：
-```
-traceId: 指定 trace
-type: 類型篩選（GENERATION/SPAN/EVENT）
-name: 名稱篩選
-page, limit: 分頁
-```
-
-#### `getObservation`
-取得單個 observation 的完整詳情（input、output、usage、model、duration）：
-```
-observationId: Observation ID（必要）
-```
-
-### 4. Scores（2 工具）
-
-#### `createScore`
-為 trace 或 observation 建立評分：
-```
-traceId: Trace ID（必要）
-name: 評分名稱（如 "accuracy", "hallucination"）
-value: 數值評分
-observationId: 可選，針對特定 observation 評分
-comment: 可選說明
-```
-
-#### `listScores`
-列舉評分，支援篩選：
-```
-name: 評分名稱篩選
-userId: 使用者篩選
-traceId: Trace 篩選
-page, limit: 分頁
-```
-
-### 5. Sessions（1 工具）
-
-#### `listSessions`
-列舉會話（group 相關 traces）：
-```
-page, limit: 分頁
-fromTimestamp, toTimestamp: 時間範圍（ISO 8601）
-```
+> 各工具完整參數說明請見 `references/api-reference.md`。
 
 ## 常見工作流程
 

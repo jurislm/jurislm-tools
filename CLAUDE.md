@@ -25,6 +25,14 @@ grep '"version"' plugins/jurislm-tools/.claude-plugin/plugin.json
 plugins/jurislm-tools/
 ├── .claude-plugin/plugin.json        # Plugin 元資料
 ├── .mcp.json                         # MCP Server 配置
+├── commands/
+│   ├── coolify.md
+│   ├── hetzner.md
+│   ├── langfuse.md
+│   ├── podcast-to-blog.md
+│   ├── pr-review.md
+│   ├── repo-standards.md
+│   └── codebase-sync.md
 └── skills/
     ├── codebase-sync/SKILL.md
     ├── coolify/SKILL.md
@@ -32,14 +40,15 @@ plugins/jurislm-tools/
     ├── langfuse/SKILL.md
     ├── podcast-to-blog/SKILL.md
     ├── pr-review/SKILL.md
-    └── repo-standards/SKILL.md
+    ├── repo-standards/SKILL.md
+    └── codebase-sync/SKILL.md
 ```
 
 ## 目前 Plugins
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| jt | 1.10.0 | Hybrid | Coolify MCP（35 工具）+ Hetzner MCP（14 工具）+ 7 skills + 7 commands |
+| jt | 1.16.0 | Hybrid | Coolify MCP（40 工具）+ Hetzner MCP（14 工具）+ Langfuse MCP（13 工具）+ 7 skills + 7 commands |
 
 ## 版本管理
 

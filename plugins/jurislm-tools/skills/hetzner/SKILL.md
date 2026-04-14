@@ -1,13 +1,19 @@
 ---
 name: hetzner
 version: 1.0.0
-description: This skill should be used when the user asks to "create a Hetzner server", "manage Hetzner Cloud infrastructure", "list Hetzner servers", "add SSH key to Hetzner", "check Hetzner server types", "provision a VPS", or mentions Hetzner Cloud server management, infrastructure provisioning, or cloud resource operations.
+description: >
+  This skill should be used when the user asks to "create a Hetzner server",
+  "manage Hetzner Cloud infrastructure", "list Hetzner servers", "add SSH key to Hetzner",
+  "check Hetzner server types", "provision a VPS", "建立 Hetzner 伺服器", "列出 VPS",
+  "管理 SSH 金鑰", "查看伺服器規格",
+  or mentions Hetzner Cloud server management, infrastructure provisioning,
+  or cloud resource operations.
 argument-hint: "[action] [server-name/id]"
 ---
 
 # Hetzner Cloud MCP 使用指南
 
-透過 `hetzner-mcp`（`github:jurislm/hetzner-mcp#v1.0.0`）MCP 工具管理 Hetzner Cloud 基礎設施。
+透過 `@jurislm/hetzner-mcp` MCP 工具管理 Hetzner Cloud 基礎設施。
 
 ## MCP 工具概覽（14 個工具）
 
