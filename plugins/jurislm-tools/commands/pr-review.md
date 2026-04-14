@@ -8,8 +8,7 @@ Apply the `pr-review` skill to monitor and resolve a pull request.
 
 ## ⚠️ MUST READ FIRST
 
-**Before doing anything**, read the entire `pr-review` SKILL.md at:
-`plugins/jurislm-tools/skills/pr-review/SKILL.md`
+**Before doing anything**, read the entire `pr-review` skill body (the `pr-review` skill loaded by this plugin).
 
 **Do not pattern-match from this command file alone.** The command file is a thin
 delegation shim. The skill body contains critical safety rules that govern when
