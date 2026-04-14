@@ -1,4 +1,5 @@
 ---
+name: podcast-to-blog
 description: 將 Apple Podcasts 連結轉換為逐字稿並生成部落格文章。
 argument-hint: "<apple-podcasts-url>"
 ---

@@ -1,7 +1,12 @@
 ---
 name: pr-review
-description: PR 開啟後使用 Monitor tool 即時監控 CI，自動讀取 Bot Code Review feedback 並修正；**永遠不會在缺少人類 APPROVED 的情況下自動合併**。當使用者說「幫我看 PR review」、「等 CI 通過」、「自動處理 PR feedback」、「loop PR」、「監控 PR 直到可合併」時觸發。
-argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current] [auto-merge=false]"
+version: 1.0.0
+description: >
+  This skill should be used when the user says "幫我看 PR review", "等 CI 通過",
+  "自動處理 PR feedback", "loop PR", "自動合併 PR", "monitor CI", "merge PR after CI passes",
+  or wants to automatically watch CI status, read bot code review feedback,
+  fix issues, and merge a pull request.
+argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
 ---
 
 # PR Review Loop

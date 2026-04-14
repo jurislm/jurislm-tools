@@ -1,25 +1,10 @@
 ---
-description: 使用 Monitor tool 即時監控 PR 的 CI 狀態與 Bot Code Review feedback，分析並修正；**永遠不會在缺少人類 APPROVED 的情況下自動合併**。
-argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current] [auto-merge=false]"
+name: pr-review
+description: 使用 Monitor tool 即時監控 PR 的 CI 狀態與 Bot Code Review feedback，分析並修正後合併。
+argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
 ---
 
 Apply the `pr-review` skill to monitor and resolve a pull request.
-
-## ⚠️ MUST READ FIRST
-
-**Before doing anything**, read the entire `pr-review` SKILL.md at:
-`plugins/jurislm-tools/skills/pr-review/SKILL.md`
-
-**Do not pattern-match from this command file alone.** The command file is a thin
-delegation shim. The skill body contains critical safety rules that govern when
-loop completion is allowed and when auto-merge is forbidden. Skipping the SKILL.md
-has historically led to:
-- Premature "review-loop complete" reports without human approval
-- Treating bot `COMMENTED` reviews as approval
-- Auto-merging PRs that only have bot reviews
-
-If you cannot locate or read the SKILL.md, **stop and tell the user** instead of
-guessing the workflow.
 
 ## Arguments
 

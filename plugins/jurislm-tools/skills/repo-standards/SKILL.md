@@ -1,7 +1,12 @@
 ---
 name: repo-standards
 version: 1.0.0
-description: JurisLM 各 repo 的統一設定規範，涵蓋 Release 工作流程與 ESLint 設定。當使用者詢問「如何設定新 repo」、「release workflow 怎麼寫」、「release-please 怎麼用」、「lint 怎麼設定」、「eslint config 怎麼寫」、「新增 repo 要怎麼設定」時觸發。
+description: >
+  This skill should be used when the user asks "如何設定新 repo", "release workflow 怎麼寫",
+  "release-please 怎麼用", "lint 怎麼設定", "eslint config 怎麼寫", "新增 repo 要怎麼設定",
+  "set up new repo", "configure ESLint", "set up release workflow",
+  or needs to set up release automation, ESLint configuration, or code review workflows
+  for a JurisLM repository.
 argument-hint: "[repo-name]"
 ---
 
@@ -134,75 +139,7 @@ jobs:
 | `.worktrees/**` | ignores | 排除 git worktree build 產物 |
 | lint script | `eslint --max-warnings=0` | warning 視同 error |
 
-### 標準 Next.js eslint.config.mjs
-
-```js
-import { defineConfig, globalIgnores } from 'eslint/config';
-import nextVitals from 'eslint-config-next/core-web-vitals';
-import nextTs from 'eslint-config-next/typescript';
-import prettier from 'eslint-config-prettier';
-
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  prettier,
-  {
-    rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'error',
-    },
-  },
-  {
-    files: ['**/*.test.ts', '**/*.test.tsx'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-    },
-  },
-  globalIgnores([
-    '.next/**',
-    'out/**',
-    'build/**',
-    'next-env.d.ts',
-    '.worktrees/**',
-  ]),
-]);
-
-export default eslintConfig;
-```
-
-**注意**：
-- Playwright E2E 測試（lawyer、stock）需額外加 Playwright section
-- 字型無法用 `next/font` 載入時（如 LXGW WenKai TC），需加 `'@next/next/no-page-custom-font': 'off'`
-
-### 標準 Node/TS eslint.config.js
-
-```js
-import eslint from '@eslint/js';
-import { defineConfig } from 'eslint/config';
-import tseslint from 'typescript-eslint';
-import prettier from 'eslint-config-prettier';
-import globals from 'globals';
-
-export default defineConfig(
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-  prettier,
-  {
-    languageOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'module',
-      globals: { ...globals.node },
-    },
-    rules: {
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'error',
-    },
-  },
-  {
-    ignores: ['dist/', 'node_modules/', '.worktrees/'],
-  },
-);
-```
+> 完整 config 模板見 `references/eslint-templates.md`。
 
 ### 必要套件
 
@@ -227,256 +164,13 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ## Code Review 設定
 
-### Copilot 自訂指示檔案
+> Copilot 指示模板、`claude-code-review.yml`、`claude.yml` 完整內容見 `references/code-review-setup.md`。
 
-GitHub Copilot 支援三種層級的指示，**同時**提供給 Copilot（非互斥）：
-
-| 檔案路徑 | 套用範圍 | 說明 |
-|---------|---------|------|
-| `.github/copilot-instructions.md` | 整個 repo | 全域指引，適用所有 Copilot 請求 |
-| `.github/instructions/*.instructions.md` | 依 glob 路徑 | 需加 frontmatter `applyTo`，精準控制套用範圍 |
-| `.github/prompts/*.prompt.md` | 手動觸發 | VS Code / Visual Studio / JetBrains 可用，以 `/promptname` 呼叫 |
-
-**優先順序**：Personal > Repository > Organization（均會提供，Personal 最優先）
-
-**環境支援矩陣**：
-
-| 環境 | repo-wide | path-specific | prompt files |
-|------|-----------|--------------|-------------|
-| GitHub.com | ✅ | ✅ | ✅ |
-| VS Code | ✅ | ✅ | ✅ |
-| Visual Studio | ✅ | ❌ | ✅ |
-| JetBrains | ✅ | ❌ | ❌ |
-
-**路徑特定指示 frontmatter 欄位**：
-
-| 欄位 | 必填 | 說明 |
-|------|------|------|
-| `applyTo` | ✓ | Glob 語法，多個模式用逗號分隔（如 `"**/*.ts,**/*.tsx"`） |
-| `excludeAgent` | ✗ | 防止指定 agent 使用此檔案：`"code-review"` 或 `"cloud-agent"` |
-
----
-
-#### copilot-instructions.md 必須針對各 Repo 客製化
-
-⚠️ **禁止直接套用通用模板**。每個 repo 的 `copilot-instructions.md` 必須包含該 repo 的**具體、可操作**資訊，讓 Copilot 在 code review 時能做出有深度的判斷。
-
-**必須涵蓋的內容**（依 repo 類型調整）：
-
-| 區塊 | 說明 | 範例 |
-|------|------|------|
-| **回覆語言** | 強制 Copilot 使用繁體中文 | `請使用繁體中文回覆所有問題與建議。` |
-| **Project Overview** | 一句話描述用途 + npm 包名（若有） | `coolify-mcp` 是 wrapping Coolify REST API 的 MCP server |
-| **Git Workflow** | develop/main squash merge + Release Please 版本管理說明 | 避免 reviewer 誤判 PR diff 的版本號變動 |
-| **Build & Run** | 實際命令 + 必要環境變數 | `HETZNER_API_TOKEN`、`LANGFUSE_PUBLIC_KEY` |
-| **Tool/Module 分類** | MCP tools 列表、頁面路由、Collection schema 等 | 讓 reviewer 知道新增工具要加在哪個 file |
-| **Key Design Decisions** | 不明顯但關鍵的架構選擇 | Payload prompts 不可變、Tailwind v4 禁止自訂 CSS class、`$.plugins[0].version` 索引 |
-| **Code Conventions** | 此 repo 特有的 pattern | `makeApiRequest` helper、`registerXxxTools` pattern、`langfuseApi` helper |
-| **Code Review 重點** | 此 repo 最容易犯的錯誤 | 金融計算精度、Migration CLI broken、日期格式驗證 |
-| **Auto-generated Files** | 禁止手動修改的檔案 | `payload-types.ts`、`importMap.js`、`migrations/*.ts` |
-| **忽略範圍** | 不審查的目錄 | `dist/`、`.next/`、`.worktrees/` |
-
-**質量標準**：
-- **具體**：「禁止 `any` 類型」比「注意型別安全」好；「修改後執行 `bun run generate:types`」比「記得更新型別」好
-- **可操作**：reviewer 看到問題後知道具體修法，而非只說「有問題」
-- **不重複 CLAUDE.md**：CLAUDE.md 已有的內容不需要複製過來，copilot-instructions 專注於 **review 視角**
-
-**各 Repo 的差異化重點**（以 JurisLM 為例）：
-
-| Repo | 最關鍵的客製化內容 |
-|------|-----------------|
-| `coolify-mcp` | squash merge 造成的大 PR diff、`fqdn` → `domains` 映射、update handlers 用 allowlist |
-| `hetzner-mcp` | ResponseFormat pattern、readOnlyHint/destructiveHint annotations |
-| `langfuse-mcp` | 50 tools 模組架構、兩套 auth、prompt 不可變性 |
-| `lexvision` | Tailwind v4 禁自訂 CSS class、pricing-config 測試覆蓋、外部連結從 links.ts 讀 |
-| `judicial-mcp` | CommonJS 限制、兩套 API 認證差異、民國年日期驗證 |
-| `stock` | Prisma $transaction 防 race condition、金融計算精度、OpenSpec change management |
-| `lawyer` | Payload CMS migration 程式化 API、Dockerfile ARG 覆蓋 .env.local 陷阱、S3 假值觸發 importMap 問題 |
-| `jurislm-tools` | `$.plugins[0].version` 索引機制、plugins 陣列第一元素限制 |
-
-**路徑特定指示範例**（`.github/instructions/typescript.instructions.md`）：
-
-```markdown
----
-applyTo: "**/*.ts,**/*.tsx"
-excludeAgent: "code-review"
----
-
-禁止使用 `any` 類型。使用 `unknown` + type guard 代替。
-```
-
-**格式規則**：
-- 純 Markdown；路徑特定指示需加 frontmatter
-- 無硬性字數限制，但保持精簡（直接下指令，避免模糊描述）
-- `.github/copilot-instructions.md` 放 repo 通用規則；語言/框架專屬規則放 `.github/instructions/`
-
----
-
-### 標準 .github/workflows/claude-code-review.yml
-
-```yaml
-name: Claude Code Review
-
-on:
-  pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
-
-jobs:
-  claude-review:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-      id-token: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run Claude Code Review
-        uses: anthropics/claude-code-action@v1.0.70
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          claude_args: '--allowedTools "Bash(gh:*),Write"'
-          prompt: |
-            You are a code reviewer. Review the changes in PR #${{ github.event.pull_request.number }}.
-
-            ## Phase 1 — FETCH
-
-            Get PR metadata and diff:
-            ```
-            gh pr view ${{ github.event.pull_request.number }} --json number,title,body,author,baseRefName,headRefName,changedFiles,additions,deletions
-            gh pr diff ${{ github.event.pull_request.number }} --name-only
-            gh pr diff ${{ github.event.pull_request.number }}
-            ```
-
-            ## Phase 2 — CONTEXT
-
-            Read CLAUDE.md for project conventions (if it exists):
-            ```
-            gh api "repos/${{ github.repository }}/contents/CLAUDE.md?ref=${{ github.event.pull_request.head.sha }}" --jq '.content' | base64 -d
-            ```
-
-            For each changed file, read its full content at the PR head (not just the diff):
-            ```
-            gh api "repos/${{ github.repository }}/contents/{file}?ref=${{ github.event.pull_request.head.sha }}" --jq '.content' | base64 -d
-            ```
-
-            ## Phase 3 — REVIEW
-
-            Review each changed file in full. Check across these categories:
-
-            | Category | What to Check |
-            |---|---|
-            | **Correctness** | Logic errors, off-by-ones, null handling, edge cases |
-            | **Type Safety** | Type mismatches, unsafe casts, `any` usage |
-            | **Pattern Compliance** | Matches project conventions from CLAUDE.md |
-            | **Security** | Injection, auth gaps, secret exposure, XSS |
-            | **Performance** | N+1 queries, unbounded loops, memory leaks |
-            | **Completeness** | Missing tests, missing error handling |
-            | **Maintainability** | Dead code, magic numbers, deep nesting |
-
-            Assign severity to each finding:
-            - **[CRITICAL]** Security vulnerability or data loss risk — must fix before merge
-            - **[HIGH]** Bug or logic error likely to cause issues — should fix before merge
-            - **[MEDIUM]** Code quality issue — fix recommended
-            - **[LOW]** Style nit — optional
-
-            ## Phase 4 — WRITE REVIEW
-
-            Write your review to "review.md" using the Write tool.
-            The review must be in Traditional Chinese with this format:
-
-            ## Code Review
-
-            ### 變更摘要
-            (bullet points summarizing what changed)
-
-            ### 優點
-            (what's good about these changes)
-
-            ### 問題與建議
-            For each issue: `[SEVERITY] file:line — description and suggested fix`
-            Write 無 if no issues found.
-            IMPORTANT: Do NOT suggest deferring fixes to follow-up PRs. Every suggestion must be fixed in the current PR before merge. Never use phrases like "可在後續 PR 處理", "not blocking merge", or "can be addressed later".
-
-            ### 結論
-            (可合併 / 需修改 — if there are ANY suggestions above, the conclusion MUST be "需修改")
-
-            After writing review.md, post it as a PR comment:
-            gh pr comment ${{ github.event.pull_request.number }} --body-file review.md
-```
-
-**關鍵規則**：
-- 使用 `anthropics/claude-code-action@v1.0.70`（不升版，v1.0.70 之後的版本引入 bash 安全過濾器，會導致 `Bash(gh:*)` 受限）
-- `claude_args: '--allowedTools "Bash(gh:*),Write"'`（最小權限：只允許 `gh` 命令與 Write）
-- `CLAUDE_CODE_OAUTH_TOKEN` 必須在 repo Secrets 設定
-- `synchronize` trigger 確保每次 push 後重新 review
-- `fetch-depth: 0` 確保完整 git history
-
----
-
-### 標準 .github/workflows/claude.yml
-
-用於在 Issue / PR 留言中用 `@claude` 觸發 Claude Code 執行任務（互動式，非自動 review）。
-
-```yaml
-name: Claude Code
-
-on:
-  issue_comment:
-    types: [created]
-  pull_request_review_comment:
-    types: [created]
-  issues:
-    types: [opened, assigned]
-  pull_request_review:
-    types: [submitted]
-
-jobs:
-  claude:
-    if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: write
-      id-token: write
-      actions: read
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Run Claude Code
-        uses: anthropics/claude-code-action@v1
-        with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          system_prompt: "請使用繁體中文回覆所有問題與建議。"
-          additional_permissions: |
-            actions: read
-```
-
-**與 `claude-code-review.yml` 的差異**：
-
-| | `claude-code-review.yml` | `claude.yml` |
-|---|---|---|
-| 觸發方式 | PR 開啟 / 每次 push 自動 | `@claude` 留言觸發 |
-| 用途 | 自動 code review | 互動式任務執行 |
-| action 版本 | `@v1.0.70`（鎖版） | `@v1`（跟最新） |
-| `claude_args` | 限定 `Bash(gh:*),Write` | 不限（依留言指示） |
-
-**關鍵規則**：
-- `CLAUDE_CODE_OAUTH_TOKEN` 與 `claude-code-review.yml` 共用同一個 Secret
-- `actions: read` 讓 Claude 可讀取 CI 結果
-- `claude.yml` 使用 `@v1`（浮動版本），因為互動式用途風險較低；若遇行為異常，應檢查 release notes，必要時改為鎖定特定版本（如 `@v1.0.70`）
+**Checklist 快速說明**：
+- 建立 `.github/copilot-instructions.md`（依 repo 類型選用模板）
+- 建立 `claude-code-review.yml`（使用 `@v1.0.70`，鎖版）
+- 建立 `claude.yml`（`@claude` 互動觸發）
+- 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
 
 ---
 
@@ -526,7 +220,7 @@ git worktree add -b develop .worktrees/develop main
 8. [ ] 安裝必要套件
 9. [ ] `.prettierignore` 加 `.worktrees/`
 10. [ ] `vitest.config.ts`（若有）的 `exclude` 加 `.worktrees/**`
-11. [ ] 執行 `npm run lint` 確認 0 errors 0 warnings
+11. [ ] 執行 `bun run lint` 確認 0 errors 0 warnings
 
 ### Code Review
 12. [ ] 建立 `.github/workflows/claude-code-review.yml`（依統一格式）
