@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.1](https://github.com/jurislm/jurislm-tools/compare/v1.17.0...v1.17.1) (2026-04-15)
+
+
+### 🐛 Bug Fixes
+
+* **pr-review:** simplify skill — remove auto-merge, clarify CI failure handling ([#59](https://github.com/jurislm/jurislm-tools/issues/59)) ([898bc26](https://github.com/jurislm/jurislm-tools/commit/898bc26fd5d87cefb5b71242f22a97e101a7cad6))
+
 ## [1.17.0](https://github.com/jurislm/jurislm-tools/compare/v1.16.1...v1.17.0) (2026-04-14)
 
 
