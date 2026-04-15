@@ -55,6 +55,10 @@ CI 完成後等待約 15 秒讓 GitHub 傳播，再讀取 PR comments。找到 C
 
 不要只比對特定詞語，要理解整份 review 的意思。
 
+**若找不到 Claude review comment**（bot 尚未發布、傳播延遲、未設定為 reviewer）：
+- 每隔 30 秒重試一次，最多重試 3 次（共等待約 90 秒）
+- 3 次後仍無 review → 停止並通知使用者，說明找不到 Claude review，請確認 bot 是否已設定為 reviewer
+
 ### 第四步（can merge）：執行合併
 
 確認 PR title 格式符合專案規範（如 `feat: xxx` / `fix: xxx`），然後執行 squash merge 並刪除 branch。
@@ -69,8 +73,8 @@ CI 完成後等待約 15 秒讓 GitHub 傳播，再讀取 PR comments。找到 C
 
 | 情況 | 結果 |
 |------|------|
-| Claude review 說 can merge | 合併，完成 |
-| 五輪結束後 Claude review 仍說 needs changes | 停止，通知使用者目前剩餘問題清單，請人工判斷 |
+| Claude review 結論為可合併 | 合併，完成 |
+| 五輪結束後 Claude review 仍有問題 | 停止，通知使用者目前剩餘問題清單，請人工判斷 |
 | CI 失敗且無法自行修正 | 停止，通知使用者具體失敗原因 |
 | PR 已關閉或合併 | 停止 |
 | CI 超時或環境故障 | 停止，通知使用者 |

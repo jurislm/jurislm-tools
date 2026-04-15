@@ -1,6 +1,6 @@
 ---
 name: pr-review
-description: 使用 Monitor tool 即時監控 PR 的 CI 狀態與 Bot Code Review feedback，分析並修正；**永遠不會在缺少人類 APPROVED 的情況下自動合併**。
+description: 使用 Monitor tool 即時監控 PR 的 CI 狀態與 Claude Bot Code Review feedback，分析並修正；若 Claude review 結論為可合併則執行合併。
 argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
 ---
 
@@ -11,12 +11,8 @@ Apply the `pr-review` skill to monitor and resolve a pull request.
 **Before doing anything**, read the entire `pr-review` skill body (the `pr-review` skill loaded by this plugin).
 
 **Do not pattern-match from this command file alone.** The command file is a thin
-delegation shim. The skill body contains critical safety rules that govern when
-loop completion is allowed and when auto-merge is forbidden. Skipping the SKILL.md
-has historically led to:
-- Premature "review-loop complete" reports without human approval
-- Treating bot `COMMENTED` reviews as approval
-- Auto-merging PRs that only have bot reviews
+delegation shim. The skill body contains the workflow rules that govern CI monitoring,
+review reading, fix rounds, and merge conditions.
 
 If you cannot locate or read the SKILL.md, **stop and tell the user** instead of
 guessing the workflow.
@@ -30,6 +26,7 @@ Parse the arguments as follows (all optional, use defaults if not provided):
 - `timeout`: maximum minutes to wait for CI via Monitor — default: `60`
 - `repo`: target GitHub repo in `owner/repo` format — default: current working directory's repo (`gh repo view --json nameWithOwner`)
 - `pr`: PR number (e.g. `#12` or `12`) — default: current branch's open PR (`gh pr view --json number`)
+
 ## Delegation
 
 Follow the `pr-review` skill with the resolved parameters:
@@ -37,6 +34,8 @@ Follow the `pr-review` skill with the resolved parameters:
 - Use `loop` as the maximum fix rounds limit
 - Use `timeout` as the Monitor wait limit in minutes
 
-After the loop completes, classify the final state into one of: `READY_TO_MERGE`,
-`AWAITING_HUMAN`, `NEEDS_USER_INTERVENTION`, or `ERROR`. **Only `READY_TO_MERGE`
-permits merging.** All other states require user action — report state and stop.
+After the loop completes, report the final state based on the skill's ending conditions:
+- Claude review 說可合併且已執行合併 → 完成
+- 五輪結束仍有問題 → 停止，通知使用者剩餘問題清單
+- CI 失敗無法自行修正 → 停止，通知使用者具體原因
+- CI 超時或環境故障 → 停止，通知使用者
