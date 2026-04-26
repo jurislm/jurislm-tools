@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PLUGIN_ROOT/hooks/commit-discipline-gate.js\""
+          }
+        ],
+        "description": "Commit discipline gate: 在 git commit 前強制走過 3 個雙層思考問題（symbol vs design / 5-dim scan / no template options）",
+        "id": "pre:bash:commit-discipline-gate"
+      }
+    ]
+  }
+}
