@@ -54,6 +54,8 @@ git worktree add .worktrees/develop develop
 git worktree add -b develop .worktrees/develop main
 
 # feature branch worktree（開發特定功能時）
+# 注意：branch 名稱的 "/" 在目錄名稱中改為 "-"
+# 例：branch = feature/auth → 目錄 = .worktrees/feature-auth
 git worktree add -b feature/xxx .worktrees/feature-xxx develop
 ```
 
@@ -80,16 +82,40 @@ git worktree add -b feature/xxx .worktrees/feature-xxx develop
 
 ### package.json 標準設定
 
+所有 repo 共用欄位：
+
 ```json
 {
   "packageManager": "bun@1.3.9",
   "engines": {
     "bun": ">=1.1.0"
-  },
+  }
+}
+```
+
+**Node/TS repo（MCP server 等）** 的 scripts：
+
+```json
+{
   "scripts": {
     "dev": "bun --watch src/index.ts",
     "start": "bun dist/index.js",
     "build": "bun build src/index.ts --outdir dist --target bun",
+    "test": "bun run vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint --max-warnings=0"
+  }
+}
+```
+
+**Next.js repo** 的 scripts：
+
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "test": "bun run vitest",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --max-warnings=0"
@@ -202,7 +228,7 @@ describe('MyModule', () => {
 | 資料庫 | **Testcontainers**（Docker 隔離容器） | 不應 mock，確保測試資料乾淨可重複 |
 | 外部 HTTP（Anthropic API 等） | **MSW** 攔截 | 避免真實費用與網路不穩 |
 
-**vitest.config.ts — 多 project 設定（單元 + 整合分離）**：
+**vitest.config.ts — 多 project 設定（Next.js repo，單元 + 整合分離）**：
 
 ```typescript
 import { defineConfig } from 'vitest/config'
@@ -232,10 +258,12 @@ export default defineConfig({
 })
 ```
 
-**安裝整合測試套件**：
+**安裝整合測試套件**（以 PostgreSQL 為例，依實際 DB 選擇對應套件）：
 
 ```bash
 bun add -d @testcontainers/postgresql msw
+# MySQL: @testcontainers/mysql
+# Generic: testcontainers
 ```
 
 ---
@@ -416,7 +444,7 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 6. [ ] `package.json` 加 `"engines": {"bun": ">=1.1.0"}`
 7. [ ] scripts 使用 `bun` 指令（`bun --watch`、`bun dist/index.js` 等）
 8. [ ] 移除 `tsx`、`ts-node` 等 Node.js runtime 套件
-9. [ ] 加入 `@types/bun`（TypeScript 類型支援）
+9. [ ] 加入 `@types/bun`（Node/TS repo 專用，Next.js repo 不需要）
 
 ### 測試（Vitest）
 10. [ ] 安裝 vitest：`bun add -d vitest`
