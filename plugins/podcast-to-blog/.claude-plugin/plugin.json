@@ -1,0 +1,17 @@
+{
+  "name": "podcast-to-blog",
+  "description": "Podcast 音訊轉部落格文章",
+  "version": "1.19.0",
+  "author": {
+    "name": "Terry Chen"
+  },
+  "homepage": "https://github.com/jurislm/jurislm-tools",
+  "repository": "https://github.com/jurislm/jurislm-tools",
+  "license": "UNLICENSED",
+  "keywords": [
+    "podcast",
+    "blog",
+    "transcription",
+    "content"
+  ]
+}

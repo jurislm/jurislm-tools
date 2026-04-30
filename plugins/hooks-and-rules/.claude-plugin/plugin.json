@@ -1,0 +1,18 @@
+{
+  "name": "hooks-and-rules",
+  "description": "JurisLM 開發紀律 — commit 思考紀律 hook + 通用開發規則（coding-style, git-workflow, testing 等）",
+  "version": "1.19.0",
+  "author": {
+    "name": "Terry Chen"
+  },
+  "homepage": "https://github.com/jurislm/jurislm-tools",
+  "repository": "https://github.com/jurislm/jurislm-tools",
+  "license": "UNLICENSED",
+  "keywords": [
+    "hooks",
+    "rules",
+    "git",
+    "workflow",
+    "coding-style"
+  ]
+}

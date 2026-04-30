@@ -1,0 +1,18 @@
+{
+  "name": "repo-standards",
+  "description": "Repo 標準審查 — release workflow、ESLint、worktree、Bun、Vitest 規範",
+  "version": "1.19.0",
+  "author": {
+    "name": "Terry Chen"
+  },
+  "homepage": "https://github.com/jurislm/jurislm-tools",
+  "repository": "https://github.com/jurislm/jurislm-tools",
+  "license": "UNLICENSED",
+  "keywords": [
+    "release-please",
+    "eslint",
+    "github-actions",
+    "ci",
+    "standards"
+  ]
+}

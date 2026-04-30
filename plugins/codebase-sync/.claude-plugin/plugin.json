@@ -1,0 +1,17 @@
+{
+  "name": "codebase-sync",
+  "description": "Codebase 同步與探索",
+  "version": "1.19.0",
+  "author": {
+    "name": "Terry Chen"
+  },
+  "homepage": "https://github.com/jurislm/jurislm-tools",
+  "repository": "https://github.com/jurislm/jurislm-tools",
+  "license": "UNLICENSED",
+  "keywords": [
+    "docs",
+    "sync",
+    "readme",
+    "claude-md"
+  ]
+}

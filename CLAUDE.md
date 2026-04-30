@@ -22,42 +22,47 @@ grep '"version"' plugins/jurislm-tools/.claude-plugin/plugin.json
 
 ```
 .claude-plugin/marketplace.json       # Marketplace 定義（名稱、擁有者、plugin 列表）
-plugins/jurislm-tools/
-├── .claude-plugin/plugin.json        # Plugin 元資料
-├── .mcp.json                         # MCP Server 配置
-├── commands/
-│   ├── coolify.md
-│   ├── hetzner.md
-│   ├── langfuse.md
-│   ├── podcast-to-blog.md
-│   ├── pr-review.md
-│   ├── repo-standards.md
-│   └── codebase-sync.md
-├── hooks/
-│   ├── commit-discipline-gate.js     # PreToolUse hook：git commit 前強制思考紀律
-│   └── hooks.json                    # Hook 設定
-├── rules/
-│   ├── README.md
-│   ├── common/                       # 通用規則（coding-style, git-workflow 等）
-│   ├── typescript/                   # TypeScript 專屬規則
-│   ├── python/                       # Python 專屬規則
-│   ├── rust/                         # Rust 專屬規則
-│   └── dart/                         # Dart 專屬規則
-└── skills/
-    ├── codebase-sync/SKILL.md
-    ├── coolify/SKILL.md
-    ├── hetzner/SKILL.md
-    ├── langfuse/SKILL.md
-    ├── podcast-to-blog/SKILL.md
-    ├── pr-review/SKILL.md
-    └── repo-standards/SKILL.md
+plugins/
+├── hooks-and-rules/                  # 開發紀律 plugin（hooks + rules）
+│   ├── .claude-plugin/plugin.json
+│   ├── hooks/
+│   │   ├── commit-discipline-gate.js
+│   │   └── hooks.json
+│   └── rules/
+│       ├── common/
+│       ├── typescript/
+│       ├── python/
+│       ├── rust/
+│       └── dart/
+├── coolify/                          # Coolify MCP + skill + command
+│   ├── .claude-plugin/plugin.json
+│   ├── .mcp.json
+│   ├── commands/coolify.md
+│   └── skills/coolify/SKILL.md
+├── hetzner/                          # Hetzner MCP + skill + command
+├── langfuse/                         # Langfuse MCP + skill + command
+├── repo-standards/                   # skill + command
+├── pr-review/                        # skill + command
+├── podcast-to-blog/                  # skill + command
+└── codebase-sync/                    # skill + command
 ```
 
 ## 目前 Plugins
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| jurislm-tools | 1.18.0 | Hybrid | Coolify MCP（43 工具）+ Hetzner MCP（17 工具）+ Langfuse MCP（50 工具）+ 7 skills + 7 commands + hooks + rules |
+| hooks-and-rules | 1.19.0 | Base | commit 思考紀律 hook + 通用開發規則 |
+| coolify | 1.19.0 | Hybrid | Coolify MCP（43 工具）+ skill + command |
+| hetzner | 1.19.0 | Hybrid | Hetzner MCP（17 工具）+ skill + command |
+| langfuse | 1.19.0 | Hybrid | Langfuse MCP（50 工具）+ skill + command |
+| repo-standards | 1.19.0 | Skill | Repo 標準審查 skill + command |
+| pr-review | 1.19.0 | Skill | PR 審查 skill + command |
+| podcast-to-blog | 1.19.0 | Skill | Podcast 轉文章 skill + command |
+| codebase-sync | 1.19.0 | Skill | Codebase 同步 skill + command |
+| plan | 1.19.0 | Cmd+Agent | /plan command + planner agent |
+| tdd | 1.19.0 | Cmd+Agent | /tdd command + tdd-guide agent |
+| tdd-workflow | 1.19.0 | Skill | tdd-workflow skill — auto-activate |
+| learn-eval | 1.19.0 | Command | /learn-eval command — 含品質閘 + Global/Project 判斷 |
 
 ## 版本管理
 
@@ -88,19 +93,31 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 
 ```bash
 /plugin marketplace add /Users/terrychen/Documents/Github/jurislm/jurislm-tools
-/plugin install jurislm-tools@jurislm-tools
+/plugin install jurislm-tools@hooks-and-rules  # 開發紀律（hooks + rules）
+/plugin install jurislm-tools@coolify
+/plugin install jurislm-tools@hetzner
+/plugin install jurislm-tools@langfuse
+/plugin install jurislm-tools@repo-standards
+/plugin install jurislm-tools@pr-review
+/plugin install jurislm-tools@podcast-to-blog
+/plugin install jurislm-tools@codebase-sync
+/plugin install jurislm-tools@plan
+/plugin install jurislm-tools@tdd
+/plugin install jurislm-tools@tdd-workflow
+/plugin install jurislm-tools@learn-eval
 /reload-plugins
 ```
 
 ### 本地更新（已掛載本地目錄）
 
-Marketplace 直接掛載 main worktree（`source: "directory"`），merge 後立即生效：
+Marketplace 直接掛載 main worktree（`source: "directory"`），流程：
 
 ```
-.worktrees/develop 修改 → commit + push → PR develop→main → merge → /reload-plugins
+.worktrees/develop 修改 → commit + push → PR develop→main → merge
+→ git pull origin main（在 main worktree 根目錄執行）→ /reload-plugins
 ```
 
-不需要 `/plugin marketplace update` 或重新安裝。
+`git pull` 是必要步驟：plugin 從 main worktree 本地目錄讀取，merge 只更新遠端，本地 main worktree 仍需 pull 才會同步。不需要 `/plugin marketplace update` 或重新安裝。
 
 ### 確認掛載來源
 

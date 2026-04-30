@@ -1,0 +1,19 @@
+{
+  "name": "tdd-workflow",
+  "description": "Test-Driven Development workflow — RED-GREEN-REFACTOR + 80% 覆蓋率，含 unit/integration/E2E 模式",
+  "version": "1.19.0",
+  "author": {
+    "name": "Terry Chen"
+  },
+  "homepage": "https://github.com/jurislm/jurislm-tools",
+  "repository": "https://github.com/jurislm/jurislm-tools",
+  "license": "UNLICENSED",
+  "keywords": [
+    "tdd",
+    "testing",
+    "coverage",
+    "red-green-refactor",
+    "vitest",
+    "playwright"
+  ]
+}

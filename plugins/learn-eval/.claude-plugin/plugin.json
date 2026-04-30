@@ -1,0 +1,17 @@
+{
+  "name": "learn-eval",
+  "description": "/learn-eval command — 提取 session pattern + 品質閘 + dedup 檢查 + 自動判斷 Global/Project 儲存路徑",
+  "version": "1.19.0",
+  "author": {
+    "name": "Terry Chen"
+  },
+  "homepage": "https://github.com/jurislm/jurislm-tools",
+  "repository": "https://github.com/jurislm/jurislm-tools",
+  "license": "UNLICENSED",
+  "keywords": [
+    "learning",
+    "skills",
+    "patterns",
+    "session-analysis"
+  ]
+}
