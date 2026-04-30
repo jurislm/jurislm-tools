@@ -40,8 +40,7 @@ plugins/jurislm-tools/
     ├── langfuse/SKILL.md
     ├── podcast-to-blog/SKILL.md
     ├── pr-review/SKILL.md
-    ├── repo-standards/SKILL.md
-    └── codebase-sync/SKILL.md
+    └── repo-standards/SKILL.md
 ```
 
 ## 目前 Plugins

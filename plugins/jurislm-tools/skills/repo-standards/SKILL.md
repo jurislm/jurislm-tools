@@ -170,9 +170,23 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 **Checklist 快速說明**：
 - 建立 `.github/copilot-instructions.md`（依 repo 類型選用模板）
-- 建立 `claude-code-review.yml`（使用 `@v1.0.70`，鎖版）
+- 建立 `claude-code-review.yml`（使用 `@v1`，勿鎖定小版本）
 - 建立 `claude.yml`（`@claude` 互動觸發）
-- 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
+- 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`（從本機 Keychain 取得：`security find-generic-password -s "Claude" -w`）
+
+**權限規則（容易出錯）**：
+- `claude-code-review.yml`：`pull-requests: write`（需要發布 review）
+- `claude.yml`：`pull-requests: write` + `issues: write`（需要回覆 @mention）
+- 若誤設為 `read`，Claude 能讀取但無法回覆，靜默失敗
+
+**Review 發布方式**：
+- ✅ 使用 `gh pr review <number> --comment --body-file review.md`（正式 PR review，顯示在 Reviews 區，與 Copilot 並列）
+- ❌ 勿使用 `gh pr comment`（發到一般留言區，不在 Reviews 區）
+
+**勿使用 `/install-github-app` 產生的 plugin 方式**：
+- `code-review@claude-code-plugins` 曾因 bash 安全過濾器（攔截含 `\n#` 的命令）失效
+- 會錯誤地降低 `pull-requests` 和 `issues` 為 `read`，且移除 `system_prompt` 繁中設定
+- 自訂 prompt 方式已驗證有效，格式與語言可控
 
 ---
 
@@ -225,8 +239,8 @@ git worktree add -b develop .worktrees/develop main
 11. [ ] 執行 `bun run lint` 確認 0 errors 0 warnings
 
 ### Code Review
-12. [ ] 建立 `.github/workflows/claude-code-review.yml`（依統一格式）
-13. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發）
+12. [ ] 建立 `.github/workflows/claude-code-review.yml`（`@v1`，`pull-requests: write`，`gh pr review --comment`）
+13. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發，`pull-requests: write`，`issues: write`，保留 `system_prompt` 繁中設定）
 14. [ ] 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
 15. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）
 16. [ ] `claude.yml` 的 `system_prompt` 設為 `"請使用繁體中文回覆所有問題與建議。"`
