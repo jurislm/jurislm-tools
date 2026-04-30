@@ -106,7 +106,7 @@ npm test
 
 This step is mandatory and is the RED gate for all production changes.
 
-Before modifying business logic or other production code, you must verify a valid RED state via one of these paths:
+Before modifying business logic or other production code, verify a valid RED state via one of these paths:
 - Runtime RED:
   - The relevant test target compiles successfully
   - The new or changed test is actually executed
@@ -147,7 +147,7 @@ npm test
 
 Rerun the same relevant test target after the fix and confirm the previously failing test is now GREEN.
 
-Only after a valid GREEN result may you proceed to refactor.
+Refactor only after a valid GREEN result is confirmed.
 
 If the repository is under Git, create a checkpoint commit immediately after GREEN is validated.
 Recommended commit message format:
