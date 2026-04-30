@@ -11,7 +11,7 @@
       "extra-files": [
         {
           "type": "json",
-          "path": "plugins/jurislm-tools/.claude-plugin/plugin.json",
+          "path": "plugins/hooks-and-rules/.claude-plugin/plugin.json",
           "jsonpath": "$.version"
         },
         {

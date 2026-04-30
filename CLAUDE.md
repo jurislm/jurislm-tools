@@ -23,7 +23,7 @@ grep '"version"' plugins/jurislm-tools/.claude-plugin/plugin.json
 ```
 .claude-plugin/marketplace.json       # Marketplace 定義（名稱、擁有者、plugin 列表）
 plugins/
-├── jurislm-tools/                    # 基礎配置 plugin（hooks + rules）
+├── hooks-and-rules/                  # 開發紀律 plugin（hooks + rules）
 │   ├── .claude-plugin/plugin.json
 │   ├── hooks/
 │   │   ├── commit-discipline-gate.js
@@ -51,7 +51,7 @@ plugins/
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| jurislm-tools | 1.19.0 | Base | commit 紀律 hook + 通用開發規則 |
+| hooks-and-rules | 1.19.0 | Base | commit 思考紀律 hook + 通用開發規則 |
 | coolify | 1.19.0 | Hybrid | Coolify MCP（43 工具）+ skill + command |
 | hetzner | 1.19.0 | Hybrid | Hetzner MCP（17 工具）+ skill + command |
 | langfuse | 1.19.0 | Hybrid | Langfuse MCP（50 工具）+ skill + command |
@@ -89,7 +89,7 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 
 ```bash
 /plugin marketplace add /Users/terrychen/Documents/Github/jurislm/jurislm-tools
-/plugin install jurislm-tools@jurislm-tools   # 基礎配置（hooks + rules）
+/plugin install jurislm-tools@hooks-and-rules  # 開發紀律（hooks + rules）
 /plugin install jurislm-tools@coolify
 /plugin install jurislm-tools@hetzner
 /plugin install jurislm-tools@langfuse
