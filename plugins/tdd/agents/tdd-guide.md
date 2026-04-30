@@ -1,6 +1,34 @@
 ---
 name: tdd-guide
-description: Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensures 80%+ test coverage.
+description: |
+  Test-Driven Development specialist enforcing write-tests-first methodology with 80%+ coverage. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Examples:
+
+  <example>
+  Context: User asks to implement a new feature
+  user: "Add a function to calculate liquidity score for markets"
+  assistant: "I'll use the tdd-guide agent to drive RED-GREEN-REFACTOR with tests-first."
+  <commentary>
+  New feature without explicit "tests first" — tdd-guide proactively enforces TDD discipline.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User reports a bug
+  user: "Fix this bug — the cart total is wrong when discount is applied"
+  assistant: "I'll use the tdd-guide agent to write a reproducer test first, then fix."
+  <commentary>
+  Bug fix needs reproducer test before fix to prevent regression — tdd-guide enforces this gate.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User explicitly requests TDD
+  user: "Walk me through TDD for adding a new validation rule"
+  assistant: "I'll use the tdd-guide agent for the full RED-GREEN-REFACTOR cycle."
+  <commentary>
+  Explicit TDD request triggers the agent.
+  </commentary>
+  </example>
 tools: ["Read", "Write", "Edit", "Bash", "Grep"]
 model: sonnet
 ---
