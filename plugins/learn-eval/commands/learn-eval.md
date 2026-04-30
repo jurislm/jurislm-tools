@@ -1,5 +1,7 @@
 ---
-description: "Extract reusable patterns from the session, self-evaluate quality before saving, and determine the right save location (Global vs Project)."
+name: learn-eval
+description: Extract reusable patterns from the session, self-evaluate quality, and determine the right save location (Global vs Project).
+argument-hint: "(no arguments — analyzes current session)"
 ---
 
 # /learn-eval - Extract, Evaluate, then Save

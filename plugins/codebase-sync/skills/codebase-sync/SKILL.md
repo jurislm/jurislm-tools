@@ -137,9 +137,55 @@ cat .env.example 2>/dev/null
 
 ---
 
+## 過時偵測自動化指令
+
+可直接執行以下指令找出過時內容：
+
+```bash
+# 1. 比對 README scripts 與 package.json
+comm -23 \
+  <(grep -oE 'bun run [a-z-]+' README.md | sed 's/bun run //' | sort -u) \
+  <(jq -r '.scripts | keys[]' package.json | sort)
+# 輸出 = README 提到但 package.json 沒定義的 script
+
+# 2. 比對環境變數
+comm -23 \
+  <(grep -oE '`[A-Z][A-Z0-9_]+`' README.md | tr -d '`' | sort -u) \
+  <(grep -oE '^[A-Z][A-Z0-9_]+' .env.example 2>/dev/null | sort -u)
+# 輸出 = README 提到但 .env.example 沒列的變數
+
+# 3. 找已刪除的目錄
+grep -oE '`[a-z][a-z0-9_/-]+/`' CLAUDE.md | tr -d '`' | while read d; do
+  [ ! -d "$d" ] && echo "MISSING: $d"
+done
+
+# 4. 找已刪除的檔案
+grep -oE '`[a-z][a-z0-9_./-]+\.(ts|tsx|js|md|json)`' CLAUDE.md | tr -d '`' | while read f; do
+  [ ! -f "$f" ] && echo "MISSING: $f"
+done
+```
+
+## 模板參考
+
+不同專案類型的 README / CLAUDE.md 標準模板，見 `references/templates.md`：
+- Next.js Web App
+- MCP Server / CLI Tool
+- Plugin / Marketplace
+
+## 常見錯誤
+
+| 錯誤 | 正確做法 |
+|------|---------|
+| 把 README 寫成「給 Claude 看的指引」（含 git workflow、commit 規則）| 那些屬於 CLAUDE.md，README 只給人看 |
+| 在 CLAUDE.md 重複寫 README 已說明的安裝步驟 | CLAUDE.md 假設讀者已會基本操作，只寫 codebase-specific 細節 |
+| 寫 deprecated 功能但加註「(deprecated)」 | 直接刪除，靠 git log 留歷史 |
+| 把 plugin 列表寫成「已規劃」「未來會加」 | 只寫**現在已存在**的，沒實作的不寫 |
+| 從 git log 推測「最近改了 X」 | 文件描述當前狀態，不描述變更歷史 |
+
 ## 注意事項
 
 - **不猜測**：只寫能從 codebase 驗證的內容
 - **不加功能**：不在文件裡加入尚未實作的功能說明
 - **不重複**：README 給使用者看，CLAUDE.md 給 Claude 看，內容不重疊
 - **禁止修改版本號**：版本由 Release Please 管理
+- **驗證再寫**：每行涉及檔案路徑/指令的內容都要實際 `ls` / 執行驗證

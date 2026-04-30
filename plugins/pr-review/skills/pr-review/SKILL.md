@@ -1,7 +1,11 @@
 ---
 name: pr-review
 version: 1.0.0
-description: 讀取 Claude code review 結果，若可合併則合併，若有問題則修正後重試，最多五輪。
+description: >
+  This skill should be used when the user asks to "review PR", "merge PR", "處理 PR review",
+  "PR 自動合併", "讀取 code review 結果並修正", "PR review loop", "monitor CI and merge",
+  "address Claude bot review", "fix PR comments and merge", or wants to monitor CI status,
+  read Claude bot review feedback, fix issues iteratively, and merge when ready (up to 5 rounds).
 argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
 ---
 
@@ -82,7 +86,52 @@ CI 完成後等待約 15 秒讓 GitHub 傳播，再讀取 PR comments。找到 C
 
 ---
 
+## Common CI failure patterns
+
+判斷 CI 失敗類型並決定如何處理：
+
+| 失敗類型 | 判斷方式 | 處理 |
+|---------|---------|------|
+| TypeScript 錯誤 | Log 含 `error TS\d+:` 或 `Type '...' is not assignable` | 讀錯誤訊息，修正型別後重 push |
+| ESLint 錯誤 | Log 含 `error  ...  @typescript-eslint/...` | 讀規則名稱，按規則修正；不可加 `eslint-disable` 繞過 |
+| Vitest 測試失敗 | Log 含 `FAIL  src/...test.ts` | 讀 expected/received，先確認測試是對的，再修代碼 |
+| Build 失敗 | Log 含 `next build failed` 或 `Module not found` | 多半是 import path 或環境變數，不是設計問題 |
+| Merge conflict | GitHub UI 顯示 "This branch has conflicts" | `git fetch && git rebase origin/main` 解衝突 → push |
+| 環境問題 | Log 含 `Connection refused` / `ECONNREFUSED` / `503` | 不要修代碼，停止並告訴使用者 |
+| Coverage 下降 | Vitest coverage report 顯示 < 80% | 補測試（可參考 tdd-workflow skill），不可降低 threshold |
+
+## Interpreting Claude review conclusions
+
+Claude bot review 的結論不會用統一詞彙，要理解整體語意。常見模式：
+
+**可合併（執行第四步：合併）：**
+- "LGTM" / "Looks good to me"
+- "可以合併" / "建議合併"
+- "No issues found" / "沒發現問題"
+- "✅ Approved"
+
+**需要修正（執行第四步：修正）：**
+- "建議調整" / "需要修正"
+- "Found N issues" / "發現以下問題"
+- 列出明確的 file:line 位置與建議
+
+**模糊或中立（不要猜，停下來問）：**
+- "Consider..." / "考慮..."（建議性，非必要）
+- 只列風險但沒明說 block
+- 提到 "但需要 confirm" / "需要確認"
+
+模糊情況：合併與修正都不對，停下並把 review 內容貼給使用者判斷。
+
+## Edge cases
+
+- **PR base branch 不是 main**：例如 feature → develop → main 的兩段式流程。合併目標永遠是 PR 設定的 base branch，不要假設是 main。
+- **Stacked PRs**：當前 PR 依賴另一個未合併的 PR。先確認上游 PR 狀態，若未合併，停下來通知使用者。
+- **Force-push 後 review 過期**：若有新 commit 但 Claude bot 還沒重跑 review，等待 reviewer trigger。最多等 timeout 後若仍無新 review 則停下。
+- **Multiple reviewers**：Claude bot 不是唯一 reviewer。若有人類 reviewer 留 comment 但 Claude 認為可合併，停下來讓使用者判斷。
+
 ## 注意事項
 
 - 每次 commit 前必須確認測試與 lint 通過，不可用 `--no-verify` 跳過
 - 若問題涉及設計決策或需求確認，不要自行猜測，停止並通知使用者
+- 不要主動 force-push（除非用 `--force-with-lease` 且已通知使用者）
+- Squash merge 後 commit message 沿用 PR title，確認 PR title 符合 `feat:/fix:/...` 格式

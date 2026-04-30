@@ -15,7 +15,7 @@ argument-hint: "[action] [server-name/id]"
 
 透過 `@jurislm/hetzner-mcp` MCP 工具管理 Hetzner Cloud 基礎設施。
 
-## MCP 工具概覽（14 個工具）
+## MCP 工具概覽（17 個工具）
 
 ### 伺服器管理（7 個工具）
 
@@ -86,12 +86,38 @@ public_key: "ssh-ed25519 AAAA... user@host"
 
 ## 不支援的功能
 
-此 MCP 伺服器**不支援**：
-- Volumes（磁碟區）管理
+此 MCP 伺服器**不支援**（需用 Hetzner Cloud Console UI 或 hcloud CLI）：
+- Volumes（磁碟區）— 需手動 attach 並寫 fstab，否則 reboot 後遺失 mount（見「常見陷阱」）
 - Firewalls（防火牆）管理
-- Projects（專案）管理
+- Projects（專案）管理 — 一個 API token 只能存取單一 project
 - Load Balancers / Floating IPs / Private Networks
 - 帳單相關操作
+
+## 常見陷阱
+
+### Reboot 後 Volume 不會自動 mount
+Hetzner Volume attach **不寫 fstab**。Reboot 後 `/dev/sdb` 沒 mount，所有依賴該 mount path 的 container 啟動失敗（Exit 127）。
+
+**預防**（建立 server 後立刻做）：
+```bash
+ssh root@<ip>
+UUID=$(blkid -s UUID -o value /dev/sdb)
+echo "UUID=$UUID /mnt/HC_Volume_<id> ext4 discard,nofail,defaults 0 0" >> /etc/fstab
+mount -a   # 測試 fstab 語法
+```
+- `nofail` 關鍵 — Volume 異常時不阻塞 boot
+- `discard` 啟用 TRIM 給 SSD
+
+### 開機後 IP 變了
+Hetzner 預設配 IPv4 + IPv6。`hetzner_get_server` 回傳 IPv4 `public_net.ipv4.ip` 是穩定的（除非主動 reassign）。但若用 floating IP，重啟可能切換，要看實際 attach 狀態。
+
+### Server name 不可用做識別
+API 操作要用 `id`（數字），不是 `name`。`name` 只是 label。
+
+## 參考資料
+
+- 規格與定價對照：`references/server-types.md`
+- 資料中心位置選擇：`references/locations.md`
 
 ## 注意事項
 

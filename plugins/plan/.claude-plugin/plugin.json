@@ -2,8 +2,15 @@
   "name": "plan",
   "description": "實作前先規劃 — 重述需求、評估風險、產出 step-by-step 計畫，等用戶確認才動手",
   "version": "1.19.0",
-  "author": { "name": "Terry Chen" },
+  "author": {
+    "name": "Terry Chen"
+  },
   "homepage": "https://github.com/jurislm/jurislm-tools",
   "repository": "https://github.com/jurislm/jurislm-tools",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "keywords": [
+    "planning",
+    "implementation",
+    "tdd-prep"
+  ]
 }

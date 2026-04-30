@@ -1,5 +1,7 @@
 ---
-description: Legacy slash-entry shim for the tdd-workflow skill. Prefer the skill directly.
+name: tdd
+description: Trigger the tdd-workflow skill and tdd-guide agent — enforce RED-GREEN-REFACTOR with 80%+ coverage.
+argument-hint: "<feature or bug description>"
 ---
 
 # TDD Command (Legacy Shim)

@@ -7,5 +7,11 @@
   },
   "homepage": "https://github.com/jurislm/jurislm-tools",
   "repository": "https://github.com/jurislm/jurislm-tools",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "keywords": [
+    "podcast",
+    "blog",
+    "transcription",
+    "content"
+  ]
 }
