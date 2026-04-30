@@ -1,6 +1,34 @@
 ---
 name: planner
-description: Expert planning specialist for complex features and refactoring. Use PROACTIVELY when users request feature implementation, architectural changes, or complex refactoring. Automatically activated for planning tasks.
+description: |
+  Expert planning specialist for complex features, architectural changes, and refactoring. Use PROACTIVELY when the user requests feature implementation, refactoring, or asks for an implementation plan. Examples:
+
+  <example>
+  Context: User wants to add a new feature touching multiple files
+  user: "Add Stripe subscription billing with free/pro/enterprise tiers"
+  assistant: "This needs a structured plan before coding. I'll use the planner agent to create the implementation plan."
+  <commentary>
+  Multi-file feature with risk surfaces (webhook, payment) — planner agent produces phased plan with dependencies and risks before implementation.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User wants to refactor a large module
+  user: "我想把 auth middleware 重構，移除舊的 session token 邏輯"
+  assistant: "重構涉及多個檔案，先用 planner agent 拆解步驟與風險。"
+  <commentary>
+  Refactor with security implications — planner identifies migration phases and backwards-compatibility considerations.
+  </commentary>
+  </example>
+
+  <example>
+  Context: User explicitly asks for a plan
+  user: "Plan the migration from REST to GraphQL"
+  assistant: "I'll use the planner agent to break this down."
+  <commentary>
+  Explicit planning request triggers planner agent.
+  </commentary>
+  </example>
 tools: ["Read", "Grep", "Glob"]
 model: opus
 ---
