@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.19.0](https://github.com/jurislm/jurislm-tools/compare/v1.18.0...v1.19.0) (2026-04-30)
+
+
+### 🚀 New Features
+
+* add rules directory to plugin ([#71](https://github.com/jurislm/jurislm-tools/issues/71)) ([07e5a14](https://github.com/jurislm/jurislm-tools/commit/07e5a14888aca999768a571fc0a69894b6479f09))
+
+## [1.18.0](https://github.com/jurislm/jurislm-tools/compare/v1.17.1...v1.18.0) (2026-04-30)
+
+
+### 🚀 New Features
+
+* **hooks:** 新增 commit-discipline-gate 雙層思考紀律 hook ([be2b697](https://github.com/jurislm/jurislm-tools/commit/be2b697b34726b989356860ed5be7bdbae2050ab))
+* improve pr-review skill, add langfuse command, and update plugin docs ([#61](https://github.com/jurislm/jurislm-tools/issues/61)) ([d4b806c](https://github.com/jurislm/jurislm-tools/commit/d4b806cbeed01fceaa78e9afe3f2745c36b317e7))
+* update repo-standards skill ([#68](https://github.com/jurislm/jurislm-tools/issues/68)) ([a45764c](https://github.com/jurislm/jurislm-tools/commit/a45764c6abc161726864c71df8f5efd251dee2a6))
+
+
+### 🐛 Bug Fixes
+
+* add version field to pr-review SKILL.md for jt: namespace ([7be201c](https://github.com/jurislm/jurislm-tools/commit/7be201cf6cdce690cb44f2333009a3a8c601e8b3))
+* add version field to pr-review SKILL.md for jt: namespace ([30ff6da](https://github.com/jurislm/jurislm-tools/commit/30ff6da815143e497913a0771f218742f93735c5))
+* **ci:** add config-file and manifest-file to release-please workflow ([1bad533](https://github.com/jurislm/jurislm-tools/commit/1bad533973651e3d25c2525355cc316a3b65f720))
+* **ci:** add config-file and manifest-file to release-please workflow ([7a6c2f8](https://github.com/jurislm/jurislm-tools/commit/7a6c2f898d3270f65af6457ece9ecf6fab780b3d))
+* **ci:** upgrade claude-code-action to [@v1](https://github.com/v1), use formal PR review, fix permissions ([2923864](https://github.com/jurislm/jurislm-tools/commit/29238648a498217dcdc7496b899d8d99d92861ed))
+
+
+### 📚 Documentation
+
+* fix copilot-instructions — add 繁中首行、更新工具數 (43/17/50) ([#67](https://github.com/jurislm/jurislm-tools/issues/67)) ([4d44f15](https://github.com/jurislm/jurislm-tools/commit/4d44f156b4fec4900869e2fffa1d2eb69271f02e))
+* fix stale version and duplicate entries in CLAUDE.md and README.md ([30db4fc](https://github.com/jurislm/jurislm-tools/commit/30db4fcb0ed5efee1e5c3c707711726bc1390e4f))
+* update CLAUDE.md — fix tool counts, add git workflow, cross-repo sync note ([dea33fc](https://github.com/jurislm/jurislm-tools/commit/dea33fc391ce482031380ff1d1f0f802ce6d215a))
+* 補充整合測試規範到 repo-standards ([#69](https://github.com/jurislm/jurislm-tools/issues/69)) ([d307d02](https://github.com/jurislm/jurislm-tools/commit/d307d029c56e170b26712765929487aa7b723f55))
+
 ## [1.17.1](https://github.com/jurislm/jurislm-tools/compare/v1.17.0...v1.17.1) (2026-04-15)
 
 
