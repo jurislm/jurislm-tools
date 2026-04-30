@@ -94,13 +94,14 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 
 ### 本地更新（已掛載本地目錄）
 
-Marketplace 直接掛載 main worktree（`source: "directory"`），merge 後立即生效：
+Marketplace 直接掛載 main worktree（`source: "directory"`），流程：
 
 ```
-.worktrees/develop 修改 → commit + push → PR develop→main → merge → /reload-plugins
+.worktrees/develop 修改 → commit + push → PR develop→main → merge
+→ git pull origin main（在 main worktree 根目錄執行）→ /reload-plugins
 ```
 
-不需要 `/plugin marketplace update` 或重新安裝。
+`git pull` 是必要步驟：plugin 從 main worktree 本地目錄讀取，merge 只更新遠端，本地 main worktree 仍需 pull 才會同步。不需要 `/plugin marketplace update` 或重新安裝。
 
 ### 確認掛載來源
 
