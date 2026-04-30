@@ -69,6 +69,22 @@
       "author": {
         "name": "Terry Chen"
       }
+    },
+    {
+      "name": "plan",
+      "source": "./plugins/plan",
+      "description": "實作前先規劃 — /plan command + planner agent（來源：ECC）",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "tdd-workflow",
+      "source": "./plugins/tdd-workflow",
+      "description": "TDD 工作流程 — tdd-workflow skill + tdd-guide agent（來源：ECC）",
+      "author": {
+        "name": "Terry Chen"
+      }
     }
   ]
 }

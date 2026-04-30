@@ -59,6 +59,8 @@ plugins/
 | pr-review | 1.19.0 | Skill | PR 審查 skill + command |
 | podcast-to-blog | 1.19.0 | Skill | Podcast 轉文章 skill + command |
 | codebase-sync | 1.19.0 | Skill | Codebase 同步 skill + command |
+| plan | 1.19.0 | Cmd+Agent | /plan command + planner agent（來源：ECC） |
+| tdd-workflow | 1.19.0 | Skill+Agent | tdd-workflow skill + tdd-guide agent（來源：ECC） |
 
 ## 版本管理
 
@@ -97,6 +99,8 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 /plugin install jurislm-tools@pr-review
 /plugin install jurislm-tools@podcast-to-blog
 /plugin install jurislm-tools@codebase-sync
+/plugin install jurislm-tools@plan
+/plugin install jurislm-tools@tdd-workflow
 /reload-plugins
 ```
 
