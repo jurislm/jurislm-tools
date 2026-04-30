@@ -1,6 +1,6 @@
 {
   "name": "hooks-and-rules",
-  "description": "JurisLM 開發紀律 — commit 思考紀律 hook + 通用開發規則（coding-style, git-workflow, testing 等）",
+  "description": "強制 JurisLM 開發紀律 — git commit 前思考紀律檢查 + 通用 coding/git/testing 規則參考",
   "version": "1.19.0",
   "author": {
     "name": "Terry Chen"

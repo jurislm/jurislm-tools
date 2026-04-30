@@ -1,6 +1,6 @@
 {
   "name": "repo-standards",
-  "description": "Repo 標準審查 — release workflow、ESLint、worktree、Bun、Vitest 規範",
+  "description": "審查並套用 JurisLM repo 標準 — release workflow、ESLint、worktree、Bun runtime、Vitest",
   "version": "1.19.0",
   "author": {
     "name": "Terry Chen"
