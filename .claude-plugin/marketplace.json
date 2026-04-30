@@ -95,9 +95,9 @@
       }
     },
     {
-      "name": "learn",
-      "source": "./plugins/learn",
-      "description": "/learn command — 從 session 萃取可重複利用的 pattern（來源：ECC）",
+      "name": "learn-eval",
+      "source": "./plugins/learn-eval",
+      "description": "/learn-eval command — pattern 萃取 + 品質閘 + Global/Project 自動判斷（來源：ECC）",
       "author": {
         "name": "Terry Chen"
       }

@@ -1,6 +1,6 @@
 {
-  "name": "learn",
-  "description": "/learn command — 從當前 session 萃取可重複利用的 pattern，存為 skill 或 memory",
+  "name": "learn-eval",
+  "description": "/learn-eval command — 提取 session pattern + 品質閘 + dedup 檢查 + 自動判斷 Global/Project 儲存路徑",
   "version": "1.19.0",
   "author": { "name": "Terry Chen" },
   "homepage": "https://github.com/jurislm/jurislm-tools",
