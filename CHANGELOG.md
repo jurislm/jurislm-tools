@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.0](https://github.com/jurislm/jurislm-tools/compare/v1.18.0...v1.19.0) (2026-04-30)
+
+
+### 🚀 New Features
+
+* add rules directory to plugin ([#71](https://github.com/jurislm/jurislm-tools/issues/71)) ([07e5a14](https://github.com/jurislm/jurislm-tools/commit/07e5a14888aca999768a571fc0a69894b6479f09))
+
 ## [1.18.0](https://github.com/jurislm/jurislm-tools/compare/v1.17.1...v1.18.0) (2026-04-30)
 
 
