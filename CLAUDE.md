@@ -33,6 +33,16 @@ plugins/jurislm-tools/
 │   ├── pr-review.md
 │   ├── repo-standards.md
 │   └── codebase-sync.md
+├── hooks/
+│   ├── commit-discipline-gate.js     # PreToolUse hook：git commit 前強制思考紀律
+│   └── hooks.json                    # Hook 設定
+├── rules/
+│   ├── README.md
+│   ├── common/                       # 通用規則（coding-style, git-workflow 等）
+│   ├── typescript/                   # TypeScript 專屬規則
+│   ├── python/                       # Python 專屬規則
+│   ├── rust/                         # Rust 專屬規則
+│   └── dart/                         # Dart 專屬規則
 └── skills/
     ├── codebase-sync/SKILL.md
     ├── coolify/SKILL.md
@@ -47,7 +57,7 @@ plugins/jurislm-tools/
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| jt | 1.17.1 | Hybrid | Coolify MCP（43 工具）+ Hetzner MCP（17 工具）+ Langfuse MCP（50 工具）+ 7 skills + 7 commands |
+| jurislm-tools | 1.18.0 | Hybrid | Coolify MCP（43 工具）+ Hetzner MCP（17 工具）+ Langfuse MCP（50 工具）+ 7 skills + 7 commands + hooks + rules |
 
 ## 版本管理
 
@@ -57,7 +67,12 @@ plugins/jurislm-tools/
 - `plugins/jurislm-tools/.claude-plugin/plugin.json` → `$.version`
 - `.claude-plugin/marketplace.json` → `$.plugins[0].version`
 
-⚠️ **重要**：`marketplace.json` 的版本更新使用 `$.plugins[0].version`（依陣列索引）。release-please 不支援 filter jsonpath（`?(@.name==...)`），因此 **`jurislm-tools` 必須永遠是 `plugins` 陣列的第一個元素**，否則會更新到錯誤的版本。
+**重要**：`marketplace.json` 的版本更新使用 `$.plugins[0].version`（依陣列索引）。release-please 不支援 filter jsonpath（`?(@.name==...)`），因此 **`jurislm-tools` 必須永遠是 `plugins` 陣列的第一個元素**，否則會更新到錯誤的版本。
+
+**Plugin / 純文字 repo 的 commit type 規則**：
+- 新增 skill、更新 skill 內容（新規則、新範例）→ `feat:`
+- 修正錯誤資訊 → `fix:`
+- 純格式整理 → `docs:` 或 `chore:`（不觸發版本升級）
 
 ## 環境變數
 
@@ -67,15 +82,32 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 - **hetzner**：`HETZNER_API_TOKEN`（不是 `HCLOUD_TOKEN`）
 - **langfuse**：`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`、`LANGFUSE_HOST`（JurisLM 使用 `https://us.cloud.langfuse.com`）
 
-## 安裝流程
+## 安裝與更新流程
 
-1. `git push` 到 marketplace repo（`main` 分支）
-2. `/plugin marketplace add https://github.com/jurislm/jurislm-tools.git` — 首次使用需註冊 marketplace
-3. `/plugin marketplace update jurislm-tools` — 更新 marketplace 索引
-4. `/plugin install jurislm-tools@jt` — 安裝 plugin
-5. 重啟 Claude Code — skills 才會載入
+### 首次安裝（本地目錄掛載）
 
-步驟 2 只需首次執行；之後更新只需步驟 3-5。跳過步驟 3 會導致 `Plugin not found`。
+```bash
+/plugin marketplace add /Users/terrychen/Documents/Github/jurislm/jurislm-tools
+/plugin install jurislm-tools@jurislm-tools
+/reload-plugins
+```
+
+### 本地更新（已掛載本地目錄）
+
+Marketplace 直接掛載 main worktree（`source: "directory"`），merge 後立即生效：
+
+```
+.worktrees/develop 修改 → commit + push → PR develop→main → merge → /reload-plugins
+```
+
+不需要 `/plugin marketplace update` 或重新安裝。
+
+### 確認掛載來源
+
+```bash
+cat ~/.claude/plugins/known_marketplaces.json | jq '.["jurislm-tools"].source'
+# "directory" = 本地掛載，"github" = 遠端
+```
 
 ## Git 分支規範
 
@@ -85,7 +117,7 @@ develop → PR → main
 
 - 日常開發一律在 `.worktrees/develop` 目錄，不在 main worktree 做 feature commits
 - **嚴禁直接 push 到 main**
-- 版本號由 Release Please 自動管理，**禁止手動修改版本號**（見下方版本管理）
+- 版本號由 Release Please 自動管理，**禁止手動修改版本號**
 
 ## 注意事項
 
