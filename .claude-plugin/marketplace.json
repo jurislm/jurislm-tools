@@ -73,7 +73,7 @@
     {
       "name": "plan",
       "source": "./plugins/plan",
-      "description": "實作前先規劃 — /plan command + planner agent（來源：ECC）",
+      "description": "實作前先規劃 — /plan command + planner agent",
       "author": {
         "name": "Terry Chen"
       }
@@ -81,7 +81,7 @@
     {
       "name": "tdd",
       "source": "./plugins/tdd",
-      "description": "/tdd command + tdd-guide agent（來源：ECC）",
+      "description": "/tdd command + tdd-guide agent",
       "author": {
         "name": "Terry Chen"
       }
@@ -89,7 +89,7 @@
     {
       "name": "tdd-workflow",
       "source": "./plugins/tdd-workflow",
-      "description": "TDD 工作流程 skill（auto-activate，來源：ECC）",
+      "description": "TDD 工作流程 skill（auto-activate）",
       "author": {
         "name": "Terry Chen"
       }
@@ -97,7 +97,7 @@
     {
       "name": "learn-eval",
       "source": "./plugins/learn-eval",
-      "description": "/learn-eval command — pattern 萃取 + 品質閘 + Global/Project 自動判斷（來源：ECC）",
+      "description": "/learn-eval command — pattern 萃取 + 品質閘 + Global/Project 自動判斷",
       "author": {
         "name": "Terry Chen"
       }

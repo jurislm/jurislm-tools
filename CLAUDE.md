@@ -59,10 +59,10 @@ plugins/
 | pr-review | 1.19.0 | Skill | PR 審查 skill + command |
 | podcast-to-blog | 1.19.0 | Skill | Podcast 轉文章 skill + command |
 | codebase-sync | 1.19.0 | Skill | Codebase 同步 skill + command |
-| plan | 1.19.0 | Cmd+Agent | /plan command + planner agent（來源：ECC） |
-| tdd | 1.19.0 | Cmd+Agent | /tdd command + tdd-guide agent（來源：ECC） |
-| tdd-workflow | 1.19.0 | Skill | tdd-workflow skill — auto-activate（來源：ECC） |
-| learn-eval | 1.19.0 | Command | /learn-eval command — 含品質閘 + Global/Project 判斷（來源：ECC） |
+| plan | 1.19.0 | Cmd+Agent | /plan command + planner agent |
+| tdd | 1.19.0 | Cmd+Agent | /tdd command + tdd-guide agent |
+| tdd-workflow | 1.19.0 | Skill | tdd-workflow skill — auto-activate |
+| learn-eval | 1.19.0 | Command | /learn-eval command — 含品質閘 + Global/Project 判斷 |
 
 ## 版本管理
 
