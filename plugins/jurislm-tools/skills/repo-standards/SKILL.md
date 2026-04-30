@@ -1,6 +1,6 @@
 ---
 name: repo-standards
-version: 1.0.0
+version: 1.1.0
 description: >
   This skill should be used when the user asks "如何設定新 repo", "release workflow 怎麼寫",
   "release-please 怎麼用", "lint 怎麼設定", "eslint config 怎麼寫", "新增 repo 要怎麼設定",
@@ -18,12 +18,168 @@ argument-hint: "[repo-name]"
 
 ## Repo 分類
 
-| 類型 | 適用 Repo | release-type | ESLint 基礎 |
-|------|---------|-------------|------------|
-| **Next.js** | lawyer, lexvision, stock | `node` | `eslint-config-next` |
-| **Node/TS** | coolify-mcp, hetzner-mcp, langfuse-mcp | `node` | `@eslint/js` + `typescript-eslint` |
-| **Plugin** | jurislm-tools, jurislm-plugins | `simple` | 無 TS 原始碼，不需要 ESLint |
-| **Monorepo** | entire | `node` | `@entire/eslint-config`（暫不統一） |
+| 類型 | 適用 Repo | release-type | Runtime | ESLint 基礎 |
+|------|---------|-------------|---------|------------|
+| **Next.js** | lawyer, lexvision, stock | `node` | Bun | `eslint-config-next` |
+| **Node/TS** | coolify-mcp, hetzner-mcp, langfuse-mcp, judicial-mcp | `node` | Bun | `@eslint/js` + `typescript-eslint` |
+| **Plugin** | jurislm-tools, jurislm-plugins | `simple` | — | 無 TS 原始碼，不需要 ESLint |
+| **Monorepo** | entire | `node` | Bun | `@entire/eslint-config` |
+
+---
+
+## Git Worktree 規則
+
+**每個 repo 的 main worktree（根目錄）必須永遠保持在 `main` 分支，所有開發在 `.worktrees/develop` 進行。**
+
+### 分支結構
+
+```
+<repo>/               ← main worktree，永遠在 main 分支，不做 feature commits
+<repo>/.worktrees/
+  develop/            ← develop worktree，日常開發在此
+  <feature-branch>/   ← feature worktree，需要時建立
+```
+
+### 建立規則
+
+```bash
+# 確認現有 worktree 與分支
+git worktree list
+git branch --show-current  # 根目錄必須顯示 main
+
+# 建立 develop worktree（每個 repo 必備）
+git fetch origin
+git worktree add .worktrees/develop develop
+# 若 develop 分支尚未存在：
+git worktree add -b develop .worktrees/develop main
+
+# feature branch worktree（開發特定功能時）
+git worktree add -b feature/xxx .worktrees/feature-xxx develop
+```
+
+### 開發流程
+
+```
+.worktrees/develop → commit → push origin develop → PR develop→main → merge
+.worktrees/<feature> → commit → push origin <feature> → PR <feature>→develop → merge
+```
+
+### 強制規則
+
+- main worktree 根目錄只能在 `main` 分支，不可切換到其他分支
+- 若發現根目錄不在 main：立即 `git checkout main && git pull origin main`
+- **嚴禁直接 push 到 main**（main 連接 Coolify 自動部署 + Release Please）
+- feature worktree 目錄名稱必須與 branch 名稱一致（`.worktrees/feature-xxx` ↔ `feature/xxx`）
+- `.gitignore` 必須包含 `.worktrees/`
+
+---
+
+## Runtime 規範：統一使用 Bun
+
+所有 JavaScript/TypeScript repo 統一使用 **Bun** 作為 runtime 與 package manager。
+
+### package.json 標準設定
+
+```json
+{
+  "packageManager": "bun@1.3.9",
+  "engines": {
+    "bun": ">=1.1.0"
+  },
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun dist/index.js",
+    "build": "bun build src/index.ts --outdir dist --target bun",
+    "test": "bun run vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint --max-warnings=0"
+  }
+}
+```
+
+### 命令對照
+
+| 舊（Node.js/npm） | 新（Bun） |
+|------------------|---------|
+| `npm install` | `bun install` |
+| `npm run dev` | `bun run dev` |
+| `node dist/index.js` | `bun dist/index.js` |
+| `tsx watch src/index.ts` | `bun --watch src/index.ts` |
+| `ts-node src/index.ts` | `bun src/index.ts` |
+| `npm publish` | `bun publish` |
+
+### 安裝必要套件
+
+```bash
+# 移除舊 Node.js 工具
+bun remove tsx ts-node
+
+# 加入 Bun 類型
+bun add -d @types/bun
+```
+
+---
+
+## 測試規範：統一使用 Vitest
+
+所有 TypeScript repo 的單元測試統一使用 **Vitest**。
+
+### 安裝
+
+```bash
+bun add -d vitest
+```
+
+### package.json scripts
+
+```json
+{
+  "scripts": {
+    "test": "bun run vitest",
+    "test:watch": "bun run vitest --watch",
+    "test:coverage": "bun run vitest --coverage"
+  }
+}
+```
+
+### vitest.config.ts 標準模板
+
+```typescript
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'node',
+    exclude: [
+      '**/node_modules/**',
+      '.worktrees/**',
+    ],
+  },
+})
+```
+
+### 測試寫法
+
+```typescript
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+describe('MyModule', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should do something', () => {
+    const spy = vi.fn().mockReturnValue('result')
+    expect(spy()).toBe('result')
+  })
+})
+```
+
+**關鍵 API**：
+- Mock：`vi.fn()`, `vi.spyOn()`, `vi.mock()`
+- 環境變數：`vi.stubEnv('KEY', 'value')` / `vi.unstubAllEnvs()`
+- 模組：`vi.mocked()` 取得 typed mock
 
 ---
 
@@ -190,58 +346,43 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ---
 
-## 開發工作流程
-
-### Git Worktree 規則
-
-**所有開發一律在 `.worktrees/develop` 進行，不直接在 repo 根目錄（main）做 feature commits。**
-
-```bash
-# 確認 develop worktree 是否存在
-git worktree list
-
-# 若不存在，建立 develop worktree
-git fetch origin
-git worktree add .worktrees/develop develop
-# 若 develop 分支尚未建立：
-git worktree add -b develop .worktrees/develop main
-```
-
-**開發流程**：
-```
-.worktrees/develop → commit → push origin develop → PR develop→main → merge
-```
-
-**規則**：
-- main 分支連接正式環境（Coolify 自動部署），直接 push main = 意外觸發生產部署
-- feature 開發、bug fix、設定調整一律在 develop worktree 內操作
-- merge 到 main 前必須經過 PR（不可 fast-forward 直接 push）
-
----
-
 ## 新增 Repo Checklist
 
 ### Git Worktree
-1. [ ] 建立 develop 分支並設定 worktree：`git worktree add .worktrees/develop develop`
-2. [ ] 確認 `.gitignore` 或 `.prettierignore` 排除 `.worktrees/`
+1. [ ] 確認 main worktree 在 `main` 分支：`git branch --show-current`
+2. [ ] 建立 develop worktree：`git worktree add .worktrees/develop develop`
+3. [ ] `.gitignore` 加入 `.worktrees/`
+4. [ ] `.prettierignore` 加入 `.worktrees/`
+
+### Runtime（Bun）
+5. [ ] `package.json` 加 `"packageManager": "bun@1.3.9"`
+6. [ ] `package.json` 加 `"engines": {"bun": ">=1.1.0"}`
+7. [ ] scripts 使用 `bun` 指令（`bun --watch`、`bun dist/index.js` 等）
+8. [ ] 移除 `tsx`、`ts-node` 等 Node.js runtime 套件
+9. [ ] 加入 `@types/bun`（TypeScript 類型支援）
+
+### 測試（Vitest）
+10. [ ] 安裝 vitest：`bun add -d vitest`
+11. [ ] 建立 `vitest.config.ts`，`exclude` 加 `.worktrees/**`
+12. [ ] `package.json` scripts：`"test": "bun run vitest"`
+13. [ ] 測試檔案使用 `import { describe, it, expect, vi } from 'vitest'`
+14. [ ] 執行 `bun run test` 確認全通過
 
 ### Release
-3. [ ] 建立 `.github/workflows/release.yml`（依標準格式，**不指定 `release-type`**）
-4. [ ] 建立 `release-please-config.json`（依統一模板，`release-type` 寫在這裡）
-5. [ ] Plugin repo：加 `extra-files`，確認目標在陣列第一位
+15. [ ] 建立 `.github/workflows/release.yml`（依標準格式，**不指定 `release-type`**）
+16. [ ] 建立 `release-please-config.json`（依統一模板，`release-type` 寫在這裡）
+17. [ ] Plugin repo：加 `extra-files`，確認目標在陣列第一位
 
 ### ESLint
-6. [ ] 依類型建立 `eslint.config.mjs`（Next.js）或 `eslint.config.js`（Node/TS）
-7. [ ] `package.json` 加 `"lint": "eslint --max-warnings=0"`
-8. [ ] 安裝必要套件
-9. [ ] `.prettierignore` 加 `.worktrees/`
-10. [ ] `vitest.config.ts`（若有）的 `exclude` 加 `.worktrees/**`
-11. [ ] 執行 `bun run lint` 確認 0 errors 0 warnings
+18. [ ] 依類型建立 `eslint.config.mjs`（Next.js）或 `eslint.config.js`（Node/TS）
+19. [ ] `package.json` 加 `"lint": "eslint --max-warnings=0"`
+20. [ ] 安裝必要套件
+21. [ ] 執行 `bun run lint` 確認 0 errors 0 warnings
 
 ### Code Review
-12. [ ] 建立 `.github/workflows/claude-code-review.yml`（`@v1`，`pull-requests: write`，`gh pr review --comment`）
-13. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發，`pull-requests: write`，`issues: write`，保留 `system_prompt` 繁中設定）
-14. [ ] 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
-15. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）
-16. [ ] `claude.yml` 的 `system_prompt` 設為 `"請使用繁體中文回覆所有問題與建議。"`
-17. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
+22. [ ] 建立 `.github/workflows/claude-code-review.yml`（`@v1`，`pull-requests: write`，`gh pr review --comment`）
+23. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發，`pull-requests: write`，`issues: write`，保留 `system_prompt` 繁中設定）
+24. [ ] 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
+25. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）
+26. [ ] `claude.yml` 的 `system_prompt` 設為 `"請使用繁體中文回覆所有問題與建議。"`
+27. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
