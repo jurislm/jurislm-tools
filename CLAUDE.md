@@ -40,15 +40,14 @@ plugins/jurislm-tools/
     ├── langfuse/SKILL.md
     ├── podcast-to-blog/SKILL.md
     ├── pr-review/SKILL.md
-    ├── repo-standards/SKILL.md
-    └── codebase-sync/SKILL.md
+    └── repo-standards/SKILL.md
 ```
 
 ## 目前 Plugins
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| jt | 1.16.0 | Hybrid | Coolify MCP（40 工具）+ Hetzner MCP（14 工具）+ Langfuse MCP（13 工具）+ 7 skills + 7 commands |
+| jt | 1.17.0 | Hybrid | Coolify MCP（40 工具）+ Hetzner MCP（14 工具）+ Langfuse MCP（13 工具）+ 7 skills + 7 commands |
 
 ## 版本管理
 
