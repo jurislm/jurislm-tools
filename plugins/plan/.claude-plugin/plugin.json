@@ -1,7 +1,7 @@
 {
   "name": "plan",
   "description": "實作前規劃 — 重述需求、評估風險、產出 step-by-step 實作計畫，等使用者確認才動手",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "author": {
     "name": "Terry Chen"
   },
