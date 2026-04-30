@@ -1,6 +1,6 @@
 {
   "name": "codebase-sync",
-  "description": "Codebase 同步與探索",
+  "description": "同步 codebase 文件 — 探索目錄結構並更新 README.md 與 CLAUDE.md",
   "version": "1.19.0",
   "author": {
     "name": "Terry Chen"

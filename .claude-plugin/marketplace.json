@@ -8,7 +8,7 @@
     {
       "name": "hooks-and-rules",
       "source": "./plugins/hooks-and-rules",
-      "description": "JurisLM 開發紀律 — commit 思考紀律 hook + 通用開發規則",
+      "description": "強制 JurisLM 開發紀律 — git commit 前思考紀律檢查 + 通用 coding/git/testing 規則參考",
       "version": "1.19.0",
       "author": {
         "name": "Terry Chen"
@@ -17,7 +17,7 @@
     {
       "name": "coolify",
       "source": "./plugins/coolify",
-      "description": "Coolify 部署管理 — 43 個 MCP 工具 + skill + command",
+      "description": "管理 Coolify 基礎設施 — 部署應用、資料庫管理、問題診斷（43 個 MCP 工具）",
       "author": {
         "name": "Terry Chen"
       }
@@ -25,7 +25,7 @@
     {
       "name": "hetzner",
       "source": "./plugins/hetzner",
-      "description": "Hetzner VPS 管理 — 17 個 MCP 工具 + skill + command",
+      "description": "管理 Hetzner Cloud 資源 — 建立伺服器、SSH 金鑰、規格查詢（17 個 MCP 工具）",
       "author": {
         "name": "Terry Chen"
       }
@@ -33,7 +33,7 @@
     {
       "name": "langfuse",
       "source": "./plugins/langfuse",
-      "description": "Langfuse 可觀測性 — 50 個 MCP 工具 + skill + command",
+      "description": "Langfuse LLM 可觀測性 — Prompt 版本管理、Trace 分析、評分記錄（50 個 MCP 工具）",
       "author": {
         "name": "Terry Chen"
       }
@@ -41,7 +41,7 @@
     {
       "name": "repo-standards",
       "source": "./plugins/repo-standards",
-      "description": "Repo 標準審查 — release workflow、ESLint、worktree、Bun、Vitest 規範",
+      "description": "審查並套用 JurisLM repo 標準 — release workflow、ESLint、worktree、Bun runtime、Vitest",
       "author": {
         "name": "Terry Chen"
       }
@@ -49,7 +49,7 @@
     {
       "name": "pr-review",
       "source": "./plugins/pr-review",
-      "description": "PR 自動化審查與合併",
+      "description": "自動審查合併 PR — 監控 CI、讀取 Claude review、修正後合併（最多 5 輪）",
       "author": {
         "name": "Terry Chen"
       }
@@ -57,7 +57,7 @@
     {
       "name": "podcast-to-blog",
       "source": "./plugins/podcast-to-blog",
-      "description": "Podcast 音訊轉部落格文章",
+      "description": "Apple Podcasts 連結轉部落格文章 — Whisper 轉錄 + AI 生成繁中文章",
       "author": {
         "name": "Terry Chen"
       }
@@ -65,7 +65,7 @@
     {
       "name": "codebase-sync",
       "source": "./plugins/codebase-sync",
-      "description": "Codebase 同步與探索",
+      "description": "同步 codebase 文件 — 探索目錄結構並更新 README.md 與 CLAUDE.md",
       "author": {
         "name": "Terry Chen"
       }
@@ -73,7 +73,7 @@
     {
       "name": "plan",
       "source": "./plugins/plan",
-      "description": "實作前先規劃 — /plan command + planner agent",
+      "description": "實作前規劃 — 重述需求、評估風險、產出 step-by-step 實作計畫，等使用者確認才動手",
       "author": {
         "name": "Terry Chen"
       }
@@ -81,7 +81,7 @@
     {
       "name": "tdd",
       "source": "./plugins/tdd",
-      "description": "/tdd command + tdd-guide agent",
+      "description": "觸發 TDD 工作流程 — 強制 RED-GREEN-REFACTOR 與 80% 測試覆蓋率",
       "author": {
         "name": "Terry Chen"
       }
@@ -89,7 +89,7 @@
     {
       "name": "tdd-workflow",
       "source": "./plugins/tdd-workflow",
-      "description": "TDD 工作流程 skill（auto-activate）",
+      "description": "TDD 工作流程 skill — 撰寫功能/修 bug/重構時自動載入，含 unit/integration/E2E 模式",
       "author": {
         "name": "Terry Chen"
       }
@@ -97,7 +97,7 @@
     {
       "name": "learn-eval",
       "source": "./plugins/learn-eval",
-      "description": "/learn-eval command — pattern 萃取 + 品質閘 + Global/Project 自動判斷",
+      "description": "從 session 萃取可重複利用 pattern — 品質閘 + dedup 檢查 + Global/Project 儲存路徑判斷",
       "author": {
         "name": "Terry Chen"
       }
