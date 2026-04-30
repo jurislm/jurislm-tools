@@ -79,9 +79,25 @@
       }
     },
     {
+      "name": "tdd",
+      "source": "./plugins/tdd",
+      "description": "/tdd command + tdd-guide agent（來源：ECC）",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
       "name": "tdd-workflow",
       "source": "./plugins/tdd-workflow",
-      "description": "TDD 工作流程 — tdd-workflow skill + tdd-guide agent（來源：ECC）",
+      "description": "TDD 工作流程 skill（auto-activate，來源：ECC）",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "learn",
+      "source": "./plugins/learn",
+      "description": "/learn command — 從 session 萃取可重複利用的 pattern（來源：ECC）",
       "author": {
         "name": "Terry Chen"
       }

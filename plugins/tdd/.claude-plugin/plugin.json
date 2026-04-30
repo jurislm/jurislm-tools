@@ -1,0 +1,9 @@
+{
+  "name": "tdd",
+  "description": "/tdd command — 觸發 tdd-workflow skill 與 tdd-guide agent，強制 RED-GREEN-REFACTOR 流程",
+  "version": "1.19.0",
+  "author": { "name": "Terry Chen" },
+  "homepage": "https://github.com/jurislm/jurislm-tools",
+  "repository": "https://github.com/jurislm/jurislm-tools",
+  "license": "UNLICENSED"
+}

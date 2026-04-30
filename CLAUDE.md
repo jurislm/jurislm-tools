@@ -60,7 +60,9 @@ plugins/
 | podcast-to-blog | 1.19.0 | Skill | Podcast 轉文章 skill + command |
 | codebase-sync | 1.19.0 | Skill | Codebase 同步 skill + command |
 | plan | 1.19.0 | Cmd+Agent | /plan command + planner agent（來源：ECC） |
-| tdd-workflow | 1.19.0 | Skill+Agent | tdd-workflow skill + tdd-guide agent（來源：ECC） |
+| tdd | 1.19.0 | Cmd+Agent | /tdd command + tdd-guide agent（來源：ECC） |
+| tdd-workflow | 1.19.0 | Skill | tdd-workflow skill — auto-activate（來源：ECC） |
+| learn | 1.19.0 | Command | /learn command（來源：ECC） |
 
 ## 版本管理
 
@@ -100,7 +102,9 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 /plugin install jurislm-tools@podcast-to-blog
 /plugin install jurislm-tools@codebase-sync
 /plugin install jurislm-tools@plan
+/plugin install jurislm-tools@tdd
 /plugin install jurislm-tools@tdd-workflow
+/plugin install jurislm-tools@learn
 /reload-plugins
 ```
 
