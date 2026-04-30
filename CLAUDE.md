@@ -57,7 +57,7 @@ plugins/jurislm-tools/
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| jt | 1.18.0 | Hybrid | Coolify MCP（43 工具）+ Hetzner MCP（17 工具）+ Langfuse MCP（50 工具）+ 7 skills + 7 commands + hooks + rules |
+| jurislm-tools | 1.18.0 | Hybrid | Coolify MCP（43 工具）+ Hetzner MCP（17 工具）+ Langfuse MCP（50 工具）+ 7 skills + 7 commands + hooks + rules |
 
 ## 版本管理
 
@@ -88,7 +88,7 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 
 ```bash
 /plugin marketplace add /Users/terrychen/Documents/Github/jurislm/jurislm-tools
-/plugin install jurislm-tools@jt
+/plugin install jurislm-tools@jurislm-tools
 /reload-plugins
 ```
 
