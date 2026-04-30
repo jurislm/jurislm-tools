@@ -1,5 +1,6 @@
 ---
 name: pr-review
+version: 1.0.0
 description: 讀取 Claude code review 結果，若可合併則合併，若有問題則修正後重試，最多五輪。
 argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
 ---
