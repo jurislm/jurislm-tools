@@ -1,6 +1,6 @@
 ---
 name: repo-standards
-version: 1.1.0
+version: 1.2.0
 description: >
   This skill should be used when the user asks "如何設定新 repo", "release workflow 怎麼寫",
   "release-please 怎麼用", "lint 怎麼設定", "eslint config 怎麼寫", "新增 repo 要怎麼設定",
