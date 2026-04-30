@@ -1,0 +1,9 @@
+{
+  "hetzner": {
+    "command": "npx",
+    "args": ["-y", "@jurislm/hetzner-mcp@latest"],
+    "env": {
+      "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}"
+    }
+  }
+}

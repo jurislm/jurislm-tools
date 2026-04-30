@@ -1,6 +1,6 @@
 {
   "name": "jurislm-tools",
-  "description": "JurisLM 內部工具集 — Coolify 部署管理、Hetzner VPS 管理、Langfuse 可觀測性、Podcast 轉部落格、PR 自動化審查與合併",
+  "description": "JurisLM 基礎配置 — commit 紀律 hook + 通用開發規則（coding-style, git-workflow, testing 等）",
   "version": "1.19.0",
   "author": {
     "name": "Terry Chen"
@@ -9,19 +9,10 @@
   "repository": "https://github.com/jurislm/jurislm-tools",
   "license": "UNLICENSED",
   "keywords": [
-    "coolify",
-    "hetzner",
-    "podcast",
-    "mcp",
-    "tools",
-    "deployment",
-    "vps",
-    "paas",
-    "infrastructure",
-    "blog",
-    "langfuse",
-    "observability",
-    "tracing",
-    "prompts"
+    "hooks",
+    "rules",
+    "git",
+    "workflow",
+    "coding-style"
   ]
 }

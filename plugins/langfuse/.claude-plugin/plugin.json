@@ -1,0 +1,11 @@
+{
+  "name": "langfuse",
+  "description": "Langfuse 可觀測性 — 50 個 MCP 工具 + skill + command",
+  "version": "1.19.0",
+  "author": {
+    "name": "Terry Chen"
+  },
+  "homepage": "https://github.com/jurislm/jurislm-tools",
+  "repository": "https://github.com/jurislm/jurislm-tools",
+  "license": "UNLICENSED"
+}
