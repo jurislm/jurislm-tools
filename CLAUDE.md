@@ -48,7 +48,7 @@ plugins/jurislm-tools/
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| jt | 1.16.0 | Hybrid | Coolify MCP（40 工具）+ Hetzner MCP（14 工具）+ Langfuse MCP（13 工具）+ 7 skills + 7 commands |
+| jt | 1.17.1 | Hybrid | Coolify MCP（43 工具）+ Hetzner MCP（17 工具）+ Langfuse MCP（50 工具）+ 7 skills + 7 commands |
 
 ## 版本管理
 
@@ -78,9 +78,23 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 
 步驟 2 只需首次執行；之後更新只需步驟 3-5。跳過步驟 3 會導致 `Plugin not found`。
 
+## Git 分支規範
+
+```
+develop → PR → main
+```
+
+- 日常開發一律在 `.worktrees/develop` 目錄，不在 main worktree 做 feature commits
+- **嚴禁直接 push 到 main**
+- 版本號由 Release Please 自動管理，**禁止手動修改版本號**（見下方版本管理）
+
 ## 注意事項
 
 - **版本號禁止手動修改**：交由 Release Please 管理
 - **`jurislm-tools` 必須是 `marketplace.json` plugins 陣列第一個元素**
 - **環境變數必須在 `~/.zshenv`**：MCP Server 是非互動式子進程，不 source `~/.zshrc`
 - **description 語言**：使用繁體中文
+- **工具數需手動同步**：plugin 表格的工具數跨 repo 引用，修改任一 MCP repo 後需更新本檔案
+  - Coolify：`grep -c "server.tool" ../coolify-mcp/src/lib/mcp-server.ts`
+  - Hetzner：`grep -c '"hetzner_' ../hetzner-mcp/src/tools/*.ts`
+  - Langfuse：`grep -c "server.tool" ../langfuse-mcp/src/index.ts`
