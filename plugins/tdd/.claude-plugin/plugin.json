@@ -1,7 +1,7 @@
 {
   "name": "tdd",
   "description": "觸發 TDD 工作流程 — 強制 RED-GREEN-REFACTOR 與 80% 測試覆蓋率",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "author": {
     "name": "Terry Chen"
   },
