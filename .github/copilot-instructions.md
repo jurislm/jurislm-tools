@@ -1,8 +1,10 @@
+請使用繁體中文回覆所有問題與建議。
+
 # Copilot Instructions for jurislm-tools
 
 ## Project Overview
 
-`jurislm-tools` 是 Claude Code Plugin Marketplace，提供 `jt` plugin（Hybrid 類型）：整合 Coolify MCP（35 工具）、Hetzner MCP（14 工具）、7 個 skills 和 7 個 commands。
+`jurislm-tools` 是 Claude Code Plugin Marketplace，提供 `jt` plugin（Hybrid 類型）：整合 Coolify MCP（43 工具）、Hetzner MCP（17 工具）、Langfuse MCP（50 工具）、7 個 skills 和 7 個 commands。
 
 ## Git Workflow
 
