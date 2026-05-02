@@ -1,7 +1,7 @@
 {
   "name": "hetzner",
   "description": "管理 Hetzner Cloud 資源 — 建立伺服器、SSH 金鑰、規格查詢（17 個 MCP 工具）",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "author": {
     "name": "Terry Chen"
   },

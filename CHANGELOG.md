@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.20.0](https://github.com/jurislm/jurislm-tools/compare/v1.19.0...v1.20.0) (2026-04-30)
+
+
+### 🚀 New Features
+
+* add agent examples per plugin-dev best practices ([#77](https://github.com/jurislm/jurislm-tools/issues/77)) ([2d2dde5](https://github.com/jurislm/jurislm-tools/commit/2d2dde54829fb764cf8c713062a22b637d21d9ea))
+* add plugin READMEs and fix tdd-workflow imperative form ([#76](https://github.com/jurislm/jurislm-tools/issues/76)) ([f595979](https://github.com/jurislm/jurislm-tools/commit/f595979886700ec4ff1b2991257282f48d04c8a8))
+* rename plugin jt → jurislm-tools, update CLAUDE.md, clarify SKILL.md descriptions ([003555a](https://github.com/jurislm/jurislm-tools/commit/003555a750975c1b3a56679a5a468fd308d27dd2))
+* split into 8 plugins, add ECC commands, improve quality ([#75](https://github.com/jurislm/jurislm-tools/issues/75)) ([389b9c8](https://github.com/jurislm/jurislm-tools/commit/389b9c870cf1091ab5f1de312244a46952a2f273))
+
+
+### 📚 Documentation
+
+* unify plugin descriptions ([#78](https://github.com/jurislm/jurislm-tools/issues/78)) ([38cf7db](https://github.com/jurislm/jurislm-tools/commit/38cf7dbb0099feba8bc7fd4b90eeea79c12584c4))
+
 ## [1.19.0](https://github.com/jurislm/jurislm-tools/compare/v1.18.0...v1.19.0) (2026-04-30)
 
 
