@@ -1,0 +1,39 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Claude Code Plugin Marketplace (YAML/Markdown only, no compilation step)
+  Domain: jurislm-tools — 12-plugin marketplace for JurisLM development workflows
+
+  Plugin types:
+    - Base: hooks + rules only (hooks-and-rules)
+    - Hybrid: MCP Server (.mcp.json via npx @jurislm/<name>-mcp@latest) + skill + command
+    - Skill: SKILL.md with optional command (auto-activate or manual)
+    - Cmd+Agent: command delegates to agent (plan → planner, tdd → tdd-guide)
+    - Command: command only, no skill or agent (learn-eval)
+
+  Version management: Release Please automation
+    feat: → minor bump, fix: → patch bump
+    docs:/chore: → no version bump
+    Never manually edit version numbers
+
+  Branch workflow: develop worktree (.worktrees/develop) → PR → main
+    Main branch is production; direct push is forbidden.
+
+  Spec structure (openspec/specs/):
+    _overview/  — marketplace-architecture, openspec-system
+    infra/      — infra-overview, coolify-detail, hetzner-detail
+    observability/ — langfuse-detail
+    dev-workflow/  — dev-workflow-overview, plan-detail, tdd-detail, pr-review-detail
+    docs-and-standards/ — repo-standards-detail, codebase-sync-detail
+    content/    — podcast-to-blog-detail
+    learning/   — learn-eval-detail
+    discipline/ — hooks-and-rules-detail
+
+rules:
+  proposal:
+    - Keep proposals under 400 words
+    - Always include a "Non-goals" section
+    - State which existing plugin(s) this change affects
+  tasks:
+    - Break tasks into chunks that touch at most one plugin each
+    - Each task must reference the specific file path to be changed
