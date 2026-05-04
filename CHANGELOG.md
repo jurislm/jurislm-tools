@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.21.0](https://github.com/jurislm/jurislm-tools/compare/v1.20.0...v1.21.0) (2026-05-04)
+
+
+### 🚀 New Features
+
+* bootstrap openspec/specs with full 15-spec coverage ([#79](https://github.com/jurislm/jurislm-tools/issues/79)) ([28f143d](https://github.com/jurislm/jurislm-tools/commit/28f143d94f7d47445830ddfacf2ea519f28d9071))
+* bootstrap openspec/specs with full 15-spec coverage and fill config.yaml context ([cd70a2a](https://github.com/jurislm/jurislm-tools/commit/cd70a2a541baafc427248df45f0555ca2c7094b1))
+* **tdd-workflow:** add self-determination logic for New Feature / Bug Fix / Refactor TDD ([2644b79](https://github.com/jurislm/jurislm-tools/commit/2644b797fc371e6fe6517a4b703f42c4f882ff2f))
+* **tdd-workflow:** add self-determination logic for workflow type ([7b1996e](https://github.com/jurislm/jurislm-tools/commit/7b1996e363fe718c54dbed41c40e5d84c0a68eb3))
+
 ## [1.20.0](https://github.com/jurislm/jurislm-tools/compare/v1.19.0...v1.20.0) (2026-04-30)
 
 
