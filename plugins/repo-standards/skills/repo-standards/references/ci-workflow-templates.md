@@ -40,7 +40,7 @@ on:
 
 **為什麼 main 要留 `push` trigger**：
 - `main` 主要透過 PR merge 進入，理論上 PR 階段已跑過 CI
-- 但仍可能有 force-push、rebase merge、hotfix direct push、Release Please commit 等
+- 但仍可能有 force-push、rebase merge、Release Please commit 等繞過 PR 階段的事件（**嚴禁直接 push hotfix 到 main**，緊急修正仍須走 PR）
 - `push: main` 作為 post-merge safety net，保證 main 永遠有 green CI 紀錄
 
 ---
@@ -139,7 +139,8 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run build
         env:
-          # 提供 build-time placeholder env vars（避免 build 失敗）
+          # ⚠️ 以下為範例，需依此 app 實際所需的 build-time env vars 替換
+          # （變數名稱與數量因 app 而異，例：可能是 POSTGRES_URL / AUTH_SECRET / NEXT_PUBLIC_* 等）
           # 實際值由 Coolify 在 deploy 時注入，build 階段只需通過 type/syntax 檢查
           DATABASE_URL: postgresql://localhost/placeholder
           NEXTAUTH_SECRET: build-placeholder-must-be-at-least-32-chars-long
@@ -261,4 +262,3 @@ gh search code 'develop' --owner jurislm --filename ci.yml
 
 - Issue：[jurislm-tools#82 — CI workflow pattern: duplicate runs from push + pull_request triggers on PR'd branches](https://github.com/jurislm/jurislm-tools/issues/82)
 - Fix 範例：[jurislm/coolify-mcp PR #25 (commit `ad447c3`)](https://github.com/jurislm/coolify-mcp/pull/25)
-- Review 修正：[jurislm-tools PR #83 review feedback](https://github.com/jurislm/jurislm-tools/pull/83)（push-safe `if:` 條件）
