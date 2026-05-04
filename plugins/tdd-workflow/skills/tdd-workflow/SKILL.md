@@ -20,6 +20,48 @@ This skill ensures all code development follows TDD principles with comprehensiv
 - Adding API endpoints
 - Creating new components
 
+## Self-Determination: Which Workflow Type Applies?
+
+**Before starting**, classify the task by answering these questions:
+
+| Signal | Workflow Type |
+|--------|--------------|
+| No existing tests, adding new behavior | → **New Feature TDD** |
+| Bug exists, no reproducer test yet | → **Bug Fix TDD** |
+| Behavior stays the same, only implementation changes (e.g., swapping libraries, renaming, restructuring) | → **Refactor TDD** |
+
+### New Feature TDD
+Write tests from scratch → confirm RED → implement → GREEN → refactor.
+Follow the standard [TDD Workflow Steps](#tdd-workflow-steps) below.
+
+### Bug Fix TDD
+Write a reproducer test for the bug → confirm RED (bug is exposed) → fix → GREEN → add edge case tests.
+Follow the standard [TDD Workflow Steps](#tdd-workflow-steps) below, where "Step 2: Generate Test Cases" targets the specific bug scenario.
+
+### Refactor TDD
+Existing tests represent the **behavioral contract** — they must survive the refactor.
+
+**Key rule**: Existing tests are never deleted unless they test implementation details (e.g., how Hono routes are assembled), not behavior (e.g., what HTTP response is returned).
+
+**Correct order for each unit being refactored:**
+
+```
+1. Classify existing tests:
+   - Tests checking BEHAVIOR (HTTP status, response body, side effects) → UPDATE to new interface
+   - Tests checking IMPLEMENTATION DETAILS (how a library is wired up) → DELETE
+
+2. Update behavioral tests to use the new interface → confirm RED
+   (tests now reference code that doesn't exist yet)
+
+3. Implement the new code → confirm GREEN
+   (same behavioral assertions pass with new implementation)
+
+4. Delete implementation-detail tests that no longer apply
+```
+
+**Never**: create all new implementations first, then update tests afterward.
+This breaks the safety net — you lose the guarantee that the new code satisfies the same behavioral contract.
+
 ## Core Principles
 
 ### 1. Tests BEFORE Code
