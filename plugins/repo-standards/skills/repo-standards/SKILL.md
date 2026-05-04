@@ -1,6 +1,6 @@
 ---
 name: repo-standards
-version: 1.2.0
+version: 1.3.0
 description: >
   This skill should be used when the user asks "如何設定新 repo", "release workflow 怎麼寫",
   "release-please 怎麼用", "lint 怎麼設定", "eslint config 怎麼寫", "新增 repo 要怎麼設定",
@@ -405,6 +405,94 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ---
 
+## CI Workflow 設定（lint / typecheck / test）
+
+> 完整模板（含 Node/TS、Next.js、Plugin、Monorepo 變體）見 `references/ci-workflow-templates.md`。
+
+### 核心規則：避免 push + pull_request 雙重觸發
+
+`push` 與 `pull_request` 是獨立 event，`github.ref` 不同（`refs/heads/develop` vs `refs/pull/N/merge`）→ concurrency group 無法 dedupe，每次 push 浪費雙倍 CI 分鐘。
+
+**Anti-pattern（禁止）**：
+
+```yaml
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+  push:
+    branches:
+      - main
+      - develop  # ❌ 重複觸發來源
+```
+
+**正確 pattern**：
+
+```yaml
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+  push:
+    branches:
+      - main  # ✅ 只留 main 作為 post-merge safety net
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+```
+
+**為什麼 main 仍要 `push` trigger**：
+- 中間分支（develop、feature）由 `pull_request` 完整覆蓋
+- main 仍可能因 force-push、rebase merge、Release Please commit 等繞過 PR → 需 post-merge safety net
+
+### 通用 job 規則
+
+**Draft PR 跳過條件 — 必須 push-safe**：
+
+```yaml
+if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+```
+
+**陷阱**：直接寫 `if: github.event.pull_request.draft == false` 會在 `push` / `workflow_dispatch` event 下評估為 false（因為 `github.event.pull_request` 為 null）→ **`push: main` safety net 完全不會跑**。先判斷 `event_name` 才安全。
+
+- `--frozen-lockfile` 確保 lockfile 一致性
+- 多個獨立 job 並行（lint / typecheck / test 不互相依賴）
+
+### Audit 既存 Repo
+
+GitHub code search 是**逐行**比對，多行 YAML 無法用單行字串命中。用以下方式：
+
+```bash
+# 逐 repo 解碼 ci.yml 看 on: 區塊（已過濾 archived repo）
+for repo in $(gh repo list jurislm --limit 50 \
+    --json name,isArchived -q '.[] | select(.isArchived == false) | .name'); do
+  echo "=== $repo ==="
+  gh api "repos/jurislm/$repo/contents/.github/workflows/ci.yml" \
+    --jq '.content' 2>/dev/null | base64 -d 2>/dev/null \
+    | sed -n '/^on:/,/^[a-zA-Z][a-zA-Z]*:/p' | head -25 \
+    || echo "(no ci.yml)"
+done
+```
+
+或用 `gh search code` 找含 `develop` 的 ci.yml（命中後人工確認 `on:` 區塊）：
+
+```bash
+gh search code 'develop' --owner jurislm --filename ci.yml
+```
+
+### 規範回填協議
+
+當任一 repo 發現新 ci.yml 陷阱：
+1. 在來源 repo 修復（PR 含 root cause 分析）
+2. **同步**回填到 `references/ci-workflow-templates.md`
+3. 開 issue 追蹤其他 repo 是否需同步
+
+**禁止**：只修單一 repo 不回填模板 → 下個新 repo 仍會踩同雷。
+
+⚠️ **Reference**：[Issue #82 — CI workflow duplicate runs](https://github.com/jurislm/jurislm-tools/issues/82)
+
+---
+
 ## Code Review 設定
 
 > Copilot 指示模板、`claude-code-review.yml`、`claude.yml` 完整內容見 `references/code-review-setup.md`。
@@ -464,10 +552,17 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 20. [ ] 安裝必要套件
 21. [ ] 執行 `bun run lint` 確認 0 errors 0 warnings
 
+### CI Workflow
+22. [ ] 建立 `.github/workflows/ci.yml`（依 `references/ci-workflow-templates.md` 對應 repo 類型）
+23. [ ] 確認 trigger 為 `pull_request` + `push: main` only（**禁止** `push: develop` 或其他中間分支）
+24. [ ] 設定 `concurrency.group: ${{ github.workflow }}-${{ github.ref }}` + `cancel-in-progress: true`
+25. [ ] 各 job 加 push-safe draft 條件：`if: github.event_name != 'pull_request' || github.event.pull_request.draft == false`（**勿**直接寫 `github.event.pull_request.draft == false`，會破壞 `push: main` safety net）
+26. [ ] 開 PR 確認 CI **只跑一次**（檢查 Actions 頁面，每次 push 應只看到 1 個 run，非 2 個）
+
 ### Code Review
-22. [ ] 建立 `.github/workflows/claude-code-review.yml`（`@v1`，`pull-requests: write`，`gh pr review --comment`）
-23. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發，`pull-requests: write`，`issues: write`，保留 `system_prompt` 繁中設定）
-24. [ ] 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
-25. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）
-26. [ ] `claude.yml` 的 `system_prompt` 設為 `"請使用繁體中文回覆所有問題與建議。"`
-27. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
+27. [ ] 建立 `.github/workflows/claude-code-review.yml`（`@v1`，`pull-requests: write`，`gh pr review --comment`）
+28. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發，`pull-requests: write`，`issues: write`，保留 `system_prompt` 繁中設定）
+29. [ ] 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
+30. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）
+31. [ ] `claude.yml` 的 `system_prompt` 設為 `"請使用繁體中文回覆所有問題與建議。"`
+32. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
