@@ -9,7 +9,7 @@
       "name": "hooks-and-rules",
       "source": "./plugins/hooks-and-rules",
       "description": "強制 JurisLM 開發紀律 — git commit 前思考紀律檢查 + 通用 coding/git/testing 規則參考",
-      "version": "1.20.0",
+      "version": "1.21.0",
       "author": {
         "name": "Terry Chen"
       }
