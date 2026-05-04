@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.22.0](https://github.com/jurislm/jurislm-tools/compare/v1.21.0...v1.22.0) (2026-05-04)
+
+
+### 🚀 New Features
+
+* **ci:** overhaul claude-code-review prompt — profile, path filter, triage ([494481f](https://github.com/jurislm/jurislm-tools/commit/494481f40b6643e1a8a15ec1ee23c09097cd47cd))
+
 ## [1.21.0](https://github.com/jurislm/jurislm-tools/compare/v1.20.0...v1.21.0) (2026-05-04)
 
 

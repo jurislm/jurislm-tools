@@ -1,7 +1,7 @@
 {
   "name": "learn-eval",
   "description": "從 session 萃取可重複利用 pattern — 品質閘 + dedup 檢查 + Global/Project 儲存路徑判斷",
-  "version": "1.21.0",
+  "version": "1.22.0",
   "author": {
     "name": "Terry Chen"
   },
