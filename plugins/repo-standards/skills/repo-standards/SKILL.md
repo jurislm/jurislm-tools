@@ -447,23 +447,37 @@ concurrency:
 
 ### 通用 job 規則
 
-- `if: github.event.pull_request.draft == false` — draft PR 不跑（push event 不影響）
+**Draft PR 跳過條件 — 必須 push-safe**：
+
+```yaml
+if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+```
+
+**陷阱**：直接寫 `if: github.event.pull_request.draft == false` 會在 `push` / `workflow_dispatch` event 下評估為 false（因為 `github.event.pull_request` 為 null）→ **`push: main` safety net 完全不會跑**。先判斷 `event_name` 才安全。
+
 - `--frozen-lockfile` 確保 lockfile 一致性
 - 多個獨立 job 並行（lint / typecheck / test 不互相依賴）
 
 ### Audit 既存 Repo
 
-```bash
-# 找出有 develop 雙重觸發的 repo
-gh search code 'push: branches: develop' --owner jurislm --filename ci.yml
+GitHub code search 是**逐行**比對，多行 YAML 無法用單行字串命中。用以下方式：
 
-# 或逐 repo 檢查
-for repo in $(gh repo list jurislm --limit 50 --json name -q '.[].name'); do
+```bash
+# 逐 repo 解碼 ci.yml 看 on: 區塊（已過濾 archived repo）
+for repo in $(gh repo list jurislm --limit 50 \
+    --json name,isArchived -q '.[] | select(.isArchived == false) | .name'); do
   echo "=== $repo ==="
   gh api "repos/jurislm/$repo/contents/.github/workflows/ci.yml" \
     --jq '.content' 2>/dev/null | base64 -d 2>/dev/null \
-    | grep -A5 "^on:" || echo "(no ci.yml)"
+    | sed -n '/^on:/,/^[a-zA-Z][a-zA-Z]*:/p' | head -25 \
+    || echo "(no ci.yml)"
 done
+```
+
+或用 `gh search code` 找含 `develop` 的 ci.yml（命中後人工確認 `on:` 區塊）：
+
+```bash
+gh search code 'develop' --owner jurislm --filename ci.yml
 ```
 
 ### 規範回填協議
@@ -542,7 +556,7 @@ done
 22. [ ] 建立 `.github/workflows/ci.yml`（依 `references/ci-workflow-templates.md` 對應 repo 類型）
 23. [ ] 確認 trigger 為 `pull_request` + `push: main` only（**禁止** `push: develop` 或其他中間分支）
 24. [ ] 設定 `concurrency.group: ${{ github.workflow }}-${{ github.ref }}` + `cancel-in-progress: true`
-25. [ ] 各 job 加 `if: github.event.pull_request.draft == false`
+25. [ ] 各 job 加 push-safe draft 條件：`if: github.event_name != 'pull_request' || github.event.pull_request.draft == false`（**勿**直接寫 `github.event.pull_request.draft == false`，會破壞 `push: main` safety net）
 26. [ ] 開 PR 確認 CI **只跑一次**（檢查 Actions 頁面，每次 push 應只看到 1 個 run，非 2 個）
 
 ### Code Review
