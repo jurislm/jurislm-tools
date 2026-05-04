@@ -1,7 +1,7 @@
 {
   "name": "tdd-workflow",
   "description": "TDD 工作流程 skill — 撰寫功能/修 bug/重構時自動載入，含 unit/integration/E2E 模式",
-  "version": "1.21.0",
+  "version": "1.22.0",
   "author": {
     "name": "Terry Chen"
   },
