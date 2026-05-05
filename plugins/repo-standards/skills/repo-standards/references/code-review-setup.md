@@ -140,6 +140,10 @@ on:
         default: chill
         type: choice
         options: [chill, assertive]
+      pr_number:
+        description: PR number to review (required when triggered manually)
+        type: number
+        required: true
 
 jobs:
   claude-review:
@@ -174,6 +178,16 @@ jobs:
             echo "profile=chill" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Resolve PR context
+        id: pr_ctx
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR="${{ inputs.pr_number || github.event.pull_request.number }}"
+          SHA=$(gh pr view "$PR" --repo "${{ github.repository }}" --json headRefOid -q '.headRefOid')
+          echo "pr_number=$PR" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$SHA" >> "$GITHUB_OUTPUT"
+
       - name: Run Claude Code Review
         uses: anthropics/claude-code-action@v1
         with:
@@ -182,7 +196,7 @@ jobs:
           prompt: |
             REVIEW_PROFILE: ${{ steps.profile.outputs.profile }}
 
-            You are a code reviewer for PR #${{ github.event.pull_request.number }}.
+            You are a code reviewer for PR #${{ steps.pr_ctx.outputs.pr_number }}.
             Goal: catch real defects this PR introduces. Match findings to severity
             honestly. Do NOT generate volume to look thorough.
 
@@ -204,9 +218,9 @@ jobs:
             ## Phase 1 — FETCH
 
             ```
-            gh pr view ${{ github.event.pull_request.number }} --json number,title,body,author,baseRefName,headRefName,changedFiles,additions,deletions,labels
-            gh pr diff ${{ github.event.pull_request.number }} --name-only
-            gh pr diff ${{ github.event.pull_request.number }}
+            gh pr view ${{ steps.pr_ctx.outputs.pr_number }} --json number,title,body,author,baseRefName,headRefName,changedFiles,additions,deletions,labels
+            gh pr diff ${{ steps.pr_ctx.outputs.pr_number }} --name-only
+            gh pr diff ${{ steps.pr_ctx.outputs.pr_number }}
             ```
 
             Note total_diff_size = additions + deletions. Use it as the
@@ -232,7 +246,7 @@ jobs:
             ### CLAUDE.md as primary rulebook
 
             ```
-            gh api "repos/${{ github.repository }}/contents/CLAUDE.md?ref=${{ github.event.pull_request.head.sha }}" --jq '.content' | base64 -d
+            gh api "repos/${{ github.repository }}/contents/CLAUDE.md?ref=${{ steps.pr_ctx.outputs.head_sha }}" --jq '.content' | base64 -d
             ```
 
             Extract a checklist of explicit ❌ / 禁止 / MUST / NEVER rules from
@@ -251,7 +265,7 @@ jobs:
             understand context for diff lines. Do not flag pre-existing content.
 
             ```
-            gh api "repos/${{ github.repository }}/contents/{file}?ref=${{ github.event.pull_request.head.sha }}" --jq '.content' | base64 -d
+            gh api "repos/${{ github.repository }}/contents/{file}?ref=${{ steps.pr_ctx.outputs.head_sha }}" --jq '.content' | base64 -d
             ```
 
             ## Phase 3 — INTERNAL TRIAGE
@@ -356,12 +370,12 @@ jobs:
             ## Phase 6 — POST
 
             ```
-            gh pr review ${{ github.event.pull_request.number }} --comment --body-file review.md
+            gh pr review ${{ steps.pr_ctx.outputs.pr_number }} --comment --body-file review.md
             ```
 ```
 
 **關鍵規則**：
-- 使用 `anthropics/claude-code-action@v1`（浮動版本，跟最新穩定）
+- 使用 `anthropics/claude-code-action@v1`（浮動版本，跟最新穩定）。舊版文件曾記錄「v1.0.70 之後引入 bash 安全過濾器導致 `Bash(gh:*)` 受限」，但目前 `@v1` 已確認可正常執行 `Bash(gh:*)` 命令（`claude-review` job 正常通過）。若升版後遇到 `Bash(gh:*)` 被安全過濾器攔截（log 出現 `permission denied` 或命令靜默失敗），可查 upstream release notes 並鎖定至最後已知可用版本。
 - `claude_args: '--allowedTools "Bash(gh:*),Write"'`（最小權限：只允許 `gh` 命令與 Write）
 - `CLAUDE_CODE_OAUTH_TOKEN` 必須在 repo Secrets 設定
 - `synchronize` trigger 確保每次 push 後重新 review
