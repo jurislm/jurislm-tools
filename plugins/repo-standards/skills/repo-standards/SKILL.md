@@ -499,9 +499,17 @@ gh search code 'develop' --owner jurislm --filename ci.yml
 
 **Checklist 快速說明**：
 - 建立 `.github/copilot-instructions.md`（依 repo 類型選用模板）
-- 建立 `claude-code-review.yml`（使用 `@v1`，勿鎖定小版本）
+- 建立 `claude-code-review.yml`（使用 `@v1`，完整 6-phase prompt，支援 profile switch）
 - 建立 `claude.yml`（`@claude` 互動觸發）
 - 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`（從本機 Keychain 取得：`security find-generic-password -s "Claude" -w`）
+
+**claude-code-review.yml 核心功能**（詳見 `references/code-review-setup.md`）：
+- **Profile 切換**：預設 chill（HIGH/CRITICAL only），加 label `review:assertive` 或 `workflow_dispatch` 切換為 assertive（也輸出 MEDIUM/LOW）
+- **Path filter**：自動忽略 lock file、generated、binary、snapshot 等非業務檔案
+- **CLAUDE.md rulebook**：自動提取 `❌ / 禁止 / MUST / NEVER` 規則，違反即 HIGH minimum
+- **Diff-bounded scope**：只審查此 PR 修改的行，不標記既有程式碼
+- **Finding cap**：diff < 100 行最多 5 條，100–500 行 7 條，> 500 行 10 條
+- **Mechanical conclusion**：有 HIGH/CRITICAL → 需修改；否則 → 可合併（不以建議數量決定）
 
 **權限規則（容易出錯）**：
 - `claude-code-review.yml`：`pull-requests: write`（需要發布 review）
@@ -560,7 +568,7 @@ gh search code 'develop' --owner jurislm --filename ci.yml
 26. [ ] 開 PR 確認 CI **只跑一次**（檢查 Actions 頁面，每次 push 應只看到 1 個 run，非 2 個）
 
 ### Code Review
-27. [ ] 建立 `.github/workflows/claude-code-review.yml`（`@v1`，`pull-requests: write`，`gh pr review --comment`）
+27. [ ] 建立 `.github/workflows/claude-code-review.yml`（`@v1`，`pull-requests: write`，6-phase prompt，含 profile switch / path filter / triage / mechanical conclusion）
 28. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發，`pull-requests: write`，`issues: write`，保留 `system_prompt` 繁中設定）
 29. [ ] 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
 30. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）

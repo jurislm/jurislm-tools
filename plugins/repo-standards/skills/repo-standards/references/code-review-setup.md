@@ -106,12 +106,44 @@ excludeAgent: "code-review"
 
 ## 標準 .github/workflows/claude-code-review.yml
 
+此 workflow 的 prompt 採用多段式架構（FETCH → FILTER → TRIAGE → WRITE → POST），支援 profile 切換（chill / assertive），並內建 path filter、diff 範圍限制、finding cap 等機制，避免生成過多低品質建議。
+
+### 設計原則
+
+| 原則 | 說明 |
+|------|------|
+| **Diff-bounded scope** | 只審查此 PR 新增 / 修改的行，不標記既有程式碼 |
+| **Evidence required** | 每個 finding 必須附 `file:line` + 具體觸發情境 |
+| **Severity honesty** | 介於兩級之間時，取較低級 |
+| **Actionability cap** | fix 規模不超過此 PR 的 diff 大小，否則降為 INFO |
+| **Mechanical conclusion** | 有 HIGH/CRITICAL → 需修改；否則 → 可合併（不依 finding 數量）|
+| **Profile gate** | chill 模式：只輸出 HIGH/CRITICAL；assertive 模式：也輸出 MEDIUM/LOW/INFO |
+
+### Profile 切換方式
+
+| 方式 | 說明 |
+|------|------|
+| 預設 | `chill`（只輸出 HIGH/CRITICAL）|
+| PR label | 加上 `review:assertive` label → 自動切換為 assertive |
+| 手動觸發 | `workflow_dispatch` → 選擇 profile 輸入 |
+
 ```yaml
 name: Claude Code Review
 
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Review profile (chill = HIGH/CRITICAL only; assertive = also MEDIUM/LOW/INFO)
+        default: chill
+        type: choice
+        options: [chill, assertive]
+      pr_number:
+        description: PR number to review (required when triggered manually)
+        type: number
+        required: true
 
 jobs:
   claude-review:
@@ -127,86 +159,228 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Determine review profile
+        id: profile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # workflow_dispatch input takes highest priority
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "profile=${{ inputs.profile }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # PR label 'review:assertive' overrides default
+          if gh pr view ${{ github.event.pull_request.number }} \
+              --json labels -q '.labels[].name' \
+              | grep -qx "review:assertive"; then
+            echo "profile=assertive" >> "$GITHUB_OUTPUT"
+          else
+            echo "profile=chill" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve PR context
+        id: pr_ctx
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR="${{ inputs.pr_number || github.event.pull_request.number }}"
+          SHA=$(gh pr view "$PR" --repo "${{ github.repository }}" --json headRefOid -q '.headRefOid')
+          echo "pr_number=$PR" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$SHA" >> "$GITHUB_OUTPUT"
+
       - name: Run Claude Code Review
-        uses: anthropics/claude-code-action@v1.0.70
+        uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: '--allowedTools "Bash(gh:*),Write"'
           prompt: |
-            You are a code reviewer. Review the changes in PR #${{ github.event.pull_request.number }}.
+            REVIEW_PROFILE: ${{ steps.profile.outputs.profile }}
+
+            You are a code reviewer for PR #${{ steps.pr_ctx.outputs.pr_number }}.
+            Goal: catch real defects this PR introduces. Match findings to severity
+            honestly. Do NOT generate volume to look thorough.
+
+            ## Operating Principles
+
+            1. **Diff-bounded scope** — review only lines this PR adds/modifies. Do
+               not flag pre-existing content unless this PR worsens it.
+            2. **Evidence required** — every finding cites file:line + concrete
+               trigger (input/scenario that breaks). No "Consider..." vagueness.
+            3. **Severity honesty** — when between two levels, pick the lower.
+            4. **Actionability cap** — fix size ≤ this PR's diff size, otherwise
+               mark as INFO or open follow-up issue, do NOT block.
+            5. **No architectural redesign suggestions** — surface as INFO if at all.
+            6. **Profile-aware**:
+               - chill: report only ⚠️ Potential Issue at HIGH/CRITICAL.
+                 Drop everything else (or surface as INFO if cross-cutting).
+               - assertive: also report 🛠️ Refactor (MEDIUM) and 🧹 Nitpick (LOW/INFO).
 
             ## Phase 1 — FETCH
 
-            Get PR metadata and diff:
             ```
-            gh pr view ${{ github.event.pull_request.number }} --json number,title,body,author,baseRefName,headRefName,changedFiles,additions,deletions
-            gh pr diff ${{ github.event.pull_request.number }} --name-only
-            gh pr diff ${{ github.event.pull_request.number }}
-            ```
-
-            ## Phase 2 — CONTEXT
-
-            Read CLAUDE.md for project conventions (if it exists):
-            ```
-            gh api "repos/${{ github.repository }}/contents/CLAUDE.md?ref=${{ github.event.pull_request.head.sha }}" --jq '.content' | base64 -d
+            gh pr view ${{ steps.pr_ctx.outputs.pr_number }} --json number,title,body,author,baseRefName,headRefName,changedFiles,additions,deletions,labels
+            gh pr diff ${{ steps.pr_ctx.outputs.pr_number }} --name-only
+            gh pr diff ${{ steps.pr_ctx.outputs.pr_number }}
             ```
 
-            For each changed file, read its full content at the PR head (not just the diff):
+            Note total_diff_size = additions + deletions. Use it as the
+            actionability reference: a fix larger than the PR itself is almost
+            always a follow-up, not a block.
+
+            ## Phase 2 — FILTER & CONTEXT
+
+            ### Path filter (drop findings on these files entirely)
+
+            Skip any file matching:
+            - Build/deps: `**/dist/**`, `**/build/**`, `**/node_modules/**`,
+              `**/.next/**`, `**/.nuxt/**`, `**/coverage/**`, `**/.turbo/**`
+            - Lock files: `**/*.lock`, `**/package-lock.json`, `**/yarn.lock`,
+              `**/pnpm-lock.yaml`, `**/bun.lockb`, `**/Cargo.lock`,
+              `**/Gemfile.lock`, `**/composer.lock`
+            - Generated: `**/generated/**`, `**/__generated__/**`,
+              `**/*.generated.*`, `**/*.gen.*`, `**/*.pb.go`, `**/*.pb.ts`
+            - Binary/media: `**/*.{png,jpg,jpeg,gif,svg,ico,webp,woff,woff2,ttf,otf,eot,mp3,mp4,wav,mov,pdf,zip,tar,gz}`
+            - Minified: `**/*.min.{js,css}`, `**/*.min.js.map`
+            - Snapshots: `**/__snapshots__/**`, `**/*.snap`
+
+            ### CLAUDE.md as primary rulebook
+
             ```
-            gh api "repos/${{ github.repository }}/contents/{file}?ref=${{ github.event.pull_request.head.sha }}" --jq '.content' | base64 -d
+            gh api "repos/${{ github.repository }}/contents/CLAUDE.md?ref=${{ steps.pr_ctx.outputs.head_sha }}" --jq '.content' | base64 -d
             ```
 
-            ## Phase 3 — REVIEW
+            Extract a checklist of explicit ❌ / 禁止 / MUST / NEVER rules from
+            CLAUDE.md. Any violation in PR's added/modified lines is HIGH minimum.
 
-            Review each changed file in full. Check across these categories:
+            ### File-type → applicable categories
 
-            | Category | What to Check |
-            |---|---|
-            | **Correctness** | Logic errors, off-by-ones, null handling, edge cases |
-            | **Type Safety** | Type mismatches, unsafe casts, `any` usage |
-            | **Pattern Compliance** | Matches project conventions from CLAUDE.md |
-            | **Security** | Injection, auth gaps, secret exposure, XSS |
-            | **Performance** | N+1 queries, unbounded loops, memory leaks |
-            | **Completeness** | Missing tests, missing error handling |
-            | **Maintainability** | Dead code, magic numbers, deep nesting |
+            | File type | Categories that apply |
+            |-----------|----------------------|
+            | Code (`.ts`, `.tsx`, `.py`, `.go`, `.rs`, ...) | Correctness, Type Safety, Security, Performance, Completeness, Pattern Compliance, Maintainability |
+            | Docs (`.md`) | Factual accuracy, Internal consistency, Pattern Compliance, Cross-reference validity |
+            | CI/config (`.yml`, `.yaml`) | Correctness (does it run?), Security (secrets/permissions), Pattern Compliance |
+            | Data (`.json`) | Schema correctness, Pattern Compliance |
 
-            Assign severity to each finding:
-            - **[CRITICAL]** Security vulnerability or data loss risk — must fix before merge
-            - **[HIGH]** Bug or logic error likely to cause issues — should fix before merge
-            - **[MEDIUM]** Code quality issue — fix recommended
-            - **[LOW]** Style nit — optional
+            For each non-filtered file, fetch full content at PR head ONLY to
+            understand context for diff lines. Do not flag pre-existing content.
+
+            ```
+            gh api "repos/${{ github.repository }}/contents/{file}?ref=${{ steps.pr_ctx.outputs.head_sha }}" --jq '.content' | base64 -d
+            ```
+
+            ## Phase 3 — INTERNAL TRIAGE
+
+            **Step A** — Generate candidate findings (think internally; do not post).
+            For each diff hunk in non-filtered files, list every potentially
+            suspicious thing. Be liberal here.
+
+            **Step B** — Filter pipeline. Each candidate must pass ALL:
+            1. Is it on lines this PR added/modified? (else drop — out of scope)
+            2. Can you describe the concrete trigger? (else drop — speculation)
+            3. Is fix size ≤ total_diff_size? (else demote to INFO or follow-up)
+            4. Is the file-type ↔ category combo applicable? (else drop)
+
+            **Step C** — Apply Type × Severity matrix.
+
+            Types (orthogonal to severity):
+            - ⚠️ **Potential Issue** — bug / security / data risk / spec mismatch
+            - 🛠️ **Refactor Suggestion** — maintainability / performance improvement
+            - 🧹 **Nitpick** — style / wording / minor doc polish
+
+            Severity bar (with anchor examples):
+            - 🔴 **CRITICAL** — security vulnerability, data loss, crash on common
+              input. *Blocks merge. No follow-up acceptable.*
+            - 🟠 **HIGH** — logic bug breaking documented use case, CLAUDE.md ❌
+              rule violation, silently wrong output.
+              Anchor: `if: github.event.pull_request.draft == false` on push event
+              silently disables safety net.
+              *Blocks merge.*
+            - 🟡 **MEDIUM** — quality issue causing friction within next few changes;
+              contradiction with existing rules.
+              Anchor: rule doc says "嚴禁 hotfix push to main" but new template
+              lists "hotfix direct push" as expected event.
+              *Recommended; does NOT block; follow-up issue acceptable.*
+            - 🔵 **LOW** — style/wording polish.
+              Anchor: env var comment could note "names differ per app".
+              *Optional. Never blocks.*
+            - ⚪ **INFO** — pure FYI; observation worth noting but no action expected.
+              Anchor: "this PR introduces a self-referential link to itself; common
+              in changelog-style files, accept as is".
+              *Never blocks. Author may ignore.*
+
+            **Step D** — Profile gate:
+            - chill: keep only ⚠️ Potential Issue at HIGH/CRITICAL. Drop the rest
+              (or surface a single one as ⚪ INFO if it has cross-cutting impact).
+            - assertive: keep all types at all severities up to LOW; INFO for
+              cross-cutting observations only.
+
+            **Step E** — Cap by PR size:
+            - total_diff_size < 100: max 5 findings
+            - 100–500: max 7 findings
+            - > 500: max 10 findings
+
+            If over cap, keep highest severity. Append a line:
+            "另有 N 條較低 severity 建議省略。"
 
             ## Phase 4 — WRITE REVIEW
 
-            Write your review to "review.md" using the Write tool.
-            The review must be in Traditional Chinese with this format:
+            Write to "review.md" in Traditional Chinese using this format:
 
             ## Code Review
 
             ### 變更摘要
-            (bullet points summarizing what changed)
+            1–3 bullets capturing intent. Do not restate the diff.
 
-            ### 優點
-            (what's good about these changes)
+            ### 優點 (略過此節 if nothing concrete to praise)
+            Include only specific, non-trivial praise. Skip "符合規範" / "結構合理"
+            filler.
 
             ### 問題與建議
-            For each issue: `[SEVERITY] file:line — description and suggested fix`
-            Write 無 if no issues found.
-            IMPORTANT: Do NOT suggest deferring fixes to follow-up PRs. Every suggestion must be fixed in the current PR before merge. Never use phrases like "可在後續 PR 處理", "not blocking merge", or "can be addressed later".
+
+            For each finding:
+            ```
+            [TYPE icon] [SEVERITY] file:line — Issue
+            Trigger: <concrete scenario>
+            Fix: <minimal specific change>
+            ```
+
+            If no findings: `無 — 此 PR 通過 Phase 3 全部過濾。`
 
             ### 結論
-            (可合併 / 需修改 — if there are ANY suggestions above, the conclusion MUST be "需修改")
 
-            After writing review.md, post it as a PR comment:
-            gh pr comment ${{ github.event.pull_request.number }} --body-file review.md
+            Mechanical decision rule (do NOT deviate):
+            - Any 🔴 CRITICAL or 🟠 HIGH present → `**需修改**`
+            - Otherwise → `**可合併**（含 N 條 🟡 MEDIUM 建議 / M 條 🔵 LOW nit / K 條 ⚪ INFO）`
+
+            ## Phase 5 — Self-check (do NOT include in review.md)
+
+            Before posting, verify:
+            - [ ] Every finding cites file:line + concrete trigger
+            - [ ] Every finding is on lines this PR changed (not pre-existing)
+            - [ ] No findings on path-filtered files
+            - [ ] Severity matches anchor examples
+            - [ ] Profile gate respected (chill = HIGH/CRITICAL only)
+            - [ ] Findings count ≤ cap
+            - [ ] Conclusion follows mechanical rule
+            - [ ] For each MEDIUM/LOW: would I genuinely block MY OWN PR for this?
+                  If no, demote to INFO or drop.
+
+            If any check fails, revise before posting.
+
+            ## Phase 6 — POST
+
+            ```
+            gh pr review ${{ steps.pr_ctx.outputs.pr_number }} --comment --body-file review.md
+            ```
 ```
 
 **關鍵規則**：
-- 使用 `anthropics/claude-code-action@v1.0.70`（不升版，v1.0.70 之後的版本引入 bash 安全過濾器，會導致 `Bash(gh:*)` 受限）
+- 使用 `anthropics/claude-code-action@v1`（浮動版本，跟最新穩定）。舊版文件曾記錄「v1.0.70 之後引入 bash 安全過濾器導致 `Bash(gh:*)` 受限」，但目前 `@v1` 已確認可正常執行 `Bash(gh:*)` 命令（`claude-review` job 正常通過）。若升版後遇到 `Bash(gh:*)` 被安全過濾器攔截（log 出現 `permission denied` 或命令靜默失敗），可查 upstream release notes 並鎖定至最後已知可用版本。
 - `claude_args: '--allowedTools "Bash(gh:*),Write"'`（最小權限：只允許 `gh` 命令與 Write）
 - `CLAUDE_CODE_OAUTH_TOKEN` 必須在 repo Secrets 設定
 - `synchronize` trigger 確保每次 push 後重新 review
 - `fetch-depth: 0` 確保完整 git history
+- POST 用 `gh pr review --comment`（非 `gh pr comment`），記錄在 PR review 歷史中
 
 ---
 
@@ -259,12 +433,13 @@ jobs:
 
 | | `claude-code-review.yml` | `claude.yml` |
 |---|---|---|
-| 觸發方式 | PR 開啟 / 每次 push 自動 | `@claude` 留言觸發 |
+| 觸發方式 | PR 開啟 / 每次 push 自動（+ `workflow_dispatch` 手動）| `@claude` 留言觸發 |
 | 用途 | 自動 code review | 互動式任務執行 |
-| action 版本 | `@v1.0.70`（鎖版） | `@v1`（跟最新） |
+| action 版本 | `@v1`（跟最新） | `@v1`（跟最新） |
 | `claude_args` | 限定 `Bash(gh:*),Write` | 不限（依留言指示） |
+| Profile 切換 | label `review:assertive` / `workflow_dispatch` 輸入 | 不適用 |
 
 **關鍵規則**：
 - `CLAUDE_CODE_OAUTH_TOKEN` 與 `claude-code-review.yml` 共用同一個 Secret
 - `actions: read` 讓 Claude 可讀取 CI 結果
-- `claude.yml` 使用 `@v1`（浮動版本），因為互動式用途風險較低；若遇行為異常，應檢查 release notes，必要時改為鎖定特定版本（如 `@v1.0.70`）
+- 兩個 workflow 都使用 `@v1`（浮動版本）；若遇行為異常，先查 release notes，必要時鎖定特定版本
