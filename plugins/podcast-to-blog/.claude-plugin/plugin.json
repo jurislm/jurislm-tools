@@ -1,7 +1,7 @@
 {
   "name": "podcast-to-blog",
   "description": "Apple Podcasts 連結轉部落格文章 — Whisper 轉錄 + AI 生成繁中文章",
-  "version": "1.22.0",
+  "version": "1.23.0",
   "author": {
     "name": "Terry Chen"
   },

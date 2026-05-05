@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.0](https://github.com/jurislm/jurislm-tools/compare/v1.22.0...v1.23.0) (2026-05-05)
+
+
+### 🚀 New Features
+
+* **repo-standards:** sync claude-code-review prompt to skill reference ([#85](https://github.com/jurislm/jurislm-tools/issues/85)) ([3fb156d](https://github.com/jurislm/jurislm-tools/commit/3fb156d9ef31c2ca480bd8e66817b9eb545ae359))
+
 ## [1.22.0](https://github.com/jurislm/jurislm-tools/compare/v1.21.0...v1.22.0) (2026-05-04)
 
 

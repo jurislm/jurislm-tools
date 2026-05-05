@@ -1,7 +1,7 @@
 {
   "name": "langfuse",
   "description": "Langfuse LLM 可觀測性 — Prompt 版本管理、Trace 分析、評分記錄（50 個 MCP 工具）",
-  "version": "1.22.0",
+  "version": "1.23.0",
   "author": {
     "name": "Terry Chen"
   },
