@@ -20,13 +20,44 @@ Fast-forward through artifact creation - generate everything needed to start imp
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-2. **Create the change directory**
+2. **Pre-proposal evidence inventory (MANDATORY — do NOT skip)**
+
+   Before invoking `openspec new change`, collect direct evidence about the current state of the codebase / DB / external system this change touches. **Do not rely on Explore agent summaries, prior conversation, or your own memory** for any concrete claim that will appear in the artifacts.
+
+   **What counts as a "concrete claim"** (every one needs evidence):
+   - File paths AND line numbers
+   - Function signatures (parameter names, types, default values, return type)
+   - API endpoint HTTP method + actual response shape (e.g. `{ data, total }` vs `{ items, total }`)
+   - Type / interface exports already defined in the target module
+   - DB column names, types, CHECK / FK / UNIQUE constraints
+   - Vector dim / HNSW index location / migration applied state
+   - Caller list for every symbol you plan to refactor
+
+   **How to collect evidence** (pick one per claim, NOT Explore summary):
+   - **`Read` the source file directly** with the Read tool — for signatures, types, response shapes
+   - **`Bash grep`** to enumerate callers / verify a symbol is unique
+   - **migration file Read** for DB schema as-of latest applied state; `psql \d <table>` for live state divergence check
+   - **`curl` / dev DB sample** when the claim is about runtime behavior (e.g. actual response shape from a running endpoint)
+
+   **Write the inventory to** `openspec/changes/<name>/verification-logs/<YYYY-MM-DD>-pre-proposal-inventory.md` (create the file AFTER step 3 `openspec new change`, but the evidence collection happens before any artifact drafting). The inventory MUST contain:
+   - List of files Read (with absolute paths)
+   - For each function planned for refactor: actual signature copied **verbatim** from source — not paraphrased
+   - For each API endpoint touched: actual response shape from the route file
+   - For each DB column referenced: actual definition pasted from migration
+   - For each `Decision: X → Y` planned in design.md: an explicit "current behavior is X, proposed behavior is Y, this is a CHANGE not an OBSERVATION" row
+   - For each Explore agent finding used: re-verified by Read with link to the file + line range
+
+   **Enforcement when drafting artifacts (step 5):** every concrete claim in proposal / spec / design / tasks MUST trace back to an entry in this inventory. If you write a claim with no inventory backing, rewrite it as `unknown — needs verification` and pause until verified. **No exceptions for "obvious" or "standard" patterns** — your assumption of "standard pagination shape" is exactly the kind of claim that breaks `behavioral equivalence` promises later.
+
+   **Explore agent constraint**: If you spawned Explore agents during scoping, their summaries are **LEADS, not FACTS**. Any line number / signature / shape / count mentioned in Explore output MUST be re-verified by Read before entering an artifact. Treating Explore summaries as ground truth is the most common root cause of artifacts that need full rewrite after review.
+
+3. **Create the change directory**
    ```bash
    openspec new change "<name>"
    ```
-   This creates a scaffolded change at `openspec/changes/<name>/`.
+   This creates a scaffolded change at `openspec/changes/<name>/`. Now move the inventory file from step 2 into `openspec/changes/<name>/verification-logs/` if you drafted it at a temp path.
 
-3. **Get the artifact build order**
+4. **Get the artifact build order**
    ```bash
    openspec status --change "<name>" --json
    ```
@@ -34,7 +65,7 @@ Fast-forward through artifact creation - generate everything needed to start imp
    - `applyRequires`: array of artifact IDs needed before implementation (e.g., `["tasks"]`)
    - `artifacts`: list of all artifacts with their status and dependencies
 
-4. **Create artifacts in sequence until apply-ready**
+5. **Create artifacts in sequence until apply-ready**
 
    Use the **TodoWrite tool** to track progress through the artifacts.
 
@@ -66,7 +97,7 @@ Fast-forward through artifact creation - generate everything needed to start imp
       - Use **AskUserQuestion tool** to clarify
       - Then continue with creation
 
-5. **Show final status**
+6. **Show final status**
    ```bash
    openspec status --change "<name>"
    ```
@@ -95,3 +126,7 @@ After completing all artifacts, summarize:
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next
+- **Never skip step 2 evidence inventory** — even for "small" changes. The cost of one bad artifact triplet (proposal/spec/design/tasks built on sand) far exceeds 30 minutes of upfront verification. Skipping inventory is a top root cause of "need full rewrite" feedback.
+- **Never treat Explore agent output as a substitute for Read**. Explore returns leads; only Read returns facts.
+- **Never invent details to fill gaps** — if a regex / shape / signature isn't in the inventory, write `TBD — needs verification` and stop. Inventing "standard" or "obvious" patterns (e.g. assuming `{ items, total }` because that's the typical pagination shape) is the same failure mode.
+- **Decision vs Observation discipline**: any line in design.md that proposes a behavior different from current code is a Decision, not an Observation. Mark it as `Decision: current X → proposed Y, rationale Z`. Do not phrase new design as if it were existing implementation.
