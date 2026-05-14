@@ -1,7 +1,7 @@
 {
   "entire": {
-    "command": "node",
-    "args": ["/Users/terrychen/Documents/Github/jurislm/entire-mcp/dist/index.js"],
+    "command": "npx",
+    "args": ["-y", "@jurislm/entire-mcp@latest"],
     "env": {
       "ENTIRE_REPO_PATH": "${ENTIRE_REPO_PATH}"
     }
