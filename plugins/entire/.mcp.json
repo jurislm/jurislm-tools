@@ -1,0 +1,9 @@
+{
+  "entire": {
+    "command": "node",
+    "args": ["/Users/terrychen/Documents/Github/jurislm/entire-mcp/dist/index.js"],
+    "env": {
+      "ENTIRE_REPO_PATH": "${ENTIRE_REPO_PATH}"
+    }
+  }
+}
