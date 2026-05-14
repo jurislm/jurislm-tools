@@ -101,6 +101,14 @@
       "author": {
         "name": "Terry Chen"
       }
+    },
+    {
+      "name": "entire",
+      "source": "./plugins/entire",
+      "description": "管理 Entire AI agent checkpoints 和 sessions（11 個 MCP 工具）",
+      "author": {
+        "name": "Terry Chen"
+      }
     }
   ]
 }
