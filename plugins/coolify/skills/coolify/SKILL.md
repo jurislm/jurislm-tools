@@ -41,25 +41,35 @@ Coolify 是一個開源的自託管 PaaS（Platform as a Service），類似於 
 
 理解 Application 和 Service 的差異對於正確使用 Coolify 至關重要：
 
-| 類型 | 說明 | FQDN 更新 |
-|------|------|-----------|
-| **Application** | 單一應用程式（Git/Dockerfile/Docker Image） | ✅ 可透過 API 更新 |
-| **Service** | Docker Compose 組合（含多個容器） | ⚠️ 需修改 docker_compose_raw |
+| 類型 | 說明 | FQDN 更新方式 |
+|------|------|--------------|
+| **Application** | 單一應用程式（Git/Dockerfile/Docker Image） | `fqdn` 或 `domains` 欄位 |
+| **Application (docker-compose build pack)** | Application 類型但使用 docker-compose 部署 | `docker_compose_domains` 欄位 |
+| **Service** | Coolify Service 類型的 Docker Compose 組合 | 修改 `docker_compose_raw` 的 Traefik labels |
 
-### Service 的特性
+### Application (docker-compose) 的 FQDN 更新
 
-- Service 是一組相關容器的組合（如 Ghost + MySQL）
-- Service 內的 Applications 不是獨立 Application，不能單獨更新 FQDN
+使用 `docker_compose_domains` 參數，格式為 `[{name, domain}]` 的陣列：
+
+```
+coolify_application update uuid="<uuid>" docker_compose_domains=[{"name": "service-name", "domain": "https://example.com"}]
+```
+
+傳 `fqdn` 或 `domains` 給這類 app 會得到：
+`The domains field cannot be used for dockercompose applications.`
+
+### Coolify Service 的 FQDN 更新
+
 - Service FQDN 由 `docker_compose_raw` 中的 Traefik labels 控制
-- 更新 Service FQDN 的正確方法：
-  1. 修改 `docker_compose_raw` 中的 Traefik labels
-  2. 使用 `coolify_service update` 更新
-  3. 重啟 Service
+- 更新方法：修改 `docker_compose_raw` 中的 Traefik labels → `coolify_service update` → 重啟
 
 ### 常見誤區
 
-❌ 嘗試用 `coolify_application update` 更新 Service 內的 App FQDN
-✅ 正確做法：更新整個 Service 的 `docker_compose_raw`
+❌ 對 docker-compose Application 傳 `fqdn` 或 `domains`
+✅ 正確：傳 `docker_compose_domains: [{name, domain}]`
+
+❌ 嘗試用 `coolify_application update` 更新 Coolify Service 內的 App FQDN
+✅ 正確：更新整個 Service 的 `docker_compose_raw`
 
 ## 智能查詢功能
 
