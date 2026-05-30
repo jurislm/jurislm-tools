@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.24.0](https://github.com/jurislm/jurislm-tools/compare/v1.23.0...v1.24.0) (2026-05-14)
+
+
+### 🚀 New Features
+
+* add entire plugin — 11 MCP tools for checkpoint/session management ([17061d1](https://github.com/jurislm/jurislm-tools/commit/17061d11de24e8cc969f860c688aedd3fc4208e3))
+* **opsx:** 強制 /opsx:ff 提案前盤點實證 ([2fb7690](https://github.com/jurislm/jurislm-tools/commit/2fb76903ed915dfa93cf9677f4d8ab2692f9c0f0))
+
+
+### 🐛 Bug Fixes
+
+* switch entire plugin to npx @jurislm/entire-mcp@latest ([1f26c73](https://github.com/jurislm/jurislm-tools/commit/1f26c7331f0ef9d962e43f4e929e3c8bce494798))
+* switch entire plugin to npx @jurislm/entire-mcp@latest ([f0b4f53](https://github.com/jurislm/jurislm-tools/commit/f0b4f5321816d713b81b37b8b6a924df16eada89))
+
+## [1.23.0](https://github.com/jurislm/jurislm-tools/compare/v1.22.0...v1.23.0) (2026-05-05)
+
+
+### 🚀 New Features
+
+* **repo-standards:** sync claude-code-review prompt to skill reference ([#85](https://github.com/jurislm/jurislm-tools/issues/85)) ([3fb156d](https://github.com/jurislm/jurislm-tools/commit/3fb156d9ef31c2ca480bd8e66817b9eb545ae359))
+
 ## [1.22.0](https://github.com/jurislm/jurislm-tools/compare/v1.21.0...v1.22.0) (2026-05-04)
 
 
