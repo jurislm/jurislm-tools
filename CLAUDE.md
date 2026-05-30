@@ -44,7 +44,8 @@ plugins/
 ├── repo-standards/                   # skill + command
 ├── pr-review/                        # skill + command
 ├── podcast-to-blog/                  # skill + command
-└── codebase-sync/                    # skill + command
+├── codebase-sync/                    # skill + command
+└── tdd-workflow/                     # skill + agent（tdd-guide）
 ```
 
 ## 目前 Plugins
@@ -60,8 +61,7 @@ plugins/
 | podcast-to-blog | 1.19.0 | Skill | Podcast 轉文章 skill + command |
 | codebase-sync | 1.19.0 | Skill | Codebase 同步 skill + command |
 | plan | 1.19.0 | Cmd+Agent | /plan command + planner agent |
-| tdd | 1.19.0 | Cmd+Agent | /tdd command + tdd-guide agent |
-| tdd-workflow | 1.19.0 | Skill | tdd-workflow skill — auto-activate |
+| tdd-workflow | 1.19.0 | Skill+Agent | tdd-workflow skill + tdd-guide agent — auto-activate |
 | learn-eval | 1.19.0 | Command | /learn-eval command — 含品質閘 + Global/Project 判斷 |
 
 ## 版本管理
