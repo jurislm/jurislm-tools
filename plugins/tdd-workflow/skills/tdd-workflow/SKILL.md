@@ -61,7 +61,7 @@ Existing tests represent the **behavioral contract** — they must survive the r
 ```
 
 **Never**: create all new implementations first, then update tests afterward.
-This breaks the safety net — you lose the guarantee that the new code satisfies the same behavioral contract.
+This breaks the safety net — the guarantee that the new code satisfies the same behavioral contract is lost.
 
 ## Core Principles
 
