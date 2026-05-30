@@ -1,24 +1,22 @@
 ---
 name: tdd-workflow
+version: 1.0.0
 description: >
-  This skill should be used when the user is writing new features, fixing bugs, or
-  refactoring code, or asks to "write tests first", "follow TDD", "use TDD workflow",
-  "RED GREEN REFACTOR", "improve test coverage", "set up TDD", "TDD 開發", "寫測試先行",
-  "改善測試覆蓋率". Enforces test-driven development with 80%+ coverage including
-  unit, integration, and E2E tests.
+  This skill should be used when the user wants to write tests first, follow TDD, fix a bug with tests,
+  or improve test coverage. Trigger phrases: "write tests first", "follow TDD", "use TDD workflow",
+  "improve test coverage", "set up TDD", "add unit tests", "I want to start with tests",
+  "test-first development", "make my code more testable", "write a reproducer test",
+  "fix this bug with tests", "test this regression", "refactor safely", "restructure without breaking",
+  "TDD 開發", "寫測試先行", "改善測試覆蓋率", "補測試", "寫單元測試", "測試驅動開發",
+  "有 bug 要修", "寫 reproducer", "安全重構", "重構不想壞掉".
+  Also applies proactively when a user reports a bug and no reproducer test exists yet.
+  Enforces test-driven development with 80%+ coverage including unit, integration, and E2E tests.
+argument-hint: "[feature description or task]"
 ---
 
 # Test-Driven Development Workflow
 
 This skill ensures all code development follows TDD principles with comprehensive test coverage.
-
-## When to Activate
-
-- Writing new features or functionality
-- Fixing bugs or issues
-- Refactoring existing code
-- Adding API endpoints
-- Creating new components
 
 ## Self-Determination: Which Workflow Type Applies?
 
@@ -60,7 +58,7 @@ Existing tests represent the **behavioral contract** — they must survive the r
 ```
 
 **Never**: create all new implementations first, then update tests afterward.
-This breaks the safety net — you lose the guarantee that the new code satisfies the same behavioral contract.
+This breaks the safety net — the guarantee that the new code satisfies the same behavioral contract is lost.
 
 ## Core Principles
 
@@ -142,7 +140,7 @@ describe('Semantic Search', () => {
 
 ### Step 3: Run Tests (They Should Fail)
 ```bash
-npm test
+bun run test
 # Tests should fail - we haven't implemented yet
 ```
 
@@ -183,7 +181,7 @@ If the repository is under Git, stage the minimal fix now but defer the checkpoi
 
 ### Step 5: Run Tests Again
 ```bash
-npm test
+bun run test
 # Tests should now pass
 ```
 
@@ -211,7 +209,7 @@ Recommended commit message format:
 
 ### Step 7: Verify Coverage
 ```bash
-npm run test:coverage
+bun run test:coverage
 # Verify 80%+ coverage achieved
 ```
 

@@ -111,8 +111,6 @@ After planning:
 - Use `/build-fix` if build errors occur
 - Use `/code-review` to review completed implementation
 
-> **Need deeper planning?** Use `/prp-plan` for artifact-producing planning with PRD integration, codebase analysis, and pattern extraction. Use `/prp-implement` to execute those plans with rigorous validation loops.
-
 ## Optional Planner Agent
 
 ECC also provides a `planner` agent for manual installs that include agent files. Use it only when the local runtime already exposes that subagent and the user explicitly asks you to delegate planning.

@@ -33,7 +33,7 @@
     {
       "name": "langfuse",
       "source": "./plugins/langfuse",
-      "description": "Langfuse LLM 可觀測性 — Prompt 版本管理、Trace 分析、評分記錄（50 個 MCP 工具）",
+      "description": "Langfuse LLM 可觀測性 — Prompt 版本管理、Trace 分析、評分記錄（13 個 MCP 工具）",
       "author": {
         "name": "Terry Chen"
       }
@@ -74,14 +74,6 @@
       "name": "plan",
       "source": "./plugins/plan",
       "description": "實作前規劃 — 重述需求、評估風險、產出 step-by-step 實作計畫，等使用者確認才動手",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
-      "name": "tdd",
-      "source": "./plugins/tdd",
-      "description": "觸發 TDD 工作流程 — 強制 RED-GREEN-REFACTOR 與 80% 測試覆蓋率",
       "author": {
         "name": "Terry Chen"
       }

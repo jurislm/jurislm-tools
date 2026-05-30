@@ -122,3 +122,7 @@ listTraces({ userId: "user_abc123", fromTimestamp: "2026-04-01T00:00:00Z" })
 - 所有 API 呼叫失敗時拋出 Error（含 HTTP status + 回應文本）
 - JurisLM 使用 US region，連 EU `cloud.langfuse.com` 會找不到資料
 - Score values 慣例：boolean 用 0/1，連續分數用 0-1（不是 0-100）
+
+## 附加資源
+
+- **`references/api-reference.md`** — 所有 13 個 MCP 工具的完整參數說明、回傳格式與錯誤處理

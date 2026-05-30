@@ -1,7 +1,10 @@
 ---
 name: codebase-sync
-description: 探索 codebase 現況，更新 README.md 與 CLAUDE.md，移除過時內容。
-argument-hint: ""
+description: >
+  Explore codebase and update README.md and CLAUDE.md, removing stale content.
+  Use when: "更新 README", "同步文件", "CLAUDE.md 過時了", "update my docs",
+  "sync documentation", "探索 codebase 並更新文件", "remove stale docs".
+argument-hint: "(no arguments — operates on current directory)"
 ---
 
 Apply the `codebase-sync` skill to explore the current codebase and update documentation.

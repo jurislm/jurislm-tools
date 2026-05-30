@@ -3,10 +3,11 @@ name: codebase-sync
 version: 1.0.0
 description: >
   This skill should be used when the user says "更新 README", "更新 CLAUDE.md", "同步文件",
-  "移除過時內容", "explore codebase and update docs", "codebase 文件已過時",
-  "update README", "sync documentation", "docs are outdated",
+  "移除過時內容", "codebase 文件已過時", "文件跟不上代碼", "CLAUDE.md 要更新",
+  "重構完需要更新文件", "update README", "sync documentation", "docs are outdated",
+  "documentation is stale", "docs don't match the code", "update my docs after refactor",
   or wants to audit and refresh README.md and CLAUDE.md to match the current codebase state.
-argument-hint: "(no arguments — runs on current directory)"
+argument-hint: "(no arguments — operates on current directory)"
 ---
 
 # Codebase Sync — 探索並更新 README.md 與 CLAUDE.md
@@ -20,7 +21,7 @@ argument-hint: "(no arguments — runs on current directory)"
 ```bash
 # 確認整體結構
 ls -la
-cat package.json 2>/dev/null | jq '{name, version, scripts, dependencies, devDependencies}'
+jq '{name, version, scripts, dependencies, devDependencies}' package.json 2>/dev/null
 
 # 列出所有重要目錄
 find . -maxdepth 3 -type d \
@@ -29,11 +30,11 @@ find . -maxdepth 3 -type d \
   -not -path './.next*' \
   -not -path './dist*' \
   -not -path './.worktrees*'
-
-# 讀取現有 README.md 與 CLAUDE.md
-cat README.md
-cat CLAUDE.md
 ```
+
+使用 Read 工具讀取現有文件（禁用 `cat`）：
+- `Read README.md`
+- `Read CLAUDE.md`（若存在）
 
 ### Step 2：識別過時內容
 
@@ -125,15 +126,14 @@ CLAUDE.md 標準結構：
 
 ```bash
 # 確認文件引用的路徑/檔案存在
-# 例如：文件說 "cat .claude-plugin/marketplace.json"
 ls .claude-plugin/marketplace.json
 
 # 確認文件的 scripts 與 package.json 一致
-cat package.json | jq '.scripts'
-
-# 確認環境變數說明與 .env.example 一致（若有）
-cat .env.example 2>/dev/null
+jq '.scripts' package.json
 ```
+
+使用 Read 工具讀取環境變數檔案：
+- `Read .env.example`（若存在）
 
 ---
 
@@ -142,16 +142,18 @@ cat .env.example 2>/dev/null
 可直接執行以下指令找出過時內容：
 
 ```bash
-# 1. 比對 README scripts 與 package.json
-comm -23 \
-  <(grep -oE 'bun run [a-z-]+' README.md | sed 's/bun run //' | sort -u) \
-  <(jq -r '.scripts | keys[]' package.json | sort)
+# 1. 比對 README scripts 與 package.json（zsh 相容，用暫存檔替代 process substitution）
+grep -oE 'bun run [a-z-]+' README.md | sed 's/bun run //' | sort -u > /tmp/_readme_scripts.txt
+jq -r '.scripts | keys[]' package.json | sort > /tmp/_pkg_scripts.txt
+comm -23 /tmp/_readme_scripts.txt /tmp/_pkg_scripts.txt
+rm /tmp/_readme_scripts.txt /tmp/_pkg_scripts.txt
 # 輸出 = README 提到但 package.json 沒定義的 script
 
-# 2. 比對環境變數
-comm -23 \
-  <(grep -oE '`[A-Z][A-Z0-9_]+`' README.md | tr -d '`' | sort -u) \
-  <(grep -oE '^[A-Z][A-Z0-9_]+' .env.example 2>/dev/null | sort -u)
+# 2. 比對環境變數（zsh 相容）
+grep -oE '`[A-Z][A-Z0-9_]+`' README.md | tr -d '`' | sort -u > /tmp/_readme_vars.txt
+grep -oE '^[A-Z][A-Z0-9_]+' .env.example 2>/dev/null | sort -u > /tmp/_env_vars.txt
+comm -23 /tmp/_readme_vars.txt /tmp/_env_vars.txt
+rm /tmp/_readme_vars.txt /tmp/_env_vars.txt
 # 輸出 = README 提到但 .env.example 沒列的變數
 
 # 3. 找已刪除的目錄

@@ -4,8 +4,10 @@ version: 1.0.0
 description: >
   This skill should be used when the user says "podcast 轉文章",
   "幫我把這集 podcast 寫成文章", "podcast 逐字稿", "轉錄 podcast",
-  "podcast to blog", "聽這集幫我寫筆記",
-  or provides an Apple Podcasts URL and wants a blog post or transcript generated from it.
+  "podcast to blog", "聽這集幫我寫筆記", "transcribe audio", "音檔轉文字",
+  "mp3 轉文章", "convert audio to blog post", "RSS feed 轉文章",
+  or provides an Apple Podcasts URL, audio file path, or RSS feed URL
+  and wants a blog post or transcript generated from it.
 argument-hint: "<apple-podcasts-url>"
 ---
 
@@ -60,9 +62,10 @@ python3 "${SCRIPT_DIR}/fetch_podcast_audio.py" "<APPLE_PODCASTS_URL>" /tmp/podca
 
 ### Step 2：用 Whisper 轉錄
 
-使用同一 `$SCRIPT_DIR`（步驟一已取得）執行轉錄腳本：
+重新定位腳本目錄，再執行轉錄腳本：
 
 ```bash
+SCRIPT_DIR=$(find ~/.claude/plugins -path "*/podcast-to-blog/scripts" -type d 2>/dev/null | head -1)
 python3 "${SCRIPT_DIR}/transcribe.py" /tmp/podcast_audio.mp3 /tmp/podcast_transcript.txt --language zh --model medium
 ```
 
