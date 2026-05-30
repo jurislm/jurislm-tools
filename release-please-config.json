@@ -56,7 +56,7 @@
         },
         {
           "type": "json",
-          "path": "plugins/tdd/.claude-plugin/plugin.json",
+          "path": "plugins/entire/.claude-plugin/plugin.json",
           "jsonpath": "$.version"
         },
         {

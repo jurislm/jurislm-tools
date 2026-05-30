@@ -31,6 +31,7 @@ description: |
   </example>
 tools: ["Read", "Write", "Edit", "Bash", "Grep"]
 model: sonnet
+color: green
 ---
 
 You are a Test-Driven Development (TDD) specialist who ensures all code is developed test-first with comprehensive coverage.

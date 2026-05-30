@@ -20,7 +20,7 @@ argument-hint: "(no arguments — runs on current directory)"
 ```bash
 # 確認整體結構
 ls -la
-cat package.json 2>/dev/null | jq '{name, version, scripts, dependencies, devDependencies}'
+jq '{name, version, scripts, dependencies, devDependencies}' package.json 2>/dev/null
 
 # 列出所有重要目錄
 find . -maxdepth 3 -type d \
@@ -29,11 +29,11 @@ find . -maxdepth 3 -type d \
   -not -path './.next*' \
   -not -path './dist*' \
   -not -path './.worktrees*'
-
-# 讀取現有 README.md 與 CLAUDE.md
-cat README.md
-cat CLAUDE.md
 ```
+
+使用 Read 工具讀取現有文件（禁用 `cat`）：
+- `Read README.md`
+- `Read CLAUDE.md`（若存在）
 
 ### Step 2：識別過時內容
 
@@ -125,15 +125,14 @@ CLAUDE.md 標準結構：
 
 ```bash
 # 確認文件引用的路徑/檔案存在
-# 例如：文件說 "cat .claude-plugin/marketplace.json"
 ls .claude-plugin/marketplace.json
 
 # 確認文件的 scripts 與 package.json 一致
-cat package.json | jq '.scripts'
-
-# 確認環境變數說明與 .env.example 一致（若有）
-cat .env.example 2>/dev/null
+jq '.scripts' package.json
 ```
+
+使用 Read 工具讀取環境變數檔案：
+- `Read .env.example`（若存在）
 
 ---
 
