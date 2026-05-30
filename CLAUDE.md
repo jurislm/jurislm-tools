@@ -45,24 +45,24 @@ plugins/
 ├── pr-review/                        # skill + command
 ├── podcast-to-blog/                  # skill + command
 ├── codebase-sync/                    # skill + command
-└── tdd-workflow/                     # skill + agent（tdd-guide）
+└── tdd-workflow/                     # skill + agent（tdd-guide）+ command
 ```
 
 ## 目前 Plugins
 
 | Plugin | 版本 | 類型 | 說明 |
 |--------|------|------|------|
-| hooks-and-rules | 1.19.0 | Base | commit 思考紀律 hook + 通用開發規則 |
-| coolify | 1.19.0 | Hybrid | Coolify MCP（43 工具）+ skill + command |
-| hetzner | 1.19.0 | Hybrid | Hetzner MCP（17 工具）+ skill + command |
-| langfuse | 1.19.0 | Hybrid | Langfuse MCP（50 工具）+ skill + command |
-| repo-standards | 1.19.0 | Skill | Repo 標準審查 skill + command |
-| pr-review | 1.19.0 | Skill | PR 審查 skill + command |
-| podcast-to-blog | 1.19.0 | Skill | Podcast 轉文章 skill + command |
-| codebase-sync | 1.19.0 | Skill | Codebase 同步 skill + command |
-| plan | 1.19.0 | Cmd+Agent | /plan command + planner agent |
-| tdd-workflow | 1.19.0 | Skill+Agent | tdd-workflow skill + tdd-guide agent — auto-activate |
-| learn-eval | 1.19.0 | Command | /learn-eval command — 含品質閘 + Global/Project 判斷 |
+| hooks-and-rules | 1.22.0 | Base | commit 思考紀律 hook + 通用開發規則 |
+| coolify | 1.22.0 | Hybrid | Coolify MCP（43 工具）+ skill + command |
+| hetzner | 1.22.0 | Hybrid | Hetzner MCP（17 工具）+ skill + command |
+| langfuse | 1.22.0 | Hybrid | Langfuse MCP（50 工具）+ skill + command |
+| repo-standards | 1.22.0 | Skill | Repo 標準審查 skill + command |
+| pr-review | 1.22.0 | Skill | PR 審查 skill + command |
+| podcast-to-blog | 1.22.0 | Skill | Podcast 轉文章 skill + command |
+| codebase-sync | 1.22.0 | Skill | Codebase 同步 skill + command |
+| plan | 1.22.0 | Cmd+Agent | /plan command + planner agent |
+| tdd-workflow | 1.22.0 | Skill+Agent+Cmd | tdd-workflow skill + tdd-guide agent + /tdd-workflow command |
+| learn-eval | 1.22.0 | Command | /learn-eval command — 含品質閘 + Global/Project 判斷 |
 
 ## 版本管理
 

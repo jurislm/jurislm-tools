@@ -1,5 +1,6 @@
 ---
 name: tdd-workflow
+version: 1.0.0
 description: >
   This skill should be used when the user is writing new features, fixing bugs, or
   refactoring code, or asks to "write tests first", "follow TDD", "use TDD workflow",
