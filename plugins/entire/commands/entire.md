@@ -1,6 +1,9 @@
 ---
 name: entire
-description: 管理 Entire AI agent checkpoints 和 sessions — 列出、查看、回退 checkpoint，生成 session 摘要，診斷 Entire 安裝
+description: >
+  Manage Entire AI agent checkpoints and sessions — list/view/rewind checkpoints, generate session recap, diagnose install.
+  Use when: "列出 checkpoints", "回退到之前狀態", "查看 session 紀錄", "list checkpoints",
+  "rewind session", "generate recap", "entire doctor", "diagnose Entire", "checkpoint 管理".
 argument-hint: "[action] [checkpoint-id/branch/session-id]"
 ---
 

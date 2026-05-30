@@ -1,10 +1,16 @@
 ---
 name: repo-standards
-description: JurisLM 各 repo 的統一設定規範，涵蓋 Release 工作流程與 ESLint 設定。
+description: >
+  Set up or audit a JurisLM repo — configure git worktrees, Bun runtime, Vitest, Release Please,
+  ESLint, CI workflows, and Claude code review.
+  Use when: "如何設定新 repo", "release workflow 怎麼寫", "lint 怎麼設定", "eslint config 怎麼寫",
+  "新增 repo 要怎麼設定", "git worktree 怎麼設定", "設定 code review workflow", "設定 GitHub Actions",
+  "set up new repo", "configure ESLint", "set up release workflow", "set up git worktree",
+  "configure Claude code review", "add GitHub Actions workflow".
 argument-hint: "[repo-name]"
 ---
 
-Apply the `repo-standards` skill to set up or audit a jurislm repo's release workflow and ESLint configuration.
+Apply the `repo-standards` skill to set up or audit a JurisLM repo.
 
 ## Arguments
 

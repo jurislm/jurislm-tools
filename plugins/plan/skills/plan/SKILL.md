@@ -8,6 +8,7 @@ description: >
   "複雜功能要怎麼拆", "refactor 計畫", "migration 計畫".
   Use PROACTIVELY when the user requests feature implementation or refactoring touching multiple files.
 argument-hint: "<feature or task description>"
+version: 1.0.0
 ---
 
 # Plan — Implementation Planning Skill

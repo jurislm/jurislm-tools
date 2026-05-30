@@ -42,7 +42,7 @@ argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
 
 ### 第二步：等待 CI 完成並處理失敗
 
-使用 Monitor tool 即時監控 CI，等到所有 checks 全部結束。
+使用 Monitor tool 即時監控 CI，等到所有 checks 全部結束。若 Monitor tool 無法使用，改用 `gh pr checks <n> --watch` 或循環執行 `gh pr checks <n>` 直到所有 checks 結束。
 
 - 若 CI 在 `timeout` 分鐘內**全部通過** → 進入第三步
 - 若 CI 有 checks **失敗**（非超時）→ 分析失敗原因：

@@ -1,6 +1,9 @@
 ---
 name: podcast-to-blog
-description: 將 Apple Podcasts 連結轉換為逐字稿並生成部落格文章。
+description: >
+  Convert an Apple Podcasts link into a blog post — fetch audio, transcribe with Whisper, generate article.
+  Use when: "把這個 podcast 轉成文章", "將 Apple Podcasts 連結轉換為部落格文章",
+  "transcribe this podcast", "convert podcast to blog post", "podcast 逐字稿".
 argument-hint: "<apple-podcasts-url>"
 ---
 

@@ -7,6 +7,7 @@ description: >
   "萃取 session pattern", "學習紀錄", or invokes /learn-eval.
   Applies a quality gate and dedup check before writing any skill file.
 argument-hint: "(no arguments — analyzes the current session)"
+version: 1.0.0
 ---
 
 # learn-eval — Extract, Evaluate, then Save
