@@ -1,14 +1,17 @@
 ---
 name: plan
+version: 1.0.0
 description: >
   This skill should be used when the user requests feature implementation, refactoring, or asks for an implementation plan. Examples:
   "plan this feature", "create a plan", "plan before coding", "I want a plan first",
   "what's the implementation strategy", "break this down into steps", "plan the migration",
+  "how do I approach this", "where do I start", "requirements aren't clear",
   "先規劃再動手", "幫我規劃實作步驟", "先列計畫", "給我一個實作計畫",
-  "複雜功能要怎麼拆", "refactor 計畫", "migration 計畫".
-  Use PROACTIVELY when the user requests feature implementation or refactoring touching multiple files.
+  "複雜功能要怎麼拆", "refactor 計畫", "migration 計畫", "架構改動怎麼拆",
+  "資料庫遷移計畫", "需求不明確，先釐清", "怎麼開始做".
+  This skill also applies proactively when a user requests a new feature touching 2+ files
+  without explicitly asking for a plan.
 argument-hint: "<feature or task description>"
-version: 1.0.0
 ---
 
 # Plan — Implementation Planning Skill

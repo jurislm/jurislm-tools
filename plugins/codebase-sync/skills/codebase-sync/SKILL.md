@@ -3,10 +3,11 @@ name: codebase-sync
 version: 1.0.0
 description: >
   This skill should be used when the user says "更新 README", "更新 CLAUDE.md", "同步文件",
-  "移除過時內容", "explore codebase and update docs", "codebase 文件已過時",
-  "update README", "sync documentation", "docs are outdated",
+  "移除過時內容", "codebase 文件已過時", "文件跟不上代碼", "CLAUDE.md 要更新",
+  "重構完需要更新文件", "update README", "sync documentation", "docs are outdated",
+  "documentation is stale", "docs don't match the code", "update my docs after refactor",
   or wants to audit and refresh README.md and CLAUDE.md to match the current codebase state.
-argument-hint: ""
+argument-hint: "(no arguments — operates on current directory)"
 ---
 
 # Codebase Sync — 探索並更新 README.md 與 CLAUDE.md

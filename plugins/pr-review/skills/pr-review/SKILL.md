@@ -2,10 +2,13 @@
 name: pr-review
 version: 1.0.0
 description: >
-  This skill should be used when the user asks to "review PR", "merge PR", "處理 PR review",
+  This skill should be used when the user asks to "review PR", "merge PR", "merge this PR",
+  "respond to review comments", "fix review feedback", "處理 PR review",
   "PR 自動合併", "讀取 code review 結果並修正", "PR review loop", "monitor CI and merge",
-  "address Claude bot review", "fix PR comments and merge", or wants to monitor CI status,
-  read Claude bot review feedback, fix issues iteratively, and merge when ready (up to 5 rounds).
+  "address Claude bot review", "fix PR comments and merge",
+  "CI 跑完了嗎", "PR 可以 merge 了嗎",
+  or wants to monitor CI status, read Claude bot review feedback, fix issues iteratively,
+  and merge when ready (up to 5 rounds).
 argument-hint: "[loop=5] [timeout=60] [repo=current] [pr=current]"
 ---
 

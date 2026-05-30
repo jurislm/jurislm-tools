@@ -1,13 +1,15 @@
 ---
 name: learn-eval
+version: 1.0.0
 description: >
   This skill should be used when the user wants to save or extract learnings from the current session.
   Trigger phrases: "extract reusable patterns", "save this pattern", "learn from this session",
-  "save what we just figured out", "記錄這次的 pattern", "把這次學到的存起來",
-  "萃取 session pattern", "學習紀錄", or invokes /learn-eval.
+  "save what we just figured out", "remember this for next time", "don't want to forget this",
+  "this is a library quirk", "記錄這次的 pattern", "把這次學到的存起來",
+  "萃取 session pattern", "學習紀錄", "記下來", "下次別忘了",
+  "這個 API 很奇怪，記一下", "記錄這個 workaround".
   Applies a quality gate and dedup check before writing any skill file.
 argument-hint: "(no arguments — analyzes the current session)"
-version: 1.0.0
 ---
 
 # learn-eval — Extract, Evaluate, then Save
@@ -62,7 +64,7 @@ origin: auto-extracted
 
 Execute **all** checklist items before proceeding:
 
-- [ ] `grep ~/.claude/skills/` and relevant project `.claude/skills/` by keyword — check for content overlap
+- [ ] `grep ~/.claude/skills/` and `~/.claude/rules/` and relevant project `.claude/skills/` and `.claude/rules/` by keyword — check for content overlap
 - [ ] Check `MEMORY.md` (both project and global) for overlap
 - [ ] Consider whether appending to an existing skill would suffice
 - [ ] Confirm this is a reusable pattern, not a one-off fix

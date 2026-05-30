@@ -8,8 +8,10 @@ description: >
   "set up new repo", "configure ESLint", "set up release workflow",
   "set up git worktree", "configure Claude code review", "add GitHub Actions workflow",
   "設定 Vitest", "設定 Bun", "設定測試框架",
+  "upgrade to ESLint 9", "migrate to flat config", "audit CI setup", "check release workflow",
+  "檢查 repo 設定",
   or needs to set up release automation, ESLint configuration, git worktree, or code review
-  workflows for a JurisLM repository.
+  workflows for a repository.
 argument-hint: "[repo-name]"
 ---
 
@@ -445,7 +447,7 @@ gh search code 'develop' --owner jurislm --filename ci.yml
 
 **禁止**：只修單一 repo 不回填模板 → 下個新 repo 仍會踩同雷。
 
-⚠️ **Reference**：[Issue #82 — CI workflow duplicate runs](https://github.com/jurislm/jurislm-tools/issues/82)
+⚠️ **Reference**：Issue #82 — CI workflow duplicate runs（原因：`push` 和 `pull_request` 事件在 same commit 上重複觸發）
 
 ---
 
