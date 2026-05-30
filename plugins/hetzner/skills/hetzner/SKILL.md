@@ -4,8 +4,9 @@ version: 1.0.0
 description: >
   This skill should be used when the user asks to "create a Hetzner server",
   "manage Hetzner Cloud infrastructure", "list Hetzner servers", "add SSH key to Hetzner",
-  "check Hetzner server types", "provision a VPS", "建立 Hetzner 伺服器", "列出 VPS",
-  "管理 SSH 金鑰", "查看伺服器規格",
+  "check Hetzner server types", "provision a VPS", "Volume mount 失敗", "reboot 後 container 掛掉",
+  "fstab 設定", "Storage Box 連線", "建立 Hetzner 伺服器", "列出 VPS",
+  "管理 SSH 金鑰", "查看伺服器規格", "Hetzner Volume", "備份到 Storage Box",
   or mentions Hetzner Cloud server management, infrastructure provisioning,
   or cloud resource operations.
 argument-hint: "[action] [server-name/id]"

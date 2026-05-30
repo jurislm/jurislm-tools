@@ -60,9 +60,10 @@ python3 "${SCRIPT_DIR}/fetch_podcast_audio.py" "<APPLE_PODCASTS_URL>" /tmp/podca
 
 ### Step 2：用 Whisper 轉錄
 
-使用同一 `$SCRIPT_DIR`（步驟一已取得）執行轉錄腳本：
+重新定位腳本目錄，再執行轉錄腳本：
 
 ```bash
+SCRIPT_DIR=$(find ~/.claude/plugins -path "*/podcast-to-blog/scripts" -type d 2>/dev/null | head -1)
 python3 "${SCRIPT_DIR}/transcribe.py" /tmp/podcast_audio.mp3 /tmp/podcast_transcript.txt --language zh --model medium
 ```
 

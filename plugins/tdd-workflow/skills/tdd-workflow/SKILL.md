@@ -4,22 +4,15 @@ version: 1.0.0
 description: >
   This skill should be used when the user is writing new features, fixing bugs, or
   refactoring code, or asks to "write tests first", "follow TDD", "use TDD workflow",
-  "RED GREEN REFACTOR", "improve test coverage", "set up TDD", "TDD 開發", "寫測試先行",
-  "改善測試覆蓋率". Enforces test-driven development with 80%+ coverage including
-  unit, integration, and E2E tests.
+  "RED GREEN REFACTOR", "improve test coverage", "set up TDD", "add unit tests",
+  "TDD 開發", "寫測試先行", "改善測試覆蓋率", "補測試", "寫單元測試", "測試驅動開發".
+  Enforces test-driven development with 80%+ coverage including unit, integration, and E2E tests.
+argument-hint: "[feature description or task]"
 ---
 
 # Test-Driven Development Workflow
 
 This skill ensures all code development follows TDD principles with comprehensive test coverage.
-
-## When to Activate
-
-- Writing new features or functionality
-- Fixing bugs or issues
-- Refactoring existing code
-- Adding API endpoints
-- Creating new components
 
 ## Self-Determination: Which Workflow Type Applies?
 
@@ -143,7 +136,7 @@ describe('Semantic Search', () => {
 
 ### Step 3: Run Tests (They Should Fail)
 ```bash
-npm test
+bun run test
 # Tests should fail - we haven't implemented yet
 ```
 
@@ -184,7 +177,7 @@ If the repository is under Git, stage the minimal fix now but defer the checkpoi
 
 ### Step 5: Run Tests Again
 ```bash
-npm test
+bun run test
 # Tests should now pass
 ```
 

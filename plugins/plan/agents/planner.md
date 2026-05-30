@@ -30,7 +30,7 @@ description: |
   </commentary>
   </example>
 tools: ["Read", "Grep", "Glob"]
-model: opus
+model: sonnet
 color: blue
 ---
 

@@ -5,8 +5,9 @@ description: >
   This skill should be used when the user asks about Entire checkpoints, sessions, AI agent history,
   "list checkpoints", "explain checkpoint", "rewind checkpoint", "session recap",
   "entire doctor", "resume branch session", "attach session",
-  "列出 checkpoint", "查看 checkpoint", "回退 checkpoint",
-  "session 摘要", "診斷 entire", or anything related to Entire CLI session management.
+  "search checkpoint", "find past session", "search past work",
+  "列出 checkpoint", "查看 checkpoint", "回退 checkpoint", "搜尋 checkpoint",
+  "找過去的 session", "session 摘要", "診斷 entire", or anything related to Entire CLI session management.
 argument-hint: "[action] [checkpoint-id/branch/session-id]"
 ---
 

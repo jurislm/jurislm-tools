@@ -86,7 +86,7 @@ CI 完成後等待約 15 秒讓 GitHub 傳播，再讀取 PR comments。找到 C
 
 ---
 
-## Common CI failure patterns
+## CI 常見失敗模式
 
 判斷 CI 失敗類型並決定如何處理：
 
@@ -100,7 +100,7 @@ CI 完成後等待約 15 秒讓 GitHub 傳播，再讀取 PR comments。找到 C
 | 環境問題 | Log 含 `Connection refused` / `ECONNREFUSED` / `503` | 不要修代碼，停止並告訴使用者 |
 | Coverage 下降 | Vitest coverage report 顯示 < 80% | 補測試（可參考 tdd-workflow skill），不可降低 threshold |
 
-## Interpreting Claude review conclusions
+## 解讀 Claude review 結論
 
 Claude bot review 的結論不會用統一詞彙，要理解整體語意。常見模式：
 

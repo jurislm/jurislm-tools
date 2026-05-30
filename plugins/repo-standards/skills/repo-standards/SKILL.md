@@ -7,6 +7,7 @@ description: >
   "git worktree 怎麼設定", "設定 code review workflow", "設定 GitHub Actions",
   "set up new repo", "configure ESLint", "set up release workflow",
   "set up git worktree", "configure Claude code review", "add GitHub Actions workflow",
+  "設定 Vitest", "設定 Bun", "設定測試框架",
   or needs to set up release automation, ESLint configuration, git worktree, or code review
   workflows for a JurisLM repository.
 argument-hint: "[repo-name]"
