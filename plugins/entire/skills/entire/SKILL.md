@@ -135,3 +135,5 @@ entire_attach session_id="2026-01-13-abc123..."
 
 - `entire` CLI 已安裝且完成 `entire login`
 - `ENTIRE_REPO_PATH` 已設定（`~/.zshenv`）
+
+完整安裝步驟、環境變數設定與常見設定問題，見 `references/environment-setup.md`。

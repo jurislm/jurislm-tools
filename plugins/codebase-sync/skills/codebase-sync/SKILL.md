@@ -141,16 +141,18 @@ jq '.scripts' package.json
 可直接執行以下指令找出過時內容：
 
 ```bash
-# 1. 比對 README scripts 與 package.json
-comm -23 \
-  <(grep -oE 'bun run [a-z-]+' README.md | sed 's/bun run //' | sort -u) \
-  <(jq -r '.scripts | keys[]' package.json | sort)
+# 1. 比對 README scripts 與 package.json（zsh 相容，用暫存檔替代 process substitution）
+grep -oE 'bun run [a-z-]+' README.md | sed 's/bun run //' | sort -u > /tmp/_readme_scripts.txt
+jq -r '.scripts | keys[]' package.json | sort > /tmp/_pkg_scripts.txt
+comm -23 /tmp/_readme_scripts.txt /tmp/_pkg_scripts.txt
+rm /tmp/_readme_scripts.txt /tmp/_pkg_scripts.txt
 # 輸出 = README 提到但 package.json 沒定義的 script
 
-# 2. 比對環境變數
-comm -23 \
-  <(grep -oE '`[A-Z][A-Z0-9_]+`' README.md | tr -d '`' | sort -u) \
-  <(grep -oE '^[A-Z][A-Z0-9_]+' .env.example 2>/dev/null | sort -u)
+# 2. 比對環境變數（zsh 相容）
+grep -oE '`[A-Z][A-Z0-9_]+`' README.md | tr -d '`' | sort -u > /tmp/_readme_vars.txt
+grep -oE '^[A-Z][A-Z0-9_]+' .env.example 2>/dev/null | sort -u > /tmp/_env_vars.txt
+comm -23 /tmp/_readme_vars.txt /tmp/_env_vars.txt
+rm /tmp/_readme_vars.txt /tmp/_env_vars.txt
 # 輸出 = README 提到但 .env.example 沒列的變數
 
 # 3. 找已刪除的目錄

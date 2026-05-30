@@ -2,9 +2,10 @@
 name: tdd-workflow
 version: 1.0.0
 description: >
-  This skill should be used when the user is writing new features, fixing bugs, or
-  refactoring code, or asks to "write tests first", "follow TDD", "use TDD workflow",
-  "RED GREEN REFACTOR", "improve test coverage", "set up TDD", "add unit tests",
+  This skill should be used when the user explicitly wants to follow TDD or write tests first,
+  and asks to "write tests first", "follow TDD", "use TDD workflow", "RED GREEN REFACTOR",
+  "improve test coverage", "set up TDD", "add unit tests", "I want to start with tests",
+  "test-first development", "make my code more testable",
   "TDD 開發", "寫測試先行", "改善測試覆蓋率", "補測試", "寫單元測試", "測試驅動開發".
   Enforces test-driven development with 80%+ coverage including unit, integration, and E2E tests.
 argument-hint: "[feature description or task]"
@@ -205,7 +206,7 @@ Recommended commit message format:
 
 ### Step 7: Verify Coverage
 ```bash
-npm run test:coverage
+bun run test:coverage
 # Verify 80%+ coverage achieved
 ```
 

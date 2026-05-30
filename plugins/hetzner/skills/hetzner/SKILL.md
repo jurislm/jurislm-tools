@@ -85,10 +85,35 @@ name: "my-macbook"
 public_key: "ssh-ed25519 AAAA... user@host"
 ```
 
+## Storage Box 連線（MCP 不支援，用 SSH/SFTP）
+
+Hetzner Storage Box 不在 MCP 工具集內，需直接 SSH/SFTP 操作：
+
+```bash
+# ~/.ssh/config 建議設定（port 23 = SFTP/rsync/borg 可用）
+Host storagebox
+  HostName u<id>.your-storagebox.de
+  User u<id>
+  Port 23
+  IdentityFile ~/.ssh/cx53-storagebox
+
+# 連線確認
+ssh storagebox
+
+# 上傳備份
+rsync -avz -e "ssh -p 23" ./backup/ storagebox:backups/
+```
+
+**⚠️ port 22 vs 23 關鍵差異**：
+- Port 22：一般 shell 存取，只支援 create 時注入的 SSH key
+- Port 23：SFTP / SCP / rsync / borg，支援後加的 `~/.ssh/authorized_keys` key
+- 備份工具（rsync、borg）**必須用 port 23**；後加的 key 在 port 22 無效
+
 ## 不支援的功能
 
 此 MCP 伺服器**不支援**（需用 Hetzner Cloud Console UI 或 hcloud CLI）：
 - Volumes（磁碟區）— 需手動 attach 並寫 fstab，否則 reboot 後遺失 mount（見「常見陷阱」）
+- Storage Box — 用 SSH/SFTP 直接操作（見上方「Storage Box 連線」）
 - Firewalls（防火牆）管理
 - Projects（專案）管理 — 一個 API token 只能存取單一 project
 - Load Balancers / Floating IPs / Private Networks

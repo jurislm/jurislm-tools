@@ -45,7 +45,8 @@ plugins/
 ├── pr-review/                        # skill + command
 ├── podcast-to-blog/                  # skill + command
 ├── codebase-sync/                    # skill + command
-└── tdd-workflow/                     # skill + agent（tdd-guide）+ command
+├── tdd-workflow/                     # skill + agent（tdd-guide）+ command
+└── entire/                           # Entire MCP + skill + command
 ```
 
 ## 目前 Plugins
@@ -55,7 +56,7 @@ plugins/
 | hooks-and-rules | 1.22.0 | Base | commit 思考紀律 hook + 通用開發規則 |
 | coolify | 1.22.0 | Hybrid | Coolify MCP（43 工具）+ skill + command |
 | hetzner | 1.22.0 | Hybrid | Hetzner MCP（17 工具）+ skill + command |
-| langfuse | 1.22.0 | Hybrid | Langfuse MCP（50 工具）+ skill + command |
+| langfuse | 1.22.0 | Hybrid | Langfuse MCP（13 工具）+ skill + command |
 | repo-standards | 1.22.0 | Skill | Repo 標準審查 skill + command |
 | pr-review | 1.22.0 | Skill | PR 審查 skill + command |
 | podcast-to-blog | 1.22.0 | Skill | Podcast 轉文章 skill + command |
@@ -63,6 +64,7 @@ plugins/
 | plan | 1.22.0 | Cmd+Agent | /plan command + planner agent |
 | tdd-workflow | 1.22.0 | Skill+Agent+Cmd | tdd-workflow skill + tdd-guide agent + /tdd-workflow command |
 | learn-eval | 1.22.0 | Command | /learn-eval command — 含品質閘 + Global/Project 判斷 |
+| entire | 1.22.0 | Hybrid | Entire MCP（11 工具）+ skill + command |
 
 ## 版本管理
 
@@ -86,6 +88,7 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 - **coolify**：`COOLIFY_ACCESS_TOKEN`、`COOLIFY_BASE_URL`
 - **hetzner**：`HETZNER_API_TOKEN`（不是 `HCLOUD_TOKEN`）
 - **langfuse**：`LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`、`LANGFUSE_HOST`（JurisLM 使用 `https://us.cloud.langfuse.com`）
+- **entire**：`ENTIRE_REPO_PATH`（預設 repo 路徑，讓 MCP 工具免傳 `repo_dir` 參數）
 
 ## 安裝與更新流程
 
@@ -105,6 +108,7 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 /plugin install jurislm-tools@tdd
 /plugin install jurislm-tools@tdd-workflow
 /plugin install jurislm-tools@learn-eval
+/plugin install jurislm-tools@entire
 /reload-plugins
 ```
 
