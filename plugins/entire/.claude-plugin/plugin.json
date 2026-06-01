@@ -1,7 +1,7 @@
 {
   "name": "entire",
   "description": "管理 Entire AI agent checkpoints 和 sessions（11 個 MCP 工具）",
-  "version": "1.25.0",
+  "version": "1.25.1",
   "author": {
     "name": "Terry Chen"
   },
