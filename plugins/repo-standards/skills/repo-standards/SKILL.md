@@ -231,7 +231,7 @@ describe('MyModule', () => {
 
 ## Release 設定
 
-release-please 的**目標標準是 Drone `.drone.yml` 的 `release-please` pipeline**（取代原 GitHub Actions `release.yml`）。已遷移：web app（memory-dessert / lawyer）、monorepo（entire，但其 release pipeline 用 `bunx` + `trigger.branch` 且目前僅 `release-pr`）。**Plugin repo（jurislm-tools / jurislm-plugins）尚未遷移，release-please 仍在 GitHub Actions `release.yml`**。完整 pipeline 模板與各變體見 `references/ci-workflow-templates.md`。
+release-please 依 repo 類型決定執行平台：**Coolify web app / npm-MCP / monorepo** 用 Drone `.drone.yml` 的 `release-please` pipeline；**plugin 類型**（純文字）用 GitHub Actions `release.yml`。標準皆為兩步：`release-pr`（維護版本 PR）+ `github-release`（從已合併的 release PR cut tag）。完整 pipeline 模板與各類型變體見 `references/ci-workflow-templates.md`。
 
 ### `.drone.yml` 的 release-please pipeline（只在 push main 跑）
 
@@ -316,11 +316,11 @@ steps:
 
 ⚠️ **重要**：`marketplace.json` 用 `$.plugins[0].version`（index，非 filter），目標 plugin **必須是陣列第一個元素**。
 
-### Plugin repo（jurislm-tools / jurislm-plugins）仍在 GitHub Actions
+### Plugin 類型的 release / 驗證（GitHub Actions）
 
-⚠️ **plugin repo 尚無 `.drone.yml`** —— release-please 由 GHA `release.yml`、版本一致性檢查由 `version-check.yml` 執行。遷移 Drone 前，這些 GHA workflow 是唯一的 release / 驗證機制，**勿移除**。
+Plugin 類型（純文字 plugin）的 release-please 跑在 GitHub Actions `release.yml`、版本一致性檢查跑在 `version-check.yml`（無 `.drone.yml`）。
 
-`jurislm-plugins` 另有 `sync-plugins.yml`：發版後同步 plugin 定義到 PostgreSQL DB（dev + prod）。
+部分 plugin（如 `jurislm-plugins`）另有 `sync-plugins.yml`：發版後同步 plugin 定義到 PostgreSQL DB（dev + prod）。
 
 **觸發方式**：手動（`workflow_dispatch` only）——原因：`GITHUB_TOKEN` 建立的 release 不會自動觸發其他 workflow（GitHub 安全限制）。
 
@@ -365,7 +365,7 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ## CI Workflow 設定（Drone CI）
 
-**已遷移 repo 的 lint / typecheck / test 由自架 Drone（`https://ci.jurislm.com`）執行**（web app / MCP / monorepo），設定檔為 repo 根目錄 `.drone.yml`（取代原 GitHub Actions `ci.yml`）；**plugin repo（jurislm-tools / jurislm-plugins）尚未遷移，仍由 GitHub Actions（`version-check.yml`）驗證**。每個檢查是一個獨立 pipeline（YAML document，`---` 分隔），各自 clone + `bun install`；GitHub PR 只顯示 1 個 aggregated check（`drone/pr`）。
+**lint / typecheck / test 在 Drone（`https://ci.jurislm.com`）執行**——Coolify web app / npm-MCP / monorepo 類型用 repo 根目錄 `.drone.yml`；**plugin 類型（純文字）**用 GitHub Actions `version-check.yml` 做 JSON / 版本驗證（各類型平台對照見 `references/ci-workflow-templates.md` 開頭表格）。Drone 每個檢查是一個獨立 pipeline（YAML document，`---` 分隔），各自 clone + `bun install`；GitHub PR 只顯示 1 個 aggregated check（`drone/pr`）。
 
 > 完整模板（Coolify Web App / Monorepo / npm 套件 / Plugin 變體 + deploy + secrets）見 `references/ci-workflow-templates.md`。
 
@@ -398,7 +398,7 @@ for repo in $(gh repo list jurislm --limit 50 \
 done
 ```
 
-殘留檢查：**已遷移 Drone 的 repo** 若仍留舊 `.github/workflows/ci.yml` / `release.yml` → 應移除。⚠️ **plugin repo（jurislm-tools / jurislm-plugins）尚未遷移，勿移除其 `release.yml` / `version-check.yml`**；`claude-code-review.yml` / `claude.yml` 多數保留（hybrid），`entire` 已遷至 Drone。
+單一平台原則：每個 repo 的 CI / release 應只用其類型對應的一套平台（見開頭表格），勿讓 Drone 與舊 GHA `ci.yml` / `release.yml` 雙系統並行。注意 plugin 類型的 `release.yml` / `version-check.yml` 是其正常機制（非殘留）。
 
 ### 規範回填協議
 
@@ -426,11 +426,15 @@ done
 
 ---
 
-## Code Review 設定（多數 repo 維持 GitHub Actions hybrid）
+## Code Review 設定
 
 > Copilot 指示模板、`claude-code-review.yml`、`claude.yml` 完整內容見 `references/code-review-setup.md`。
 
-**平台現況**：多數 repo 的 Claude Code Review 仍在 **GitHub Actions**（`claude-code-review.yml` + `claude.yml`，CI/release 已遷 Drone 但 review 留 GHA = hybrid）。例外：`entire` 已將 review 遷至 Drone `claude-review` pipeline（headless `claude -p` + 7-phase prompt + `gh pr review` 回填，`infra/ci-jurislm/claude-review.sh`），並移除了 `@claude` 互動（Drone 無 comment 觸發）。CodeRabbit / Copilot 等 bot review 與平台無關。
+**執行環境（同一 repo 二擇一，勿並行）**：
+- **GitHub Actions**：`claude-code-review.yml`（PR 自動審）+ `claude.yml`（`@claude` 互動）。
+- **Drone**：`claude-review` pipeline（headless `claude -p` + 7-phase prompt + `gh pr review` 回填，見模板 B / `infra/ci-jurislm/claude-review.sh`）；Drone 無 comment 觸發，故無 `@claude` 互動。
+
+CodeRabbit / Copilot 等 bot review 與上述平台無關，獨立運作。
 
 **Checklist 快速說明**：
 - 建立 `.github/copilot-instructions.md`（依 repo 類型選用模板）
@@ -473,4 +477,4 @@ done
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.worktrees/`
 - **CI**：`.drone.yml` 各 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）
 - **CD**（Coolify web app）：`.drone.yml` 加 `deploy` pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
-- **Code Review**（維持 GitHub Actions hybrid）：`claude-code-review.yml` 要 `pull-requests: write`，勿用 `gh pr comment`
+- **Code Review**（GitHub Actions 或 Drone，二擇一）：GHA `claude-code-review.yml` 要 `pull-requests: write`，勿用 `gh pr comment`
