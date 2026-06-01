@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.25.1](https://github.com/jurislm/jurislm-tools/compare/v1.25.0...v1.25.1) (2026-06-01)
+
+
+### 🐛 Bug Fixes
+
+* **repo-standards:** correct accuracy/consistency issues from logic review ([a92feb3](https://github.com/jurislm/jurislm-tools/commit/a92feb37bf1cd08c7de604709fa1a3b5837962fd))
+* **repo-standards:** correct accuracy/consistency issues from logic review ([37ddc9f](https://github.com/jurislm/jurislm-tools/commit/37ddc9fa5f4ee09b4e69ba19f3b66b0e3650f3f5))
+
 ## [1.25.0](https://github.com/jurislm/jurislm-tools/compare/v1.24.0...v1.25.0) (2026-06-01)
 
 
