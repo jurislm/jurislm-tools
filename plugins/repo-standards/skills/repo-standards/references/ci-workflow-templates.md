@@ -1,12 +1,15 @@
 # Drone CI/CD 模板（lint / typecheck / test / release / deploy）
 
-> **JurisLM 的 CI/CD 目標標準是自架 Drone**（`https://ci.jurislm.com`），設定檔為 repo 根目錄的 **`.drone.yml`**：CI（lint / typecheck / test）、release-please、部署觸發都在此，取代原本的 GitHub Actions `ci.yml` + `release.yml`。**新 repo 一律採此標準；既有 repo 逐步遷移。**
+> CI / release / 部署觸發的標準平台是自架 Drone（`https://ci.jurislm.com`），設定檔為 repo 根目錄的 **`.drone.yml`**。平台依 **repo 類型**決定（repo 名僅為範例）：
 >
-> **採用現況（heterogeneous，遷移中 — 勿假設全 repo 一致）**：
-> - **已全面遷移、無 GitHub Actions**：web app（`memory-dessert`、`lawyer`）、monorepo（`entire`）。
-> - **Claude Code Review**：多數 repo 仍在 GitHub Actions（`claude-code-review.yml` + `claude.yml`，hybrid，見 `references/code-review-setup.md`）；`entire` 已遷至 Drone `claude-review` pipeline（headless `claude -p` + `gh pr review` 回填）。
-> - **Plugin repo（`jurislm-tools`、`jurislm-plugins`）**：**尚無 `.drone.yml`**，release-please 仍由 GitHub Actions `release.yml`（+ `version-check.yml`）執行，待遷移。
-> - **部分 MCP / app repo**：仍殘留舊 GHA `ci.yml` / `release.yml`，逐步遷移中。
+> | repo 類型 | CI（lint/typecheck/test）| release-please | 部署 / 發布 | Claude Code Review |
+> |---|---|---|---|---|
+> | Coolify web app（如 memory-dessert）| Drone | Drone | Drone `deploy` pipeline（deploy-gating，模板 A）| GitHub Actions 或 Drone（二擇一）|
+> | Monorepo（如 entire）| Drone（per-package pipeline）| Drone | 每個 app 一個 deploy step | GitHub Actions 或 Drone |
+> | npm / MCP（如 coolify-mcp）| Drone | release-please + npm publish | npm（無 Coolify 部署）| GitHub Actions 或 Drone |
+> | Plugin（純文字，如 jurislm-tools）| GitHub Actions `version-check.yml`（JSON / 版本驗證）| GitHub Actions `release.yml` | — | GitHub Actions |
+>
+> Claude Code Review 的兩種執行環境：GitHub Actions（`claude-code-review.yml` + `claude.yml`，見 `references/code-review-setup.md`）或 Drone（`claude-review` pipeline，headless `claude -p`，見模板 B）。同一 repo 二擇一，勿兩邊並行。
 
 ---
 
@@ -166,8 +169,7 @@ steps:
 - **`oven/bun` image 無 `psql`** → 只有需要的 pipeline（`cli`）才 `apt-get update -qq && apt-get install -y -qq postgresql-client` + `db migrate`。
 - 測試委派 Turborepo：各 pipeline 用不同 filter，如 `bun run turbo run test --filter=entire-cli` / `--filter="@modules/*"` / `--filter=!entire-cli --filter=!entire-ops …`（排除式）。
 - **`build` pipeline 直跑 `cd apps/web && bun run build`（非 turbo）**——對齊 GA build job、避免 turbo strict env stripping。
-- **`release` pipeline 與模板 A 不同**：用 `bunx`（非 `npx`）、`trigger.branch: [main]`（非 `trigger.ref`），且**目前只有 `release-pr` step、缺 `github-release`**。標準應為兩步（`release-pr` 維護版本 PR + `github-release` 從已合併的 release PR cut tag）；需補 `bunx release-please github-release --token=$RELEASE_PLEASE_TOKEN --repo-url=https://github.com/jurislm/entire …`。
-  - ⚠️ **但 entire 另有更深的 release 卡住問題**（截至 2026-06-01）：自 v5.7.0（2026-05-12）已累積 ~280 個可發版 commit，`release-pr` step 在 Drone 跑且回報 success，卻**沒開出任何 release PR**。補 `github-release` 無法單獨解卡（沒有已合併的 release PR 可供 cut）——根因須另行診斷 release-please 的 manifest / config 狀態，非單純步驟缺漏。
+- **`release` pipeline 與模板 A 不同**：用 `bunx`（非 `npx`）、`trigger.branch: [main]`（非 `trigger.ref`）。⚠️ 標準應為兩步——`release-pr`（維護版本 PR）+ `github-release`（從已合併的 release PR cut tag）；只有 `release-pr` 不會自動建立 tag/release，建立 monorepo release pipeline 時兩步都要有。
 - **`claude-review` pipeline**：headless `claude -p` + 7-phase prompt（`infra/ci-jurislm/claude-review.sh`），已取代 GHA `claude-code-review.yml`。
 
 > Monorepo 多 app 部署較複雜（每個 app 一個 Coolify UUID），deploy-gating 須為每個 app 各設一個 deploy step / pipeline。
@@ -178,8 +180,7 @@ steps:
 
 - **CI**（lint / typecheck / test）：Drone `.drone.yml`，同模板 A 的觸發語意。
 - **無 `deploy` pipeline**：發布到 **npm**，不部署到 Coolify → **無重複部署問題、不需 deploy-gating**（npm publish 只在 release 時發生一次，本質無「每次 push 都部署」的問題）。
-- **release-please / npm publish 現況**：這些 repo 目前仍有 GitHub Actions `release.yml`（release-please + npm publish，用 `NPM_TOKEN`），尚未全遷 Drone。
-- **遷移 Drone 時**的 `release` pipeline 骨架（在模板 A 的 release-please 之後，於 release commit 接 npm publish）：
+- **release-please + npm publish**：Drone `release` pipeline（模板 A 的 release-please 兩步 + 一個 npm publish step，用 `NPM_TOKEN` secret）。骨架：
 
 ```yaml
 # release pipeline（push main only）：release-pr → github-release → npm publish
@@ -200,16 +201,16 @@ steps:
         fi
 ```
 
-> ⚠️ 上為骨架，**以該 repo 既有 `release.yml` 的 publish 步驟為準**（build 指令、publish flags 因 repo 而異），勿臆測細節。
+> ⚠️ 上為骨架；build 指令與 publish flags 因套件而異，依該套件實際 build/publish 流程調整。
 
 ---
 
 ## 標準模板 D：Plugin repo（jurislm-tools / jurislm-plugins）
 
 - 純文字 plugin，不需 lint / typecheck / test，只需 JSON 驗證 + release-please。
-- **現況：plugin repo 尚無 `.drone.yml`** —— CI（JSON 驗證 / `version-check`）與 release-please 仍由 **GitHub Actions** 執行（`release.yml` + `version-check.yml`）。
-- `release-please` 用 `release-type: simple` + `extra-files` 同步 `plugin.json` / `marketplace.json` 版本號（見 SKILL.md「Release 設定」；config 內容與平台無關，差別只在跑在 GHA 還是 Drone）。
-- **遷移 Drone 時**的 validate pipeline 範本（取代 GHA JSON 驗證）：
+- **plugin 類型在 GitHub Actions 執行**：JSON / 版本驗證用 `version-check.yml`，release-please 用 `release.yml`。
+- `release-please` 用 `release-type: simple` + `extra-files` 同步 `plugin.json` / `marketplace.json` 版本號（見 SKILL.md「Release 設定」）。
+- 若選擇用 Drone 跑 JSON 驗證（取代 GHA `version-check.yml`），validate pipeline 範本：
 
 ```yaml
 ---
@@ -230,9 +231,9 @@ steps:
 # + release-please pipeline（同模板 A，push main only）
 ```
 
-- **`jurislm-plugins` 額外有 `sync-plugins.yml`**（GHA）：發版後把 plugin 定義同步到 PostgreSQL DB（dev + prod）。觸發為**手動 `workflow_dispatch`**——因 `GITHUB_TOKEN` 建立的 release 不會自動觸發其他 workflow（GitHub 安全限制）。設定需 DB 連線 secret；遷移 Drone 前維持 GHA。
+- **部分 plugin（如 `jurislm-plugins`）有 `sync-plugins.yml`**（GHA）：發版後把 plugin 定義同步到 PostgreSQL DB（dev + prod）。觸發為**手動 `workflow_dispatch`**——因 `GITHUB_TOKEN` 建立的 release 不會自動觸發其他 workflow（GitHub 安全限制）。設定需 DB 連線 secret。
 
-> ⚠️ 遷移前**勿**依下方「Audit」章節移除 plugin repo 的 GHA `release.yml` / `version-check.yml` / `sync-plugins.yml` —— 它們仍是 plugin repo 唯一的 release / 驗證 / 同步機制。
+> plugin 類型的 `release.yml` / `version-check.yml` / `sync-plugins.yml` 是其正常的 release / 驗證 / 同步機制，不應移除。
 
 ---
 
@@ -331,7 +332,7 @@ for repo in $(gh repo list jurislm --limit 50 \
 done
 ```
 
-殘留檢查：**已遷移 Drone 的 repo** 若仍留舊的 `.github/workflows/ci.yml` / `release.yml`（已被 Drone 取代）→ 應移除，避免雙系統並行（`claude-code-review.yml` / `claude.yml` 依該 repo 策略決定保留或遷 Drone）。⚠️ **plugin repo（`jurislm-tools` / `jurislm-plugins`）尚未遷移**，其 `release.yml` / `version-check.yml` 是唯一 release/驗證機制，**勿移除**。
+單一平台檢查：每個 repo 的 CI / release 只應有其類型對應的一套機制（見開頭表格）。若同時存在 Drone `.drone.yml` 與功能重疊的舊 GHA `ci.yml` / `release.yml`，移除其一避免雙跑。注意 plugin 類型的 `release.yml` / `version-check.yml`、以及 Code Review 的 `claude-code-review.yml` / `claude.yml` 是各自正常機制，不要誤刪。
 
 ---
 

@@ -52,7 +52,7 @@
 30. [ ] 先驗證 Drone→Coolify deploy API 接線可用，再**關閉 Coolify `is_auto_deploy_enabled`**（避免 prod 靜默停止部署）
 31. [ ] 行為驗證：feature 合併 → 部署 **1 次**；release PR 合併 → 部署 **0 次**；並確認合併後 push webhook 有觸發 Drone build
 
-## Code Review（維持 GitHub Actions hybrid）
+## Code Review（GitHub Actions 或 Drone，二擇一）
 
 32. [ ] 建立 `.github/workflows/claude-code-review.yml`（`@v1`，`pull-requests: write`，6-phase prompt，含 profile switch / path filter / triage / mechanical conclusion）
 33. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發，`pull-requests: write`，`issues: write`，保留 `system_prompt` 繁中設定）
