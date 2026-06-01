@@ -25,7 +25,7 @@
 
 ## Release
 
-15. [ ] 建立 `.github/workflows/release.yml`（依標準格式，**不指定 `release-type`**）
+15. [ ] release-please pipeline（push main only，**不指定 `release-type`**）—— Drone repo（`.drone.yml`）或 plugin repo 的 GHA `release.yml`；secret `RELEASE_PLEASE_TOKEN` 見項 25
 16. [ ] 建立 `release-please-config.json`（依統一模板，`release-type` 寫在這裡）
 17. [ ] Plugin repo：加 `extra-files`，確認目標在陣列第一位
 
@@ -36,19 +36,27 @@
 20. [ ] 安裝必要套件
 21. [ ] 執行 `bun run lint` 確認 0 errors 0 warnings
 
-## CI Workflow
+## CI（Drone CI）
 
-22. [ ] 建立 `.github/workflows/ci.yml`（依 `references/ci-workflow-templates.md` 對應 repo 類型）
-23. [ ] 確認 trigger 為 `pull_request` + `push: main` only（**禁止** `push: develop` 或其他中間分支）
-24. [ ] 設定 `concurrency.group: ${{ github.workflow }}-${{ github.ref }}` + `cancel-in-progress: true`
-25. [ ] 各 job 加 push-safe draft 條件：`if: github.event_name != 'pull_request' || github.event.pull_request.draft == false`（**勿**直接寫 `github.event.pull_request.draft == false`，會破壞 `push: main` safety net）
-26. [ ] 開 PR 確認 CI **只跑一次**（檢查 Actions 頁面，每次 push 應只看到 1 個 run，非 2 個）
+22. [ ] 建立 `.drone.yml`（依 `references/ci-workflow-templates.md` 對應 repo 類型：Coolify web app / monorepo / npm 套件 / plugin）
+23. [ ] 各 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**禁止** `refs/heads/develop`，否則 push + PR 雙 build 競爭 runner）
+24. [ ] 各 step `bun install --frozen-lockfile`；lint / typecheck / test 各自獨立 pipeline（各自 clone + install）
+25. [ ] Drone repo-scope secret 加 `RELEASE_PLEASE_TOKEN`（release-please pipeline 用）
+26. [ ] 開 PR 確認 GitHub 只顯示 1 個 aggregated check（`drone/pr`），且 push develop **不** build
 
-## Code Review
+## CD（部署 — 僅 Coolify web app；npm / MCP repo 跳過此段）
 
-27. [ ] 建立 `.github/workflows/claude-code-review.yml`（`@v1`，`pull-requests: write`，6-phase prompt，含 profile switch / path filter / triage / mechanical conclusion）
-28. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發，`pull-requests: write`，`issues: write`，保留 `system_prompt` 繁中設定）
-29. [ ] 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
-30. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）
-31. [ ] `claude.yml` 的 `system_prompt` 設為 `"請使用繁體中文回覆所有問題與建議。"`
-32. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
+27. [ ] `.drone.yml` 加 `deploy` pipeline（`push` main、`depends_on: [lint-typecheck, test]`、`clone: { disable: true }`）
+28. [ ] `deploy` + `lint-typecheck` + `test` 各 step 加 release-commit 守衛：`echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'`
+29. [ ] Drone repo-scope secret 加 `COOLIFY_DEPLOY_TOKEN`（`pull_request: false`）
+30. [ ] 先驗證 Drone→Coolify deploy API 接線可用，再**關閉 Coolify `is_auto_deploy_enabled`**（避免 prod 靜默停止部署）
+31. [ ] 行為驗證：feature 合併 → 部署 **1 次**；release PR 合併 → 部署 **0 次**；並確認合併後 push webhook 有觸發 Drone build
+
+## Code Review（維持 GitHub Actions hybrid）
+
+32. [ ] 建立 `.github/workflows/claude-code-review.yml`（`@v1`，`pull-requests: write`，6-phase prompt，含 profile switch / path filter / triage / mechanical conclusion）
+33. [ ] 建立 `.github/workflows/claude.yml`（`@claude` 互動觸發，`pull-requests: write`，`issues: write`，保留 `system_prompt` 繁中設定）
+34. [ ] 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`
+35. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）
+36. [ ] `claude.yml` 的 `system_prompt` 設為 `"請使用繁體中文回覆所有問題與建議。"`
+37. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
