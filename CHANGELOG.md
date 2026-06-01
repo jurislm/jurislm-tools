@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.25.2](https://github.com/jurislm/jurislm-tools/compare/v1.25.1...v1.25.2) (2026-06-01)
+
+
+### 🐛 Bug Fixes
+
+* **repo-standards:** make it a neutral per-type standard, drop fleet/operational state ([af1090e](https://github.com/jurislm/jurislm-tools/commit/af1090e5ed6562e16da2e2f6cc4714c42876cd7c))
+* **repo-standards:** make it a neutral per-type standard, drop fleet/operational state ([80b4f76](https://github.com/jurislm/jurislm-tools/commit/80b4f76f499f986476cad52c67489932ca2e1e68))
+
 ## [1.25.1](https://github.com/jurislm/jurislm-tools/compare/v1.25.0...v1.25.1) (2026-06-01)
 
 
