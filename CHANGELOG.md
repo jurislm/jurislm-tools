@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.25.0](https://github.com/jurislm/jurislm-tools/compare/v1.24.0...v1.25.0) (2026-06-01)
+
+
+### 🚀 New Features
+
+* **coolify:** document docker_compose_domains for docker-compose Application FQDN ([720869d](https://github.com/jurislm/jurislm-tools/commit/720869d1fa351583bb13d31dec2a46ddce38805d))
+* **coolify:** document docker_compose_domains for docker-compose Application FQDN ([5867b11](https://github.com/jurislm/jurislm-tools/commit/5867b11067b4804e8fda16676ffb3fbb6f532e41)), closes [#89](https://github.com/jurislm/jurislm-tools/issues/89)
+* merge tdd plugin into tdd-workflow — move tdd-guide agent, remove tdd plugin ([df9f5e7](https://github.com/jurislm/jurislm-tools/commit/df9f5e7323501d6bc7e58883873f7f6b3a914665))
+* **repo-standards:** document Drone CI/CD + deploy-gating, replace GitHub Actions ([f7ef008](https://github.com/jurislm/jurislm-tools/commit/f7ef0088a303d6a4e8891c845eaa14c4c4af7284))
+* **repo-standards:** Drone CI/CD standard + batched plugin-dev improvements ([41d6feb](https://github.com/jurislm/jurislm-tools/commit/41d6febabc7b81090b7f8000a2802cb63fe49af1))
+* **skills:** add SKILL.md for plan and learn-eval plugins; fix langfuse tool count ([d1743d3](https://github.com/jurislm/jurislm-tools/commit/d1743d310049e872ffdd2e4049525a8e487371ad))
+* **skills:** apply plugin-dev review improvements ([#92](https://github.com/jurislm/jurislm-tools/issues/92)) ([3e16cfc](https://github.com/jurislm/jurislm-tools/commit/3e16cfc8a186c73e893e265ef460040a51f69712))
+* **skills:** apply plugin-dev review improvements across 8 files ([01cf35e](https://github.com/jurislm/jurislm-tools/commit/01cf35e71747567170ed9841bb62b0d4b5e4904e))
+* **tdd-workflow:** add /tdd-workflow command and version field to SKILL.md ([1da59ed](https://github.com/jurislm/jurislm-tools/commit/1da59ed6785abd4ac8b1e15a6d92a0492bbedb79))
+
+
+### 🐛 Bug Fixes
+
+* **ci:** fix version-check workflow — remove non-existent plugin.json path ([bdb7bd0](https://github.com/jurislm/jurislm-tools/commit/bdb7bd08eb51cc63a08a49384ed70a7a40dba74e))
+* **plugins:** apply plugin-dev review improvements across 10 files ([3af1962](https://github.com/jurislm/jurislm-tools/commit/3af19625d75a119ee1fba56e041ccf5f2910c471))
+* **plugins:** apply plugin-dev validation improvements across 8 plugins ([8472cc2](https://github.com/jurislm/jurislm-tools/commit/8472cc2b53aa51dbff63f206bb5156e0b052b26b))
+* **skills:** apply plugin-dev best practices across 6 files ([78d71df](https://github.com/jurislm/jurislm-tools/commit/78d71df7f259ae507e702bcb5f6c2c87494dbeb9))
+* **skills:** apply plugin-dev best practices across 9 files ([16aa150](https://github.com/jurislm/jurislm-tools/commit/16aa150f97712373d9c912ed4955fdf8b293e89c))
+* **skills:** apply skill-development best practices across 3 skills ([a093d00](https://github.com/jurislm/jurislm-tools/commit/a093d00d9d1498a9490c7d31e24dd44cf5f6e7c9))
+
 ## [1.24.0](https://github.com/jurislm/jurislm-tools/compare/v1.23.0...v1.24.0) (2026-05-14)
 
 
