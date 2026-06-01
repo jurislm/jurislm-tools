@@ -57,7 +57,9 @@ steps:
   - name: install
     image: oven/bun:1.3.14
     commands:
-      # 守衛：release-please 純版號 commit 不含程式碼變更 → 跳過（見 CD 章節）
+      # 守衛：release-please 純版號 commit 不含程式碼變更 → 跳過（見 CD 章節）。
+      # ⚠️ 守衛必須在「每個」step 重複：install 用 exit 0（成功）跳過後，Drone 仍會
+      #    啟動 depends_on 的後續 step，故各 step 都需自帶守衛才能真正跳過實際工作。
       - |
         if echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'; then
           echo "release-please version bump — skip (no app code change)"; exit 0
@@ -164,7 +166,8 @@ steps:
 - **`oven/bun` image 無 `psql`** → 只有需要的 pipeline（`cli`）才 `apt-get update -qq && apt-get install -y -qq postgresql-client` + `db migrate`。
 - 測試委派 Turborepo：各 pipeline 用不同 filter，如 `bun run turbo run test --filter=entire-cli` / `--filter="@modules/*"` / `--filter=!entire-cli --filter=!entire-ops …`（排除式）。
 - **`build` pipeline 直跑 `cd apps/web && bun run build`（非 turbo）**——對齊 GA build job、避免 turbo strict env stripping。
-- **`release` pipeline 與模板 A 不同**：用 `bunx`（非 `npx`）、`trigger.branch: [main]`（非 `trigger.ref`），且**目前只有 `release-pr` step、無 `github-release`**（⚠️ 待確認是有意為之或缺漏——flat repo 標準應含 `github-release` 才能 cut tag）。
+- **`release` pipeline 與模板 A 不同**：用 `bunx`（非 `npx`）、`trigger.branch: [main]`（非 `trigger.ref`），且**目前只有 `release-pr` step、缺 `github-release`**。標準應為兩步（`release-pr` 維護版本 PR + `github-release` 從已合併的 release PR cut tag）；需補 `bunx release-please github-release --token=$RELEASE_PLEASE_TOKEN --repo-url=https://github.com/jurislm/entire …`。
+  - ⚠️ **但 entire 另有更深的 release 卡住問題**（截至 2026-06-01）：自 v5.7.0（2026-05-12）已累積 ~280 個可發版 commit，`release-pr` step 在 Drone 跑且回報 success，卻**沒開出任何 release PR**。補 `github-release` 無法單獨解卡（沒有已合併的 release PR 可供 cut）——根因須另行診斷 release-please 的 manifest / config 狀態，非單純步驟缺漏。
 - **`claude-review` pipeline**：headless `claude -p` + 7-phase prompt（`infra/ci-jurislm/claude-review.sh`），已取代 GHA `claude-code-review.yml`。
 
 > Monorepo 多 app 部署較複雜（每個 app 一個 Coolify UUID），deploy-gating 須為每個 app 各設一個 deploy step / pipeline。
@@ -175,8 +178,29 @@ steps:
 
 - **CI**（lint / typecheck / test）：Drone `.drone.yml`，同模板 A 的觸發語意。
 - **無 `deploy` pipeline**：發布到 **npm**，不部署到 Coolify → **無重複部署問題、不需 deploy-gating**（npm publish 只在 release 時發生一次，本質無「每次 push 都部署」的問題）。
-- **release-please / npm publish 現況**：這些 repo 目前仍有 GitHub Actions `release.yml`（release-please + npm publish，用 `NPM_TOKEN`），尚未全遷 Drone。遷移時把 release-please + publish 移到 Drone `release` pipeline（同模板 A 的 release-please + 一個 npm publish step）。
-- **以該 repo 既有設定為準，勿臆測 publish step 細節。**
+- **release-please / npm publish 現況**：這些 repo 目前仍有 GitHub Actions `release.yml`（release-please + npm publish，用 `NPM_TOKEN`），尚未全遷 Drone。
+- **遷移 Drone 時**的 `release` pipeline 骨架（在模板 A 的 release-please 之後，於 release commit 接 npm publish）：
+
+```yaml
+# release pipeline（push main only）：release-pr → github-release → npm publish
+# publish step 僅在「真的有新版被 cut」時才發布；NPM_TOKEN 為 Drone repo-scope secret。
+  - name: npm-publish
+    image: oven/bun:1.3.14
+    depends_on: [release-please]
+    environment:
+      NPM_TOKEN: { from_secret: NPM_TOKEN }
+    commands:
+      - |
+        # 只在 release commit（github-release 剛 cut）時發布；非 release commit 跳過
+        if echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'; then
+          echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
+          bun install --frozen-lockfile && bun run build && bun publish --access public
+        else
+          echo "not a release commit — skip npm publish"
+        fi
+```
+
+> ⚠️ 上為骨架，**以該 repo 既有 `release.yml` 的 publish 步驟為準**（build 指令、publish flags 因 repo 而異），勿臆測細節。
 
 ---
 
@@ -206,7 +230,9 @@ steps:
 # + release-please pipeline（同模板 A，push main only）
 ```
 
-> ⚠️ 遷移前**勿**依下方「Audit」章節移除 plugin repo 的 GHA `release.yml` / `version-check.yml` —— 它們仍是 plugin repo 唯一的 release / 驗證機制。
+- **`jurislm-plugins` 額外有 `sync-plugins.yml`**（GHA）：發版後把 plugin 定義同步到 PostgreSQL DB（dev + prod）。觸發為**手動 `workflow_dispatch`**——因 `GITHUB_TOKEN` 建立的 release 不會自動觸發其他 workflow（GitHub 安全限制）。設定需 DB 連線 secret；遷移 Drone 前維持 GHA。
+
+> ⚠️ 遷移前**勿**依下方「Audit」章節移除 plugin repo 的 GHA `release.yml` / `version-check.yml` / `sync-plugins.yml` —— 它們仍是 plugin repo 唯一的 release / 驗證 / 同步機制。
 
 ---
 

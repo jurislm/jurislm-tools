@@ -235,7 +235,7 @@ jobs:
             - Build/deps: `**/dist/**`, `**/build/**`, `**/node_modules/**`,
               `**/.next/**`, `**/.nuxt/**`, `**/coverage/**`, `**/.turbo/**`
             - Lock files: `**/*.lock`, `**/package-lock.json`, `**/yarn.lock`,
-              `**/pnpm-lock.yaml`, `**/bun.lockb`, `**/Cargo.lock`,
+              `**/pnpm-lock.yaml`, `**/bun.lock`, `**/Cargo.lock`,
               `**/Gemfile.lock`, `**/composer.lock`
             - Generated: `**/generated/**`, `**/__generated__/**`,
               `**/*.generated.*`, `**/*.gen.*`, `**/*.pb.go`, `**/*.pb.ts`

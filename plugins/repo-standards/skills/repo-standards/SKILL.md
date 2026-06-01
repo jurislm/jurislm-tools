@@ -1,6 +1,7 @@
 ---
 name: repo-standards
-version: 1.4.0
+# skill 內容版本（獨立於 plugin.json 的發版版本，後者由 release-please 管理）
+version: 1.5.0
 description: >
   This skill should be used when the user asks "如何設定新 repo", "release workflow 怎麼寫",
   "release-please 怎麼用", "lint 怎麼設定", "eslint config 怎麼寫", "新增 repo 要怎麼設定",
@@ -25,7 +26,7 @@ argument-hint: "[repo-name]"
 
 | 類型 | 適用 Repo | release-type | Runtime | ESLint 基礎 |
 |------|---------|-------------|---------|------------|
-| **Next.js** | lawyer, lexvision, stock | `node` | Bun | `eslint-config-next` |
+| **Next.js** | lawyer, stock（~~lexvision 已棄用 2026-05-14~~）| `node` | Bun | `eslint-config-next` |
 | **Node/TS** | coolify-mcp, hetzner-mcp, langfuse-mcp, judicial-mcp | `node` | Bun | `@eslint/js` + `typescript-eslint` |
 | **Plugin** | jurislm-tools, jurislm-plugins | `simple` | — | 無 TS 原始碼，不需要 ESLint |
 | **Monorepo** | entire | `node` | Bun | `@entire/eslint-config` |
@@ -91,7 +92,7 @@ git worktree add -b feature/xxx .worktrees/feature-xxx develop
 
 ```json
 {
-  "packageManager": "bun@1.3.9",
+  "packageManager": "bun@1.3.14",
   "engines": {
     "bun": ">=1.1.0"
   }
@@ -364,7 +365,7 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ## CI Workflow 設定（Drone CI）
 
-**所有 repo 的 lint / typecheck / test 由自架 Drone（`https://ci.jurislm.com`）執行**，設定檔為 repo 根目錄 `.drone.yml`（取代原 GitHub Actions `ci.yml`）。每個檢查是一個獨立 pipeline（YAML document，`---` 分隔），各自 clone + `bun install`；GitHub PR 只顯示 1 個 aggregated check（`drone/pr`）。
+**已遷移 repo 的 lint / typecheck / test 由自架 Drone（`https://ci.jurislm.com`）執行**（web app / MCP / monorepo），設定檔為 repo 根目錄 `.drone.yml`（取代原 GitHub Actions `ci.yml`）；**plugin repo（jurislm-tools / jurislm-plugins）尚未遷移，仍由 GitHub Actions（`version-check.yml`）驗證**。每個檢查是一個獨立 pipeline（YAML document，`---` 分隔），各自 clone + `bun install`；GitHub PR 只顯示 1 個 aggregated check（`drone/pr`）。
 
 > 完整模板（Coolify Web App / Monorepo / npm 套件 / Plugin 變體 + deploy + secrets）見 `references/ci-workflow-templates.md`。
 
@@ -467,7 +468,7 @@ done
 
 **快速概覽**（各類別必做項）：
 - **Worktree**：`git worktree add .worktrees/develop develop`，`.gitignore` 加 `.worktrees/`
-- **Bun**：`"packageManager": "bun@1.3.9"`，scripts 換成 `bun run vitest` 等
+- **Bun**：`"packageManager": "bun@1.3.14"`，scripts 換成 `bun run vitest` 等
 - **Release**：`.drone.yml` 的 `release-please` pipeline（push main only），`release-type` 放在 config，Plugin repo 加 `extra-files`，secret `RELEASE_PLEASE_TOKEN`
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.worktrees/`
 - **CI**：`.drone.yml` 各 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）
