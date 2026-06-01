@@ -9,7 +9,7 @@
 
 ## Runtime（Bun）
 
-5. [ ] `package.json` 加 `"packageManager": "bun@1.3.9"`
+5. [ ] `package.json` 加 `"packageManager": "bun@1.3.14"`（與 CI Docker image `oven/bun:1.3.14` 一致）
 6. [ ] `package.json` 加 `"engines": {"bun": ">=1.1.0"}`
 7. [ ] scripts 使用 `bun` 指令（`bun --watch`、`bun dist/index.js` 等）
 8. [ ] 移除 `tsx`、`ts-node` 等 Node.js runtime 套件
@@ -60,3 +60,12 @@
 35. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）
 36. [ ] `claude.yml` 的 `system_prompt` 設為 `"請使用繁體中文回覆所有問題與建議。"`
 37. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
+
+## 發版收尾（每次合併 develop→main 後必做）
+
+> 對應全域 CLAUDE.md「合併 develop → main 後」+ 模式 95。詳見 `references/ci-workflow-templates.md`「部署收尾」。
+
+38. [ ] **確認 CI 真的被觸發**：合併後查 `gh api repos/jurislm/<repo>/hooks/<id>/deliveries`（push 事件是否送達）+ Drone builds list 有對應 commit 的 push build（GitHub 偶爾漏發 push webhook）
+39. [ ] **合併 release-please 自動開的 release PR**（`chore(main): release X.Y.Z`），否則 tag / 版本永遠不 cut
+40. [ ] release PR 合併後再次確認其 push build 觸發 + `github-release` 有跑（tag 已建）；漏發則手動 `release-please github-release`（冪等）
+41. [ ] 依模式 95 把 `develop` 重新同步至 `main`（避免 squash/merge 後分歧）
