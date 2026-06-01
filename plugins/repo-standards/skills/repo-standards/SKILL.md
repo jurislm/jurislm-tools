@@ -1,17 +1,19 @@
 ---
 name: repo-standards
-version: 1.3.0
+version: 1.4.0
 description: >
   This skill should be used when the user asks "如何設定新 repo", "release workflow 怎麼寫",
   "release-please 怎麼用", "lint 怎麼設定", "eslint config 怎麼寫", "新增 repo 要怎麼設定",
-  "git worktree 怎麼設定", "設定 code review workflow", "設定 GitHub Actions",
-  "set up new repo", "configure ESLint", "set up release workflow",
-  "set up git worktree", "configure Claude code review", "add GitHub Actions workflow",
+  "git worktree 怎麼設定", "設定 code review workflow", "設定 Drone CI", "drone.yml 怎麼寫",
+  "CI 怎麼設定", "部署怎麼設定", "避免重複部署", "deploy gating", "Coolify 部署 pipeline",
+  "set up new repo", "configure ESLint", "set up release workflow", "set up Drone CI",
+  "set up git worktree", "configure Claude code review", "add a .drone.yml pipeline",
+  "avoid duplicate deploy", "configure CD / deploy",
   "設定 Vitest", "設定 Bun", "設定測試框架",
   "upgrade to ESLint 9", "migrate to flat config", "audit CI setup", "check release workflow",
   "檢查 repo 設定",
-  or needs to set up release automation, ESLint configuration, git worktree, or code review
-  workflows for a repository.
+  or needs to set up Drone CI/CD, release automation, deploy gating, ESLint configuration,
+  git worktree, or code review workflows for a repository.
 argument-hint: "[repo-name]"
 ---
 
@@ -228,39 +230,34 @@ describe('MyModule', () => {
 
 ## Release 設定
 
-### 標準 .github/workflows/release.yml
+release-please 的**目標標準是 Drone `.drone.yml` 的 `release-please` pipeline**（取代原 GitHub Actions `release.yml`）。已遷移：web app（memory-dessert / lawyer）、monorepo（entire，但其 release pipeline 用 `bunx` + `trigger.branch` 且目前僅 `release-pr`）。**Plugin repo（jurislm-tools / jurislm-plugins）尚未遷移，release-please 仍在 GitHub Actions `release.yml`**。完整 pipeline 模板與各變體見 `references/ci-workflow-templates.md`。
+
+### `.drone.yml` 的 release-please pipeline（只在 push main 跑）
 
 ```yaml
-name: Release Please
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-permissions:
-  contents: write
-  pull-requests: write
-
-jobs:
-  release-please:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: googleapis/release-please-action@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
+---
+kind: pipeline
+type: docker
+name: release-please
+trigger:
+  event: [push]
+  ref: [refs/heads/main]
+steps:
+  - name: release-please
+    image: node:20-alpine
+    environment:
+      RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
+    commands:
+      - npx release-please release-pr --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+      - npx release-please github-release --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
 ```
 
 **規則**：
-- `workflow_dispatch` 必填（允許手動觸發）
-- `permissions` 放在 top 層級（非 job 層級）
-- **`release-type` 不可寫在 workflow** — 必須只放在 `release-please-config.json`
-- **`config-file` + `manifest-file` 必填** — 明確讓 workflow 引用 config，避免隱性 drift
-
-⚠️ **重要**：若在 workflow 的 `with:` 區塊指定 `release-type`，Release Please 會忽略 `release-please-config.json` 的 `extra-files` 設定，導致 `plugin.json` 和 `marketplace.json` 版本號不會被自動更新。
+- 先 `release-pr`（維護版本 PR）再 `github-release`（建 tag / release），兩者皆冪等。
+- **`RELEASE_PLEASE_TOKEN`** 為 Drone repo-scope secret（scopes `repo` + `workflow`；Drone Web UI Settings → Secrets）。
+- **`release-type` 不可寫在 pipeline** — 必須只放在 `release-please-config.json`（否則 Release Please 會忽略 config 的 `extra-files`，導致 `plugin.json` / `marketplace.json` 版本號不被更新）。
+- **`--config-file` + `--manifest-file` 必填** — 明確引用 config，避免隱性 drift。
+- ⚠️ **合併 release PR 後須確認 push webhook 有觸發 build**（GitHub 偶爾漏發 → release 卡住沒 cut）。驗證與手動補救見 `references/ci-workflow-templates.md`「部署收尾」章節。
 
 ### release-type 選擇
 
@@ -318,9 +315,11 @@ jobs:
 
 ⚠️ **重要**：`marketplace.json` 用 `$.plugins[0].version`（index，非 filter），目標 plugin **必須是陣列第一個元素**。
 
-### jurislm-plugins 特殊規則
+### Plugin repo（jurislm-tools / jurislm-plugins）仍在 GitHub Actions
 
-額外有 `sync-plugins.yml`，發版後同步 plugin 定義到 PostgreSQL DB（dev + prod）。
+⚠️ **plugin repo 尚無 `.drone.yml`** —— release-please 由 GHA `release.yml`、版本一致性檢查由 `version-check.yml` 執行。遷移 Drone 前，這些 GHA workflow 是唯一的 release / 驗證機制，**勿移除**。
+
+`jurislm-plugins` 另有 `sync-plugins.yml`：發版後同步 plugin 定義到 PostgreSQL DB（dev + prod）。
 
 **觸發方式**：手動（`workflow_dispatch` only）——原因：`GITHUB_TOKEN` 建立的 release 不會自動觸發其他 workflow（GitHub 安全限制）。
 
@@ -363,97 +362,74 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ---
 
-## CI Workflow 設定（lint / typecheck / test）
+## CI Workflow 設定（Drone CI）
 
-> 完整模板（含 Node/TS、Next.js、Plugin、Monorepo 變體）見 `references/ci-workflow-templates.md`。
+**所有 repo 的 lint / typecheck / test 由自架 Drone（`https://ci.jurislm.com`）執行**，設定檔為 repo 根目錄 `.drone.yml`（取代原 GitHub Actions `ci.yml`）。每個檢查是一個獨立 pipeline（YAML document，`---` 分隔），各自 clone + `bun install`；GitHub PR 只顯示 1 個 aggregated check（`drone/pr`）。
 
-### 核心規則：避免 push + pull_request 雙重觸發
+> 完整模板（Coolify Web App / Monorepo / npm 套件 / Plugin 變體 + deploy + secrets）見 `references/ci-workflow-templates.md`。
 
-`push` 與 `pull_request` 是獨立 event，`github.ref` 不同（`refs/heads/develop` vs `refs/pull/N/merge`）→ concurrency group 無法 dedupe，每次 push 浪費雙倍 CI 分鐘。
+### 核心規則：避免重複觸發（Drone 版）
 
-**Anti-pattern（禁止）**：
-
-```yaml
-on:
-  pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
-  push:
-    branches:
-      - main
-      - develop  # ❌ 重複觸發來源
-```
-
-**正確 pattern**：
+用 `trigger.event` + `trigger.ref`（git ref glob）對齊「PR 任意分支 + push 限 main」：
 
 ```yaml
-on:
-  pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
-  push:
-    branches:
-      - main  # ✅ 只留 main 作為 post-merge safety net
-  workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+trigger:
+  event: [push, pull_request]
+  ref:
+    - refs/heads/main      # push main（post-merge safety net）
+    - refs/pull/*/head     # PR（任意分支）
 ```
 
-**為什麼 main 仍要 `push` trigger**：
-- 中間分支（develop、feature）由 `pull_request` 完整覆蓋
-- main 仍可能因 force-push、rebase merge、Release Please commit 等繞過 PR → 需 post-merge safety net
-
-### 通用 job 規則
-
-**Draft PR 跳過條件 — 必須 push-safe**：
-
-```yaml
-if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
-```
-
-**陷阱**：直接寫 `if: github.event.pull_request.draft == false` 會在 `push` / `workflow_dispatch` event 下評估為 false（因為 `github.event.pull_request` 為 null）→ **`push: main` safety net 完全不會跑**。先判斷 `event_name` 才安全。
-
-- `--frozen-lockfile` 確保 lockfile 一致性
-- 多個獨立 job 並行（lint / typecheck / test 不互相依賴）
+- **不要**把 `refs/heads/develop` 放進 `trigger.ref` —— 否則 push develop + PR 會雙 build 競爭 runner（= GitHub Actions 時代 Issue #82 的 duplicate-runs 雷，Drone 用 ref glob 從設計上避免）。
+- 中間分支（develop / feature）只由 `refs/pull/*/head` 覆蓋；`push main` 作為繞過 PR（force-push / rebase / release-please commit）的 safety net。
+- **release-please commit 守衛**：deploy / lint / test 在純版號 commit 上跳過（見下方 CD 章節）。
 
 ### Audit 既存 Repo
 
-GitHub code search 是**逐行**比對，多行 YAML 無法用單行字串命中。用以下方式：
-
 ```bash
-# 逐 repo 解碼 ci.yml 看 on: 區塊（已過濾 archived repo）
+# 逐 repo 解碼 .drone.yml 看 pipeline 與 trigger.ref（已過濾 archived repo）
 for repo in $(gh repo list jurislm --limit 50 \
     --json name,isArchived -q '.[] | select(.isArchived == false) | .name'); do
   echo "=== $repo ==="
-  gh api "repos/jurislm/$repo/contents/.github/workflows/ci.yml" \
-    --jq '.content' 2>/dev/null | base64 -d 2>/dev/null \
-    | sed -n '/^on:/,/^[a-zA-Z][a-zA-Z]*:/p' | head -25 \
-    || echo "(no ci.yml)"
+  gh api "repos/jurislm/$repo/contents/.drone.yml" --jq '.content' 2>/dev/null \
+    | tr -d '\n' | base64 -d 2>/dev/null | grep -E '^name:|refs/heads' | head -15 \
+    || echo "(no .drone.yml)"
 done
 ```
 
-或用 `gh search code` 找含 `develop` 的 ci.yml（命中後人工確認 `on:` 區塊）：
-
-```bash
-gh search code 'develop' --owner jurislm --filename ci.yml
-```
+殘留檢查：**已遷移 Drone 的 repo** 若仍留舊 `.github/workflows/ci.yml` / `release.yml` → 應移除。⚠️ **plugin repo（jurislm-tools / jurislm-plugins）尚未遷移，勿移除其 `release.yml` / `version-check.yml`**；`claude-code-review.yml` / `claude.yml` 多數保留（hybrid），`entire` 已遷至 Drone。
 
 ### 規範回填協議
 
-當任一 repo 發現新 ci.yml 陷阱：
-1. 在來源 repo 修復（PR 含 root cause 分析）
-2. **同步**回填到 `references/ci-workflow-templates.md`
-3. 開 issue 追蹤其他 repo 是否需同步
-
-**禁止**：只修單一 repo 不回填模板 → 下個新 repo 仍會踩同雷。
-
-⚠️ **Reference**：Issue #82 — CI workflow duplicate runs（原因：`push` 和 `pull_request` 事件在 same commit 上重複觸發）
+當任一 repo 的 `.drone.yml` 發現新陷阱：在來源 repo 修復（PR 含 root cause）→ **同步**回填 `references/ci-workflow-templates.md` + 本檔 → 開 issue 追蹤其他 repo。**禁止**只修單一 repo 不回填。
 
 ---
 
-## Code Review 設定
+## 部署（CD）與避免重複部署
+
+> 完整設定步驟、守衛邏輯、secret、收尾與踩坑見 `references/ci-workflow-templates.md`「CD 與避免重複部署」「部署收尾」章節。以下為核心規範。
+
+**Coolify auto-deploy 對每個 push main 都部署，包含 release-please 的純版號 commit** → 同一份程式碼被部署兩次（feature 合併一次、release PR 合併再一次）。解法是把部署觸發移到 Drone 並關閉 auto-deploy：
+
+1. **`.drone.yml` 加 `deploy` pipeline**（`push` main、`depends_on: [lint-typecheck, test]`、`clone: { disable: true }`）：curl Coolify deploy API，**守衛跳過 release commit**。
+2. **守衛**：`echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'`
+   - `head -1` 只看 subject（避免 squash body 某行誤匹配）；`release [0-9]` 要求版號數字（排除 `chore: release notes …` 誤判）。
+3. **Drone repo-scope secret `COOLIFY_DEPLOY_TOKEN`**（`pull_request: false`）。
+4. **關閉 Coolify `is_auto_deploy_enabled`**（先驗證 Drone→Coolify 接線可用再關，避免 prod 靜默停止部署）。
+
+**結果**：feature 合併 = 部署 1 次；release PR 合併 = 部署 0 次（守衛跳過，僅 release-please 建 tag）。
+
+**僅適用 Coolify-deployed repo**（web app）。**npm 套件 / MCP repo 不需要**——它們 publish 到 npm，只在 release commit 發布一次，無重複問題。Monorepo（多 app）須為每個 Coolify app 各設一個 deploy step。
+
+⚠️ **合併任何 PR 進 main 後務必確認 push webhook 有觸發 build**（GitHub 偶爾漏發 → release / deploy 卡住）；驗證與手動補 `release-please github-release` 見 reference。
+
+---
+
+## Code Review 設定（多數 repo 維持 GitHub Actions hybrid）
 
 > Copilot 指示模板、`claude-code-review.yml`、`claude.yml` 完整內容見 `references/code-review-setup.md`。
+
+**平台現況**：多數 repo 的 Claude Code Review 仍在 **GitHub Actions**（`claude-code-review.yml` + `claude.yml`，CI/release 已遷 Drone 但 review 留 GHA = hybrid）。例外：`entire` 已將 review 遷至 Drone `claude-review` pipeline（headless `claude -p` + 7-phase prompt + `gh pr review` 回填，`infra/ci-jurislm/claude-review.sh`），並移除了 `@claude` 互動（Drone 無 comment 觸發）。CodeRabbit / Copilot 等 bot review 與平台無關。
 
 **Checklist 快速說明**：
 - 建立 `.github/copilot-instructions.md`（依 repo 類型選用模板）
@@ -487,12 +463,13 @@ gh search code 'develop' --owner jurislm --filename ci.yml
 
 ## 新增 Repo Checklist
 
-完整 32 項 checklist（Git Worktree / Runtime / 測試 / Release / ESLint / CI / Code Review）見 `references/new-repo-checklist.md`。
+完整 checklist（Git Worktree / Runtime / 測試 / Release / ESLint / CI / CD / Code Review）見 `references/new-repo-checklist.md`。
 
 **快速概覽**（各類別必做項）：
 - **Worktree**：`git worktree add .worktrees/develop develop`，`.gitignore` 加 `.worktrees/`
 - **Bun**：`"packageManager": "bun@1.3.9"`，scripts 換成 `bun run vitest` 等
-- **Release**：`release.yml` 不寫 `release-type`（放在 config），Plugin repo 加 `extra-files`
+- **Release**：`.drone.yml` 的 `release-please` pipeline（push main only），`release-type` 放在 config，Plugin repo 加 `extra-files`，secret `RELEASE_PLEASE_TOKEN`
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.worktrees/`
-- **CI**：trigger 只有 `pull_request` + `push: main`，加 push-safe draft 條件
-- **Code Review**：`claude-code-review.yml` 要 `pull-requests: write`，勿用 `gh pr comment`
+- **CI**：`.drone.yml` 各 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）
+- **CD**（Coolify web app）：`.drone.yml` 加 `deploy` pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
+- **Code Review**（維持 GitHub Actions hybrid）：`claude-code-review.yml` 要 `pull-requests: write`，勿用 `gh pr comment`
