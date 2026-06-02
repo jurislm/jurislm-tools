@@ -10,7 +10,7 @@
 |------|------|------|
 | `repo-standards` skill | `plugins/repo-standards/skills/repo-standards/SKILL.md` | 規範主體（473 行，最大 skill） |
 | `/repo-standards` command | `plugins/repo-standards/commands/repo-standards.md` | 入口 command |
-| code-review-setup reference | `plugins/repo-standards/skills/repo-standards/references/code-review-setup.md` | GitHub Actions code review 設定 |
+| code-review-setup reference | `plugins/repo-standards/skills/repo-standards/references/code-review-setup.md` | Copilot 自訂指示設定（自動 Claude review 已移除，2026-06-02）|
 | eslint-templates reference | `plugins/repo-standards/skills/repo-standards/references/eslint-templates.md` | ESLint 設定模板 |
 
 ## Repo 分類
