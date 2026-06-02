@@ -416,11 +416,13 @@ done
 2. **守衛**：`echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'`
    - `head -1` 只看 subject（避免 squash body 某行誤匹配）；`release [0-9]` 要求版號數字（排除 `chore: release notes …` 誤判）。
 3. **Drone repo-scope secret `COOLIFY_DEPLOY_TOKEN`**（`pull_request: false`）。
-4. **關閉 Coolify `is_auto_deploy_enabled`**（先驗證 Drone→Coolify 接線可用再關，避免 prod 靜默停止部署）。
+4. **只關閉 PROD app 的 Coolify auto-deploy**（`is_auto_deploy_enabled`；先驗證 Drone→Coolify 接線可用再關，避免 prod 靜默停止部署）。
 
-**結果**：feature 合併 = 部署 1 次；release PR 合併 = 部署 0 次（守衛跳過，僅 release-please 建 tag）。
+**⚠️ deploy-gating 只針對 PROD（push main），不要碰 DEV**：重複部署問題只發生在 prod——release PR / 純版號 `chore` commit 合併進 main 會重觸發 prod 部署；dev（push develop）無 release PR、無此問題。且本標準 `trigger.ref` 慣例**不含 develop** → Drone 根本不在 develop push 建置 → 無法接管 dev 部署。故 **dev app 一律維持 Coolify auto-deploy 不動**；只為 prod app 設 Drone deploy pipeline + 關 prod auto-deploy。
 
-**僅適用 Coolify-deployed repo**（web app）。**npm 套件 / MCP repo 不需要**——它們 publish 到 npm，只在 release commit 發布一次，無重複問題。Monorepo（多 app）須為每個 Coolify app 各設一個 deploy step。
+**結果**：feature 合併進 main = prod 部署 1 次；release PR 合併進 main = prod 部署 0 次（守衛跳過，僅 release-please 建 tag）；dev 不受影響（仍由 Coolify auto-deploy on develop push）。
+
+**僅適用 Coolify-deployed repo**（web app）。**npm 套件 / MCP repo 不需要**——它們 publish 到 npm，只在 release commit 發布一次，無重複問題。Monorepo（多 app）須為每個 **prod** app 各設一個 deploy step（dev app 不設，維持 auto-deploy）。
 
 ⚠️ **合併任何 PR 進 main 後務必確認 push webhook 有觸發 build**（GitHub 偶爾漏發 → release / deploy 卡住）；驗證與手動補 `release-please github-release` 見 reference。
 

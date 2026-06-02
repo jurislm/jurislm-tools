@@ -240,7 +240,9 @@ steps:
 
 **問題**：Coolify auto-deploy 對**每一個** push 到 main 都部署，包含 release-please 的純版號 commit（`chore(main): release X.Y.Z`）。所以每次發版，**相同應用程式碼會被部署兩次**：feature 合併一次、release PR 合併再一次。
 
-**解法**：把部署觸發從 Coolify webhook 移到 Drone 的 `deploy` pipeline（可讀 `$DRONE_COMMIT_MESSAGE` 判斷），並**關閉 Coolify auto-deploy**。
+**解法**：把部署觸發從 Coolify webhook 移到 Drone 的 `deploy` pipeline（可讀 `$DRONE_COMMIT_MESSAGE` 判斷），並**關閉 PROD app 的 Coolify auto-deploy**。
+
+> **範圍：只 gate PROD（push main），DEV 維持 auto-deploy**。重複部署問題是 prod-only——release PR / 純版號 `chore` commit 合併進 main 才會重觸發部署；dev（push develop）無 release PR、無此問題。且本標準 `trigger.ref` 不含 develop → Drone **不在 develop push 建置** → 無法接管 dev 部署。故 dev app **一律維持 Coolify auto-deploy**；多 app 的 monorepo 只為每個 **prod** app 設 deploy step + 關該 prod app 的 auto-deploy。
 
 ### 設定步驟
 
@@ -252,7 +254,7 @@ steps:
 2. **加 Drone repo-scope secret `COOLIFY_DEPLOY_TOKEN`**（Drone Web UI Settings → Secrets，或 Drone API；設 `pull_request: false` 不暴露給 PR build）。
 3. **`.drone.yml` 加 `deploy` pipeline**（模板 A）+ 在 `lint-typecheck` / `test` 各步加同樣守衛。
 4. **驗證 Drone → Coolify 接線可用**（保留 auto-deploy 當安全網，合併一次觀察 Drone deploy pipeline 成功觸發 Coolify）。
-5. **確認 OK 後關閉 Coolify auto-deploy**（`is_auto_deploy_enabled = false`）。⚠️ Coolify GET application API **不回傳**此欄位，無法讀取驗證 → 用「合併後是否只有一次部署」行為驗證。
+5. **確認 OK 後只關閉 PROD app 的 Coolify auto-deploy**（`is_auto_deploy_enabled = false`；**dev app 不動**）。⚠️ Coolify GET application API **不回傳**此欄位，無法讀取驗證 → 用「合併後是否只有一次部署」行為驗證。
 
 ### 守衛邏輯（為何這樣寫）
 

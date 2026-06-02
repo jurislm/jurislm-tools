@@ -46,11 +46,13 @@
 
 ## CD（部署 — 僅 Coolify web app；npm / MCP repo 跳過此段）
 
-27. [ ] `.drone.yml` 加 `deploy` pipeline（`push` main、`depends_on: [lint-typecheck, test]`、`clone: { disable: true }`）
+> **只 gate PROD（push main）；DEV app 維持 Coolify auto-deploy**——重複部署是 prod-only（release PR / 純版號 chore 合併進 main 重觸發），dev 無此問題；且 `trigger.ref` 不含 develop，Drone 不在 develop push 建置故無法接管 dev 部署。
+
+27. [ ] `.drone.yml` 為每個 **prod** app 加 `deploy` pipeline/step（`push` main、`depends_on: [lint-typecheck, test]`、`clone: { disable: true }`）；dev app 不設
 28. [ ] `deploy` + `lint-typecheck` + `test` 各 step 加 release-commit 守衛：`echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'`
 29. [ ] Drone repo-scope secret 加 `COOLIFY_DEPLOY_TOKEN`（`pull_request: false`）
-30. [ ] 先驗證 Drone→Coolify deploy API 接線可用，再**關閉 Coolify `is_auto_deploy_enabled`**（避免 prod 靜默停止部署）
-31. [ ] 行為驗證：feature 合併 → 部署 **1 次**；release PR 合併 → 部署 **0 次**；並確認合併後 push webhook 有觸發 Drone build
+30. [ ] 先驗證 Drone→Coolify deploy API 接線可用，再**只關閉 PROD app 的 Coolify `is_auto_deploy_enabled`**（dev app 不動；避免 prod 靜默停止部署）
+31. [ ] 行為驗證：feature 合併進 main → prod 部署 **1 次**；release PR 合併 → prod 部署 **0 次**；dev 不受影響；並確認合併後 push webhook 有觸發 Drone build
 
 ## Code Review（人工 + bot；無自動 Claude review）
 
