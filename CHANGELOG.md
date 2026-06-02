@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.26.1](https://github.com/jurislm/jurislm-tools/compare/v1.26.0...v1.26.1) (2026-06-02)
+
+
+### 🐛 Bug Fixes
+
+* **repo-standards:** deploy-gating 明確只 gate PROD（dev 維持 auto-deploy） ([1e69c3f](https://github.com/jurislm/jurislm-tools/commit/1e69c3facdb5ef92492d7866d94752efe0dfe2f2))
+* **repo-standards:** 明確 deploy-gating 只 gate PROD，DEV 維持 Coolify auto-deploy ([1c8b841](https://github.com/jurislm/jurislm-tools/commit/1c8b841503cda2dfacbbe926a083c96fce007fc1))
+
 ## [1.26.0](https://github.com/jurislm/jurislm-tools/compare/v1.25.2...v1.26.0) (2026-06-02)
 
 
