@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.26.2](https://github.com/jurislm/jurislm-tools/compare/v1.26.1...v1.26.2) (2026-06-02)
+
+
+### 🐛 Bug Fixes
+
+* deploy-gating 守衛改 grep 全訊息，修正 merge commit 漏判 ([397ef9b](https://github.com/jurislm/jurislm-tools/commit/397ef9b349066afad805c049b740a42b86b9fc06))
+* deploy-gating 守衛改 grep 全訊息，修正 merge commit 漏判 ([6995dfd](https://github.com/jurislm/jurislm-tools/commit/6995dfdf2929a324716cad11c7dbbd0dd49abd4c))
+* deploy-gating 守衛改 grep 全訊息（merge commit 漏判修正） ([671f140](https://github.com/jurislm/jurislm-tools/commit/671f1401d4f4a65b796dd0580b6d956d3b3b67cd))
+
 ## [1.26.1](https://github.com/jurislm/jurislm-tools/compare/v1.26.0...v1.26.1) (2026-06-02)
 
 
