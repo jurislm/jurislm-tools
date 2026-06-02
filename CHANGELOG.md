@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.26.0](https://github.com/jurislm/jurislm-tools/compare/v1.25.2...v1.26.0) (2026-06-02)
+
+
+### 🚀 New Features
+
+* **repo-standards:** 移除自動 Claude code review，改為人工 /code-review + bot ([7dab2e0](https://github.com/jurislm/jurislm-tools/commit/7dab2e07b59a4f89ea73198944306f25dd41200c))
+* **repo-standards:** 移除自動 Claude code review（改人工 /code-review + bot） ([a4afd05](https://github.com/jurislm/jurislm-tools/commit/a4afd05f0f52d290a525b617d53cfcd37d1fe72e))
+
 ## [1.25.2](https://github.com/jurislm/jurislm-tools/compare/v1.25.1...v1.25.2) (2026-06-01)
 
 
