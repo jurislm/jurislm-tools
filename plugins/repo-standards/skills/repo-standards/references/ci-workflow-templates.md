@@ -64,7 +64,7 @@ steps:
       # ⚠️ 守衛必須在「每個」step 重複：install 用 exit 0（成功）跳過後，Drone 仍會
       #    啟動 depends_on 的後續 step，故各 step 都需自帶守衛才能真正跳過實際工作。
       - |
-        if echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'; then
+        if echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'; then
           echo "release-please version bump — skip (no app code change)"; exit 0
         fi
       - bun install --frozen-lockfile
@@ -74,7 +74,7 @@ steps:
     depends_on: [install]
     commands:
       - |
-        if echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'; then
+        if echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'; then
           echo "release-please version bump — skip"; exit 0
         fi
       - bun run lint
@@ -94,7 +94,7 @@ steps:
     image: oven/bun:1.3.14
     commands:
       - |
-        if echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'; then
+        if echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'; then
           echo "release-please version bump — skip"; exit 0
         fi
       - bun install --frozen-lockfile
@@ -104,7 +104,7 @@ steps:
     depends_on: [install]
     commands:
       - |
-        if echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'; then
+        if echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'; then
           echo "release-please version bump — skip"; exit 0
         fi
       - bun run test
@@ -147,7 +147,7 @@ steps:
       COOLIFY_DEPLOY_TOKEN: { from_secret: COOLIFY_DEPLOY_TOKEN }
     commands:
       - |
-        if echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'; then
+        if echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'; then
           echo "release-please version bump — skip deploy (app code unchanged)"; exit 0
         fi
         echo "Triggering Coolify deploy…"
@@ -192,7 +192,7 @@ steps:
     commands:
       - |
         # 只在 release commit（github-release 剛 cut）時發布；非 release commit 跳過
-        if echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'; then
+        if echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'; then
           echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
           bun install --frozen-lockfile && bun run build && bun publish --access public
         else
@@ -259,12 +259,13 @@ steps:
 ### 守衛邏輯（為何這樣寫）
 
 ```sh
-echo "$DRONE_COMMIT_MESSAGE" | head -1 | grep -qE '^chore(\(.+\))?: release [0-9]'
+echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'
 ```
 
-- **`head -1`**：`DRONE_COMMIT_MESSAGE` 含 subject + body；`grep` 的 `^` 會匹配**任一行** → 只取 subject，避免 squash body 某行誤匹配而誤跳過部署。
+- **grep 全訊息（勿加 `head -1`）**：`DRONE_COMMIT_MESSAGE` 含 subject + body。release PR 以 **merge commit** 合併時，HEAD subject 為 `Merge pull request #N from …release-please…`、真正的 `chore(main): release X.Y.Z` 落在 commit **body**；若加 `head -1` 只看 subject 會**漏判 → release commit 誤觸發部署**（2026-06-02 entire #383 → build #225 實證冗餘部署 4 prod app）。grep 全訊息（不限行）同時涵蓋 merge commit（body 行命中）與 squash 合併（subject 命中）。
 - **`release [0-9]`**：要求版號數字，排除 `chore: release notes …` 之類人為 commit 誤判。
-- squash 合併 release PR 後 subject 為 `chore(main): release 1.2.0 (#NN)` → 命中 → 跳過；feature / fix / 一般 chore → 不命中 → 部署。
+- merge commit 訊息含 `chore(main): release 1.2.0`（body）、squash 為 `chore(main): release 1.2.0 (#NN)`（subject）→ 皆命中 → 跳過；feature / fix / 一般 chore（含 feature merge 的 body = PR 標題）不含「`release <數字>`」行 → 不命中 → 部署。
+- ⚠️ **本 repo 以 merge commit 合併 PR 時務必用全訊息 grep**；即使改用 squash 合併，全訊息 grep 仍正確（subject 命中），故此為通用安全寫法。
 
 ### 結果
 
