@@ -3,12 +3,12 @@ name: repo-standards
 description: >
   Set up or audit a JurisLM repo — configure git worktrees, Bun runtime, Vitest, Drone CI/CD
   (.drone.yml: lint/typecheck/test + release-please + Coolify deploy gating), Release Please,
-  ESLint, and Claude code review.
+  ESLint, and code review (manual /code-review + bots).
   Use when: "如何設定新 repo", "release workflow 怎麼寫", "lint 怎麼設定", "eslint config 怎麼寫",
   "新增 repo 要怎麼設定", "git worktree 怎麼設定", "設定 code review workflow", "設定 Drone CI",
   "drone.yml 怎麼寫", "CI 怎麼設定", "部署怎麼設定", "避免重複部署",
   "set up new repo", "configure ESLint", "set up release workflow", "set up git worktree",
-  "set up Drone CI", "configure CD / deploy gating", "configure Claude code review".
+  "set up Drone CI", "configure CD / deploy gating".
 argument-hint: "[repo-name]"
 ---
 

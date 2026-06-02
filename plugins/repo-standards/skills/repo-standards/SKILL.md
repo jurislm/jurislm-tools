@@ -8,7 +8,7 @@ description: >
   "git worktree 怎麼設定", "設定 code review workflow", "設定 Drone CI", "drone.yml 怎麼寫",
   "CI 怎麼設定", "部署怎麼設定", "避免重複部署", "deploy gating", "Coolify 部署 pipeline",
   "set up new repo", "configure ESLint", "set up release workflow", "set up Drone CI",
-  "set up git worktree", "configure Claude code review", "add a .drone.yml pipeline",
+  "set up git worktree", "add a .drone.yml pipeline",
   "avoid duplicate deploy", "configure CD / deploy",
   "設定 Vitest", "設定 Bun", "設定測試框架",
   "upgrade to ESLint 9", "migrate to flat config", "audit CI setup", "check release workflow",
@@ -428,41 +428,13 @@ done
 
 ## Code Review 設定
 
-> Copilot 指示模板、`claude-code-review.yml`、`claude.yml` 完整內容見 `references/code-review-setup.md`。
+標準**不含**自動 Claude PR 審查（2026-06-02 移除：`claude-code-review.yml` / `claude.yml` / Drone `claude-review` pipeline 皆不再設定，`CLAUDE_CODE_OAUTH_TOKEN` secret 不需要）。code review 採三層：
 
-**執行環境（同一 repo 二擇一，勿並行）**：
-- **GitHub Actions**：`claude-code-review.yml`（PR 自動審）+ `claude.yml`（`@claude` 互動）。
-- **Drone**：`claude-review` pipeline（headless `claude -p` + 7-phase prompt + `gh pr review` 回填，見模板 B / `infra/ci-jurislm/claude-review.sh`）；Drone 無 comment 觸發，故無 `@claude` 互動。
+- **人工 `/code-review`**：發 PR 前必跑多角度 review（見全域 CLAUDE.md PR 流程）。
+- **Bot 自動審查**（獨立運作、無需額外 CI 設定）：**CodeRabbit**（PR 自動回審）+ **GitHub Copilot**（透過 `.github/copilot-instructions.md` 客製化指示；首行加「請使用繁體中文回覆所有問題與建議。」；模板見 `references/code-review-setup.md`）。
+- **Review 發布**：正式 review 用 `gh pr review <number> --comment --body-file review.md`（顯示在 Reviews 區），**勿**用 `gh pr comment`（發到一般留言區）。
 
-CodeRabbit / Copilot 等 bot review 與上述平台無關，獨立運作。
-
-**Checklist 快速說明**：
-- 建立 `.github/copilot-instructions.md`（依 repo 類型選用模板）
-- 建立 `claude-code-review.yml`（使用 `@v1`，完整 6-phase prompt，支援 profile switch）
-- 建立 `claude.yml`（`@claude` 互動觸發）
-- 在 repo Settings → Secrets 加入 `CLAUDE_CODE_OAUTH_TOKEN`（從本機 Keychain 取得：`security find-generic-password -s "Claude" -w`）
-
-**claude-code-review.yml 核心功能**（詳見 `references/code-review-setup.md`）：
-- **Profile 切換**：預設 chill（HIGH/CRITICAL only），加 label `review:assertive` 或 `workflow_dispatch` 切換為 assertive（也輸出 MEDIUM/LOW）
-- **Path filter**：自動忽略 lock file、generated、binary、snapshot 等非業務檔案
-- **CLAUDE.md rulebook**：自動提取 `❌ / 禁止 / MUST / NEVER` 規則，違反即 HIGH minimum
-- **Diff-bounded scope**：只審查此 PR 修改的行，不標記既有程式碼
-- **Finding cap**：diff < 100 行最多 5 條，100–500 行 7 條，> 500 行 10 條
-- **Mechanical conclusion**：有 HIGH/CRITICAL → 需修改；否則 → 可合併（不以建議數量決定）
-
-**權限規則（容易出錯）**：
-- `claude-code-review.yml`：`pull-requests: write`（需要發布 review）
-- `claude.yml`：`pull-requests: write` + `issues: write`（需要回覆 @mention）
-- 若誤設為 `read`，Claude 能讀取但無法回覆，靜默失敗
-
-**Review 發布方式**：
-- ✅ 使用 `gh pr review <number> --comment --body-file review.md`（正式 PR review，顯示在 Reviews 區，與 Copilot 並列）
-- ❌ 勿使用 `gh pr comment`（發到一般留言區，不在 Reviews 區）
-
-**勿使用 `/install-github-app` 產生的 plugin 方式**：
-- `code-review@claude-code-plugins` 曾因 bash 安全過濾器（攔截含 `\n#` 的命令）失效
-- 會錯誤地降低 `pull-requests` 和 `issues` 為 `read`，且移除 `system_prompt` 繁中設定
-- 自訂 prompt 方式已驗證有效，格式與語言可控
+> 為何移除自動 Claude 審查：用戶決定改回人工 `/code-review` + bot；自動 Claude pipeline 每 PR 計費且維運成本高。
 
 ---
 
@@ -477,4 +449,4 @@ CodeRabbit / Copilot 等 bot review 與上述平台無關，獨立運作。
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.worktrees/`
 - **CI**：`.drone.yml` 各 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）
 - **CD**（Coolify web app）：`.drone.yml` 加 `deploy` pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
-- **Code Review**（GitHub Actions 或 Drone，二擇一）：GHA `claude-code-review.yml` 要 `pull-requests: write`，勿用 `gh pr comment`
+- **Code Review**：人工 `/code-review` + bot（CodeRabbit / Copilot via `.github/copilot-instructions.md`）；**無**自動 Claude review（2026-06-02 移除）
