@@ -81,6 +81,7 @@ export LANGFUSE_HOST="https://us.cloud.langfuse.com"
   - `Validate Marketplace JSON`
   - `Validate Release Manifest`
   - `Check Version Sync`
+- `Check Version Sync`：呼叫 `scripts/check-version-sync.mjs`，動態依 `release-please-config.json` 的 `extra-files` 驗證版本一致性
 - 前置需求：上述 actions 依賴 `jq`
   - macOS（Homebrew）：`brew install jq`
   - 其他平台：請用對應套件管理器安裝 `jq`

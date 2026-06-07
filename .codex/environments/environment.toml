@@ -26,4 +26,4 @@ command = "jq . .release-please-manifest.json"
 [[actions]]
 name = "Check Version Sync"
 icon = "run"
-command = "jq -n -e --slurpfile marketplace .claude-plugin/marketplace.json --slurpfile manifest .release-please-manifest.json '$marketplace[0].plugins[0].version == $manifest[0][\".\"]'"
+command = "node scripts/check-version-sync.mjs"
