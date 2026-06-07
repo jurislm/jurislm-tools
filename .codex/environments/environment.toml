@@ -1,0 +1,12 @@
+version = 1
+name = "jurislm-tools"
+
+[setup]
+script = '''
+cd "$CODEX_WORKTREE_PATH"
+# This repository is Markdown/JSON-first and does not need dependency bootstrap.
+true
+'''
+
+[cleanup]
+script = "true"
