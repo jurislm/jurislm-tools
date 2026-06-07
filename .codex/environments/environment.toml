@@ -2,11 +2,28 @@ version = 1
 name = "jurislm-tools"
 
 [setup]
-script = '''
-cd "$CODEX_WORKTREE_PATH"
-# This repository is Markdown/JSON-first and does not need dependency bootstrap.
-true
-'''
+script = "true"
+
+[setup.windows]
+script = "Write-Host \"No setup required for jurislm-tools.\""
 
 [cleanup]
 script = "true"
+
+[cleanup.windows]
+script = "Write-Host \"No cleanup required for jurislm-tools.\""
+
+[[actions]]
+name = "Validate Marketplace JSON"
+icon = "run"
+command = "jq . .claude-plugin/marketplace.json"
+
+[[actions]]
+name = "Validate Release Manifest"
+icon = "run"
+command = "jq . .release-please-manifest.json"
+
+[[actions]]
+name = "Check Version Sync"
+icon = "run"
+command = "jq -n -e --slurpfile marketplace .claude-plugin/marketplace.json --slurpfile manifest .release-please-manifest.json '$marketplace[0].plugins[0].version == $manifest[0][\".\"]'"

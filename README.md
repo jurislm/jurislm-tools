@@ -67,6 +67,24 @@ export LANGFUSE_HOST="https://us.cloud.langfuse.com"
 
 設定後重啟 Claude Code。
 
+## Codex App Local Environments
+
+此 repo 另外提供 Codex app 的專案共用 local environment：
+
+- 路徑：`.codex/environments/environment.toml`
+- 用途：定義 worktree 建立時的 setup 與 Codex app 頂部 actions
+
+目前設定包含：
+
+- `setup`：刻意維持 no-op。此 repo 為 Markdown / JSON 為主，不需要在新 worktree 自動安裝依賴或 build。
+- `actions`：
+  - `Validate Marketplace JSON`
+  - `Validate Release Manifest`
+  - `Check Version Sync`
+- 前置需求：上述 actions 依賴 `jq`
+  - macOS（Homebrew）：`brew install jq`
+  - 其他平台：請用對應套件管理器安裝 `jq`
+
 ## 授權
 
 UNLICENSED
