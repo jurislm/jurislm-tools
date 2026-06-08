@@ -41,6 +41,21 @@
         },
         {
           "type": "json",
+          "path": "plugins/code-review/.claude-plugin/plugin.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "plugins/code-review/.claude-plugin/marketplace.json",
+          "jsonpath": "$.metadata.version"
+        },
+        {
+          "type": "json",
+          "path": "plugins/code-review/.claude-plugin/marketplace.json",
+          "jsonpath": "$.plugins[0].version"
+        },
+        {
+          "type": "json",
           "path": "plugins/podcast-to-blog/.claude-plugin/plugin.json",
           "jsonpath": "$.version"
         },
