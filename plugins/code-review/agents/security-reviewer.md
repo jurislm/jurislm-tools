@@ -45,8 +45,8 @@ npx eslint . --plugin security
 ## Review Workflow
 
 ### 1. Initial Scan
-- Run `npm audit`, `eslint-plugin-security`, search for hardcoded secrets
-- Review high-risk areas: auth, API endpoints, DB queries, file uploads, payments, webhooks
+- Use changed files, diff context, and any active security skill context provided by `/code-review` first.
+- If invoked standalone without orchestration context, run the smallest relevant security checks available for the changed surface, then review high-risk areas: auth, API endpoints, DB queries, file uploads, payments, webhooks.
 
 ### 2. OWASP Top 10 Check
 1. **Injection** — Queries parameterized? User input sanitized? ORMs used safely?

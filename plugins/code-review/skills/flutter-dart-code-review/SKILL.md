@@ -1,6 +1,10 @@
 ---
 name: flutter-dart-code-review
-description: This skill should be used when the user asks to review Flutter or Dart code, or when reviewing changes to .dart files. Provides a library-agnostic Flutter/Dart review checklist covering widget best practices, state management patterns (BLoC, Riverpod, Provider, GetX, MobX, Signals), Dart idioms, performance, accessibility, security, and clean architecture.
+version: 1.0.0
+description: >
+  當使用者要求審查 Flutter/Dart 程式碼，或有 `.dart` 變更時，請使用本技能，提供跨框架
+  的 Flutter/Dart 程式碼審查檢核（含元件、狀態管理、效能、可近用性、安全與架構）。
+argument-hint: "[no arguments]"
 ---
 
 # Flutter/Dart Code Review Best Practices

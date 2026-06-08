@@ -39,12 +39,12 @@ cat pom.xml 2>/dev/null || cat build.gradle 2>/dev/null || cat build.gradle.kts 
 - If neither is detected → review using general Java rules only and note the ambiguity
 
 Then proceed:
-1. Run `git diff -- '*.java'` to see recent Java file changes
-2. Run the appropriate build check:
+1. If `/code-review` provided changed files or diff context, use that Java review scope first. Otherwise inspect recent Java changes with `git diff -- '*.java'`.
+2. Run the appropriate build check when it is available and relevant to the changed surface:
    - **[SPRING]**: `./mvnw verify -q` or `./gradlew check`
    - **[QUARKUS]**: `./mvnw verify -q` or `./gradlew check`
-3. Focus on modified `.java` files
-4. Begin review immediately
+3. Focus on modified `.java` files and their surrounding context.
+4. Begin review immediately.
 
 You DO NOT refactor or rewrite code — you report findings only.
 

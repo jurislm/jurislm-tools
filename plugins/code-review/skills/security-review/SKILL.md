@@ -1,6 +1,10 @@
 ---
 name: security-review
-description: This skill should be used when the user is adding authentication or authorization, handling user input or file uploads, working with secrets or credentials, creating API endpoints, implementing payment or sensitive-data features, or integrating third-party APIs. Provides a comprehensive security checklist with FAIL/PASS code examples covering secrets management, input validation, authentication, cryptography, and dependency security.
+version: 1.1.0
+description: >
+  當使用者進行認證授權、處理使用者輸入或上傳、操作憑證、建立 API 介面、導入金流
+  或敏感資料功能、整合第三方 API 時，請使用本技能，並套用完整資安檢核清單。
+argument-hint: "[no arguments]"
 ---
 
 # Security Review Skill
@@ -16,6 +20,13 @@ This skill ensures all code follows security best practices and identifies poten
 - Implementing payment features
 - Storing or transmitting sensitive data
 - Integrating third-party APIs
+
+## Additional Resources
+
+Load `references/cloud-infrastructure-security.md` when the review touches cloud
+or infrastructure concerns such as IAM, service accounts, CI/CD credentials,
+bucket policies, CDN or edge exposure, secrets managers, Terraform or
+CloudFormation, public ingress, VPC or firewall rules, or disaster recovery.
 
 ## Security Checklist
 
@@ -501,7 +512,7 @@ Before ANY production deployment:
 
 For cloud infrastructure-specific security review (IAM, network policies, storage permissions, container security), see the companion reference:
 
-→ [cloud-infrastructure-security.md](./cloud-infrastructure-security.md)
+→ [cloud-infrastructure-security.md](./references/cloud-infrastructure-security.md)
 
 ---
 

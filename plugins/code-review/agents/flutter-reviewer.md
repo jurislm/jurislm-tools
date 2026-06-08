@@ -36,7 +36,9 @@ You are a senior Flutter and Dart code reviewer ensuring idiomatic, performant, 
 
 ### Step 1: Gather Context
 
-Run `git diff --staged` and `git diff` to see changes. If no diff, check `git log --oneline -5`. Identify changed Dart files.
+Use changed files and diff context from `/code-review` when available. If invoked
+standalone, inspect staged diff, working-tree diff, or recent commits to
+identify changed Dart files.
 
 ### Step 2: Understand Project Structure
 

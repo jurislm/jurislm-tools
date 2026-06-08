@@ -27,11 +27,11 @@ You are a senior Django code reviewer ensuring production-grade quality, securit
 **Note**: This agent focuses on Django-specific concerns. Ensure `python-reviewer` has been invoked for general Python quality checks before or after this review.
 
 When invoked:
-1. Run `git diff -- '*.py'` to see recent Python file changes
-2. Run `python manage.py check` if a Django project is present
-3. Run `ruff check .` and `mypy .` if available
-4. Focus on modified `.py` files and any related migrations
-5. Assume CI checks have passed (orchestration gated); if CI status needs verification, run `gh pr checks` to confirm green before proceeding
+1. If `/code-review` provided changed files or diff context, use that Django review scope first. Otherwise inspect recent Python and migration changes with `git diff -- '*.py'`.
+2. Run `python manage.py check` if a Django project is present.
+3. Run `ruff check .` and `mypy .` if available and relevant to the changed surface.
+4. Focus on modified `.py` files and any related migrations.
+5. Assume CI checks have passed when the review was orchestrated by `/code-review`; if invoked standalone and CI status matters, verify it explicitly before proceeding.
 
 ## Review Priorities
 

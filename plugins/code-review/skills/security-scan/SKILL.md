@@ -1,6 +1,10 @@
 ---
 name: security-scan
-description: This skill should be used when the user asks to "scan my .claude config", "check settings.json for security issues", "audit hooks/MCP/agents for vulnerabilities", or wants to find misconfigurations, injection risks, and security vulnerabilities in Claude Code configuration (CLAUDE.md, settings.json, MCP servers, hooks, agent definitions) using AgentShield.
+version: 1.0.0
+description: >
+  當使用者要求掃描 `.claude` 設定、檢查 `settings.json` 安全風險、稽核 hook/MCP/agents
+  或查找設定檔中的錯誤設定與注入風險時，請使用本技能，並以 AgentShield 做安全掃描。
+argument-hint: "[no arguments]"
 ---
 
 # Security Scan Skill

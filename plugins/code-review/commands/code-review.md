@@ -10,6 +10,15 @@ argument-hint: [pr-number | pr-url | --from=<commit> | --focus=comments|tests|er
 
 **Input**: $ARGUMENTS
 
+Before dispatching any specialist agents or loading any companion skills, read
+`plugins/code-review/references/code-review-routing.md`. Treat that file as the
+single source of truth for:
+
+- core pipeline agents
+- specialist agent routing
+- skill routing
+- fast-path versus full-path rules
+
 ---
 
 ## Mode Selection
@@ -36,16 +45,38 @@ Both modes run the **same full pipeline** — code graph → parallel stack (8 g
 
 ---
 
+## Orchestration Contract
+
+The command is the pipeline controller. Do not turn it into a monolithic
+reviewer. Its responsibilities are:
+
+1. Gather review inputs.
+2. Classify changed files.
+3. Select specialist agents from the routing matrix.
+4. Build code-graph impact map.
+5. Select supporting skills from the routing matrix.
+6. Run the core review pipeline in the prescribed order.
+7. Aggregate and publish or report the result.
+
+Agents perform the review. Skills provide reusable workflow guidance and
+reference material. Do not treat skills as standalone parallel reviewers.
+
+---
+
 ## Language / Framework Auto-Dispatch
 
-**This is the core of the unified command.** Both modes run this classification to decide which specialist agents to add. Agents are added **only when a matching file is detected** — zero matches means zero extra agents (no waste).
+Both modes run this classification to decide which specialist agents and
+supporting skills to add. Agents and skills are added **only when a matching
+signal is detected** — zero matches means no extra routing.
 
 ### Step A — Map changed files to language agents (by extension)
 
 ```bash
 # $CHANGED_FILES = newline-separated list of changed paths (set per mode below)
 SPECIALIST_AGENTS=""
+ACTIVE_SKILLS=""
 add_agent() { case "$SPECIALIST_AGENTS" in *"$1"*) ;; *) SPECIALIST_AGENTS="${SPECIALIST_AGENTS:+$SPECIALIST_AGENTS }$1" ;; esac; }
+add_skill() { case "$ACTIVE_SKILLS" in *"$1"*) ;; *) ACTIVE_SKILLS="${ACTIVE_SKILLS:+$ACTIVE_SKILLS }$1" ;; esac; }
 
 while IFS= read -r file; do
   [ -z "$file" ] && continue
@@ -70,7 +101,11 @@ done <<< "$CHANGED_FILES"
 
 ### Step B — Framework detection (content-based, refines language agents)
 
-After the extension pass, inspect file content to add framework specialists. Only add when the signal is present in a changed file (grep the diff or the file at head):
+After the extension pass, inspect file content to add framework specialists and
+supporting skills. Only add when the signal is present in a changed file (grep
+the diff or the file at head). Use
+`plugins/code-review/references/code-review-routing.md` as the single source of
+truth for the routing rules.
 
 | Framework | Signal (in changed files) | Add agent |
 |---|---|---|
@@ -88,7 +123,19 @@ Two domains have **content-based dispatch** (no reliable extension — grep diff
 | **ML / MLOps** | `torch`, `tensorflow`, `sklearn`, `model.fit`, `model.predict`, `feature_store`, `mlflow`, `wandb`, `ray` in source files | `code-review:mle-reviewer` |
 > Framework agents **supplement**, not replace, the language agent (e.g. a Django change runs both `code-review:python-reviewer` and `code-review:django-reviewer`).
 
-`$SPECIALIST_AGENTS` (deduplicated) is now the set of language/framework agents to add to the review.
+### Step C — Skill activation
+
+Use the routing matrix to compute `$ACTIVE_SKILLS`:
+
+- Add `code-review:security-review` for auth, secrets, file upload, payment,
+  sensitive data, API, cloud IAM, or CI/CD credential signals.
+- Add `code-review:security-scan` for explicit security-only review, suspicious
+  credential exposure, or when the docs/config fast path finds possible secrets.
+- Add `code-review:flutter-dart-code-review` when Flutter or Dart signals are present.
+
+`$SPECIALIST_AGENTS` (deduplicated) is now the set of language/framework agents
+to add to the review. `$ACTIVE_SKILLS` is the set of skill contexts to load and
+pass to matching agents.
 
 ---
 
@@ -120,13 +167,27 @@ Set `CHANGED_FILES` from the combined output above. On Windows, strip carriage r
 
 Run the same file classification as GitHub PR mode Phase 1.5 (populate `$LOGIC_FILES` / `$SECURITY_FILES`), then run **Language / Framework Auto-Dispatch** (above) to compute `$SPECIALIST_AGENTS`. Announce what was detected, e.g. `Detected: code-review:python-reviewer, code-review:django-reviewer`. The Fast Path (docs/config only → secret scan only) applies here too.
 
-### Phase 2 — CONTEXT & CODE GRAPH
+Build `IMPACT_MAP` immediately after dispatch by running `code-review:code-graph-analyzer` with cache key `local-<sha8>` (`git rev-parse --short=8 HEAD`) before context loading. Store the returned markdown as `IMPACT_MAP` for use by all Phase 3 agents.
 
-Run GitHub PR mode Phases 2 and 2.5 against the working tree: load project rules and `.claude/review-paths.yaml`, trace callers, run static analysis (capture as context), and run `code-review:code-graph-analyzer` (cache key `local-<sha8>` from `git rev-parse --short=8 HEAD`). Store the result as `IMPACT_MAP`.
+If `code-review:code-graph-analyzer` times out or errors, keep `IMPACT_MAP` empty and continue.
+Also compute `$ACTIVE_SKILLS` from the routing matrix and announce it, e.g.
+`Loaded skills: code-review:security-review`. If cloud or infrastructure signals
+are present, load
+`plugins/code-review/skills/security-review/references/cloud-infrastructure-security.md`
+through the `code-review:security-review` skill context.
+
+### Phase 2 — CONTEXT
+
+Run the local working-tree context workflow: read project rules and `.claude/review-paths.yaml`, trace callers, and run static analysis (capture as context). `IMPACT_MAP` was already prepared during Phase 1.5.
+Before launching specialist agents, load the workflow guidance for every skill in
+`$ACTIVE_SKILLS` and pass only the relevant parts to the matching reviewers.
 
 ### Phase 3 — REVIEW (parallel agents)
 
 Run the **full parallel agent pool** exactly as GitHub PR mode Phase 3: the 8 general agents (`code-review:code-reviewer` anchor + `code-review:security-reviewer` + the six collaborators) **plus** every agent in `$SPECIALIST_AGENTS`. Each agent reads changed files **in full from the working tree** using the `Read` tool (not `gh api`) — the list of files to read is `$CHANGED_FILES` from Phase 1. `--focus` filtering applies identically to GitHub PR mode; `pr-walkthrough-writer` is skipped when `--focus` is set. The always-on `$SPECIALIST_AGENTS` run regardless of `--focus`.
+When a skill in `$ACTIVE_SKILLS` matches a selected specialist or security-sensitive
+code path, include the skill guidance in that agent's prompt instead of duplicating
+the checklist inside this command.
 
 ### Phase 3.5 — VERIFICATION PASS
 
@@ -194,7 +255,11 @@ done <<< "$CHANGED_FILES"
 
 `$LOGIC_FILES` and `$SECURITY_FILES` are now available for Phase 2.5.
 
-**Language/framework dispatch** — run the **Language / Framework Auto-Dispatch** section (above) over `$CHANGED_FILES` to compute `$SPECIALIST_AGENTS`. These are added to the parallel pool in Phase 3.
+**Language/framework dispatch** — run the **Language / Framework Auto-Dispatch** section (above) over `$CHANGED_FILES` to compute `$SPECIALIST_AGENTS`, then compute `$ACTIVE_SKILLS` from the routing matrix. Immediately build `IMPACT_MAP` by running `code-review:code-graph-analyzer` with cache key `pr-<number>-<first8charsOfHeadSha>` and store it for Phase 3 agents.
+
+If `code-review:code-graph-analyzer` errors or times out, continue with an empty `IMPACT_MAP` and proceed.
+
+These dispatched agents are added to the review pipeline in Phase 3.
 
 **Fast Path** (only DOCS + CONFIG + OTHER — zero LOGIC/SECURITY files):
 - Skip Phases 2, 2.5, 3, 3.5, 4
@@ -269,9 +334,9 @@ Build review context:
    ```
    Note failing checks at the top of Phase 3 with `⚠️ CI failing: <check_name>` and elevate those code paths. Do not block on it.
 
-### Phase 2.5 — CODE GRAPH
+### Phase 2.5 — IMPACT MAP READINESS
 
-Run `code-review:code-graph-analyzer` **sequentially** (wait for the result before Phase 3). Provides cross-file dependency context unavailable from the diff alone.
+If `IMPACT_MAP` is still empty from Phase 1.5, run `code-review:code-graph-analyzer` now **sequentially** (wait for the result before Phase 3). This is the final chance to populate cross-file dependency context.
 
 Pass to the agent:
 - `$LOGIC_FILES` and `$SECURITY_FILES` from Phase 1.5 (excludes DOCS/CONFIG/TEST)
@@ -313,6 +378,12 @@ done
 - `code-review:pr-walkthrough-writer` — structured walkthrough + Mermaid diagram (skip when `--focus` is set); **store output as `WALKTHROUGH_OUTPUT`**
 
 **Specialist agents (auto-dispatched):** every agent in `$SPECIALIST_AGENTS` (from Phase 1.5) runs alongside the general pool, scoped to its language/framework files.
+
+**Supporting skills:** every skill in `$ACTIVE_SKILLS` is loaded as workflow
+context for the matching agents. Example: `code-review:security-review` augments
+`code-review:security-reviewer` and any specialist reviewing auth, secret, or
+cloud-infra changes; `code-review:flutter-dart-code-review` augments
+`code-review:flutter-reviewer`.
 
 **`--focus` filtering** — `code-review:code-reviewer` always runs. The auto-dispatched `$SPECIALIST_AGENTS` always run (language coverage is independent of focus). When `--focus` is specified, validate it first:
 
@@ -386,7 +457,7 @@ LOW_NITPICK_LIST=<formatted markdown list of all LOW and NITPICK findings>
 | Any CRITICAL | **BLOCK** — must fix before merge |
 
 Special cases:
-- Draft PR (GitHub) → always **COMMENT**. (Bitbucket Cloud has no draft state — OPEN/MERGED/DECLINED/SUPERSEDED only.)
+- Draft PR (GitHub) → always **COMMENT**. (Bitbucket has no draft state — OPEN/MERGED/DECLINED/SUPERSEDED only.)
 - Only docs/config → lighter review, focus on correctness.
 - Explicit `--approve` / `--request-changes` flag → override decision (still report all findings).
 
@@ -507,6 +578,8 @@ If the fix replaces **exactly one line** with **exactly one line**, append a com
 {fixed_line_content}
 ```
 
+````
+
 ```bash
 HEAD_SHA=$(gh pr view <NUMBER> --json headRefOid --jq .headRefOid)
 gh api "repos/{owner}/{repo}/pulls/<NUMBER>/comments" \
@@ -586,7 +659,7 @@ Artifacts:
 
 ## Bitbucket PR Review Mode
 
-Comprehensive Bitbucket Cloud PR review via REST API v2.0. Same phase structure as GitHub mode (classify & dispatch, context, code graph, parallel agents, verification, aggregate, decide, publish) — only the API calls differ.
+Comprehensive Bitbucket PR review via REST API v2.0. Same phase structure as GitHub mode (classify & dispatch, context, code graph, parallel agents, verification, aggregate, decide, publish) — only the API calls differ.
 
 **Prerequisites**:
 - `BB_USERNAME` — Bitbucket account name
@@ -699,7 +772,7 @@ curl -s -X POST -u "$BB_USERNAME:$BB_APP_PASSWORD" -H "Content-Type: application
 
 ```text
 PR #<ID>: <TITLE>
-Platform: Bitbucket Cloud
+Platform: Bitbucket
 Decision: <APPROVE|REQUEST_CHANGES|BLOCK>
 Specialists: <list of $SPECIALIST_AGENTS or "none">
 

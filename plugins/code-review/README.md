@@ -19,7 +19,7 @@
 | 🤖 **27 個 Agent** | TypeScript · Python · Go · Rust · Java · Kotlin · Swift · C++ · C# · F# · Django · FastAPI · Flutter · DB · Healthcare · ML + Code Graph Analyzer + Verification + PR Walkthrough |
 | 🧭 **單一 `/code-review`，自動 dispatch** | 一個 command 搞定全部。依變更檔案副檔名自動偵測語言/框架（`.py`→python-reviewer、`.go`→go-reviewer、Django/FastAPI/Flutter 以內容輔助），自動加對應專項 agent — 不用再記每個語言的 command |
 | ⚡ **Code Graph + 八 Agent 並行** | PR 模式先執行 `code-graph-analyzer`（import deps + co-change risk），結果快取至 `.claude/code-graph/`；再並行啟動 8 通用 agent + 自動 dispatch 的語言 agent；HIGH/CRITICAL finding 由 `verification-reviewer` 二次確認 |
-| 🔗 **雙平台 PR Review** | 自動偵測 GitHub（`gh` CLI）或 Bitbucket Cloud（REST API v2.0） |
+| 🔗 **雙平台 PR Review** | 自動偵測 GitHub（`gh` CLI）或 Bitbucket（REST API v2.0） |
 | 🔒 **多層安全掃描** | OWASP Top 10 · PHI/HIPAA · Claude Code 設定掃描 |
 | 🎯 **高信心原則** | 只報告 >80% 確信的問題，零 finding = APPROVE，不製造雜訊 |
 
@@ -132,12 +132,12 @@ cp -r skills/* ~/.claude/skills/
 
 ### 2. PR Review
 
-支援 **GitHub** 和 **Bitbucket Cloud**，自動依 URL 或 git remote 偵測平台。
+支援 **GitHub** 和 **Bitbucket**，自動依 URL 或 git remote 偵測平台。
 
 | 平台 | 前置條件 | 指令範例 |
 |------|---------|---------|
 | **GitHub** | 安裝 [`gh` CLI](https://cli.github.com/) | `/code-review 123` |
-| **Bitbucket Cloud** | 設定 `BB_USERNAME` + `BB_APP_PASSWORD`（見下方） | `/code-review https://bitbucket.org/ws/repo/pull-requests/123` |
+| **Bitbucket** | 設定 `BB_USERNAME` + `BB_APP_PASSWORD`（見下方） | `/code-review https://bitbucket.org/ws/repo/pull-requests/123` |
 
 決策邏輯：
 
