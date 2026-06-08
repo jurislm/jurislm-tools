@@ -266,13 +266,20 @@ These dispatched agents are added to the review pipeline in Phase 3.
 - Run **secret scan only** — the following credential-pattern greps against all changed files:
 
   ```bash
+  REPO_FULL_NAME=$(gh repo view --json owner,name --jq '"\(.owner.login)/\(.name)"')
+  HEAD_SHA=$(gh pr view <NUMBER> --json headRefOid --jq .headRefOid)
   while IFS= read -r f; do
     [ -z "$f" ] && continue
-    grep -rn -- "sk-[a-zA-Z0-9]\{20,\}" -- "$f" 2>/dev/null | head -20 || true
-    grep -rn -- "ghp_[a-zA-Z0-9]\{36\}" -- "$f" 2>/dev/null | head -10 || true
-    grep -rn -- "AKIA[0-9A-Z]\{16\}" -- "$f" 2>/dev/null | head -10 || true
-    grep -rn -- "password\s*=\s*['\"][^'\"]\{8,\}['\"]" -- "$f" 2>/dev/null | head -10 || true
-    grep -rn -- "api[_-]key\s*=\s*['\"][^'\"]\{8,\}['\"]" -- "$f" 2>/dev/null | head -10 || true
+    encoded_file=$(printf '%s' "$f" | jq -sRr @uri)
+    file_content=$(gh api "repos/$REPO_FULL_NAME/contents/$encoded_file?ref=$HEAD_SHA" \
+      --jq -r '.content // empty' 2>/dev/null | tr -d '\n' | base64 -d 2>/dev/null || true)
+    [ -z "$file_content" ] && continue
+
+    printf '%s\n' "$file_content" | grep -n -- "sk-[a-zA-Z0-9]\{20,\}" | head -20 || true
+    printf '%s\n' "$file_content" | grep -n -- "ghp_[a-zA-Z0-9]\{36\}" | head -10 || true
+    printf '%s\n' "$file_content" | grep -n -- "AKIA[0-9A-Z]\{16\}" | head -10 || true
+    printf '%s\n' "$file_content" | grep -n -- "password\s*=\s*['\"][^'\"]\{8,\}['\"]" | head -10 || true
+    printf '%s\n' "$file_content" | grep -n -- "api[_-]key\s*=\s*['\"][^'\"]\{8,\}['\"]" | head -10 || true
   done <<< "$CHANGED_FILES"
   ```
 
@@ -722,7 +729,7 @@ Create `.claude/reviews/pr-<ID>-review.md` using the same format as GitHub mode.
 
 ```bash
 curl -s -X POST -u "$BB_USERNAME:$BB_APP_PASSWORD" -H "Content-Type: application/json" \
-  -d "{\"content\": {\"raw\": \"$WALKTHROUGH_BODY\"}}" \
+  -d "$(jq -nc --arg raw "$WALKTHROUGH_BODY" '{content:{raw:$raw}}')" \
   "https://api.bitbucket.org/2.0/repositories/$WORKSPACE/$REPO_SLUG/pullrequests/$PR_ID/comments"
 ```
 
@@ -730,7 +737,7 @@ curl -s -X POST -u "$BB_USERNAME:$BB_APP_PASSWORD" -H "Content-Type: application
 ```bash
 # Added/modified line → "to"; removed line → "from"
 curl -s -X POST -u "$BB_USERNAME:$BB_APP_PASSWORD" -H "Content-Type: application/json" \
-  -d "{\"content\":{\"raw\":\"$COMMENT_BODY\"},\"inline\":{\"path\":\"<file>\",\"to\":<line>}}" \
+  -d "$(jq -nc --arg body "$COMMENT_BODY" --arg path "<file>" --argjson line <line> '{content:{raw:$body},inline:{path:$path,to:$line}}')" \
   "https://api.bitbucket.org/2.0/repositories/$WORKSPACE/$REPO_SLUG/pullrequests/$PR_ID/comments"
 ```
 
@@ -745,7 +752,7 @@ fi
 
 # Post summary comment (all cases) — REVIEW_BODY is now final
 curl -s -X POST -u "$BB_USERNAME:$BB_APP_PASSWORD" -H "Content-Type: application/json" \
-  -d "{\"content\": {\"raw\": \"$REVIEW_BODY\"}}" \
+  -d "$(jq -nc --arg raw "$REVIEW_BODY" '{content:{raw:$raw}}')" \
   "https://api.bitbucket.org/2.0/repositories/$WORKSPACE/$REPO_SLUG/pullrequests/$PR_ID/comments"
 
 # Decision API — exactly one branch executes (mutually exclusive)
@@ -764,7 +771,7 @@ fi
 **Step 7d — Low priority** (Bitbucket has no HTML folding — plain format):
 ```bash
 curl -s -X POST -u "$BB_USERNAME:$BB_APP_PASSWORD" -H "Content-Type: application/json" \
-  -d "{\"content\": {\"raw\": \"**Low Priority / Style Suggestions (${LOW_COUNT}):**\n\n${LOW_NITPICK_LIST}\"}}" \
+  -d "$(jq -nc --arg raw "**Low Priority / Style Suggestions (${LOW_COUNT}):**\n\n${LOW_NITPICK_LIST}" '{content:{raw:$raw}}')" \
   "https://api.bitbucket.org/2.0/repositories/$WORKSPACE/$REPO_SLUG/pullrequests/$PR_ID/comments"
 ```
 

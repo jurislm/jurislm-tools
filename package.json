@@ -1,4 +1,5 @@
 {
+  "private": true,
   "devDependencies": {
     "markdownlint-cli": "^0.48.0"
   },
