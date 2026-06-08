@@ -1,0 +1,29 @@
+version = 1
+name = "jurislm-tools"
+
+[setup]
+script = "true"
+
+[setup.windows]
+script = "Write-Host \"No setup required for jurislm-tools.\""
+
+[cleanup]
+script = "true"
+
+[cleanup.windows]
+script = "Write-Host \"No cleanup required for jurislm-tools.\""
+
+[[actions]]
+name = "Validate Marketplace JSON"
+icon = "run"
+command = "jq . .claude-plugin/marketplace.json"
+
+[[actions]]
+name = "Validate Release Manifest"
+icon = "run"
+command = "jq . .release-please-manifest.json"
+
+[[actions]]
+name = "Check Version Sync"
+icon = "run"
+command = "node scripts/check-version-sync.mjs"

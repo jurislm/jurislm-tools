@@ -7,12 +7,24 @@
 ```bash
 # 驗證 JSON 格式
 cat .claude-plugin/marketplace.json | jq .
-cat plugins/jurislm-tools/.claude-plugin/plugin.json | jq .
+cat .release-please-manifest.json | jq .
 
 # 檢查版本是否同步
-grep '"version"' .claude-plugin/marketplace.json
-grep '"version"' plugins/jurislm-tools/.claude-plugin/plugin.json
+node scripts/check-version-sync.mjs
 ```
+
+## Codex App Local Environments
+
+此 repo 提供專案共用的 Codex app local environment：
+
+- 路徑：`.codex/environments/environment.toml`
+- `setup` 為刻意 no-op：此 repo 不需要 worktree bootstrap
+- `actions` 提供常用檢查捷徑，會顯示在 Codex app 頂部：
+  - `Validate Marketplace JSON`
+  - `Validate Release Manifest`
+  - `Check Version Sync`
+- `Check Version Sync` 透過 `scripts/check-version-sync.mjs` 動態讀取 `release-please-config.json` 的 `extra-files`
+- 前置需求：上述 actions 依賴 `jq`
 
 ## Repository 概覽
 
@@ -139,6 +151,10 @@ develop → PR → main
 - 日常開發一律在 `.worktrees/develop` 目錄，不在 main worktree 做 feature commits
 - **嚴禁直接 push 到 main**
 - 版本號由 Release Please 自動管理，**禁止手動修改版本號**
+
+## GitHub 操作提醒
+
+- 建立 GitHub issue 或 PR 時，記得設定 `assignees` 與 `labels`
 
 ## 注意事項
 
