@@ -141,7 +141,7 @@ If any CRITICAL security issue is present, stop and escalate to `security-review
 
 ## Output Format
 
-```
+```text
 [CRITICAL] Domain module imports Android framework
 File: domain/src/main/kotlin/com/app/domain/UserUseCase.kt:3
 Issue: `import android.content.Context` — domain must be pure Kotlin with no framework dependencies.
@@ -157,7 +157,7 @@ Fix: Use `_state.update { it.copy(items = it.items + newItem) }`
 
 End every review with:
 
-```
+```text
 ## Review Summary
 
 | Severity | Count | Status |

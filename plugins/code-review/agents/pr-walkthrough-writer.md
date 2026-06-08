@@ -112,7 +112,6 @@ Return the complete walkthrough as:
 sequenceDiagram
 ...
 ```
-````
 
 If the sequence diagram was skipped (Step 3 conditions not met), end after the file table — no placeholder text, no empty mermaid block. If the diagram was skipped due to >8 participants even after collapsing, add one line: `_Flow too complex for diagram — see diff._`
 

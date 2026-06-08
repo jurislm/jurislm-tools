@@ -29,7 +29,7 @@
 
 在 Claude Code 中執行：
 
-```
+```text
 /plugin
 ```
 
@@ -56,7 +56,7 @@
 
 ## 架構總覽
 
-```
+```text
 code-review plugin
 ├── Command（單一統一入口）
 │   └── /code-review          本地 diff 或 GitHub/Bitbucket PR；自動偵測語言/框架並 dispatch
@@ -98,7 +98,7 @@ code-review plugin
 
 在 Claude Code 中執行：
 
-```
+```text
 /plugin
 ```
 
@@ -124,7 +124,7 @@ cp -r skills/* ~/.claude/skills/
 
 對目前 uncommitted 的變更進行 review：
 
-```
+```text
 /code-review
 ```
 
@@ -195,7 +195,7 @@ App Password 建立：Bitbucket → Settings → Personal settings → App passw
 
 在對話中描述任務，Claude 會自動選用對應 agent：
 
-```
+```text
 @code-reviewer 請審查這段 auth middleware
 @security-reviewer 這個 API endpoint 有安全問題嗎？
 @typescript-reviewer 這個 generic type 設計合理嗎？
@@ -295,7 +295,7 @@ Skills 會根據任務上下文自動啟動，無需手動呼叫。
 
 ## 目錄結構
 
-```
+```text
 code-review/
 ├── .claude-plugin/
 │   ├── plugin.json          # Plugin manifest

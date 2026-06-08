@@ -28,7 +28,7 @@ You are an analyzer that builds a structured Code Impact Map revealing which fil
 
 You receive:
 
-```
+```text
 CHANGED_FILES: [list of LOGIC/SECURITY files from the diff]
 CACHE_KEY: pr-<number>-<sha8>   # or "local-<sha8>" for local diff
 ```

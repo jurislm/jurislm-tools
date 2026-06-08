@@ -100,17 +100,21 @@ Full parallel review of uncommitted changes — the same pipeline as PR mode, re
 
 ```bash
 # Full local review (default — no --from flag)
-git diff --name-only HEAD
+TRACKED_FILES=$(git diff --name-only HEAD)
+UNTRACKED_FILES=$(git ls-files --others --exclude-standard)
+CHANGED_FILES=$(printf "%s\n%s\n" "$TRACKED_FILES" "$UNTRACKED_FILES" | sed '/^$/d' | sort -u)
 
 # Incremental review (--from=<commit> specified)
-git diff --name-only <commit>
+TRACKED_FILES=$(git diff --name-only <commit>)
+UNTRACKED_FILES=$(git ls-files --others --exclude-standard)
+CHANGED_FILES=$(printf "%s\n%s\n" "$TRACKED_FILES" "$UNTRACKED_FILES" | sed '/^$/d' | sort -u)
 ```
 
-Use the incremental form when `--from=<commit>` is specified. In later phases, use `git diff <commit>` (not `git diff <commit>..HEAD`) wherever a diff is needed — this includes uncommitted working-tree changes relative to `<commit>`.
+Use the incremental form when `--from=<commit>` is specified. In later phases, use `git diff <commit>` (not `git diff <commit>..HEAD`) wherever a diff is needed — this includes uncommitted working-tree changes relative to `<commit>`. Untracked files are always included in `CHANGED_FILES`.
 
-If no changed files, stop: "Nothing to review."
+If `CHANGED_FILES` is empty, stop: "Nothing to review."
 
-Set `CHANGED_FILES` from the output above. On Windows, strip carriage returns: `git diff --name-only HEAD | tr -d '\r'`. `CHANGED_FILES` persists as a variable through all subsequent phases — Phase 1.5 uses it for classification, Phase 2 for caller tracing, and Phase 3 agents use it to know which files to read.
+Set `CHANGED_FILES` from the combined output above. On Windows, strip carriage returns from the tracked diff before combining, e.g. `git diff --name-only HEAD | tr -d '\r'`. `CHANGED_FILES` persists as a variable through all subsequent phases — Phase 1.5 uses it for classification, Phase 2 for caller tracing, and Phase 3 agents use it to know which files to read.
 
 ### Phase 1.5 — CLASSIFY & DISPATCH
 
@@ -307,7 +311,7 @@ done
 
 **`--focus` filtering** — `code-review:code-reviewer` always runs. The auto-dispatched `$SPECIALIST_AGENTS` always run (language coverage is independent of focus). When `--focus` is specified, validate it first:
 
-```
+```text
 Valid --focus values: comments | tests | errors | types | code | simplify
 Unknown value → stop: "Unknown --focus value '<value>'. Valid options: comments, tests, errors, types, code, simplify"
 ```
@@ -497,7 +501,6 @@ If the fix replaces **exactly one line** with **exactly one line**, append a com
 ```suggestion
 {fixed_line_content}
 ```
-````
 
 ```bash
 HEAD_SHA=$(gh pr view <NUMBER> --json headRefOid --jq .headRefOid)
@@ -560,7 +563,7 @@ ${LOW_NITPICK_LIST}
 
 ### Phase 8 — OUTPUT
 
-```
+```text
 PR #<NUMBER>: <TITLE>
 Platform: GitHub
 Decision: <APPROVE|REQUEST_CHANGES|BLOCK>
@@ -689,7 +692,7 @@ curl -s -X POST -u "$BB_USERNAME:$BB_APP_PASSWORD" -H "Content-Type: application
 
 ### Phase 8 — OUTPUT
 
-```
+```text
 PR #<ID>: <TITLE>
 Platform: Bitbucket Cloud
 Decision: <APPROVE|REQUEST_CHANGES|BLOCK>

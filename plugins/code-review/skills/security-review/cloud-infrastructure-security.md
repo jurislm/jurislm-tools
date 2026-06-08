@@ -1,8 +1,3 @@
----
-name: cloud-infrastructure-security
-description: Use this skill when deploying to cloud platforms, configuring infrastructure, managing IAM policies, setting up logging/monitoring, or implementing CI/CD pipelines. Provides cloud security checklist aligned with best practices.
----
-
 # Cloud & Infrastructure Security Skill
 
 This skill ensures cloud infrastructure, CI/CD pipelines, and deployment configurations follow security best practices and comply with industry standards.

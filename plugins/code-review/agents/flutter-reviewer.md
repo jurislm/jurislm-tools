@@ -223,7 +223,7 @@ If any CRITICAL security issue is present, stop and escalate to `security-review
 
 ## Output Format
 
-```
+```text
 [CRITICAL] Domain layer imports Flutter framework
 File: packages/domain/lib/src/usecases/user_usecase.dart:3
 Issue: `import 'package:flutter/material.dart'` — domain must be pure Dart.
@@ -239,7 +239,7 @@ Fix: Narrow scope to the subtree that depends on changed state, or use a selecto
 
 End every review with:
 
-```
+```text
 ## Review Summary
 
 | Severity | Count | Status |

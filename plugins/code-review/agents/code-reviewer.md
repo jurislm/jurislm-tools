@@ -289,7 +289,7 @@ Minor optional improvements that have no correctness or maintainability impact. 
 
 Organize findings by severity. For CRITICAL and HIGH findings, always include a diff block and an AI Implementation Prompt.
 
-```
+````text
 [CRITICAL] Hardcoded API key in source
 File: src/api/client.ts:42
 Scenario: Any developer with repo access can extract the key from git history.
@@ -305,7 +305,7 @@ Guard gap: No environment variable substitution; no .gitignore entry.
 1. In `src/api/client.ts` line 42, replace `"sk-abc123"` with `process.env.API_KEY`.
 2. Add `API_KEY=` (with a placeholder comment) to `.env.example`.
 3. Verify `.env` is listed in `.gitignore`.
-```
+````
 
 For MEDIUM and LOW findings, a plain description and fix suggestion is sufficient (no diff block required).
 
@@ -315,7 +315,7 @@ For NITPICK findings, a single sentence is enough.
 
 End every review with:
 
-```
+```text
 ## Review Summary
 
 | Severity | Count | Status |

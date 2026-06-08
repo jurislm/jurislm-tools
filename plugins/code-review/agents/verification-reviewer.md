@@ -30,7 +30,7 @@ CodeRabbit's architecture includes a dedicated Verification Agent that checks ev
 
 You receive a list of findings in the format:
 
-```
+```text
 FINDING #N
 Severity: HIGH | CRITICAL
 Agent: <which agent flagged this>
@@ -98,7 +98,7 @@ After checking all findings, output two sections:
 
 ### Verified Findings (include these in final review)
 
-```
+```text
 ✅ FINDING #N — CONFIRMED [CRITICAL|HIGH]
 File: <path>:<line>
 Evidence: `<bash command you ran>` → <result in one line>
@@ -108,7 +108,7 @@ Verification: <one sentence conclusion>
 
 ### Demoted Findings (exclude from final review)
 
-```
+```text
 ❌ FINDING #N — DEMOTED [original severity → reason]
 Reason: INVALID | UNCERTAIN | FALSE POSITIVE
 Evidence: <what you found that contradicts the finding>

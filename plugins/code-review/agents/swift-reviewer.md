@@ -26,7 +26,7 @@ You are a senior Swift code reviewer ensuring high standards of safety, idiomati
 
 When invoked:
 1. Run `swift build`, `swiftlint lint --quiet` (if available), and `swift test` - if any fail, stop and report
-2. Run `git diff HEAD~1 -- '*.swift'` (or `git diff main...HEAD -- '*.swift'` for PR review) to see recent Swift file changes
+2. Run `git diff HEAD~1 -- '*.swift'` (or `git diff <base-branch>...HEAD -- '*.swift'` for PR review, using the PR base branch) to see recent Swift file changes
 3. Focus on modified `.swift` files
 4. If the project has CI or merge requirements, note that review assumes a green CI and resolved merge conflicts where applicable; call out if the diff suggests otherwise.
 5. Begin review
