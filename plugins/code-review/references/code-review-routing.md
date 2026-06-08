@@ -15,8 +15,8 @@ Run the review in this order:
 5. Select supporting skills from the skill routing table below.
 6. Run the core review pipeline.
 7. Run selected specialist agents in parallel with the core review pipeline.
-7. Run verification only when HIGH or CRITICAL findings exist.
-8. Aggregate, validate, and publish or report.
+8. Run verification only when HIGH or CRITICAL findings exist.
+9. Aggregate, validate, and publish or report.
 
 ## Core Pipeline Agents
 
