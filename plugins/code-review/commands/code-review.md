@@ -199,13 +199,18 @@ done <<< "$CHANGED_FILES"
 **Fast Path** (only DOCS + CONFIG + OTHER — zero LOGIC/SECURITY files):
 - Skip Phases 2, 2.5, 3, 3.5, 4
 - Run **secret scan only** — the following credential-pattern greps against all changed files:
+
   ```bash
-  grep -rn "sk-[a-zA-Z0-9]\{20,\}" $CHANGED_FILES 2>/dev/null | head -20 || true
-  grep -rn "ghp_[a-zA-Z0-9]\{36\}" $CHANGED_FILES 2>/dev/null | head -10 || true
-  grep -rn "AKIA[0-9A-Z]\{16\}" $CHANGED_FILES 2>/dev/null | head -10 || true
-  grep -rn "password\s*=\s*['\"][^'\"]\{8,\}['\"]" $CHANGED_FILES 2>/dev/null | head -10 || true
-  grep -rn "api[_-]key\s*=\s*['\"][^'\"]\{8,\}['\"]" $CHANGED_FILES 2>/dev/null | head -10 || true
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    grep -rn -- "sk-[a-zA-Z0-9]\{20,\}" -- "$f" 2>/dev/null | head -20 || true
+    grep -rn -- "ghp_[a-zA-Z0-9]\{36\}" -- "$f" 2>/dev/null | head -10 || true
+    grep -rn -- "AKIA[0-9A-Z]\{16\}" -- "$f" 2>/dev/null | head -10 || true
+    grep -rn -- "password\s*=\s*['\"][^'\"]\{8,\}['\"]" -- "$f" 2>/dev/null | head -10 || true
+    grep -rn -- "api[_-]key\s*=\s*['\"][^'\"]\{8,\}['\"]" -- "$f" 2>/dev/null | head -10 || true
+  done <<< "$CHANGED_FILES"
   ```
+
 - Zero secrets/credentials → post `gh pr review --approve` with note "Docs/config changes — no logic review needed" (Phase 7), then Phase 8
 - A secret/credential detected → exit Fast Path, run the full Slow Path from Phase 2 (no prior linter/typecheck results exist — run them normally in Phase 2)
 
