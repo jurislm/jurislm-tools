@@ -55,6 +55,14 @@
       }
     },
     {
+      "name": "code-review",
+      "source": "./plugins/code-review",
+      "description": "完整 code review 生態系統 — 單一 /code-review 入口、27 個 reviewer agents、GitHub/Bitbucket PR review 與 security review skills",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
       "name": "podcast-to-blog",
       "source": "./plugins/podcast-to-blog",
       "description": "Apple Podcasts 連結轉部落格文章 — Whisper 轉錄 + AI 生成繁中文章",
