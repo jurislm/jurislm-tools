@@ -6,18 +6,10 @@
   },
   "plugins": [
     {
-      "name": "hooks-and-rules",
-      "source": "./plugins/hooks-and-rules",
-      "description": "強制 JurisLM 開發紀律 — git commit 前思考紀律檢查 + 通用 coding/git/testing 規則參考",
-      "version": "1.26.2",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
       "name": "coolify",
       "source": "./plugins/coolify",
       "description": "管理 Coolify 基礎設施 — 部署應用、資料庫管理、問題診斷（43 個 MCP 工具）",
+      "version": "1.26.2",
       "author": {
         "name": "Terry Chen"
       }
@@ -33,7 +25,7 @@
     {
       "name": "langfuse",
       "source": "./plugins/langfuse",
-      "description": "Langfuse LLM 可觀測性 — Prompt 版本管理、Trace 分析、評分記錄（13 個 MCP 工具）",
+      "description": "Langfuse LLM 可觀測性 — Prompt 版本管理、Trace 分析、評分記錄（50 個 MCP 工具）",
       "author": {
         "name": "Terry Chen"
       }
@@ -42,22 +34,6 @@
       "name": "repo-standards",
       "source": "./plugins/repo-standards",
       "description": "審查並套用 JurisLM repo 標準 — release workflow、ESLint、worktree、Bun runtime、Vitest",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
-      "name": "pr-review",
-      "source": "./plugins/pr-review",
-      "description": "自動審查合併 PR — 監控 CI、讀取 Claude review、修正後合併（最多 5 輪）",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
-      "name": "code-review",
-      "source": "./plugins/code-review",
-      "description": "完整 code review 生態系統 — 單一 /code-review 入口、27 個 reviewer agents、GitHub/Bitbucket PR review 與 security review skills",
       "author": {
         "name": "Terry Chen"
       }
@@ -79,33 +55,9 @@
       }
     },
     {
-      "name": "plan",
-      "source": "./plugins/plan",
-      "description": "實作前規劃 — 重述需求、評估風險、產出 step-by-step 實作計畫，等使用者確認才動手",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
-      "name": "tdd-workflow",
-      "source": "./plugins/tdd-workflow",
-      "description": "TDD 工作流程 skill — 撰寫功能/修 bug/重構時自動載入，含 unit/integration/E2E 模式",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
       "name": "learn-eval",
       "source": "./plugins/learn-eval",
       "description": "從 session 萃取可重複利用 pattern — 品質閘 + dedup 檢查 + Global/Project 儲存路徑判斷",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
-      "name": "entire",
-      "source": "./plugins/entire",
-      "description": "管理 Entire AI agent checkpoints 和 sessions（11 個 MCP 工具）",
       "author": {
         "name": "Terry Chen"
       }

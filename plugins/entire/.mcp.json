@@ -1,9 +1,0 @@
-{
-  "entire": {
-    "command": "npx",
-    "args": ["-y", "@jurislm/entire-mcp@latest"],
-    "env": {
-      "ENTIRE_REPO_PATH": "${ENTIRE_REPO_PATH}"
-    }
-  }
-}
