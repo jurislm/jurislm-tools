@@ -9,6 +9,7 @@
       "name": "coolify",
       "source": "./plugins/coolify",
       "description": "管理 Coolify 基礎設施 — 部署應用、資料庫管理、問題診斷（43 個 MCP 工具）",
+      "version": "1.26.2",
       "author": {
         "name": "Terry Chen"
       }
@@ -60,6 +61,6 @@
       "author": {
         "name": "Terry Chen"
       }
-    },
+    }
   ]
 }
