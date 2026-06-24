@@ -1,6 +1,6 @@
 ---
 name: codebase-sync
-version: 1.0.0
+version: 2.0.0
 description: >
   This skill should be used when the user says "更新 README", "更新 CLAUDE.md", "同步文件",
   "移除過時內容", "codebase 文件已過時", "文件跟不上代碼", "CLAUDE.md 要更新",
@@ -10,56 +10,164 @@ description: >
 argument-hint: "(no arguments — operates on current directory)"
 ---
 
-# Codebase Sync — 探索並更新 README.md 與 CLAUDE.md
+# Codebase Sync — 深度審計並更新 README.md 與 CLAUDE.md
 
 ---
 
-## 工作流程
+## 核心原則：先審計，後動筆
 
-### Step 1：探索 codebase 現況
+**所有步驟都必須執行，不得以「看起來沒問題」為由跳過。**
+每一項結論必須來自實際命令輸出或讀取檔案，不得憑記憶推斷。
+每次修改都必須在 Audit Report 中有對應的 finding。
+
+---
+
+## Step 0：執行自動化偵測（必做，輸出原始結果）
+
+以下指令必須全部執行，並將輸出結果記錄下來供 Step 1 分析使用。
 
 ```bash
-# 確認整體結構
+# 0-A 整體結構快照
 ls -la
-jq '{name, version, scripts, dependencies, devDependencies}' package.json 2>/dev/null
-
-# 列出所有重要目錄
 find . -maxdepth 3 -type d \
   -not -path './.git*' \
   -not -path './node_modules*' \
   -not -path './.next*' \
   -not -path './dist*' \
-  -not -path './.worktrees*'
+  -not -path './.worktrees*' \
+  | sort
+
+# 0-B package.json 狀態（若存在）
+jq '{name, version, scripts, dependencies, devDependencies}' package.json 2>/dev/null || echo "(no package.json)"
+
+# 0-C plugin.json 狀態（若存在）
+jq '{name, version}' .claude-plugin/plugin.json 2>/dev/null || \
+  find . -name "plugin.json" -not -path "*/node_modules/*" -exec echo "Found: {}" \; -exec jq '{name,version}' {} \; 2>/dev/null || \
+  echo "(no plugin.json found)"
+
+# 0-D README scripts vs package.json scripts 差異
+if [ -f README.md ] && [ -f package.json ]; then
+  grep -oE 'bun run [a-z:_-]+' README.md | sed 's/bun run //' | sort -u > /tmp/_readme_scripts.txt
+  jq -r '.scripts | keys[]' package.json | sort > /tmp/_pkg_scripts.txt
+  echo "=== README 提到但 package.json 沒有的 scripts ==="
+  comm -23 /tmp/_readme_scripts.txt /tmp/_pkg_scripts.txt
+  echo "=== package.json 有但 README 沒提的 scripts ==="
+  comm -13 /tmp/_readme_scripts.txt /tmp/_pkg_scripts.txt
+  rm /tmp/_readme_scripts.txt /tmp/_pkg_scripts.txt
+fi
+
+# 0-E CLAUDE.md 中提到但實際不存在的目錄
+if [ -f CLAUDE.md ]; then
+  echo "=== CLAUDE.md 提到的目錄，檢查是否存在 ==="
+  grep -oE '`[a-z][a-z0-9_/-]+/`' CLAUDE.md | tr -d '`' | sort -u | while read d; do
+    if [ -d "$d" ]; then
+      echo "  OK: $d"
+    else
+      echo "  MISSING: $d"
+    fi
+  done
+fi
+
+# 0-F CLAUDE.md 中提到但實際不存在的檔案
+if [ -f CLAUDE.md ]; then
+  echo "=== CLAUDE.md 提到的檔案，檢查是否存在 ==="
+  grep -oE '`[a-z][a-z0-9_./-]+\.(ts|tsx|js|mjs|md|json|toml|yaml|yml)`' CLAUDE.md | tr -d '`' | sort -u | while read f; do
+    if [ -f "$f" ]; then
+      echo "  OK: $f"
+    else
+      echo "  MISSING: $f"
+    fi
+  done
+fi
+
+# 0-G README.md 中提到但實際不存在的目錄與檔案
+if [ -f README.md ]; then
+  echo "=== README.md 提到的目錄，檢查是否存在 ==="
+  grep -oE '`[a-z][a-z0-9_/-]+/`' README.md | tr -d '`' | sort -u | while read d; do
+    if [ -d "$d" ]; then
+      echo "  OK: $d"
+    else
+      echo "  MISSING: $d"
+    fi
+  done
+fi
+
+# 0-H 版本號一致性（只報告，不修改）
+echo "=== 版本號現況（僅供參考，禁止手動修改）==="
+grep -rE '"version"' package.json .claude-plugin/plugin.json .claude-plugin/marketplace.json 2>/dev/null || true
+find . -name "plugin.json" -not -path "*/node_modules/*" -exec grep '"version"' {} \; 2>/dev/null || true
+
+# 0-I 未被文件提及的頂層目錄（可能是新增但尚未記錄的）
+echo "=== 實際存在的頂層目錄（用來比對文件是否有遺漏）==="
+ls -d */ 2>/dev/null | grep -v node_modules | grep -v ".git" || echo "(no subdirectories)"
 ```
 
-使用 Read 工具讀取現有文件（禁用 `cat`）：
+---
+
+## Step 1：深度讀取現有文件
+
+使用 Read 工具（禁用 `cat`）讀取下列所有存在的檔案：
+
 - `Read README.md`
-- `Read CLAUDE.md`（若存在）
+- `Read CLAUDE.md`
+- `Read .claude-plugin/marketplace.json`（若存在）
+- `Read .claude-plugin/plugin.json`（若存在）
+- `Read package.json`（若存在）
 
-### Step 2：識別過時內容
+若有子目錄的 plugin，也逐一讀取其 `plugin.json`：
 
-比對以下項目是否與實際 codebase 一致：
+```bash
+find . -name "plugin.json" -not -path "*/node_modules/*" | head -20
+```
 
-| 檢查項目 | README.md | CLAUDE.md |
-|---------|-----------|-----------|
-| 目錄結構 | ✓ | ✓ |
-| 安裝指令 | ✓ | ✓ |
-| 可用 scripts | ✓ | ✓ |
-| 環境變數清單 | ✓ | ✓ |
-| 版本號 | ✓ | — |
-| Plugin/Skill 清單 | ✓（若適用） | ✓（若適用） |
-| 部署流程 | ✓ | ✓ |
-| DB schema / ports | — | ✓ |
-| 常用命令 | — | ✓ |
+---
 
-**過時訊號**：
-- 提到已不存在的檔案或目錄
-- scripts 名稱與 `package.json` 不符
-- 環境變數與 `.env.example` 不符
-- 版本號落後於 `package.json` / `plugin.json`
-- 描述已移除的功能
+## Step 2：輸出完整 Audit Report（禁止省略）
 
-### Step 3：更新 README.md
+分析 Step 0 的結果，**必須輸出以下格式的 Audit Report**，不論是否有發現問題都要輸出：
+
+```
+## Codebase Sync Audit Report
+
+### 1. 目錄結構比對
+- 文件記載：...
+- 實際現況：...
+- 差異：[列出所有 MISSING 目錄] 或 [無差異]
+
+### 2. Scripts 比對
+- README 提到但 package.json 沒有：[列表] 或 [無]
+- package.json 有但 README 沒提：[列表] 或 [無]
+
+### 3. 已刪除但仍被文件引用的路徑
+- [逐條列出 MISSING 項目] 或 [無]
+
+### 4. 文件未記載的新增功能/目錄
+- [實際存在但文件未提及的重要項目] 或 [無]
+
+### 5. 描述準確性檢查
+- [README/CLAUDE.md 的描述與實際程式碼不符之處] 或 [無]
+
+### 6. Plugin/Skill 清單準確性（若適用）
+- 文件記載的 plugins：[列表]
+- 實際存在的 plugins：[find 結果]
+- 差異：[列出]
+
+### 7. 版本號現況（僅報告，不修改）
+- package.json：...
+- plugin.json：...
+- marketplace.json：...
+
+### 待更新事項清單
+1. [具體要改什麼，在哪個檔案的哪個章節]
+2. ...
+（若無任何需要更新的項目，明確說明「經審計，文件與 codebase 一致，無需更新」）
+```
+
+---
+
+## Step 3：更新 README.md
+
+**只依 Audit Report 中的「待更新事項」動筆，不得自行添加未在報告中提及的改動。**
 
 README.md 標準結構：
 
@@ -87,10 +195,16 @@ README.md 標準結構：
 
 **規則**：
 - 只寫使用者需要知道的資訊（安裝、設定、使用）
-- 移除已不存在的功能描述
-- 版本號從 `package.json` / `plugin.json` 取得，不手動填
+- 移除 Audit Report 中確認為 MISSING 的目錄/檔案引用
+- 加入 Audit Report 中確認存在但文件未提及的重要功能
+- 版本號禁止手動修改
+- 不加任何 Audit Report 中沒有對應 finding 的新內容
 
-### Step 4：更新 CLAUDE.md
+---
+
+## Step 4：更新 CLAUDE.md
+
+**只依 Audit Report 中的「待更新事項」動筆。**
 
 CLAUDE.md 標準結構：
 
@@ -117,51 +231,51 @@ CLAUDE.md 標準結構：
 ```
 
 **規則**：
-- 目錄樹必須反映實際結構（執行 `find` 驗證）
-- 常用命令必須可以直接執行（驗證指令是否有效）
-- 移除不再存在的說明、deprecated API、已搬移的路徑
-- 不重複寫已在 README.md 說明的內容
-
-### Step 5：驗證
-
-```bash
-# 確認文件引用的路徑/檔案存在
-ls .claude-plugin/marketplace.json
-
-# 確認文件的 scripts 與 package.json 一致
-jq '.scripts' package.json
-```
-
-使用 Read 工具讀取環境變數檔案：
-- `Read .env.example`（若存在）
+- 目錄樹必須與 Step 0-A 的 `find` 結果一致
+- 移除 Audit Report 確認為 MISSING 的路徑引用
+- 加入 Audit Report 發現存在但未記載的重要路徑
+- 常用命令必須與 Step 0-B/C 的 `package.json` 一致
+- 不重複寫 README.md 已說明的內容
 
 ---
 
-## 過時偵測自動化指令
-
-可直接執行以下指令找出過時內容：
+## Step 5：驗證（每項修改都要跑）
 
 ```bash
-# 1. 比對 README scripts 與 package.json（zsh 相容，用暫存檔替代 process substitution）
+# 5-A 確認新加入的目錄引用真的存在
+ls <每個新加的目錄路徑>
+
+# 5-B 確認新加入的指令真的在 package.json
+jq '.scripts' package.json
+
+# 5-C 確認 marketplace.json / plugin.json 格式合法
+cat .claude-plugin/marketplace.json | jq . 2>&1
+cat .claude-plugin/plugin.json | jq . 2>&1
+```
+
+---
+
+## 過時偵測自動化指令（Step 0 的補充）
+
+```bash
+# 比對 README scripts 與 package.json（zsh 相容，用暫存檔替代 process substitution）
 grep -oE 'bun run [a-z-]+' README.md | sed 's/bun run //' | sort -u > /tmp/_readme_scripts.txt
 jq -r '.scripts | keys[]' package.json | sort > /tmp/_pkg_scripts.txt
 comm -23 /tmp/_readme_scripts.txt /tmp/_pkg_scripts.txt
 rm /tmp/_readme_scripts.txt /tmp/_pkg_scripts.txt
-# 輸出 = README 提到但 package.json 沒定義的 script
 
-# 2. 比對環境變數（zsh 相容）
+# 比對環境變數（zsh 相容）
 grep -oE '`[A-Z][A-Z0-9_]+`' README.md | tr -d '`' | sort -u > /tmp/_readme_vars.txt
 grep -oE '^[A-Z][A-Z0-9_]+' .env.example 2>/dev/null | sort -u > /tmp/_env_vars.txt
 comm -23 /tmp/_readme_vars.txt /tmp/_env_vars.txt
 rm /tmp/_readme_vars.txt /tmp/_env_vars.txt
-# 輸出 = README 提到但 .env.example 沒列的變數
 
-# 3. 找已刪除的目錄
+# 找已刪除的目錄（CLAUDE.md）
 grep -oE '`[a-z][a-z0-9_/-]+/`' CLAUDE.md | tr -d '`' | while read d; do
   [ ! -d "$d" ] && echo "MISSING: $d"
 done
 
-# 4. 找已刪除的檔案
+# 找已刪除的檔案（CLAUDE.md）
 grep -oE '`[a-z][a-z0-9_./-]+\.(ts|tsx|js|md|json)`' CLAUDE.md | tr -d '`' | while read f; do
   [ ! -f "$f" ] && echo "MISSING: $f"
 done
@@ -178,6 +292,8 @@ done
 
 | 錯誤 | 正確做法 |
 |------|---------|
+| 跳過 Step 0，直接「看起來沒問題」就結束 | 必須執行所有自動化偵測指令並輸出結果 |
+| 沒有 Audit Report 就動筆 | 必須先輸出 Audit Report 再修改任何檔案 |
 | 把 README 寫成「給 Claude 看的指引」（含 git workflow、commit 規則）| 那些屬於 CLAUDE.md，README 只給人看 |
 | 在 CLAUDE.md 重複寫 README 已說明的安裝步驟 | CLAUDE.md 假設讀者已會基本操作，只寫 codebase-specific 細節 |
 | 寫 deprecated 功能但加註「(deprecated)」 | 直接刪除，靠 git log 留歷史 |
@@ -191,3 +307,4 @@ done
 - **不重複**：README 給使用者看，CLAUDE.md 給 Claude 看，內容不重疊
 - **禁止修改版本號**：版本由 Release Please 管理
 - **驗證再寫**：每行涉及檔案路徑/指令的內容都要實際 `ls` / 執行驗證
+- **Audit Report 是必交付物**：即使「什麼都不需要改」也必須輸出報告說明原因
