@@ -105,24 +105,24 @@ ls -d */ 2>/dev/null | grep -v node_modules | grep -v ".git" || echo "(no subdir
 echo "=== 近期 git commits ==="
 git log --oneline -30 2>/dev/null || echo "(not a git repo or no commits)"
 
-# 0-K 近期 commit 中新增、刪除、重命名的檔案
+# 0-K 近期 commit 中新增、刪除、重命名的檔案（A/D/M/R 皆含）
 echo "=== 近期 commit 涉及的檔案變動（最近 30 筆）==="
 git log --name-status --pretty=format:"--- %h %s" -30 2>/dev/null \
-  | grep -E '^(A|D|R|M)\s' \
+  | grep -E '^[ADMR][0-9]*\t' \
   | sort | uniq -c | sort -rn | head -40 \
   || echo "(no git history)"
 
 # 0-L 最近 30 筆 commit 中新增的檔案（A = Added）
 echo "=== 近期新增的檔案（可能尚未記載於文件）==="
 git log --name-status --pretty=format: -30 2>/dev/null \
-  | grep '^A' | awk '{print $2}' | sort -u \
+  | grep '^A' | cut -f2- | sort -u \
   | grep -vE '(node_modules|\.git|dist/|\.next/)' \
   || echo "(none)"
 
 # 0-M 最近 30 筆 commit 中刪除的檔案（D = Deleted）
 echo "=== 近期刪除的檔案（文件可能仍有引用）==="
 git log --name-status --pretty=format: -30 2>/dev/null \
-  | grep '^D' | awk '{print $2}' | sort -u \
+  | grep '^D' | cut -f2- | sort -u \
   | grep -vE '(node_modules|\.git|dist/|\.next/)' \
   || echo "(none)"
 
@@ -193,6 +193,10 @@ find . -name "plugin.json" -not -path "*/node_modules/*" | head -20
 - 近期新增但文件未提及的檔案：[0-L 中不在文件裡的項目] 或 [無]
 - 近期刪除但文件仍引用的檔案：[0-M 中仍被文件提及的項目] 或 [無]
 - 重要功能改動摘要：[從 commit message 判斷哪些改動可能需要更新文件描述]
+
+### 9. 環境變數比對（若有 .env.example）
+- README 提到但 .env.example 沒列：[列表] 或 [無 / 跳過]
+- .env.example 有但 README 沒提：[列表] 或 [無 / 跳過]
 
 ### 待更新事項清單
 1. [具體要改什麼，在哪個檔案的哪個章節]
@@ -279,44 +283,41 @@ CLAUDE.md 標準結構：
 ## Step 5：驗證（每項修改都要跑）
 
 ```bash
-# 5-A 確認新加入的目錄引用真的存在
-ls <每個新加的目錄路徑>
+# 5-A 確認 Audit Report 中新加入的每條目錄引用真的存在
+# 對每個在「待更新事項」中新增的目錄路徑，執行：
+#   find . -maxdepth 3 -type d -path './<新加的路徑>' | head -1
+# 若無輸出代表該目錄不存在，不得寫入文件
 
 # 5-B 確認新加入的指令真的在 package.json
-jq '.scripts' package.json
+jq '.scripts' package.json 2>/dev/null || echo "(no package.json)"
 
 # 5-C 確認 marketplace.json / plugin.json 格式合法
-cat .claude-plugin/marketplace.json | jq . 2>&1
-cat .claude-plugin/plugin.json | jq . 2>&1
+jq . .claude-plugin/marketplace.json 2>&1 || true
+jq . .claude-plugin/plugin.json 2>&1 || true
 ```
 
 ---
 
-## 過時偵測自動化指令（Step 0 的補充）
+## Step 0 補充：環境變數比對
+
+若專案有 `.env.example`，在 Step 0 之後額外執行：
 
 ```bash
-# 比對 README scripts 與 package.json（zsh 相容，用暫存檔替代 process substitution）
-grep -oE 'bun run [a-z-]+' README.md | sed 's/bun run //' | sort -u > /tmp/_readme_scripts.txt
-jq -r '.scripts | keys[]' package.json | sort > /tmp/_pkg_scripts.txt
-comm -23 /tmp/_readme_scripts.txt /tmp/_pkg_scripts.txt
-rm /tmp/_readme_scripts.txt /tmp/_pkg_scripts.txt
-
-# 比對環境變數（zsh 相容）
-grep -oE '`[A-Z][A-Z0-9_]+`' README.md | tr -d '`' | sort -u > /tmp/_readme_vars.txt
-grep -oE '^[A-Z][A-Z0-9_]+' .env.example 2>/dev/null | sort -u > /tmp/_env_vars.txt
-comm -23 /tmp/_readme_vars.txt /tmp/_env_vars.txt
-rm /tmp/_readme_vars.txt /tmp/_env_vars.txt
-
-# 找已刪除的目錄（CLAUDE.md）
-grep -oE '`[a-z][a-z0-9_/-]+/`' CLAUDE.md | tr -d '`' | while read d; do
-  [ ! -d "$d" ] && echo "MISSING: $d"
-done
-
-# 找已刪除的檔案（CLAUDE.md）
-grep -oE '`[a-z][a-z0-9_./-]+\.(ts|tsx|js|md|json)`' CLAUDE.md | tr -d '`' | while read f; do
-  [ ! -f "$f" ] && echo "MISSING: $f"
-done
+# 比對 README 提到的環境變數 vs .env.example（zsh 相容）
+if [ -f .env.example ]; then
+  grep -oE '`[A-Z][A-Z0-9_]+`' README.md | tr -d '`' | sort -u > /tmp/_readme_vars.txt
+  grep -oE '^[A-Z][A-Z0-9_]+' .env.example | sort -u > /tmp/_env_vars.txt
+  echo "=== README 提到但 .env.example 沒列的變數 ==="
+  comm -23 /tmp/_readme_vars.txt /tmp/_env_vars.txt
+  echo "=== .env.example 有但 README 沒提的變數 ==="
+  comm -13 /tmp/_readme_vars.txt /tmp/_env_vars.txt
+  rm /tmp/_readme_vars.txt /tmp/_env_vars.txt
+else
+  echo "(.env.example 不存在，跳過環境變數比對)"
+fi
 ```
+
+比對結果寫入 Audit Report Section 9。
 
 ## 模板參考
 
