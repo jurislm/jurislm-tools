@@ -100,6 +100,37 @@ find . -name "plugin.json" -not -path "*/node_modules/*" -exec grep '"version"' 
 # 0-I 未被文件提及的頂層目錄（可能是新增但尚未記錄的）
 echo "=== 實際存在的頂層目錄（用來比對文件是否有遺漏）==="
 ls -d */ 2>/dev/null | grep -v node_modules | grep -v ".git" || echo "(no subdirectories)"
+
+# 0-J 近期 git commit 摘要（最近 30 筆）
+echo "=== 近期 git commits ==="
+git log --oneline -30 2>/dev/null || echo "(not a git repo or no commits)"
+
+# 0-K 近期 commit 中新增、刪除、重命名的檔案
+echo "=== 近期 commit 涉及的檔案變動（最近 30 筆）==="
+git log --name-status --pretty=format:"--- %h %s" -30 2>/dev/null \
+  | grep -E '^(A|D|R|M)\s' \
+  | sort | uniq -c | sort -rn | head -40 \
+  || echo "(no git history)"
+
+# 0-L 最近 30 筆 commit 中新增的檔案（A = Added）
+echo "=== 近期新增的檔案（可能尚未記載於文件）==="
+git log --name-status --pretty=format: -30 2>/dev/null \
+  | grep '^A' | awk '{print $2}' | sort -u \
+  | grep -vE '(node_modules|\.git|dist/|\.next/)' \
+  || echo "(none)"
+
+# 0-M 最近 30 筆 commit 中刪除的檔案（D = Deleted）
+echo "=== 近期刪除的檔案（文件可能仍有引用）==="
+git log --name-status --pretty=format: -30 2>/dev/null \
+  | grep '^D' | awk '{print $2}' | sort -u \
+  | grep -vE '(node_modules|\.git|dist/|\.next/)' \
+  || echo "(none)"
+
+# 0-N 近期 commit 的 feat/fix 摘要（用來判斷有哪些功能改動可能影響文件）
+echo "=== 近期 feat/fix/refactor commits（最可能需要更新文件）==="
+git log --oneline -50 2>/dev/null \
+  | grep -E '^[a-f0-9]+ (feat|fix|refactor|perf|BREAKING)' \
+  || echo "(none in last 50 commits)"
 ```
 
 ---
@@ -156,6 +187,12 @@ find . -name "plugin.json" -not -path "*/node_modules/*" | head -20
 - package.json：...
 - plugin.json：...
 - marketplace.json：...
+
+### 8. Git 近期變動分析
+- 最近 feat/fix/refactor commits：[列出 0-N 的結果]
+- 近期新增但文件未提及的檔案：[0-L 中不在文件裡的項目] 或 [無]
+- 近期刪除但文件仍引用的檔案：[0-M 中仍被文件提及的項目] 或 [無]
+- 重要功能改動摘要：[從 commit message 判斷哪些改動可能需要更新文件描述]
 
 ### 待更新事項清單
 1. [具體要改什麼，在哪個檔案的哪個章節]
@@ -298,7 +335,7 @@ done
 | 在 CLAUDE.md 重複寫 README 已說明的安裝步驟 | CLAUDE.md 假設讀者已會基本操作，只寫 codebase-specific 細節 |
 | 寫 deprecated 功能但加註「(deprecated)」 | 直接刪除，靠 git log 留歷史 |
 | 把 plugin 列表寫成「已規劃」「未來會加」 | 只寫**現在已存在**的，沒實作的不寫 |
-| 從 git log 推測「最近改了 X」 | 文件描述當前狀態，不描述變更歷史 |
+| 把 git commit message 原文複製進文件（「本次新增了 X」）| git log 是訊號來源，用來找出哪些地方需要更新；文件描述的是當前狀態，不是變更歷史 |
 
 ## 注意事項
 
