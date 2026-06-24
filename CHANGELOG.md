@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.27.0](https://github.com/jurislm/jurislm-tools/compare/v1.26.2...v1.27.0) (2026-06-24)
+
+
+### 🚀 New Features
+
+* **codebase-sync:** 強化深度審計 + 加入 git 近期變動分析 ([#114](https://github.com/jurislm/jurislm-tools/issues/114)) ([eeeb457](https://github.com/jurislm/jurislm-tools/commit/eeeb4579ebc04b81a7fa8e0f7504b48d73e47e80))
+* 精簡 marketplace — 移除 6 個 plugin 並清理冗餘 commands ([d4054bc](https://github.com/jurislm/jurislm-tools/commit/d4054bca19e3ae7490da17eba519c82a87f130ef))
+* 精簡 marketplace — 移除 6 個 plugin 並清理冗餘 commands ([ac3d0f6](https://github.com/jurislm/jurislm-tools/commit/ac3d0f61da255dd6bff65e8fda56b005538c107b))
+
+
+### 🐛 Bug Fixes
+
+* 修正 marketplace.json trailing comma 及補上 plugins[0].version ([8f85392](https://github.com/jurislm/jurislm-tools/commit/8f85392ad1b8d902d3ca15229f5a9779e02453af))
+
 ## [1.26.2](https://github.com/jurislm/jurislm-tools/compare/v1.26.1...v1.26.2) (2026-06-02)
 
 
