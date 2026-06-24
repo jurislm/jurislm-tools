@@ -83,7 +83,7 @@ fi
 # 0-G README.md 中提到但實際不存在的目錄與檔案
 if [ -f README.md ]; then
   echo "=== README.md 提到的目錄，檢查是否存在 ==="
-  grep -oE '`[a-z][a-z0-9_/-]+/`' README.md | tr -d '`' | sort -u | while read d; do
+  grep -oE '`\.?[a-z][a-z0-9_/-]+/`' README.md | tr -d '`' | sort -u | while read d; do
     if [ -d "$d" ]; then
       echo "  OK: $d"
     else
@@ -91,7 +91,7 @@ if [ -f README.md ]; then
     fi
   done
   echo "=== README.md 提到的檔案，檢查是否存在 ==="
-  grep -oE '`[a-z][a-z0-9_./-]+\.(ts|tsx|js|mjs|md|json|toml|yaml|yml|sh|env)`' README.md | tr -d '`' | sort -u | while read f; do
+  grep -oE '`\.?[a-z0-9_][a-z0-9_./-]+\.(ts|tsx|js|mjs|md|json|toml|yaml|yml|sh|env)`' README.md | tr -d '`' | sort -u | while read f; do
     if [ -f "$f" ]; then
       echo "  OK: $f"
     else
@@ -116,7 +116,7 @@ git log --oneline -30 2>/dev/null || echo "(not a git repo or no commits)"
 # 0-K 近期 commit 中新增、刪除、重命名的檔案（A/D/M/R 皆含）
 echo "=== 近期 commit 涉及的檔案變動（最近 30 筆）==="
 git log --name-status --pretty=format:"--- %h %s" -30 2>/dev/null \
-  | grep -E '^[ADMR][0-9]*\t' \
+  | grep -E '^[ADMR][0-9]*[[:blank:]]' \
   | sort | uniq -c | sort -rn | head -40 \
   || echo "(no git history)"
 
