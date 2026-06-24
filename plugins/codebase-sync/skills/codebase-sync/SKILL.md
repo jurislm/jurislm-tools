@@ -90,6 +90,14 @@ if [ -f README.md ]; then
       echo "  MISSING: $d"
     fi
   done
+  echo "=== README.md 提到的檔案，檢查是否存在 ==="
+  grep -oE '`[a-z][a-z0-9_./-]+\.(ts|tsx|js|mjs|md|json|toml|yaml|yml|sh|env)`' README.md | tr -d '`' | sort -u | while read f; do
+    if [ -f "$f" ]; then
+      echo "  OK: $f"
+    else
+      echo "  MISSING: $f"
+    fi
+  done
 fi
 
 # 0-H 版本號一致性（只報告，不修改）
