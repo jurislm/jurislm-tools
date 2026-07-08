@@ -24,6 +24,23 @@ export LANGFUSE_SECRET_KEY="..."
 export LANGFUSE_HOST="..."
 ```
 
+> **必須放 `~/.zshenv`，不能放 `~/.zshrc`。**
+>
+> MCP server 由 `zsh -lc` 啟動。非互動式 login shell 會讀 `~/.zshenv`、
+> `~/.zprofile`、`~/.zlogin`，**不讀** `~/.zshrc`。
+>
+> 這是為了繞過 Claude Code 桌面 App 不繼承自訂環境變數的行為——它從 launchd 啟動、
+> 不經過任何 shell，`.mcp.json` 的 `${VAR}` 因此展開成空字串。
+>
+> ⚠️ **上述三個檔案都不可有任何 stdout 輸出**（`echo` / `printf` / neofetch 之類）。
+> MCP 走 stdio JSON-RPC，shell 啟動時印的任何一個字都會排在第一個 JSON 訊息前面，
+> 導致 handshake 失敗。要印東西請導向 stderr（`print -u2 ...`）。
+>
+> 啟動時以 `env -i` 只把上列變數交給 MCP server，其餘 shell 環境
+> （`NPM_TOKEN`、`GITHUB_PERSONAL_ACCESS_TOKEN` 等）不會外洩給該行程。
+>
+> 需要 `zsh` 在 PATH 上（macOS 內建）。
+
 ## 使用
 
 /langfuse list-prompts 或自然語言查詢 LLM traces。
