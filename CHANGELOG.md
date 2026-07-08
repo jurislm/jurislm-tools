@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.27.2](https://github.com/jurislm/jurislm-tools/compare/v1.27.1...v1.27.2) (2026-07-08)
+
+
+### 🐛 Bug Fixes
+
+* **langfuse:** 比照 coolify/hetzner 套用 login shell + env -i ([31dc2a4](https://github.com/jurislm/jurislm-tools/commit/31dc2a43e4bf4d80e5615c17f2664a4a8997cf5f))
+* **langfuse:** 比照 coolify/hetzner 套用 login shell + env -i ([8dd5675](https://github.com/jurislm/jurislm-tools/commit/8dd56756bf471f765ca5a4d6eaab6d1303b02776))
+
 ## [1.27.1](https://github.com/jurislm/jurislm-tools/compare/v1.27.0...v1.27.1) (2026-07-08)
 
 
