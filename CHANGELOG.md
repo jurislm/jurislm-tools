@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.27.1](https://github.com/jurislm/jurislm-tools/compare/v1.27.0...v1.27.1) (2026-07-08)
+
+
+### 🐛 Bug Fixes
+
+* **coolify,hetzner:** 以 env -i 白名單限制 MCP server 可見的環境變數 ([1af9e57](https://github.com/jurislm/jurislm-tools/commit/1af9e5725c31ee51ad42a9f1904ce9005b8d6646))
+* **coolify,hetzner:** 以 login shell 包裝 MCP command 修正 Desktop app env 傳遞失效 ([fde9a60](https://github.com/jurislm/jurislm-tools/commit/fde9a60f20c7663fce53ecfeb3d0a50f603f130f))
+* **coolify,hetzner:** 修正 Claude Code 桌面版 MCP env 傳遞失效 ([5dcad73](https://github.com/jurislm/jurislm-tools/commit/5dcad739356abe57f6a9c1639391cae3ce4884b5))
+* **coolify,hetzner:** 處理 Copilot review — zsh 改依 PATH 解析、補正 README ([2c0bcc5](https://github.com/jurislm/jurislm-tools/commit/2c0bcc534c33cb316ad67f87afd5493ac35e4647))
+
 ## [1.27.0](https://github.com/jurislm/jurislm-tools/compare/v1.26.2...v1.27.0) (2026-06-24)
 
 
