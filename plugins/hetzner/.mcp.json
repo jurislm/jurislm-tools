@@ -1,9 +1,6 @@
 {
   "hetzner": {
-    "command": "npx",
-    "args": ["-y", "@jurislm/hetzner-mcp@latest"],
-    "env": {
-      "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}"
-    }
+    "command": "/bin/zsh",
+    "args": ["-lc", "exec npx -y @jurislm/hetzner-mcp@latest"]
   }
 }
