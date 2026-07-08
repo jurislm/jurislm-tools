@@ -23,6 +23,15 @@ export COOLIFY_ACCESS_TOKEN="..."
 export COOLIFY_BASE_URL="..."
 ```
 
+> **必須放 `~/.zshenv`，不能放 `~/.zshrc`。** MCP server 由 `/bin/zsh -lc` 啟動
+> （login shell 只讀 `~/.zshenv` + `~/.zprofile`，**不讀** `~/.zshrc`）。
+> 這是為了繞過 Claude Code 桌面 App 不繼承自訂環境變數的行為——它從 launchd 啟動、
+> 不經過任何 shell，`.mcp.json` 的 `${VAR}` 因此展開成空字串。
+> 啟動時以 `env -i` 只把上列變數交給 MCP server，其餘 shell 環境
+> （`NPM_TOKEN`、`GITHUB_PERSONAL_ACCESS_TOKEN` 等）不會外洩給該行程。
+>
+> 需要 macOS + `/bin/zsh`。
+
 ## 使用
 
 /coolify list-applications 或自然語言詢問 Coolify 部署狀態。

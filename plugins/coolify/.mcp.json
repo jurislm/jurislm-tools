@@ -1,6 +1,9 @@
 {
   "coolify": {
     "command": "/bin/zsh",
-    "args": ["-lc", "exec npx -y @jurislm/coolify-mcp@latest"]
+    "args": [
+      "-lc",
+      "exec env -i HOME=\"$HOME\" PATH=\"$PATH\" USER=\"$USER\" SHELL=\"$SHELL\" TERM=\"$TERM\" LOGNAME=\"$LOGNAME\" COOLIFY_ACCESS_TOKEN=\"$COOLIFY_ACCESS_TOKEN\" COOLIFY_BASE_URL=\"$COOLIFY_BASE_URL\" npx -y @jurislm/coolify-mcp@latest"
+    ]
   }
 }
