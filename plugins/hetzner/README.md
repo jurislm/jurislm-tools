@@ -1,6 +1,6 @@
 # hetzner
 
-Hetzner VPS 管理 — 17 個 MCP 工具 + skill + command
+Hetzner VPS 管理 — 42 個 MCP 工具 + skill + command
 
 ## 安裝
 
@@ -10,7 +10,7 @@ Hetzner VPS 管理 — 17 個 MCP 工具 + skill + command
 
 ## 內容
 
-- MCP server (17 tools)
+- MCP server (42 tools)
 - skill
 - /hetzner command
 

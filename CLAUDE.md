@@ -67,7 +67,7 @@ plugins/
 |--------|------|------|------|
 | hooks-and-rules | 1.22.0 | Base | commit 思考紀律 hook + 通用開發規則 |
 | coolify | 1.22.0 | Hybrid | Coolify MCP（43 工具）+ skill + command |
-| hetzner | 1.22.0 | Hybrid | Hetzner MCP（17 工具）+ skill + command |
+| hetzner | 1.22.0 | Hybrid | Hetzner MCP（42 工具）+ skill + command |
 | langfuse | 1.22.0 | Hybrid | Langfuse MCP（13 工具）+ skill + command |
 | repo-standards | 1.22.0 | Skill | Repo 標準審查 skill + command |
 | pr-review | 1.22.0 | Skill | PR 審查 skill + command |
