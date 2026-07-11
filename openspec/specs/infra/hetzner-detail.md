@@ -2,14 +2,14 @@
 
 ## Purpose
 
-描述 `hetzner` Hybrid plugin 的工具集與操作模式，管理 Hetzner Cloud 的伺服器建立、刪除、電源控制、SSH 金鑰、Volume 掛載與 Storage Box（含空間用量查詢、備份前飛行前檢查）。
+描述 `hetzner` Hybrid plugin 的工具集與操作模式，管理 Hetzner Cloud 的伺服器建立、刪除、電源控制、SSH 金鑰、Volume 掛載與 Storage Box（含空間用量查詢、備份前空間預檢查）。
 
 ## 產物
 
 | 產物 | 路徑 | 說明 |
 |------|------|------|
 | MCP Server | `plugins/hetzner/.mcp.json` | `@jurislm/hetzner-mcp@latest`（42 工具） |
-| `hetzner` skill | `plugins/hetzner/skills/hetzner/SKILL.md` | 使用指南（228 行） |
+| `hetzner` skill | `plugins/hetzner/skills/hetzner/SKILL.md` | 使用指南（238 行） |
 | `/hetzner` command | `plugins/hetzner/commands/hetzner.md` | 入口 command |
 | locations reference | `plugins/hetzner/skills/hetzner/references/locations.md` | 資料中心位置參考 |
 | server-types reference | `plugins/hetzner/skills/hetzner/references/server-types.md` | 伺服器規格與定價 |
@@ -69,8 +69,8 @@ npm 套件：`@jurislm/hetzner-mcp`（jurislm/hetzner-mcp repo）
 |------|------|--------|
 | `hetzner_list_storage_boxes` | 列出所有 Storage Box | — |
 | `hetzner_get_storage_box` | 查詢單一 Storage Box 詳情 | — |
-| `hetzner_get_storage_box_stats` | 查詢空間用量統計（used/total/available/usage_percent） | — |
-| `hetzner_assert_storage_box_space` | 備份前空間充足性斷言（`required_gib`，不足回 `isError: true`） | — |
+| `hetzner_get_storage_box_stats` | 查詢空間用量統計（`used_bytes`/`used_gib`/`total_bytes`/`total_gib`/`available_bytes`/`available_gib`/`usage_percent`） | — |
+| `hetzner_assert_storage_box_space` | 備份前空間充足性斷言（`required_gib`，不足回 `isError: true`；json 回傳同上欄位 + `ok`/`required_gib`） | — |
 | `hetzner_create_storage_box` | 建立新 Storage Box | — |
 | `hetzner_delete_storage_box` | 刪除 Storage Box | ⚠️ 不可逆 |
 | `hetzner_update_storage_box` | 更新 Storage Box | — |

@@ -7,7 +7,7 @@ description: >
   "check Hetzner server types", "provision a VPS", "Volume mount 失敗", "reboot 後 container 掛掉",
   "fstab 設定", "Storage Box 連線", "建立 Hetzner 伺服器", "列出 VPS",
   "管理 SSH 金鑰", "查看伺服器規格", "Hetzner Volume", "備份到 Storage Box",
-  "Storage Box 空間用量", "Storage Box 剩餘容量", "備份前檢查空間", "pre-flight space check",
+  "Storage Box 空間用量", "Storage Box 剩餘容量", "備份前檢查空間", "備份前空間預檢查",
   or mentions Hetzner Cloud server management, infrastructure provisioning,
   or cloud resource operations.
 argument-hint: "[action] [server-name/id]"
@@ -59,7 +59,7 @@ argument-hint: "[action] [server-name/id]"
 |------|------|----------|
 | `hetzner_list_storage_boxes` | 列出所有 Storage Box | — |
 | `hetzner_get_storage_box` | 查詢單一 Storage Box 詳情 | `id` |
-| `hetzner_get_storage_box_stats` | **查詢空間用量統計**（used/total/available/usage_percent） | `id` |
+| `hetzner_get_storage_box_stats` | **查詢空間用量統計**（見下方「備份前空間預檢查」完整欄位） | `id` |
 | `hetzner_assert_storage_box_space` | **備份前空間充足性斷言**（不足時回傳 `isError: true`） | `id`, `required_gib` |
 | `hetzner_create_storage_box` | 建立新 Storage Box | `name`, `storage_box_type`, `password` |
 | `hetzner_delete_storage_box` | 刪除 Storage Box ⚠️ | `id` |
@@ -150,17 +150,27 @@ rsync -avz -e "ssh -p 23" ./backup/ storagebox:backups/
 - Port 23：SFTP / SCP / rsync / borg，支援後加的 `~/.ssh/authorized_keys` key
 - 備份工具（rsync、borg）**必須用 port 23**；後加的 key 在 port 22 無效
 
-### 備份前飛行前檢查（pre-flight space check）
+### 備份前空間預檢查
 
-備份 pipeline（cron job、`add-judgment-backup-sync` 等）在執行實際傳檔前，應先用 MCP 工具確認空間足夠，避免傳到一半才發現滿了：
-
-```
-hetzner_assert_storage_box_space(id=561406, required_gib=20, response_format="json")
-```
+備份 pipeline（cron job、`add-judgment-backup-sync` 等）在執行實際傳檔前，應先用 MCP 工具確認空間足夠，避免傳到一半才發現滿了：呼叫 `hetzner_assert_storage_box_space(id=561406, required_gib=20, response_format="json")`。
 
 - 空間足夠 → 正常回傳，`ok: true`
 - 空間不足 → `isError: true`，pipeline 應中止並警示，不要繼續執行 rsync/pg_dump
-- 只想看目前用量、不做斷言 → 用 `hetzner_get_storage_box_stats(id=561406)`，取得 `used_gib` / `total_gib` / `available_gib` / `usage_percent`
+- 只想看目前用量、不做斷言 → 用 `hetzner_get_storage_box_stats(id=561406)`
+
+兩個工具回傳的完整欄位（`response_format: "json"` 時）：
+
+| 欄位 | 說明 |
+|------|------|
+| `used_bytes` | 已用空間（bytes，含快照） |
+| `used_gib` | 已用空間（GiB） |
+| `total_bytes` | 總容量（bytes） |
+| `total_gib` | 總容量（GiB） |
+| `available_bytes` | 剩餘空間（bytes，超額時為負數） |
+| `available_gib` | 剩餘空間（GiB） |
+| `usage_percent` | 使用率（%，兩位小數） |
+
+`hetzner_assert_storage_box_space` 另外多回傳 `ok`（boolean）與 `required_gib`（回傳原始請求值）。
 
 ## 不支援的功能
 
