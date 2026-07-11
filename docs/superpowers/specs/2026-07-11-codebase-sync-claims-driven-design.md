@@ -5,7 +5,7 @@
 
 ## 問題
 
-`codebase-sync` skill（現行 v2.0.0，`plugins/codebase-sync/skills/codebase-sync/SKILL.md`）目的是把最新代碼的**功能與架構變化**同步進 README.md / CLAUDE.md，但現行設計本質是「結構/字串比對 + git-log 啟發式」，無法抓語意層的功能/架構漂移。
+`codebase-sync` skill（現行 skill 版本 v2.0.0，見 `plugins/codebase-sync/skills/codebase-sync/SKILL.md` YAML frontmatter；與 `plugin.json` 的 plugin 版本號無關）目的是把最新代碼的**功能與架構變化**同步進 README.md / CLAUDE.md，但現行設計本質是「結構/字串比對 + git-log 啟發式」，無法抓語意層的功能/架構漂移。
 
 四個結構性缺口（詳見 issue）：
 1. 全程不讀原始碼（只讀 docs + `package.json` / `plugin.json` + git log）。
@@ -38,7 +38,7 @@
 
 | 宣稱類型 | 文件裡長怎樣 | 權威來源 |
 |---|---|---|
-| CLI 指令 | `sync judicial --category` | `grep -rE '\.command\(\|addCommand\(' <cli 進入點>` 逐條比對 |
+| CLI 指令 | `sync judicial --category` | `grep -rE '\.command\(|addCommand\(' <cli 進入點>` 逐條比對（ERE 語法，`|` 不跳脫） |
 | 流程/自動化 | 「pre-commit 跑 lint+typecheck+test」 | `Read .husky/pre-commit`、CI yaml、Dockerfile 逐句對照 |
 | 模組/目錄狀態 | 「X 已刪除 / 是 stub / 已重建 / 未啟用」 | `git ls-files modules/X` + Read 進入檔判定內容 |
 | 架構/資料流 | 「向量存 pgvector」 | grep service 名 / feature flag + migration + `openspec/changes/` |
