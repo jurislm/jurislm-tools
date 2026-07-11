@@ -161,6 +161,16 @@ find . -name "plugin.json" -not -path "*/node_modules/*" | head -20
 
 ---
 
+## Step 1.5：建立 Claims Inventory（宣稱清點）
+
+把 README.md / CLAUDE.md 逐句讀過，抽出所有**可被驗證的宣稱**（claim）——不是「看起來合理就跳過」，而是每一句涉及指令、流程、模組狀態、架構、計數、版本/env 的描述都要抽出來，記錄「宣稱內容」與「要讀哪個權威來源核對」。
+
+**分類與權威來源對照表見 `references/claims-inventory.md`**，依該表的 6 種宣稱類型（CLI 指令／流程自動化／模組目錄狀態／架構資料流／結構計數／scripts-env-版本）逐條分類。
+
+這份 Claims Inventory 是 Step 2 Audit Report Section 5 的輸入——沒有先做這步，Section 5 無法填寫。
+
+---
+
 ## Step 2：輸出完整 Audit Report（禁止省略）
 
 分析 Step 0 的結果，**必須輸出以下格式的 Audit Report**，不論是否有發現問題都要輸出：
