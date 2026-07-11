@@ -63,7 +63,7 @@ npm 套件：`@jurislm/hetzner-mcp`（jurislm/hetzner-mcp repo）
 | `hetzner_attach_volume` | 掛載 Volume 至伺服器（僅 API 層，不寫 fstab） | — |
 | `hetzner_detach_volume` | 卸載 Volume | — |
 
-### Storage Box 管理（21 個工具）
+### Storage Box 管理（22 個工具）
 
 | 工具 | 說明 | 危險性 |
 |------|------|--------|

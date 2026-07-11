@@ -53,7 +53,7 @@ argument-hint: "[action] [server-name/id]"
 
 > ⚠️ 這 4 個工具只操作 Hetzner API 層的 attach/detach。**不處理** Linux 端的 mount／`/etc/fstab`——見下方「常見陷阱：Reboot 後 Volume 不會自動 mount」，attach 後仍需手動 SSH 進去寫 fstab。
 
-### Storage Box 管理（21 個工具）
+### Storage Box 管理（22 個工具）
 
 | 工具 | 說明 | 必要參數 |
 |------|------|----------|
