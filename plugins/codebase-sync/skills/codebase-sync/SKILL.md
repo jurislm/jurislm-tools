@@ -351,6 +351,8 @@ fi
 - MCP Server / CLI Tool
 - Plugin / Marketplace
 
+真實案例示範「claims-driven 驗證該挖多深」，見 `references/regression-examples.md`（3 個實際發生過、天真存在性掃描會漏掉的漂移案例）。
+
 ## 常見錯誤
 
 | 錯誤 | 正確做法 |
@@ -372,3 +374,4 @@ fi
 - **禁止修改版本號**：版本由 Release Please 管理
 - **驗證再寫**：每行涉及檔案路徑/指令的內容都要實際 `ls` / 執行驗證
 - **Audit Report 是必交付物**：即使「什麼都不需要改」也必須輸出報告說明原因
+- **Section 5 不得空表過關**：若整張表填「是（一致）」卻無任何取證指令與實際輸出，代表審計不完整，必須回頭補做，不能只憑印象填「一致」
