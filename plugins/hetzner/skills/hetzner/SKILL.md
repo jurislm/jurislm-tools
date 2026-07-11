@@ -7,6 +7,7 @@ description: >
   "check Hetzner server types", "provision a VPS", "Volume mount 失敗", "reboot 後 container 掛掉",
   "fstab 設定", "Storage Box 連線", "建立 Hetzner 伺服器", "列出 VPS",
   "管理 SSH 金鑰", "查看伺服器規格", "Hetzner Volume", "備份到 Storage Box",
+  "Storage Box 空間用量", "Storage Box 剩餘容量", "備份前檢查空間", "pre-flight space check",
   or mentions Hetzner Cloud server management, infrastructure provisioning,
   or cloud resource operations.
 argument-hint: "[action] [server-name/id]"
@@ -16,14 +17,16 @@ argument-hint: "[action] [server-name/id]"
 
 透過 `@jurislm/hetzner-mcp` MCP 工具管理 Hetzner Cloud 基礎設施。
 
-## MCP 工具概覽（17 個工具）
+## MCP 工具概覽（42 個工具）
 
-### 伺服器管理（7 個工具）
+### 伺服器管理（9 個工具）
 
 | 工具 | 說明 | 必要參數 |
 |------|------|----------|
 | `hetzner_list_servers` | 列出所有伺服器 | — |
 | `hetzner_get_server` | 查詢單一伺服器詳情 | `id` |
+| `hetzner_get_server_metrics` | 查詢伺服器監控指標（CPU/流量等） | `id` |
+| `hetzner_get_server_ram` | 查詢伺服器記憶體用量 | `id` |
 | `hetzner_create_server` | 建立新伺服器 | `name`, `server_type`, `image` |
 | `hetzner_delete_server` | 刪除伺服器 ⚠️ | `id` |
 | `hetzner_power_on_server` | 開機 | `id` |
@@ -38,6 +41,44 @@ argument-hint: "[action] [server-name/id]"
 | `hetzner_get_ssh_key` | 查詢單一 SSH 金鑰 | `id` |
 | `hetzner_create_ssh_key` | 新增 SSH 金鑰 | `name`, `public_key` |
 | `hetzner_delete_ssh_key` | 刪除 SSH 金鑰 ⚠️ | `id` |
+
+### Volume 管理（4 個工具）
+
+| 工具 | 說明 | 必要參數 |
+|------|------|----------|
+| `hetzner_list_volumes` | 列出所有 Volume | — |
+| `hetzner_get_volume` | 查詢單一 Volume 詳情 | `id` |
+| `hetzner_attach_volume` | 掛載 Volume 至伺服器 | `id`, `server` |
+| `hetzner_detach_volume` | 卸載 Volume | `id` |
+
+> ⚠️ 這 4 個工具只操作 Hetzner API 層的 attach/detach。**不處理** Linux 端的 mount／`/etc/fstab`——見下方「常見陷阱：Reboot 後 Volume 不會自動 mount」，attach 後仍需手動 SSH 進去寫 fstab。
+
+### Storage Box 管理（21 個工具）
+
+| 工具 | 說明 | 必要參數 |
+|------|------|----------|
+| `hetzner_list_storage_boxes` | 列出所有 Storage Box | — |
+| `hetzner_get_storage_box` | 查詢單一 Storage Box 詳情 | `id` |
+| `hetzner_get_storage_box_stats` | **查詢空間用量統計**（used/total/available/usage_percent） | `id` |
+| `hetzner_assert_storage_box_space` | **備份前空間充足性斷言**（不足時回傳 `isError: true`） | `id`, `required_gib` |
+| `hetzner_create_storage_box` | 建立新 Storage Box | `name`, `storage_box_type`, `password` |
+| `hetzner_delete_storage_box` | 刪除 Storage Box ⚠️ | `id` |
+| `hetzner_update_storage_box` | 更新 Storage Box（名稱等） | `id` |
+| `hetzner_change_storage_box_type` | 變更方案（容量） | `id`, `storage_box_type` |
+| `hetzner_change_storage_box_protection` | 變更刪除保護 | `id` |
+| `hetzner_reset_storage_box_password` | 重設密碼 | `id` |
+| `hetzner_update_storage_box_access_settings` | 更新存取設定（SSH/SMB/WebDAV 等） | `id` |
+| `hetzner_list_storage_box_folders` | 列出子帳號資料夾 | `id` |
+| `hetzner_create_storage_box_snapshot` | 建立快照 | `id` |
+| `hetzner_list_storage_box_snapshots` | 列出快照 | `id` |
+| `hetzner_delete_storage_box_snapshot` | 刪除快照 ⚠️ | `id`, `snapshot` |
+| `hetzner_rollback_storage_box_snapshot` | 回滾至快照 ⚠️ 覆寫現況 | `id`, `snapshot` |
+| `hetzner_enable_storage_box_snapshot_plan` | 啟用自動快照排程 | `id` |
+| `hetzner_disable_storage_box_snapshot_plan` | 停用自動快照排程 | `id` |
+| `hetzner_create_storage_box_subaccount` | 建立子帳號 | `id` |
+| `hetzner_list_storage_box_subaccounts` | 列出子帳號 | `id` |
+| `hetzner_update_storage_box_subaccount` | 更新子帳號 | `id`, `subaccount_id` |
+| `hetzner_delete_storage_box_subaccount` | 刪除子帳號 ⚠️ | `id`, `subaccount_id` |
 
 ### 參考資料（3 個工具）
 
@@ -85,9 +126,9 @@ name: "my-macbook"
 public_key: "ssh-ed25519 AAAA... user@host"
 ```
 
-## Storage Box 連線（MCP 不支援，用 SSH/SFTP）
+## Storage Box：中繼資料用 MCP，實際傳檔用 SSH/SFTP
 
-Hetzner Storage Box 不在 MCP 工具集內，需直接 SSH/SFTP 操作：
+Storage Box 的**管理面**（容量查詢、快照、子帳號、保護設定）已有完整 MCP 工具（見上方「Storage Box 管理」）。但**實際上傳/下載檔案**（rsync、borg 備份）MCP 不支援，仍需直接 SSH/SFTP：
 
 ```bash
 # ~/.ssh/config 建議設定（port 23 = SFTP/rsync/borg 可用）
@@ -109,11 +150,22 @@ rsync -avz -e "ssh -p 23" ./backup/ storagebox:backups/
 - Port 23：SFTP / SCP / rsync / borg，支援後加的 `~/.ssh/authorized_keys` key
 - 備份工具（rsync、borg）**必須用 port 23**；後加的 key 在 port 22 無效
 
+### 備份前飛行前檢查（pre-flight space check）
+
+備份 pipeline（cron job、`add-judgment-backup-sync` 等）在執行實際傳檔前，應先用 MCP 工具確認空間足夠，避免傳到一半才發現滿了：
+
+```
+hetzner_assert_storage_box_space(id=561406, required_gib=20, response_format="json")
+```
+
+- 空間足夠 → 正常回傳，`ok: true`
+- 空間不足 → `isError: true`，pipeline 應中止並警示，不要繼續執行 rsync/pg_dump
+- 只想看目前用量、不做斷言 → 用 `hetzner_get_storage_box_stats(id=561406)`，取得 `used_gib` / `total_gib` / `available_gib` / `usage_percent`
+
 ## 不支援的功能
 
-此 MCP 伺服器**不支援**（需用 Hetzner Cloud Console UI 或 hcloud CLI）：
-- Volumes（磁碟區）— 需手動 attach 並寫 fstab，否則 reboot 後遺失 mount（見「常見陷阱」）
-- Storage Box — 用 SSH/SFTP 直接操作（見上方「Storage Box 連線」）
+此 MCP 伺服器**不支援**（需用 Hetzner Cloud Console UI、hcloud CLI 或 SSH/SFTP）：
+- Storage Box 實際檔案傳輸（rsync、borg、SFTP 上傳/下載）— 用 SSH/SFTP 直接操作（見上方）
 - Firewalls（防火牆）管理
 - Projects（專案）管理 — 一個 API token 只能存取單一 project
 - Load Balancers / Floating IPs / Private Networks
