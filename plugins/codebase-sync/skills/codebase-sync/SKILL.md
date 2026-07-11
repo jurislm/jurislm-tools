@@ -362,6 +362,7 @@ fi
 | 寫 deprecated 功能但加註「(deprecated)」 | 直接刪除，靠 git log 留歷史 |
 | 把 plugin 列表寫成「已規劃」「未來會加」 | 只寫**現在已存在**的，沒實作的不寫 |
 | 把 git commit message 原文複製進文件（「本次新增了 X」）| git log 是訊號來源，用來找出哪些地方需要更新；文件描述的是當前狀態，不是變更歷史 |
+| 文件對某路徑有狀態性描述（已刪/stub/重建/未啟用）時，只憑目錄存在就回報 OK | 目錄存在 ≠ 宣稱成立，必須 Read 內容確認狀態描述是否仍正確（見 `references/regression-examples.md` 案例 3）|
 
 ## 注意事項
 
