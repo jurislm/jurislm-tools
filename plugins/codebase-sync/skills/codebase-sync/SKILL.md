@@ -109,6 +109,9 @@ find . -name "plugin.json" -not -path "*/node_modules/*" -exec grep '"version"' 
 echo "=== 實際存在的頂層目錄（用來比對文件是否有遺漏）==="
 ls -d */ 2>/dev/null | grep -v node_modules | grep -v ".git" || echo "(no subdirectories)"
 
+# ⚠️ 以下 0-J~0-N 為 git-log 啟發式，僅供輔助線索、非 ground truth。
+# Claims Inventory（Step 1.5）驗證必須獨立於此 commit 視窗跑過全部宣稱，
+# 不得因某項漂移不在最近 30-50 筆 commit 內就略過不查。
 # 0-J 近期 git commit 摘要（最近 30 筆）
 echo "=== 近期 git commits ==="
 git log --oneline -30 2>/dev/null || echo "(not a git repo or no commits)"
