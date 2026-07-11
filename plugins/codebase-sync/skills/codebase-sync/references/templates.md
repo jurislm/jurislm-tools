@@ -96,6 +96,11 @@ npm install -g @<scope>/<name>
 | `tool_a` | ... |
 ```
 
+### 行為驗證清單 — CLI Tool
+
+- 指令樹：`grep -rE '\.command\(|addCommand\(' <cli 進入點>`，列出所有實際註冊的 command/subcommand，逐條比對文件寫的用法是否還存在
+- 選項/flag：對照 CLI 進入點原始碼中 `.option(` / `.addOption(` 的定義，確認文件列出的每個 flag 都還真的被註冊
+
 ## CLAUDE.md — Web App
 
 ```markdown
@@ -142,6 +147,12 @@ src/
 - <專案專屬陷阱>
 ```
 
+### 行為驗證清單 — Web App
+
+- Routes：`find app -name "page.tsx" -o -name "route.ts"`，比對文件描述的功能是否都對應到實際路由檔案
+- Middleware / Proxy：`Read middleware.ts`（或 Next.js 16 的 `proxy.ts`），核對文件描述的攔截規則、redirect 邏輯是否仍成立
+- Pre-commit / CI hooks：`Read .husky/pre-commit`、CI yaml，逐句核對文件寫的檢查步驟（如「跑 lint + test」）是否與實際指令一致，不得只憑檔案存在就判定 OK
+
 ## CLAUDE.md — Plugin / Marketplace
 
 ```markdown
@@ -179,6 +190,11 @@ plugins/<name>/
 develop → PR → main
 \`\`\`
 ```
+
+### 行為驗證清單 — Plugin / Marketplace
+
+- `plugin.json` vs `marketplace.json`：每個 plugin 的 `name`、`version` 是否兩邊一致（`jq '.version' plugins/<name>/.claude-plugin/plugin.json` 對照 `jq '.plugins[] | select(.name=="<name>") | .version' .claude-plugin/marketplace.json`）
+- Skill 清單：`find plugins -name "SKILL.md"` 找出實際存在的 skill，確認文件的 plugin 清單表格都有對應列出，反之亦然
 
 ## 偵測過時內容的具體規則
 
