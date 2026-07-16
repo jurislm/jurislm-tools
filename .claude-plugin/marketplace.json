@@ -33,7 +33,7 @@
     {
       "name": "repo-standards",
       "source": "./plugins/repo-standards",
-      "description": "審查並套用 JurisLM repo 標準 — release workflow、ESLint、worktree、Bun runtime、Vitest",
+      "description": "審查並套用 JurisLM repo 標準 — AGENTS.md 讀取 CLAUDE.md、release workflow、ESLint、worktree、Bun runtime、Vitest",
       "author": {
         "name": "Terry Chen"
       }
@@ -58,6 +58,14 @@
       "name": "learn-eval",
       "source": "./plugins/learn-eval",
       "description": "從 session 萃取可重複利用 pattern — 品質閘 + dedup 檢查 + Global/Project 儲存路徑判斷",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "openspec-deliver",
+      "source": "./plugins/openspec-deliver",
+      "description": "端到端落地一個 OpenSpec 需求 — 需求分析、issue、提案、TDD 實作、PR、code review、部署驗收、歸檔一次跑完（scoped for jurislm/entire GitHub Flow）",
       "author": {
         "name": "Terry Chen"
       }
