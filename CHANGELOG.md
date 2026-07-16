@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.28.0](https://github.com/jurislm/jurislm-tools/compare/v1.27.3...v1.28.0) (2026-07-16)
+
+
+### 🚀 New Features
+
+* **openspec-deliver:** 新增端到端 OpenSpec 需求落地 slash command ([e2b6b40](https://github.com/jurislm/jurislm-tools/commit/e2b6b40ff8551f614bacc8e609c087b589330181))
+
 ## [1.27.3](https://github.com/jurislm/jurislm-tools/compare/v1.27.2...v1.27.3) (2026-07-11)
 
 
