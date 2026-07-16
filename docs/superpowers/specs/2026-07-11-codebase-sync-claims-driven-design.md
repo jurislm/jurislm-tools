@@ -38,25 +38,25 @@
 
 | 宣稱類型 | 文件裡長怎樣 | 權威來源 |
 |---|---|---|
-| CLI 指令 | `sync judicial --category` | `grep -rE '\.command\(|addCommand\(' <cli 進入點>` 逐條比對（ERE 語法，`|` 不跳脫） |
+| CLI 指令 | `sync judicial --category` | 先搜尋 `.command(` 與 `addCommand(` 定位候選位置，再 Read 命中處周邊的完整註冊流程／command tree 確認實際有效註冊（字串命中不等於真的有註冊，可能是註解或死碼），逐條記錄實際輸出 |
 | 流程/自動化 | 「pre-commit 跑 lint+typecheck+test」 | `Read .husky/pre-commit`、CI yaml、Dockerfile 逐句對照 |
 | 模組/目錄狀態 | 「X 已刪除 / 是 stub / 已重建 / 未啟用」 | `git ls-files modules/X` + Read 進入檔判定內容 |
 | 架構/資料流 | 「向量存 pgvector」 | grep service 名 / feature flag + migration + `openspec/changes/` |
-| 結構計數 | 「24 modules / 16 packages」 | `git ls-files '*/package.json'` 過濾空殼 |
-| scripts/env/版本 | `bun run build` / `DATABASE_URL` / 5.x | 保留現有比對邏輯；版本只報告不改 |
+| 結構計數 | 「24 modules / 16 packages」 | `git ls-files '*/package.json'` 僅列出被追蹤的路徑，不能當空殼過濾器；須逐一 Read 每個 `package.json` 內容，依「有無實際程式碼、非僅殘留 `node_modules`/`.turbo` 快取」判定是否為空殼後才計數 |
+| scripts/env/版本 | `bun run build` / `DATABASE_URL` / 5.x | Read 對應的 `package.json` scripts 區塊、`.env.example`／`.env.shared.example`、`package.json` 的 `engines`／依賴版本號逐條核對；版本只報告現況不改動 |
 
 `SKILL.md` 在 Step 1 之後新增「Step 1.5：建立 Claims Inventory」，指示逐條讀 README.md / CLAUDE.md，依上表分類抽出可驗證宣稱，連結到此參考檔。
 
 ### 2. Audit Report Section 5 改為硬性表格
 
 現行：
-```
+```text
 ### 5. 描述準確性檢查
 - [README/CLAUDE.md 的描述與實際程式碼不符之處] 或 [無]
 ```
 
 改為：
-```
+```text
 ### 5. 描述準確性檢查（Claims-Driven）
 | 宣稱 | 取證指令 | 實際輸出 | 一致? |
 |---|---|---|---|
