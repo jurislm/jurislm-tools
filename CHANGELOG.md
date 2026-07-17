@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.29.0](https://github.com/jurislm/jurislm-tools/compare/v1.28.0...v1.29.0) (2026-07-17)
+
+
+### 🚀 New Features
+
+* add higgsfield plugin, repo-standards AGENTS.md handoff ([#127](https://github.com/jurislm/jurislm-tools/issues/127)) ([b268ebb](https://github.com/jurislm/jurislm-tools/commit/b268ebb3ff35c7ede7d1c9d926510f460ac36e74))
+
 ## [1.28.0](https://github.com/jurislm/jurislm-tools/compare/v1.27.3...v1.28.0) (2026-07-16)
 
 
