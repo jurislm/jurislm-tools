@@ -67,7 +67,7 @@ plugins/
 |--------|------|------|------|
 | hooks-and-rules | 1.22.0 | Base | commit 思考紀律 hook + 通用開發規則 |
 | coolify | 1.22.0 | Hybrid | Coolify MCP（43 工具）+ skill + command |
-| hetzner | 1.22.0 | Hybrid | Hetzner MCP（17 工具）+ skill + command |
+| hetzner | 1.22.0 | Hybrid | Hetzner MCP（42 工具）+ skill + command |
 | langfuse | 1.22.0 | Hybrid | Langfuse MCP（13 工具）+ skill + command |
 | repo-standards | 1.22.0 | Skill | Repo 標準審查 skill + command |
 | pr-review | 1.22.0 | Skill | PR 審查 skill + command |
@@ -77,7 +77,7 @@ plugins/
 | tdd-workflow | 1.22.0 | Skill+Agent+Cmd | tdd-workflow skill + tdd-guide agent + /tdd-workflow command |
 | learn-eval | 1.22.0 | Command | /learn-eval command — 含品質閘 + Global/Project 判斷 |
 | entire | 1.22.0 | Hybrid | Entire MCP（11 工具）+ skill + command |
-| higgsfield | 1.27.2 | Hybrid | Higgsfield 官方 remote MCP（72 工具，OAuth）+ 7 個 CLI-based skills（vendor 自 higgsfield-ai/skills，MIT） |
+| higgsfield | 1.28.0 | Hybrid | Higgsfield 官方 remote MCP（72 工具，OAuth）+ 7 個 CLI-based skills（vendor 自 higgsfield-ai/skills，MIT） |
 
 ## 版本管理
 

@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.28.0](https://github.com/jurislm/jurislm-tools/compare/v1.27.3...v1.28.0) (2026-07-16)
+
+
+### 🚀 New Features
+
+* **openspec-deliver:** 新增端到端 OpenSpec 需求落地 slash command ([e2b6b40](https://github.com/jurislm/jurislm-tools/commit/e2b6b40ff8551f614bacc8e609c087b589330181))
+
+## [1.27.3](https://github.com/jurislm/jurislm-tools/compare/v1.27.2...v1.27.3) (2026-07-11)
+
+
+### 🐛 Bug Fixes
+
+* **hetzner:** 修正 Storage Box 工具數標題誤植（21→22） ([59d6c9e](https://github.com/jurislm/jurislm-tools/commit/59d6c9eb36cabda640945efeb31f81e89a55e227))
+* **hetzner:** 處理 CodeRabbit/Copilot review 意見 ([43ec02c](https://github.com/jurislm/jurislm-tools/commit/43ec02c467b27fea9374e52092057d297fae243a))
+
+
+### 📚 Documentation
+
+* **hetzner:** 補完 42 個 MCP 工具文件，含 Storage Box 空間查詢與備份前檢查 ([b306919](https://github.com/jurislm/jurislm-tools/commit/b3069193100a5e9cb77bfbe8a819ce4126a35956))
+* **hetzner:** 補完 42 個 MCP 工具文件，含 Storage Box 空間查詢與備份前檢查 ([3125f2b](https://github.com/jurislm/jurislm-tools/commit/3125f2b9fe685e3b4ad25505eb220f6f63bc0863)), closes [#115](https://github.com/jurislm/jurislm-tools/issues/115)
+
 ## [1.27.2](https://github.com/jurislm/jurislm-tools/compare/v1.27.1...v1.27.2) (2026-07-08)
 
 
