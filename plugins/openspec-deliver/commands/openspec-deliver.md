@@ -31,10 +31,11 @@ $ARGUMENTS
 2. 確認目標 repo 有對應的 GitHub repo（`git remote -v` / `gh repo view`）；
    沒有 → 先建立 repo 並設定 remote（`gh repo create`），再進入流程
 3. 確認目標 repo 遵守 GitHub Flow（`git branch -a` 查有無 `develop` 等
-   中繼分支綁定部署流程）；發現仍走 `develop` 兩段式 → 先調整為 GitHub
-   Flow（PR 方向改 `feature → main`），並停用對應的雲端開發環境（若走
-   Coolify：停止 dev app ＋ 關閉 auto-deploy，設定保留可復活），再進入
-   流程
+   中繼分支綁定部署流程）；發現仍走 `develop` 兩段式 → **先停下**，向
+   使用者說明現況（現行分支模型、是否有對應雲端 dev 環境）並取得明確
+   授權，才動手調整為 GitHub Flow（PR 方向改 `feature → main`）與停用
+   對應雲端開發環境（若走 Coolify：停止 dev app ＋ 關閉 auto-deploy，
+   設定保留可復活）；未取得授權前不得自行變更分支模型或部署設定
 
 ## 流程
 
