@@ -65,7 +65,7 @@
     {
       "name": "openspec-deliver",
       "source": "./plugins/openspec-deliver",
-      "description": "端到端落地一個 OpenSpec 需求 — 需求分析、issue、提案、TDD 實作、PR、code review、部署驗收、歸檔一次跑完（scoped for jurislm/entire GitHub Flow）",
+      "description": "端到端落地 OpenSpec 需求（GitHub Flow 單段式）：/openspec-deliver 跑完單一需求的完整流程，/openspec-deliver-queue 盤點排序後逐一跑完整批 issue",
       "author": {
         "name": "Terry Chen"
       }
