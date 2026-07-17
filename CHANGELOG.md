@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.30.0](https://github.com/jurislm/jurislm-tools/compare/v1.29.0...v1.30.0) (2026-07-17)
+
+
+### 🚀 New Features
+
+* **openspec-deliver:** 泛用化單需求流程 + 新增多 issue 佇列指令 ([#129](https://github.com/jurislm/jurislm-tools/issues/129)) ([2aeebeb](https://github.com/jurislm/jurislm-tools/commit/2aeebeb8edfd259af0f51fdf4c49eb61ba0d20e4))
+
 ## [1.29.0](https://github.com/jurislm/jurislm-tools/compare/v1.28.0...v1.29.0) (2026-07-17)
 
 
