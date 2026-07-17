@@ -77,6 +77,7 @@ plugins/
 | tdd-workflow | 1.22.0 | Skill+Agent+Cmd | tdd-workflow skill + tdd-guide agent + /tdd-workflow command |
 | learn-eval | 1.22.0 | Command | /learn-eval command — 含品質閘 + Global/Project 判斷 |
 | entire | 1.22.0 | Hybrid | Entire MCP（11 工具）+ skill + command |
+| higgsfield | 1.28.0 | Hybrid | Higgsfield 官方 remote MCP（72 工具，OAuth）+ 7 個 CLI-based skills（vendor 自 higgsfield-ai/skills，MIT） |
 
 ## 版本管理
 
@@ -126,14 +127,14 @@ MCP Server 需要的環境變數，在 `~/.zshenv` 設定（非 `~/.zshrc`）：
 
 ### 本地更新（已掛載本地目錄）
 
-Marketplace 直接掛載 main worktree（`source: "directory"`），流程：
+Marketplace 直接掛載主目錄（`source: "directory"`），主目錄固定停留在 `main` 分支（GitHub 預設分支，見下方「Git 分支規範」），流程：
 
-```
-.worktrees/develop 修改 → commit + push → PR develop→main → merge
-→ git pull origin main（在 main worktree 根目錄執行）→ /reload-plugins
+```text
+.claude/worktrees/develop 修改 → commit + push → PR develop→main → merge
+→ git pull origin main（在主目錄根目錄執行，主目錄本就在 main 分支）→ /reload-plugins
 ```
 
-`git pull` 是必要步驟：plugin 從 main worktree 本地目錄讀取，merge 只更新遠端，本地 main worktree 仍需 pull 才會同步。不需要 `/plugin marketplace update` 或重新安裝。
+`git pull` 是必要步驟：plugin 從主目錄本地讀取，merge 只更新遠端，主目錄仍需 pull 才會同步。不需要 `/plugin marketplace update` 或重新安裝。
 
 ### 確認掛載來源
 
@@ -148,7 +149,10 @@ cat ~/.claude/plugins/known_marketplaces.json | jq '.["jurislm-tools"].source'
 develop → PR → main
 ```
 
-- 日常開發一律在 `.worktrees/develop` 目錄，不在 main worktree 做 feature commits
+- **主目錄（repo root）固定停留在 `main` 分支**——GitHub 預設分支，也是本地 plugin marketplace 掛載來源，須保持對應已發布內容，不做 feature commits
+- 日常開發（含 develop 分支工作）在獨立 worktree `.claude/worktrees/develop`（標準 Claude worktree 位置，取代舊的 `.worktrees/develop`）
+- 其餘 feature branch 需要隔離時，同樣建立獨立 worktree 於 `.claude/worktrees/<branch>`
+- 開始前必做：`git worktree list` + `git branch --show-current`，確認主目錄在 `main`、開發改到對應 worktree 執行
 - **嚴禁直接 push 到 main**
 - 版本號由 Release Please 自動管理，**禁止手動修改版本號**
 

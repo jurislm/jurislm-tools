@@ -12,9 +12,10 @@ description: >
   "avoid duplicate deploy", "configure CD / deploy",
   "設定 Vitest", "設定 Bun", "設定測試框架",
   "upgrade to ESLint 9", "migrate to flat config", "audit CI setup", "check release workflow",
-  "檢查 repo 設定",
+  "檢查 repo 設定", "更新 AGENTS.md", "AGENTS.md 讀 CLAUDE.md", "同步 AGENTS.md",
+  "sync AGENTS.md with CLAUDE.md",
   or needs to set up Drone CI/CD, release automation, deploy gating, ESLint configuration,
-  git worktree, or code review workflows for a repository.
+  git worktree, AGENTS.md handoff, or code review workflows for a repository.
 argument-hint: "[repo-name]"
 ---
 
@@ -30,6 +31,29 @@ argument-hint: "[repo-name]"
 | **Node/TS** | coolify-mcp, hetzner-mcp, langfuse-mcp, judicial-mcp | `node` | Bun | `@eslint/js` + `typescript-eslint` |
 | **Plugin** | jurislm-tools, jurislm-plugins | `simple` | — | 無 TS 原始碼，不需要 ESLint |
 | **Monorepo** | entire | `node` | Bun | `@entire/eslint-config` |
+
+---
+
+## Agent 指引檔同步：AGENTS.md 讀取 CLAUDE.md
+
+`CLAUDE.md` 是 JurisLM repo 的人機協作規範單一來源；`AGENTS.md` 只作為 Codex / agents 的入口轉接檔。
+
+執行 `/repo-standards` 審查任一 repo 時，必須先檢查 repo 內是否存在 `AGENTS.md`：
+
+- 若 repo 內沒有 `AGENTS.md`：不需要新增，除非使用者明確要求。
+- 若 repo 內有一個或多個 `AGENTS.md`：逐一更新為讀取同層 `CLAUDE.md`；若同層沒有 `CLAUDE.md`，則讀取 repo 根目錄 `CLAUDE.md`。
+- 不要把 `CLAUDE.md` 全文複製進 `AGENTS.md`；避免兩份規範 drift。
+- 若找不到可對應的 `CLAUDE.md`：先回報阻塞，不要產生空泛或過期規則。
+
+標準 `AGENTS.md` 內容：
+
+```markdown
+# AGENTS.md instructions
+
+請先閱讀並遵守同目錄的 `CLAUDE.md`。
+若本目錄沒有 `CLAUDE.md`，請改讀 repo 根目錄的 `CLAUDE.md`。
+本檔只作為 agents 入口；實際 repo 規範以 `CLAUDE.md` 為準。
+```
 
 ---
 
@@ -442,9 +466,10 @@ done
 
 ## 新增 Repo Checklist
 
-完整 checklist（Git Worktree / Runtime / 測試 / Release / ESLint / CI / CD / Code Review）見 `references/new-repo-checklist.md`。
+完整 checklist（AGENTS.md / Git Worktree / Runtime / 測試 / Release / ESLint / CI / CD / Code Review）見 `references/new-repo-checklist.md`。
 
 **快速概覽**（各類別必做項）：
+- **AGENTS.md**：若 repo 內存在 `AGENTS.md`，更新為讀取同層或 repo 根目錄 `CLAUDE.md`；不要複製 CLAUDE 全文
 - **Worktree**：`git worktree add .worktrees/develop develop`，`.gitignore` 加 `.worktrees/`
 - **Bun**：`"packageManager": "bun@1.3.14"`，scripts 換成 `bun run vitest` 等
 - **Release**：`.drone.yml` 的 `release-please` pipeline（push main only），`release-type` 放在 config，Plugin repo 加 `extra-files`，secret `RELEASE_PLEASE_TOKEN`

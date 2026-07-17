@@ -69,6 +69,14 @@
       "author": {
         "name": "Terry Chen"
       }
+    },
+    {
+      "name": "higgsfield",
+      "source": "./plugins/higgsfield",
+      "description": "Higgsfield AI 圖像/影片/3D/音訊生成 — 官方 remote MCP（OAuth）+ 7 個 CLI skills",
+      "author": {
+        "name": "Terry Chen"
+      }
     }
   ]
 }
