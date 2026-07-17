@@ -1,6 +1,6 @@
 {
   "name": "repo-standards",
-  "description": "審查並套用 JurisLM repo 標準 — Drone CI/CD（含避免重複部署的 deploy-gating）、release workflow、ESLint、worktree、Bun runtime、Vitest",
+  "description": "審查並套用 JurisLM repo 標準 — AGENTS.md 讀取 CLAUDE.md、Drone CI/CD（含避免重複部署的 deploy-gating）、release workflow、ESLint、worktree、Bun runtime、Vitest",
   "version": "1.27.2",
   "author": {
     "name": "Terry Chen"
@@ -15,6 +15,8 @@
     "ci",
     "cd",
     "deploy-gating",
+    "agents",
+    "claude",
     "standards"
   ]
 }
