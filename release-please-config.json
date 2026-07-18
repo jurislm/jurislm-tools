@@ -46,7 +46,7 @@
         },
         {
           "type": "json",
-          "path": "plugins/openspec-deliver/.claude-plugin/plugin.json",
+          "path": "plugins/jt-flow/.claude-plugin/plugin.json",
           "jsonpath": "$.version"
         },
         {
