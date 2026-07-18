@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.30.1](https://github.com/jurislm/jurislm-tools/compare/v1.30.0...v1.30.1) (2026-07-18)
+
+
+### 📚 Documentation
+
+* sync CLAUDE.md with post-consolidation 9-plugin architecture ([#131](https://github.com/jurislm/jurislm-tools/issues/131)) ([d7be6f3](https://github.com/jurislm/jurislm-tools/commit/d7be6f30b2262a13a60541598bc6510088b1e200))
+
 ## [1.30.0](https://github.com/jurislm/jurislm-tools/compare/v1.29.0...v1.30.0) (2026-07-17)
 
 
