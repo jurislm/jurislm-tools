@@ -1,5 +1,5 @@
 ---
-name: openspec-deliver
+name: jt-flow
 description: >
   完整落地一個新需求：需求分析 → 建立/沿用追蹤 issue → 建立/沿用 OpenSpec
   提案（含提案同步鐵則）→ 依提案 TDD 實作 → PR → code review → merge →
@@ -19,9 +19,9 @@ $ARGUMENTS
 視為本次要落地的需求描述（自然語言即可，不需先格式化）。以下流程即依此需求
 從頭執行到 main 驗收通過並歸檔。
 
-**多需求排隊處理，改用 `/openspec-deliver-queue`**：本指令假設單一需求；
+**多需求排隊處理，改用 `/jt-flow-all`**：本指令假設單一需求；
 若使用者要一次整理並排序多個 issue、逐一依序落地，請改用同一 plugin 的
-`/openspec-deliver-queue` 指令。
+`/jt-flow-all` 指令。
 
 ## 前置環境檢查（進入步驟 0 前）
 
