@@ -101,7 +101,7 @@ openspec/
 
 Artifact 依序產出：`proposal → design → specs → tasks`（`/opsx new`、`/opsx continue`、`/opsx ff`、`/opsx apply`、`/opsx verify`、`/opsx archive`、`/opsx bulk-archive`、`/opsx explore`、`/opsx sync`、`/opsx onboard`）。
 
-⚠️ **`openspec/specs/` 內容已過時**：最後一次整批填充於 2026-05-02，描述的是精簡前的 12-plugin 架構（含已刪除的 `hooks-and-rules`/`plan`/`tdd`/`tdd-workflow`/`pr-review`/`entire`），尚未反映 2026-06-24 的精簡、之後新增的 `learn-eval`、`higgsfield`，以及 `openspec-deliver` 於 issue #133 改名為 `jt-flow`。修改 plugin 架構時，`openspec/specs/_overview/marketplace-architecture.md` 等文件需要一併更新，但目前不能拿它當作現況依據。
+⚠️ **`openspec/specs/` 內容已過時**：最後一次整批填充於 2026-05-02，描述的是精簡前的 12-plugin 架構（含已刪除的 `hooks-and-rules`/`plan`/`tdd`/`tdd-workflow`/`pr-review`/`entire`），尚未反映 2026-06-24 的精簡、之後新增的 `learn-eval`、`higgsfield`，以及舊版工作流於 issue #133 改名為 `jt-flow`。修改 plugin 架構時，`openspec/specs/_overview/marketplace-architecture.md` 等文件需要一併更新，但目前不能拿它當作現況依據。
 
 `jt-flow` plugin 的 command 內部呼叫 `superpowers:*` 系列 skill（`using-superpowers`、`brainstorming`、`test-driven-development`、`using-git-worktrees`、`systematic-debugging`、`verification-before-completion`、`requesting-code-review`、`receiving-code-review`、`finishing-a-development-branch`）——這是**外部依賴**，`superpowers` 本身不在此 repo 內，要讓 `/jt-flow` 完整運作需另外安裝該 skill 集。
 
