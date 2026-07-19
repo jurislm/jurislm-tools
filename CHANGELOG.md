@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.31.0](https://github.com/jurislm/jurislm-tools/compare/v1.30.1...v1.31.0) (2026-07-19)
+
+
+### 🚀 New Features
+
+* **jt-flow:** 重新命名 openspec-deliver 為 jt-flow ([#134](https://github.com/jurislm/jurislm-tools/issues/134)) ([f0104ca](https://github.com/jurislm/jurislm-tools/commit/f0104ca39020ec56d6dde3b28d0c6f04f9fc3d07))
+
+
+### 🐛 Bug Fixes
+
+* **jt-flow:** 修正 CodeRabbit 審查發現的流程既有問題 ([#136](https://github.com/jurislm/jurislm-tools/issues/136)) ([0618ac0](https://github.com/jurislm/jurislm-tools/commit/0618ac091130d57fc359203174bd118e976a43b6))
+
 ## [1.30.1](https://github.com/jurislm/jurislm-tools/compare/v1.30.0...v1.30.1) (2026-07-18)
 
 
