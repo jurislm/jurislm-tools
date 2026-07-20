@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.32.0](https://github.com/jurislm/jurislm-tools/compare/v1.31.0...v1.32.0) (2026-07-20)
+
+
+### 🚀 New Features
+
+* convert jt-flow commands to skills ([#138](https://github.com/jurislm/jurislm-tools/issues/138)) ([76ce507](https://github.com/jurislm/jurislm-tools/commit/76ce5078076904a1fe440fa066516f0db7989d6f))
+
+
+### 🐛 Bug Fixes
+
+* allow clean release PR fallback gate ([#143](https://github.com/jurislm/jurislm-tools/issues/143)) ([d9f0c63](https://github.com/jurislm/jurislm-tools/commit/d9f0c63aa6c45a2378162dd3594173992c58c9a5))
+* prefer GitHub CodeRabbit reviews ([#141](https://github.com/jurislm/jurislm-tools/issues/141)) ([a73387e](https://github.com/jurislm/jurislm-tools/commit/a73387e9278c32f5d526c0fbc3957a9b92b2017e))
+
 ## [1.31.0](https://github.com/jurislm/jurislm-tools/compare/v1.30.1...v1.31.0) (2026-07-19)
 
 
