@@ -65,7 +65,7 @@
     {
       "name": "jt-flow",
       "source": "./plugins/jt-flow",
-      "description": "端到端落地需求的個人工作流（整合 OpenSpec + superpowers，GitHub Flow 單段式）：/jt-flow 跑完單一需求的完整流程，/jt-flow-all 盤點排序後逐一跑完整批 issue",
+      "description": "端到端落地需求的個人工作流（整合 OpenSpec + superpowers，GitHub Flow 單段式）：jt-flow Skill 處理單一需求，jt-flow-all Skill 盤點排序後逐一處理整批 issue",
       "author": {
         "name": "Terry Chen"
       }
