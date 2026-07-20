@@ -1,7 +1,7 @@
 {
   "name": "jt-flow",
   "description": "端到端落地需求的個人工作流（整合 OpenSpec + superpowers，GitHub Flow 單段式）：jt-flow Skill 處理單一需求，jt-flow-all Skill 盤點排序後逐一處理整批 issue",
-  "version": "1.31.0",
+  "version": "1.32.0",
   "author": {
     "name": "Terry Chen"
   },
