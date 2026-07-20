@@ -197,9 +197,13 @@ POST 只會新增，不影響其他人）；兩者呼叫後用 `gh pr view
 5. 收到意見（含 bot）→ superpowers:receiving-code-review 逐項核實：
    CRITICAL／HIGH／MEDIUM 修正並驗證；LOW 優先採納，不採納須寫具體
    理由；全部 review thread 逐一 resolve
-6. CI 綠燈＋mergeable CLEAN → superpowers:finishing-a-development-branch
-   合併（觸發部署；issue 隨 `Closes #<n>` 自動關閉）——是否需當回合再次
-   徵求合併授權，依專案既有授權規則判斷
+6. **一般 PR**：CI 綠燈且 `mergeable`/`mergeStateStatus` 為
+   `MERGEABLE/CLEAN` → superpowers:finishing-a-development-branch 合併。
+   **Release Please PR**：GitHub 有時會在所有實際 checks 成功時仍回報
+   `UNSTABLE`；此時不以 `CLEAN` 為唯一 gate，改確認 `mergeable=MERGEABLE`、
+   所有實際 checks 成功、無未解 review thread，且無 branch protection 或
+   required-review blocker，全部成立才可合併。是否需當回合再次徵求合併授權，
+   依專案既有授權規則判斷。
 
 ## Phase 8 — Merge 後部署驗收
 
