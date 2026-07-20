@@ -7,22 +7,19 @@ description: >
   直接對 main 開 PR）；適用任何裝有 OpenSpec 的 GitHub repo，但依賴外部
   `superpowers:*` skill 集與 repo-local `opsx:*` skill 才能完整運作，
   執行前會先做前置環境檢查（remote／OpenSpec／GitHub repo／分支模型）。
-  Use when: "完整落地這個需求", "走完整個 OpenSpec 流程", "從頭到尾做完
-  這個功能", "deliver this feature end to end", "run the full openspec
-  delivery flow".
-argument-hint: "[需求描述]"
+  Use when the user asks to "完整落地這個需求", "走完整個 OpenSpec 流程",
+  "從頭到尾做完這個功能", "deliver this feature end to end", or "run the full
+  openspec delivery flow".
 ---
 
-## Arguments
+## Input
 
-$ARGUMENTS
+將使用者的需求描述視為本次要落地的需求；自然語言即可，不需先格式化。以下流程
+依此需求從頭執行到 main 驗收通過並歸檔。
 
-視為本次要落地的需求描述（自然語言即可，不需先格式化）。以下流程即依此需求
-從頭執行到 main 驗收通過並歸檔。
-
-**多需求排隊處理，改用 `/jt-flow-all`**：本指令假設單一需求；
-若使用者要一次整理並排序多個 issue、逐一依序落地，請改用同一 plugin 的
-`/jt-flow-all` 指令。
+**多需求排隊處理，改用 `jt-flow-all` Skill**：本 Skill 假設單一需求；若使用者
+要一次整理並排序多個 issue、逐一依序落地，請使用同一 plugin 的 `jt-flow-all`
+Skill。
 
 ## 前置環境檢查（進入步驟 0 前）
 

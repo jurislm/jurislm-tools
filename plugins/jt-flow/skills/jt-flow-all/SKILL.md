@@ -2,27 +2,24 @@
 name: jt-flow-all
 description: >
   盤點並排序一批 GitHub issue（依嚴重度／影響／依賴重新排序，非延用舊
-  序），展示排序等使用者 GO，再逐項依序跑完 /jt-flow 的完整
+  序），展示完整排序並等待使用者確認（GO）後，再逐項依序跑完 jt-flow Skill 的完整
   流程（issue → OpenSpec 提案 → TDD 實作 → PR → code review → merge →
   部署驗收 → 歸檔）直到佇列清空。統一採 GitHub Flow 單段式；適用任何裝有
   OpenSpec 的 GitHub repo，但依賴外部 `superpowers:*` skill 集與
   repo-local `opsx:*` skill 才能完整運作，執行前會先做前置環境檢查。
-  Use when: "整理這批 issue 依序做完", "排序這些需求並落地", "處理整個
-  issue 佇列", "triage and deliver this issue backlog", "work through
-  this queue of issues end to end".
-argument-hint: "[repo，及可選的篩選條件／issue 範圍]"
+  Use when the user asks to "整理這批 issue 依序做完", "排序這些需求並落地",
+  "處理整個 issue 佇列", "triage and deliver this issue backlog", or "work
+  through this queue of issues end to end".
 ---
 
-## Arguments
+## Input
 
-$ARGUMENTS
-
-視為目標 repo（未指定則詢問或用目前所在 repo）與可選的篩選條件（例如
-特定 label、里程碑、issue 編號範圍）。以下流程即依此盤點整批 open issue、
-重新排序，再逐一落地直到佇列清空。
+將使用者指定的目標 repo（未指定則詢問或使用目前所在 repo）與可選篩選條件
+（例如特定 label、里程碑、issue 編號範圍）作為輸入。以下流程依此盤點整批
+open issue、重新排序，再逐一落地直到佇列清空。
 
 **單一需求不需要排隊**：若使用者只有一個明確的需求／issue 要做，改用同一
-plugin 的 `/jt-flow` 指令即可，不必套用本指令的佇列盤點階段。
+plugin 的 `jt-flow` Skill 即可，不必套用本 Skill 的佇列盤點階段。
 
 ## 前置環境檢查（進入 Phase 1 前）
 
