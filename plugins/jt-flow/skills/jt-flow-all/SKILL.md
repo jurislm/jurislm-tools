@@ -2,7 +2,7 @@
 name: jt-flow-all
 description: >
   盤點並排序一批 GitHub issue（依嚴重度／影響／依賴重新排序，非延用舊
-  序），展示排序等使用者 GO，再逐項依序跑完 jt-flow Skill 的完整
+  序），展示完整排序並等待使用者確認（GO）後，再逐項依序跑完 jt-flow Skill 的完整
   流程（issue → OpenSpec 提案 → TDD 實作 → PR → code review → merge →
   部署驗收 → 歸檔）直到佇列清空。統一採 GitHub Flow 單段式；適用任何裝有
   OpenSpec 的 GitHub repo，但依賴外部 `superpowers:*` skill 集與

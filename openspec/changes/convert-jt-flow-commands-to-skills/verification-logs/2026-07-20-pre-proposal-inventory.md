@@ -9,7 +9,7 @@
 - `CLAUDE.md:30-58,100-106,120-138`
 - `release-please-config.json:47-51`
 
-## Current state
+## State before migration (captured 2026-07-20)
 
 | Evidence | Current behavior |
 |---|---|
