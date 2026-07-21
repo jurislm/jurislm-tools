@@ -87,7 +87,7 @@ context: |
   All plugins are text-only; no compilation or build step.
   Plugin types: Base, Hybrid (MCP), Skill, Cmd+Agent, Command.
   Version management: Release Please (feat: → minor, fix: → patch).
-  Branch workflow: develop → PR → main.
+  Branch workflow: feature branch → PR → main.
 ```
 
 ## 與 Marketplace Plugins 的關係

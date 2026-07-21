@@ -2,69 +2,38 @@
 
 # Copilot Instructions for jurislm-tools
 
-## Project Overview
+## Project overview
 
-`jurislm-tools` 是 Claude Code Plugin Marketplace，提供 `jt` plugin（Hybrid 類型）：整合 Coolify MCP（43 工具）、Hetzner MCP（42 工具）、Langfuse MCP（50 工具）、7 個 skills 和 7 個 commands。
+`jurislm-tools` 是九個 plugin 組成的 Claude Code Marketplace，Codex 亦可透過 Claude marketplace 相容層載入。`.claude-plugin/marketplace.json` 與 `plugins/<name>/.claude-plugin/plugin.json` 是結構來源；不要建議恢復已移除的單一 `jt` plugin。
 
-## Git Workflow
+## Git workflow
 
-- **Development branch**: `develop` — all feature work happens here
-- **Release branch**: `main` — receives changes via **squash merge** from `develop`
-- **Versioning**: Managed by Release Please. Do NOT suggest manual version bumps.
+- 採 GitHub Flow：feature branch 直接對 `main` 開 PR。
+- 主目錄維持在 `main`，實作使用 `.claude/worktrees/<change-name>`。
+- 禁止直接 push `main`。
+- 版本由 Release Please 管理，不得手動修改。
 
-## Repository Structure
+## Repository structure
 
-```
-.claude-plugin/marketplace.json            # Marketplace 定義
-plugins/jurislm-tools/
-├── .claude-plugin/plugin.json             # Plugin 元資料（version 由 Release Please 管理）
-├── .mcp.json                              # MCP Server 配置
-└── skills/
-    ├── codebase-sync/SKILL.md
-    ├── coolify/SKILL.md
-    ├── hetzner/SKILL.md
-    ├── langfuse/SKILL.md
-    ├── podcast-to-blog/SKILL.md
-    ├── pr-review/SKILL.md
-    └── repo-standards/SKILL.md
+```text
+.claude-plugin/marketplace.json
+plugins/<plugin-name>/
+├── .claude-plugin/plugin.json
+├── .mcp.json
+├── skills/<name>/SKILL.md
+├── commands/<name>.md
+└── README.md
 ```
 
-## Version Management（關鍵）
+目前 marketplace entries：`coolify`、`hetzner`、`langfuse`、`repo-standards`、`podcast-to-blog`、`codebase-sync`、`learn-eval`、`jt-flow`、`higgsfield`。
 
-**禁止手動修改版本號**。`release-please-config.json` 的 `extra-files` 自動同步兩個檔案：
-- `plugins/jurislm-tools/.claude-plugin/plugin.json` → `$.version`
-- `.claude-plugin/marketplace.json` → `$.plugins[0].version`
+## Review requirements
 
-**`jurislm-tools` 必須永遠是 `marketplace.json` 的 `plugins` 陣列第一個元素**——release-please 使用 `$.plugins[0].version` 索引更新，若順序改變會更新到錯誤的 plugin 版本。
-
-## SKILL.md 格式規則
-
-所有 skills 定義在 `skills/*/SKILL.md`：
-- `description` 欄位必須使用**繁體中文**
-- Trigger 條件需清晰具體（何時觸發、用什麼工具）
-- 無程式碼，純 Markdown 定義
-
-## Plugin Auto-Discovery
-
-Skills 和 commands 目錄下的檔案會被 Claude Code 自動發現，**不需要**在 `plugin.json` 中宣告每個 skill/command。`plugin.json` 只管理 plugin 元資料和 MCP server 設定。
-
-## Environment Variables
-
-MCP Server 需要的環境變數必須在 `~/.zshenv`（非 `~/.zshrc`）——MCP 為非互動式子進程，不 source `~/.zshrc`：
-- `COOLIFY_ACCESS_TOKEN`、`COOLIFY_BASE_URL`
-- `HETZNER_API_TOKEN`
-- `LANGFUSE_PUBLIC_KEY`、`LANGFUSE_SECRET_KEY`、`LANGFUSE_HOST`
-
-## Code Review 重點
-
-- **版本號**：任何 PR 中的手動版本號修改都需標記（Release Please 管理）
-- **`plugins` 陣列順序**：`marketplace.json` 中 `jurislm-tools` 必須維持第一個位置
-- **SKILL.md description**：確認使用繁體中文
-- **Trigger 條件**：新 skill 的 trigger 需清晰定義，避免過度廣泛（會影響 Claude 的判斷準確度）
-- **MCP server 修改**：`.mcp.json` 改動需確認環境變數名稱與 `~/.zshenv` 設定一致
-- **Plugin 發布流程**：push 到 `main` 後需執行 `/plugin marketplace update jurislm-tools` 才能讓用戶看到更新
-
-## 忽略範圍
-
-- 不審查 `.worktrees/` 目錄
-- 不對 Release Please 自動生成的 `CHANGELOG.md` 條目提出格式建議
+- 執行 `npm run validate` 與 `claude plugin validate .`。
+- `coolify` 必須維持 marketplace 第一個 entry；Release Please 更新 `$.plugins[0].version`。
+- Marketplace entry、source folder 與 plugin manifest 名稱必須一致。
+- 接收 token／key／secret 的 npm MCP launcher 必須鎖定精確 semver，不得使用 `@latest` 或 range。
+- 安裝識別字必須是 `plugin@jurislm-tools`。
+- MCP 環境變數只能記錄名稱，不得輸出值；本機設定放在 `~/.zshenv`。
+- Skill trigger 必須具體，避免過度廣泛。
+- 不審查 `.claude/worktrees/` 或 Release Please 產生的 CHANGELOG 格式。
