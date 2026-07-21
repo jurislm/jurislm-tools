@@ -1,30 +1,21 @@
-name: Version Consistency Check
+name: Repository Quality
 
 on:
   pull_request:
-    paths:
-      - '.claude-plugin/marketplace.json'
-      - '.release-please-manifest.json'
 
 jobs:
-  check-version:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check version consistency
-        run: |
-          MARKET_VER=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
-          MANIFEST_VER=$(jq -r '.["."]' .release-please-manifest.json)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
 
-          echo "marketplace:    $MARKET_VER"
-          echo "manifest:       $MANIFEST_VER"
+      - name: Install dependencies
+        run: npm ci
 
-          if [ "$MARKET_VER" != "$MANIFEST_VER" ]; then
-            echo "::error::marketplace.json ($MARKET_VER) != .release-please-manifest.json ($MANIFEST_VER)"
-            echo ""
-            echo "版本號不一致。這兩個檔案的版本號應由 Release Please 統一管理，不要手動修改。"
-            exit 1
-          fi
-
-          echo "✅ 版本一致：$MARKET_VER"
+      - name: Validate repository
+        run: npm run validate

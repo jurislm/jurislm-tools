@@ -11,9 +11,9 @@
 
 ## 3. Validation and CI
 
-- [ ] 3.1 Replace the removed Markdown target and add focused plus aggregate validation scripts in `package.json`; update `package-lock.json` only if `npm install --package-lock-only` proves it is required.
-- [ ] 3.2 Replace the narrow version-only pull-request job in `.github/workflows/version-check.yml` with `npm ci` plus the aggregate repository validation command, using path triggers that cover marketplace, plugin, script, workflow, and documentation changes.
-- [ ] 3.3 Verify the existing policy in `.markdownlint.jsonc` against the newly covered tracked Markdown and make only evidence-backed rule adjustments in `.markdownlint.jsonc` when a repository convention intentionally differs.
+- [x] 3.1 Replace the removed Markdown target and add focused plus aggregate validation scripts in `package.json`; update `package-lock.json` only if `npm install --package-lock-only` proves it is required.
+- [x] 3.2 Replace the narrow version-only pull-request job in `.github/workflows/version-check.yml` with `npm ci` plus the aggregate repository validation command, using path triggers that cover marketplace, plugin, script, workflow, and documentation changes.
+- [x] 3.3 Verify the existing policy in `.markdownlint.jsonc` against the newly covered tracked Markdown and make only evidence-backed rule adjustments in `.markdownlint.jsonc` when a repository convention intentionally differs.
 
 ## 4. Marketplace and documentation
 

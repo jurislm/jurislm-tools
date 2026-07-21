@@ -32,7 +32,7 @@ A Node script will parse the marketplace and manifests, resolve every local sour
 
 ### Use one pull-request quality workflow
 
-Package scripts will expose focused checks and a single aggregate validation command. Pull requests affecting repository content will run `npm ci` and the aggregate command. Markdown lint will cover tracked user and plugin documentation instead of the removed `plugins/code-review` path, using the existing repository configuration rather than introducing another formatter.
+Package scripts will expose focused checks and a single aggregate validation command. Pull requests affecting repository content will run `npm ci` and the aggregate command. Markdown lint will cover current user-facing entry documents, plugin README and `SKILL.md` entry points, GitHub guidance, and OpenSpec artifacts instead of the removed `plugins/code-review` path. Deep reference corpora are excluded from this change because they contain imported or domain-specific formatting conventions and are not the broken lint target under remediation. The existing repository configuration remains authoritative, with MD040 disabled for intentional pseudo-code fences and MD033 disabled for literal workflow placeholders such as `<change-name>`.
 
 ### Minimize duplicated volatile metadata
 
@@ -45,7 +45,7 @@ The `.claude-plugin` marketplace remains canonical. Evidence from `codex plugin 
 ## Risks / Trade-offs
 
 - [Pinned packages no longer auto-upgrade] → Handle upgrades through explicit reviewed PRs and keep the pinned versions visible in current documentation.
-- [Broad Markdown lint exposes legacy violations] → Use the existing documented rule configuration and fix real violations in scoped tracked documentation; do not exclude files merely to obtain green CI.
+- [Scoped Markdown lint does not normalize deep reference corpora] → Cover every current entry document and OpenSpec artifact now; treat reference-corpus normalization as separate work instead of silently weakening all Markdown rules.
 - [A custom checker diverges from native plugin schemas] → Limit it to repository invariants and retain `claude plugin validate` plus `codex plugin list` as behavioral acceptance evidence.
 - [The adjacent jt-flow change edits overlapping documentation] → Base the feature worktree on fresh `origin/main`, avoid its artifacts, and resolve only real implementation conflicts.
 
