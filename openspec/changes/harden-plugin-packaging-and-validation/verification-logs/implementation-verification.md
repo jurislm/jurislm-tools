@@ -6,27 +6,36 @@ Date: 2026-07-21
 
 | Command | Result |
 |---|---|
-| `npm run validate` | PASS: 12 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
+| `npm run validate` | PASS: 18 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
 | `node scripts/check-version-sync.mjs` | PASS: `Version sync OK: 1.32.0`. |
 | `openspec validate harden-plugin-packaging-and-validation --strict` | PASS: change is valid. |
 | `git diff --check` | PASS: no whitespace errors. |
 
 The repository test suite covers mutable credential-bearing npm references,
 marketplace/path/manifest name mismatches, missing source paths, malformed JSON,
-local Claude worktree exclusion, bare and alternate credential names,
-per-server and per-package launcher isolation, and reversed installation
-identifiers in both the root and per-plugin README files.
+local Claude worktree exclusion, structured and shell npm package runners,
+per-server and per-package launcher isolation, duplicate or orphaned marketplace
+inventory, and exact installation identifiers in both the root and per-plugin
+README files.
 
 ## Review follow-up
 
-GitHub Codex review raised three P2 issues against the initial validator. All
-three were reproduced before implementation and resolved with regression tests:
+GitHub Codex review raised five P2 issues against the initial validator. All
+five were reproduced before implementation and resolved with regression tests:
 
 - unrelated `.claude/worktrees` content is excluded from JSON discovery;
-- bare `TOKEN` plus `API_CREDENTIAL` and `GITHUB_PAT` naming forms activate the
-  credential-bearing launcher policy;
-- every server and every explicit `npx --package` specification is validated
-  independently, so one pinned package cannot conceal an unversioned package.
+- every local `npx` and `npm exec` package runner is checked without relying on
+  credential-name guesses;
+- structured command/args and shell command forms, including exact unscoped
+  packages, are parsed per invocation and per explicit package;
+- documentation IDs are parsed as complete install-command tokens, so a suffix
+  typo cannot satisfy the expected identifier.
+
+Independent Superpowers review then reproduced structured command/args,
+multi-invocation, and one-way inventory gaps. The final validator additionally
+compares marketplace names and sources, plugin manifest directories, and
+documented installation IDs as complete sets, rejecting duplicates and orphaned
+artifacts.
 
 ## Native runtime acceptance
 

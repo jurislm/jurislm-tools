@@ -10,7 +10,6 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const EXACT_SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
-const CREDENTIAL_NAME = /\b(?:[A-Z][A-Z0-9_]*_)?(?:TOKEN|KEY|SECRET|PASSWORD|CREDENTIAL|PAT)\b/;
 const NPX_VALUE_OPTIONS = new Set([
   "--cache",
   "--call",
@@ -78,46 +77,80 @@ function collectStrings(value) {
   return [];
 }
 
-function findNpxPackageSpecs(server) {
-  const specs = [];
+function cleanShellToken(token) {
+  return token.replace(/^["']+|["']+$/g, "");
+}
 
-  for (const command of collectStrings(server)) {
-    const tokens = command.trim().split(/\s+/);
-    for (let index = 0; index < tokens.length; index += 1) {
-      if (tokens[index] !== "npx") {
-        continue;
+function packageSpecsFromRunnerArgs(args) {
+  const explicitPackages = [];
+  for (let index = 0; index < args.length; index += 1) {
+    const token = cleanShellToken(args[index]);
+    if (token === "--package" || token === "-p") {
+      if (args[index + 1]) {
+        explicitPackages.push(cleanShellToken(args[index + 1]));
+        index += 1;
       }
+    } else if (token.startsWith("--package=")) {
+      explicitPackages.push(token.slice("--package=".length));
+    }
+  }
+  if (explicitPackages.length > 0) {
+    return explicitPackages;
+  }
 
-      const explicitPackages = [];
-      for (let cursor = index + 1; cursor < tokens.length; cursor += 1) {
-        const token = tokens[cursor];
-        if (token === "--package" || token === "-p") {
-          if (tokens[cursor + 1]) {
-            explicitPackages.push(tokens[cursor + 1]);
-            cursor += 1;
-          }
-        } else if (token.startsWith("--package=")) {
-          explicitPackages.push(token.slice("--package=".length));
+  for (let index = 0; index < args.length; index += 1) {
+    const token = cleanShellToken(args[index]);
+    if (token === "--") {
+      if (args[index + 1]) {
+        return [cleanShellToken(args[index + 1])];
+      }
+      return [];
+    }
+    if (NPX_VALUE_OPTIONS.has(token)) {
+      index += 1;
+    } else if (!token.startsWith("-")) {
+      return [token];
+    }
+  }
+  return [];
+}
+
+function findNpmPackageLaunchers(server) {
+  const launchers = [];
+  const command = typeof server?.command === "string"
+    ? path.basename(server.command)
+    : undefined;
+  const args = Array.isArray(server?.args)
+    ? server.args.filter((value) => typeof value === "string")
+    : [];
+
+  if (command === "npx") {
+    launchers.push(args);
+  } else if (command === "npm" && (args[0] === "exec" || args[0] === "x")) {
+    launchers.push(args.slice(1));
+  }
+
+  for (const commandText of collectStrings(server?.args)) {
+    for (const segment of commandText.split(/(?:&&|\|\||[;|])/)) {
+      const tokens = segment.trim().split(/\s+/).filter(Boolean);
+      for (let index = 0; index < tokens.length; index += 1) {
+        const token = path.basename(cleanShellToken(tokens[index]));
+        if (token === "npx") {
+          launchers.push(tokens.slice(index + 1));
+          break;
         }
-      }
-      if (explicitPackages.length > 0) {
-        specs.push(...explicitPackages);
-        continue;
-      }
-
-      for (let cursor = index + 1; cursor < tokens.length; cursor += 1) {
-        const token = tokens[cursor];
-        if (NPX_VALUE_OPTIONS.has(token)) {
-          cursor += 1;
-        } else if (!token.startsWith("-")) {
-          specs.push(token);
+        if (
+          token === "npm" &&
+          (tokens[index + 1] === "exec" || tokens[index + 1] === "x")
+        ) {
+          launchers.push(tokens.slice(index + 2));
           break;
         }
       }
     }
   }
 
-  return specs;
+  return launchers;
 }
 
 function splitPackageSpec(spec) {
@@ -131,35 +164,39 @@ function splitPackageSpec(spec) {
   };
 }
 
-function validateCredentialPackageReferences(root, pluginPath, mcp, errors) {
+function validatePackageRunnerReferences(root, pluginPath, mcp, errors) {
   const mcpPath = path.join(pluginPath, ".mcp.json");
   if (!mcp || typeof mcp !== "object" || Array.isArray(mcp)) {
     return;
   }
 
   for (const [serverName, server] of Object.entries(mcp)) {
-    const launcher = collectStrings(server).join(" ");
-    if (!CREDENTIAL_NAME.test(launcher) || !launcher.includes("npx")) {
-      continue;
-    }
-
-    const packageSpecs = findNpxPackageSpecs(server);
-    if (packageSpecs.length === 0) {
-      errors.push(
-        `${relative(root, mcpPath)} server ${serverName}: credential-bearing npx launcher has no versioned package reference`,
-      );
-      continue;
-    }
-
-    for (const spec of packageSpecs) {
-      const { version } = splitPackageSpec(spec);
-      if (!version || !EXACT_SEMVER.test(version)) {
+    for (const launcherArgs of findNpmPackageLaunchers(server)) {
+      const packageSpecs = packageSpecsFromRunnerArgs(launcherArgs);
+      if (packageSpecs.length === 0) {
         errors.push(
-          `${relative(root, mcpPath)} server ${serverName}: ${spec} must use an exact semantic version`,
+          `${relative(root, mcpPath)} server ${serverName}: npm package launcher has no package reference`,
         );
+        continue;
+      }
+
+      for (const spec of packageSpecs) {
+        const { version } = splitPackageSpec(spec);
+        if (!version || !EXACT_SEMVER.test(version)) {
+          errors.push(
+            `${relative(root, mcpPath)} server ${serverName}: ${spec} must use an exact semantic version`,
+          );
+        }
       }
     }
   }
+}
+
+function extractInstallationIds(markdown) {
+  return new Set(
+    [...markdown.matchAll(/\bclaude\s+plugin\s+install\s+([a-z0-9._-]+@[a-z0-9._-]+)/gi)]
+      .map((match) => match[1]),
+  );
 }
 
 export function validateRepository(rootDirectory = process.cwd()) {
@@ -199,6 +236,9 @@ export function validateRepository(rootDirectory = process.cwd()) {
   const readmePath = path.join(root, "README.md");
   const readme = existsSync(readmePath) ? readFileSync(readmePath, "utf8") : "";
   const marketplaceName = marketplace.name;
+  const marketplaceNames = new Set();
+  const marketplaceSources = new Set();
+  const expectedInstallationIds = new Set();
 
   for (const [index, entry] of marketplace.plugins.entries()) {
     const entryLabel = `.claude-plugin/marketplace.json plugins[${index}]`;
@@ -215,11 +255,22 @@ export function validateRepository(rootDirectory = process.cwd()) {
       continue;
     }
 
+    if (marketplaceNames.has(entry.name)) {
+      errors.push(`${entryLabel}: duplicate plugin name ${entry.name}`);
+    }
+    marketplaceNames.add(entry.name);
+
     const pluginPath = path.resolve(root, entry.source);
     if (pluginPath !== root && !pluginPath.startsWith(`${root}${path.sep}`)) {
       errors.push(`${entryLabel}: source path escapes the repository`);
       continue;
     }
+
+    const normalizedSource = path.relative(root, pluginPath);
+    if (marketplaceSources.has(normalizedSource)) {
+      errors.push(`${entryLabel}: duplicate source path ${entry.source}`);
+    }
+    marketplaceSources.add(normalizedSource);
     if (!existsSync(pluginPath) || !statSync(pluginPath).isDirectory()) {
       errors.push(`${entryLabel}: source path ${entry.source} does not exist`);
       continue;
@@ -248,7 +299,7 @@ export function validateRepository(rootDirectory = process.cwd()) {
     }
 
     const mcpPath = path.join(pluginPath, ".mcp.json");
-    validateCredentialPackageReferences(
+    validatePackageRunnerReferences(
       root,
       pluginPath,
       parsedJson.get(mcpPath),
@@ -256,18 +307,55 @@ export function validateRepository(rootDirectory = process.cwd()) {
     );
 
     const installationId = `${entry.name}@${marketplaceName}`;
-    if (!readme.includes(installationId)) {
-      errors.push(`README.md: missing installation identifier ${installationId}`);
-    }
+    expectedInstallationIds.add(installationId);
 
     const pluginReadmePath = path.join(pluginPath, "README.md");
     if (!existsSync(pluginReadmePath)) {
       errors.push(`${relative(root, pluginReadmePath)}: plugin README is missing`);
     } else {
       const pluginReadme = readFileSync(pluginReadmePath, "utf8");
-      if (!pluginReadme.includes(installationId)) {
+      const pluginInstallationIds = extractInstallationIds(pluginReadme);
+      if (!pluginInstallationIds.has(installationId)) {
         errors.push(
           `${relative(root, pluginReadmePath)}: missing installation identifier ${installationId}`,
+        );
+      }
+      for (const documentedId of pluginInstallationIds) {
+        if (documentedId !== installationId) {
+          errors.push(
+            `${relative(root, pluginReadmePath)}: unexpected installation identifier ${documentedId}`,
+          );
+        }
+      }
+    }
+  }
+
+  const documentedInstallationIds = extractInstallationIds(readme);
+  for (const installationId of expectedInstallationIds) {
+    if (!documentedInstallationIds.has(installationId)) {
+      errors.push(`README.md: missing installation identifier ${installationId}`);
+    }
+  }
+  for (const installationId of documentedInstallationIds) {
+    if (!expectedInstallationIds.has(installationId)) {
+      errors.push(`README.md: unexpected installation identifier ${installationId}`);
+    }
+  }
+
+  const pluginsPath = path.join(root, "plugins");
+  if (existsSync(pluginsPath)) {
+    for (const entry of readdirSync(pluginsPath, { withFileTypes: true })) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+      const pluginPath = path.join(pluginsPath, entry.name);
+      const manifestPath = path.join(pluginPath, ".claude-plugin/plugin.json");
+      if (
+        existsSync(manifestPath) &&
+        !marketplaceSources.has(path.relative(root, pluginPath))
+      ) {
+        errors.push(
+          `${relative(root, manifestPath)}: plugin manifest is not listed in the marketplace`,
         );
       }
     }

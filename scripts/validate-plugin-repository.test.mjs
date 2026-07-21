@@ -162,6 +162,49 @@ test("rejects mixed pinned and unversioned npx package options", () => {
   );
 });
 
+test("accepts structured npx command and args with an exact unscoped version", () => {
+  const root = createFixture();
+  writeJson(root, "plugins/coolify/.mcp.json", {
+    coolify: {
+      command: "npx",
+      args: ["-y", "coolify-mcp@1.2.3"],
+      env: { API_TOKEN: "${API_TOKEN}" },
+    },
+  });
+
+  assert.deepEqual(validateRepository(root), []);
+});
+
+test("keeps separate shell package-runner invocations isolated", () => {
+  const root = createFixture();
+  writeJson(root, "plugins/coolify/.mcp.json", {
+    coolify: {
+      command: "zsh",
+      args: [
+        "-lc",
+        "npx @jurislm/mutable ; npx --package @jurislm/pinned@1.2.3 run",
+      ],
+    },
+  });
+
+  assert.match(
+    validateRepository(root).join("\n"),
+    /@jurislm\/mutable must use an exact semantic version/,
+  );
+});
+
+test("rejects mutable npm exec packages", () => {
+  const root = createFixture();
+  writeJson(root, "plugins/coolify/.mcp.json", {
+    coolify: {
+      command: "npm",
+      args: ["exec", "coolify-mcp@latest"],
+    },
+  });
+
+  assert.match(validateRepository(root).join("\n"), /exact semantic version/);
+});
+
 test("rejects marketplace and manifest name mismatches", () => {
   const root = createFixture();
   writeJson(root, "plugins/coolify/.claude-plugin/plugin.json", {
@@ -221,4 +264,40 @@ test("rejects reversed installation identifiers in plugin README files", () => {
     validateRepository(root).join("\n"),
     /plugins\/coolify\/README\.md.*coolify@test-market/,
   );
+});
+
+test("rejects installation identifiers with marketplace suffix typos", () => {
+  const root = createFixture();
+  writeFileSync(
+    path.join(root, "README.md"),
+    "# Test\n\n`claude plugin install coolify@test-market-old`\n",
+  );
+
+  const errors = validateRepository(root).join("\n");
+  assert.match(errors, /missing installation identifier coolify@test-market/);
+  assert.match(errors, /unexpected installation identifier coolify@test-market-old/);
+});
+
+test("rejects plugin manifests and docs left behind after entry removal", () => {
+  const root = createFixture();
+  const marketplacePath = path.join(root, ".claude-plugin/marketplace.json");
+  const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+  marketplace.plugins = [];
+  writeJson(root, ".claude-plugin/marketplace.json", marketplace);
+
+  const errors = validateRepository(root).join("\n");
+  assert.match(errors, /unexpected installation identifier coolify@test-market/);
+  assert.match(errors, /plugin manifest is not listed in the marketplace/);
+});
+
+test("rejects duplicate marketplace names and sources", () => {
+  const root = createFixture();
+  const marketplacePath = path.join(root, ".claude-plugin/marketplace.json");
+  const marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+  marketplace.plugins.push({ ...marketplace.plugins[0] });
+  writeJson(root, ".claude-plugin/marketplace.json", marketplace);
+
+  const errors = validateRepository(root).join("\n");
+  assert.match(errors, /duplicate plugin name coolify/);
+  assert.match(errors, /duplicate source path/);
 });
