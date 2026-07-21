@@ -9,7 +9,7 @@
 | 產物 | 路徑 | 說明 |
 |------|------|------|
 | MCP Server | `plugins/hetzner/.mcp.json` | `@jurislm/hetzner-mcp@1.5.0` |
-| `hetzner` skill | `plugins/hetzner/skills/hetzner/SKILL.md` | 使用指南（238 行） |
+| `hetzner` skill | `plugins/hetzner/skills/hetzner/SKILL.md` | 使用指南 |
 | locations reference | `plugins/hetzner/skills/hetzner/references/locations.md` | 資料中心位置參考 |
 | server-types reference | `plugins/hetzner/skills/hetzner/references/server-types.md` | 伺服器規格與定價 |
 
@@ -29,7 +29,7 @@ npm 套件：`@jurislm/hetzner-mcp@1.5.0`（jurislm/hetzner-mcp repo）
 
 ## MCP 工具分類
 
-### 伺服器管理（9 個工具）
+### 伺服器管理
 
 | 工具 | 說明 | 危險性 |
 |------|------|--------|
@@ -43,7 +43,7 @@ npm 套件：`@jurislm/hetzner-mcp@1.5.0`（jurislm/hetzner-mcp repo）
 | `hetzner_power_off_server` | 強制關機（硬關，資料可能遺失） | ⚠️ |
 | `hetzner_reboot_server` | 強制重啟（硬重啟） | — |
 
-### SSH 金鑰管理（4 個工具）
+### SSH 金鑰管理
 
 | 工具 | 說明 | 危險性 |
 |------|------|--------|
@@ -52,7 +52,7 @@ npm 套件：`@jurislm/hetzner-mcp@1.5.0`（jurislm/hetzner-mcp repo）
 | `hetzner_create_ssh_key` | 新增 SSH 金鑰 | — |
 | `hetzner_delete_ssh_key` | 刪除 SSH 金鑰 | ⚠️ |
 
-### Volume 管理（4 個工具）
+### Volume 管理
 
 | 工具 | 說明 | 危險性 |
 |------|------|--------|
@@ -61,7 +61,7 @@ npm 套件：`@jurislm/hetzner-mcp@1.5.0`（jurislm/hetzner-mcp repo）
 | `hetzner_attach_volume` | 掛載 Volume 至伺服器（僅 API 層，不寫 fstab） | — |
 | `hetzner_detach_volume` | 卸載 Volume | — |
 
-### Storage Box 管理（22 個工具）
+### Storage Box 管理
 
 | 工具 | 說明 | 危險性 |
 |------|------|--------|
@@ -88,7 +88,7 @@ npm 套件：`@jurislm/hetzner-mcp@1.5.0`（jurislm/hetzner-mcp repo）
 | `hetzner_update_storage_box_subaccount` | 更新子帳號 | — |
 | `hetzner_delete_storage_box_subaccount` | 刪除子帳號 | ⚠️ |
 
-### 參考查詢（3 個工具）
+### 參考查詢
 
 | 工具 | 說明 |
 |------|------|

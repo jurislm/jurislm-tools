@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides project-specific guidance for `jurislm-tools`. Global working principles come from `/Users/terrychen/.claude/CLAUDE.md`.
+This file provides project-specific guidance for `jurislm-tools`. Also follow the contributor's local `~/.claude/CLAUDE.md`, when present.
 
 ## Repository overview
 

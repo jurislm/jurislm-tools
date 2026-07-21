@@ -291,6 +291,30 @@ test("uses runner-specific global options and option arity", () => {
   }
 });
 
+test("fails closed on unsupported runner options before a package", () => {
+  const servers = [
+    {
+      command: "npm",
+      args: [
+        "exec",
+        "--globalconfig",
+        "cache@1.2.3",
+        "@scope/mcp@latest",
+      ],
+    },
+    {
+      command: "npx",
+      args: ["--unknown-option", "cache@1.2.3", "@scope/mcp@latest"],
+    },
+  ];
+
+  for (const server of servers) {
+    const root = createFixture();
+    writeJson(root, "plugins/coolify/.mcp.json", { coolify: server });
+    assert.notDeepEqual(validateRepository(root), []);
+  }
+});
+
 test("rejects invalid semver strings that npm can treat as tags", () => {
   for (const version of ["1.2.3-...", "1.2.3-foo..bar", "01.2.3", "1.2.3-01"]) {
     const root = createFixture();
@@ -338,6 +362,38 @@ test("validates package runners nested in call payloads", () => {
   }
 });
 
+test("validates package runners nested in shell interpreters and eval", () => {
+  const commands = [
+    `sh -c 'npx unsafe@latest'`,
+    `zsh -lc "bash -c 'npx unsafe@latest'"`,
+    `eval 'npx unsafe@latest'`,
+  ];
+
+  for (const command of commands) {
+    const root = createFixture();
+    writeJson(root, "plugins/coolify/.mcp.json", {
+      coolify: { command: "zsh", args: ["-lc", command] },
+    });
+    assert.match(validateRepository(root).join("\n"), /exact semantic version/);
+  }
+});
+
+test("inspects repository-local launcher scripts", () => {
+  const root = createFixture();
+  writeFileSync(
+    path.join(root, "plugins/coolify/launch.sh"),
+    "#!/bin/sh\nexec npx unsafe@latest\n",
+  );
+  writeJson(root, "plugins/coolify/.mcp.json", {
+    coolify: {
+      command: "./launch.sh",
+      env: { API_TOKEN: "${API_TOKEN}" },
+    },
+  });
+
+  assert.match(validateRepository(root).join("\n"), /exact semantic version/);
+});
+
 test("rejects marketplace and manifest name mismatches", () => {
   const root = createFixture();
   writeJson(root, "plugins/coolify/.claude-plugin/plugin.json", {
@@ -365,6 +421,14 @@ test("reports malformed repository JSON", () => {
   writeFileSync(path.join(root, "plugins/coolify/.mcp.json"), "{broken\n");
 
   assert.match(validateRepository(root).join("\n"), /invalid JSON/);
+});
+
+test("rejects non-object MCP document roots", () => {
+  for (const value of [null, [], "invalid"]) {
+    const root = createFixture();
+    writeJson(root, "plugins/coolify/.mcp.json", value);
+    assert.match(validateRepository(root).join("\n"), /root must be an object/);
+  }
 });
 
 test("ignores local Claude worktrees outside repository content", () => {
@@ -409,6 +473,18 @@ test("rejects installation identifiers with marketplace suffix typos", () => {
   const errors = validateRepository(root).join("\n");
   assert.match(errors, /missing installation identifier coolify@test-market/);
   assert.match(errors, /unexpected installation identifier coolify@test-market-old/);
+});
+
+test("rejects installation identifiers with invalid trailing path text", () => {
+  const root = createFixture();
+  writeFileSync(
+    path.join(root, "README.md"),
+    "# Test\n\n`claude plugin install coolify@test-market/typo`\n",
+  );
+
+  const errors = validateRepository(root).join("\n");
+  assert.match(errors, /missing installation identifier coolify@test-market/);
+  assert.match(errors, /unexpected installation identifier coolify@test-market\/typo/);
 });
 
 test("rejects plugin manifests and docs left behind after entry removal", () => {

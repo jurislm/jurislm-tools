@@ -13,11 +13,23 @@ const SEMVER_SHAPE = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*
 const NPX_VALUE_OPTIONS = new Set([
   "--cache",
   "--call",
+  "--globalconfig",
   "--node-options",
+  "--prefix",
   "--registry",
   "--userconfig",
+  "--workspace",
+  "-w",
   "-c",
 ]);
+const RUNNER_BOOLEAN_OPTIONS = {
+  npx: new Set(["-y", "--yes", "--no-install", "--quiet", "--silent"]),
+  npm: new Set(["-y", "--yes", "--quiet", "--silent", "--workspaces", "--ws"]),
+  pnpm: new Set(["-c", "--shell-mode", "--silent"]),
+  yarn: new Set(["--quiet", "--silent"]),
+  bun: new Set(["--bun", "--no-install", "--silent", "--verbose"]),
+  bunx: new Set(["--bun", "--no-install", "--silent", "--verbose"]),
+};
 const IGNORED_DIRECTORIES = new Set([".git", "node_modules"]);
 const IGNORED_RELATIVE_DIRECTORIES = new Set([
   path.join(".claude", "worktrees"),
@@ -122,6 +134,7 @@ function packageSpecsFromRunnerArgs(args, runnerKind) {
   const valueOptions = runnerKind === "npx" || runnerKind === "npm"
     ? NPX_VALUE_OPTIONS
     : new Set();
+  const booleanOptions = RUNNER_BOOLEAN_OPTIONS[runnerKind] ?? new Set();
   const explicitPackages = [];
   for (let index = 0; index < args.length; index += 1) {
     const token = cleanShellToken(args[index]);
@@ -142,6 +155,10 @@ function packageSpecsFromRunnerArgs(args, runnerKind) {
       return [];
     } else if (valueOptions.has(token)) {
       index += 1;
+    } else if (booleanOptions.has(token)) {
+      continue;
+    } else if (token.startsWith("-")) {
+      return undefined;
     } else if (!token.startsWith("-")) {
       return explicitPackages.length > 0 ? explicitPackages : [token];
     }
@@ -191,7 +208,7 @@ function runnerCommandAt(tokens, index) {
   return undefined;
 }
 
-function findNpmPackageLaunchers(server) {
+function findNpmPackageLaunchers(server, additionalCommandTexts = []) {
   const launchers = [];
   const command = typeof server?.command === "string"
     ? path.basename(server.command)
@@ -219,11 +236,14 @@ function findNpmPackageLaunchers(server) {
     }
   }
 
-  const commandTexts = launchers.length > 0
-    ? launchers
+  const commandTexts = [
+    ...additionalCommandTexts,
+    ...(launchers.length > 0
+      ? launchers
       .filter(({ kind }) => kind === "npx" || kind === "npm")
       .flatMap(({ args: launcherArgs }) => callPayloadsFromArgs(launcherArgs))
-    : collectStrings(server?.args);
+      : collectStrings(server?.args)),
+  ];
   const seenCommandTexts = new Set();
   for (let textIndex = 0; textIndex < commandTexts.length; textIndex += 1) {
     const commandText = commandTexts[textIndex];
@@ -234,6 +254,23 @@ function findNpmPackageLaunchers(server) {
     const normalizedCommand = commandText.replace(/\\\r?\n/g, " ");
     for (const segment of normalizedCommand.split(/(?:&&|\|\||[;&|\n\r])/)) {
       const tokens = tokenizeShell(segment);
+      for (let index = 0; index < tokens.length; index += 1) {
+        const token = path.basename(cleanShellToken(tokens[index]));
+        if (token === "eval" && tokens[index + 1]) {
+          commandTexts.push(tokens[index + 1]);
+        }
+        if (token === "sh" || token === "bash" || token === "zsh") {
+          for (let cursor = index + 1; cursor < tokens.length - 1; cursor += 1) {
+            if (/^-[^-]*c/.test(tokens[cursor])) {
+              commandTexts.push(tokens[cursor + 1]);
+              break;
+            }
+            if (!tokens[cursor].startsWith("-")) {
+              break;
+            }
+          }
+        }
+      }
       const runners = [];
       for (let index = 0; index < tokens.length; index += 1) {
         const runner = runnerCommandAt(tokens, index);
@@ -304,16 +341,38 @@ function findNpmExecIndex(args, startIndex = 0) {
 
 function validatePackageRunnerReferences(root, pluginPath, mcp, errors) {
   const mcpPath = path.join(pluginPath, ".mcp.json");
+  if (mcp === undefined) {
+    return;
+  }
   if (!mcp || typeof mcp !== "object" || Array.isArray(mcp)) {
+    errors.push(`${relative(root, mcpPath)}: document root must be an object`);
     return;
   }
 
   for (const [serverName, server] of Object.entries(mcp)) {
-    for (const launcher of findNpmPackageLaunchers(server)) {
+    const additionalCommandTexts = [];
+    if (typeof server?.command === "string") {
+      const scriptPath = path.resolve(pluginPath, server.command);
+      if (
+        scriptPath.startsWith(`${root}${path.sep}`) &&
+        existsSync(scriptPath) &&
+        statSync(scriptPath).isFile()
+      ) {
+        additionalCommandTexts.push(readFileSync(scriptPath, "utf8"));
+      }
+    }
+
+    for (const launcher of findNpmPackageLaunchers(server, additionalCommandTexts)) {
       const packageSpecs = packageSpecsFromRunnerArgs(
         launcher.args,
         launcher.kind,
       );
+      if (packageSpecs === undefined) {
+        errors.push(
+          `${relative(root, mcpPath)} server ${serverName}: unsupported package-runner option before package`,
+        );
+        continue;
+      }
       if (packageSpecs.length === 0) {
         errors.push(
           `${relative(root, mcpPath)} server ${serverName}: npm package launcher has no package reference`,
@@ -335,7 +394,7 @@ function validatePackageRunnerReferences(root, pluginPath, mcp, errors) {
 
 function extractInstallationIds(markdown) {
   return new Set(
-    [...markdown.matchAll(/\bclaude\s+plugin\s+install\s+([a-z0-9._-]+@[a-z0-9._-]+)/gi)]
+    [...markdown.matchAll(/\bclaude\s+plugin\s+install\s+([^\s`"'<>|)]+)/gi)]
       .map((match) => match[1]),
   );
 }

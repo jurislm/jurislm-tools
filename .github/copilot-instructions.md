@@ -29,7 +29,7 @@ plugins/<plugin-name>/
 
 ## Review requirements
 
-- 執行 `npm run validate` 與 `claude plugin validate .`。
+- 依序執行 `npm ci`、`npm run validate` 與 `claude plugin validate .`。
 - `coolify` 必須維持 marketplace 第一個 entry；Release Please 更新 `$.plugins[0].version`。
 - Marketplace entry、source folder 與 plugin manifest 名稱必須一致。
 - 接收 token／key／secret 的 npm MCP launcher 必須鎖定精確 semver，不得使用 `@latest` 或 range。

@@ -6,7 +6,7 @@ Date: 2026-07-21
 
 | Command | Result |
 |---|---|
-| `npm run validate` | PASS: 25 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
+| `npm run validate` | PASS: 30 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
 | `node scripts/check-version-sync.mjs` | PASS: `Version sync OK: 1.32.0`. |
 | `openspec validate harden-plugin-packaging-and-validation --strict` | PASS: change is valid. |
 | `git diff --check` | PASS: no whitespace errors. |
@@ -49,6 +49,10 @@ Runner-specific parsing distinguishes npx call options from pnpm shell mode and
 locates pnpm, yarn, and bun subcommands after supported global options.
 Quote-aware shell tokenization preserves equals-form call payloads and queues
 every nested package runner for independent validation.
+Final bot feedback added fail-closed unknown-option handling, repository-local
+wrapper and nested-shell inspection, complete install-token boundaries, and MCP
+document-root validation. CI checkout no longer persists credentials, and
+volatile counts were removed from the remaining detail documents.
 
 ## Native runtime acceptance
 
