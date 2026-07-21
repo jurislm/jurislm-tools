@@ -278,6 +278,36 @@ test("rejects invalid semver strings that npm can treat as tags", () => {
   }
 });
 
+test("validates package runners nested in call payloads", () => {
+  const servers = [
+    {
+      command: "npx",
+      args: [
+        "--package",
+        "safe@1.2.3",
+        "-c",
+        "npx unsafe@latest",
+      ],
+    },
+    {
+      command: "zsh",
+      args: [
+        "-lc",
+        'npx --package safe@1.2.3 -c "npx unsafe@latest"',
+      ],
+    },
+  ];
+
+  for (const server of servers) {
+    const root = createFixture();
+    writeJson(root, "plugins/coolify/.mcp.json", { coolify: server });
+    assert.match(
+      validateRepository(root).join("\n"),
+      /unsafe@latest must use an exact semantic version/,
+    );
+  }
+});
+
 test("rejects marketplace and manifest name mismatches", () => {
   const root = createFixture();
   writeJson(root, "plugins/coolify/.claude-plugin/plugin.json", {

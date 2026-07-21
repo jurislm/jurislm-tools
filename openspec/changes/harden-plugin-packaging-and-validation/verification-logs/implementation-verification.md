@@ -6,7 +6,7 @@ Date: 2026-07-21
 
 | Command | Result |
 |---|---|
-| `npm run validate` | PASS: 23 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
+| `npm run validate` | PASS: 24 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
 | `node scripts/check-version-sync.mjs` | PASS: `Version sync OK: 1.32.0`. |
 | `openspec validate harden-plugin-packaging-and-validation --strict` | PASS: change is valid. |
 | `git diff --check` | PASS: no whitespace errors. |
@@ -43,6 +43,8 @@ Final parser verification covers npm global options before `exec` or `x` and
 preserves backslash-newline shell continuations before boundary splitting.
 Strict SemVer verification also rejects invalid prerelease and core identifiers
 that npm could otherwise interpret as mutable dist-tags.
+Explicit `-c` and `--call` payloads are recursively inspected so an exact outer
+package cannot conceal a mutable nested package runner.
 
 ## Native runtime acceptance
 

@@ -109,6 +109,45 @@ function packageSpecsFromRunnerArgs(args) {
   return explicitPackages;
 }
 
+function callPayloadsFromArgs(args) {
+  const payloads = [];
+  for (let index = 0; index < args.length; index += 1) {
+    const token = cleanShellToken(args[index]);
+    if (token === "-c" || token === "--call") {
+      if (args[index + 1]) {
+        payloads.push(cleanShellToken(args[index + 1]));
+        index += 1;
+      }
+    } else if (token.startsWith("--call=")) {
+      payloads.push(token.slice("--call=".length));
+    }
+  }
+  return payloads;
+}
+
+function runnerCommandAt(tokens, index) {
+  const token = path.basename(cleanShellToken(tokens[index]));
+  if (token === "npx" || token === "bunx") {
+    return { position: index, argsStart: index + 1 };
+  }
+  if (token === "npm") {
+    const execIndex = findNpmExecIndex(tokens, index + 1);
+    return execIndex >= 0
+      ? { position: index, argsStart: execIndex + 1 }
+      : undefined;
+  }
+  if (
+    (token === "pnpm" || token === "yarn") &&
+    tokens[index + 1] === "dlx"
+  ) {
+    return { position: index, argsStart: index + 2 };
+  }
+  if (token === "bun" && tokens[index + 1] === "x") {
+    return { position: index, argsStart: index + 2 };
+  }
+  return undefined;
+}
+
 function findNpmPackageLaunchers(server) {
   const launchers = [];
   const command = typeof server?.command === "string"
@@ -134,42 +173,23 @@ function findNpmPackageLaunchers(server) {
     launchers.push(args.slice(1));
   }
 
-  if (launchers.length > 0) {
-    return launchers;
-  }
-
-  for (const commandText of collectStrings(server?.args)) {
+  const commandTexts = launchers.length > 0
+    ? callPayloadsFromArgs(args)
+    : collectStrings(server?.args);
+  for (const commandText of commandTexts) {
     const normalizedCommand = commandText.replace(/\\\r?\n/g, " ");
     for (const segment of normalizedCommand.split(/(?:&&|\|\||[;&|\n\r])/)) {
       const tokens = segment.trim().split(/\s+/).filter(Boolean);
+      const runners = [];
       for (let index = 0; index < tokens.length; index += 1) {
-        const token = path.basename(cleanShellToken(tokens[index]));
-        if (token === "npx") {
-          launchers.push(tokens.slice(index + 1));
-          break;
+        const runner = runnerCommandAt(tokens, index);
+        if (runner) {
+          runners.push(runner);
         }
-        if (token === "npm") {
-          const execIndex = findNpmExecIndex(tokens, index + 1);
-          if (execIndex >= 0) {
-            launchers.push(tokens.slice(execIndex + 1));
-            break;
-          }
-        }
-        if (
-          (token === "pnpm" || token === "yarn") &&
-          tokens[index + 1] === "dlx"
-        ) {
-          launchers.push(tokens.slice(index + 2));
-          break;
-        }
-        if (token === "bunx") {
-          launchers.push(tokens.slice(index + 1));
-          break;
-        }
-        if (token === "bun" && tokens[index + 1] === "x") {
-          launchers.push(tokens.slice(index + 2));
-          break;
-        }
+      }
+      for (let index = 0; index < runners.length; index += 1) {
+        const nextPosition = runners[index + 1]?.position ?? tokens.length;
+        launchers.push(tokens.slice(runners[index].argsStart, nextPosition));
       }
     }
   }
