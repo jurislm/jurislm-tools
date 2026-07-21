@@ -32,7 +32,7 @@ Marketplace entry name、source folder basename 與 manifest name 必須一致�
 | `podcast-to-blog` | Skill | Transcription and writing workflow |
 | `codebase-sync` | Skill | Documentation synchronization |
 | `learn-eval` | Skill | Session-pattern extraction |
-| `jt-flow` | Skills | Single-request and issue-queue delivery |
+| `jt-flow` | Skills | `jt-flow-one` single-request and `jt-flow-all` issue-queue delivery |
 
 ## Dependency integrity
 

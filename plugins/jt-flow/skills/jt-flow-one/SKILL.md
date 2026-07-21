@@ -1,5 +1,5 @@
 ---
-name: jt-flow
+name: jt-flow-one
 description: >
   完整落地一個新需求：需求分析 → 建立/沿用追蹤 issue → 建立/沿用 OpenSpec
   提案（含提案同步鐵則）→ 依提案 TDD 實作 → PR → code review → merge →
@@ -26,7 +26,7 @@ Skill。
 
 ## CodeRabbit 審查預先授權
 
-只有使用者明確點名／呼叫 `jt-flow`（包含 Skill picker、`$jt-flow:jt-flow` 或文字
+只有使用者明確點名／呼叫 `jt-flow-one`（包含 Skill picker、`$jt-flow:jt-flow-one` 或文字
 指名使用本 Skill），或明確表示授權 CodeRabbit 時，才視為同時明確授權在該次流程
 的 PR review 階段使用 CodeRabbit GitHub App，以及
 CodeRabbit CLI 備援。若只是由
