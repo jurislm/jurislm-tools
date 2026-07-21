@@ -33,8 +33,8 @@ CodeRabbit GitHub App 與 CodeRabbit CLI 是兩個獨立管道；任一管道 ra
 不代表另一管道不可用。兩者都適用於 Claude Code 與 Codex。
 
 Review 完成以每項 finding 已採納修正或記錄不採納理由為準，不要求 CodeRabbit
-回傳零 finding。需要覆核修正後 HEAD 時，CLI 最多自動執行第二輪；不得為追求
-零 finding 無上限重跑，除非使用者明確要求。
+回傳零 finding。每個 PR／變更在整個流程中只自動呼叫 CodeRabbit CLI 一次；修正
+finding 或 HEAD 改變都不觸發重跑。只有使用者明確要求，才可追加 CLI review。
 
 Review 順序固定為：先以 `superpowers:requesting-code-review` 自查並執行
 `/code-review`；GitHub Copilot 額度用完即略過；CodeRabbit GitHub App／PR bot
