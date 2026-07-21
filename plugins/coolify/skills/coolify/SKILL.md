@@ -17,7 +17,7 @@ Coolify 是一個開源的自託管 PaaS（Platform as a Service），類似於 
 
 ## MCP 工具概覽
 
-`@jurislm/coolify-mcp` 提供 43 個最佳化工具，分為以下類別：
+`@jurislm/coolify-mcp` 提供以下類別的基礎設施管理工具：
 
 | 類別 | 功能 |
 |------|------|

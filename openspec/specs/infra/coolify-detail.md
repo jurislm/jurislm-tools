@@ -8,9 +8,8 @@
 
 | 產物 | 路徑 | 說明 |
 |------|------|------|
-| MCP Server | `plugins/coolify/.mcp.json` | `@jurislm/coolify-mcp@latest`（43 工具） |
+| MCP Server | `plugins/coolify/.mcp.json` | `@jurislm/coolify-mcp@3.6.0` |
 | `coolify` skill | `plugins/coolify/skills/coolify/SKILL.md` | 使用指南（191 行） |
-| `/coolify` command | `plugins/coolify/commands/coolify.md` | 入口 command |
 | api-reference | `plugins/coolify/skills/coolify/references/api-reference.md` | API 工具完整參數 |
 | deployment-patterns | `plugins/coolify/skills/coolify/references/deployment-patterns.md` | 部署模式參考 |
 | troubleshooting | `plugins/coolify/skills/coolify/references/troubleshooting.md` | 問題排查 SOP |
@@ -20,7 +19,7 @@
 ```json
 {
   "command": "npx",
-  "args": ["-y", "@jurislm/coolify-mcp@latest"],
+  "args": ["-y", "@jurislm/coolify-mcp@3.6.0"],
   "env": {
     "COOLIFY_ACCESS_TOKEN": "${COOLIFY_ACCESS_TOKEN}",
     "COOLIFY_BASE_URL": "${COOLIFY_BASE_URL}"
@@ -28,10 +27,9 @@
 }
 ```
 
-npm 套件：`@jurislm/coolify-mcp`（jurislm/coolify-mcp repo）  
-工具數量來源：`grep -c "server.tool" ../coolify-mcp/src/lib/mcp-server.ts`
+npm 套件：`@jurislm/coolify-mcp@3.6.0`（jurislm/coolify-mcp repo）
 
-## 43 個 MCP 工具分類
+## MCP 工具分類
 
 | 類別 | 工具數 | 主要操作 |
 |------|--------|---------|
