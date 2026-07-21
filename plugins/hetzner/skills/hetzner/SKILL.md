@@ -17,7 +17,7 @@ argument-hint: "[action] [server-name/id]"
 
 透過 `@jurislm/hetzner-mcp` MCP 工具管理 Hetzner Cloud 基礎設施。
 
-## MCP 工具概覽（42 個工具）
+## MCP 工具概覽
 
 ### 伺服器管理（9 個工具）
 

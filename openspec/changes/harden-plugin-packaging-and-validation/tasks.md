@@ -6,7 +6,7 @@
 ## 2. Immutable MCP launchers
 
 - [x] 2.1 Pin `plugins/coolify/.mcp.json` to `@jurislm/coolify-mcp@3.6.0` and update Coolify-owned package references in `plugins/coolify/README.md`, `plugins/coolify/skills/coolify/SKILL.md`, and `openspec/specs/infra/coolify-detail.md` without changing credentials or release-managed versions.
-- [ ] 2.2 Pin `plugins/hetzner/.mcp.json` to `@jurislm/hetzner-mcp@1.5.0` and update Hetzner-owned package references in `plugins/hetzner/README.md`, `plugins/hetzner/skills/hetzner/SKILL.md`, and `openspec/specs/infra/hetzner-detail.md` without changing credentials or release-managed versions.
+- [x] 2.2 Pin `plugins/hetzner/.mcp.json` to `@jurislm/hetzner-mcp@1.5.0` and update Hetzner-owned package references in `plugins/hetzner/README.md`, `plugins/hetzner/skills/hetzner/SKILL.md`, and `openspec/specs/infra/hetzner-detail.md` without changing credentials or release-managed versions.
 - [ ] 2.3 Pin `plugins/langfuse/.mcp.json` to `@jurislm/langfuse-mcp@1.3.2` and update Langfuse-owned package references in `plugins/langfuse/README.md`, `plugins/langfuse/skills/langfuse/SKILL.md`, and `openspec/specs/observability/langfuse-detail.md` without changing credentials or release-managed versions.
 
 ## 3. Validation and CI

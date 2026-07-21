@@ -8,9 +8,8 @@
 
 | 產物 | 路徑 | 說明 |
 |------|------|------|
-| MCP Server | `plugins/hetzner/.mcp.json` | `@jurislm/hetzner-mcp@latest`（42 工具） |
+| MCP Server | `plugins/hetzner/.mcp.json` | `@jurislm/hetzner-mcp@1.5.0` |
 | `hetzner` skill | `plugins/hetzner/skills/hetzner/SKILL.md` | 使用指南（238 行） |
-| `/hetzner` command | `plugins/hetzner/commands/hetzner.md` | 入口 command |
 | locations reference | `plugins/hetzner/skills/hetzner/references/locations.md` | 資料中心位置參考 |
 | server-types reference | `plugins/hetzner/skills/hetzner/references/server-types.md` | 伺服器規格與定價 |
 
@@ -19,17 +18,16 @@
 ```json
 {
   "command": "npx",
-  "args": ["-y", "@jurislm/hetzner-mcp@latest"],
+  "args": ["-y", "@jurislm/hetzner-mcp@1.5.0"],
   "env": {
     "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}"
   }
 }
 ```
 
-npm 套件：`@jurislm/hetzner-mcp`（jurislm/hetzner-mcp repo）  
-工具數量來源：`grep -c '"hetzner_' ../hetzner-mcp/src/tools/*.ts`
+npm 套件：`@jurislm/hetzner-mcp@1.5.0`（jurislm/hetzner-mcp repo）
 
-## 42 個 MCP 工具分類
+## MCP 工具分類
 
 ### 伺服器管理（9 個工具）
 
