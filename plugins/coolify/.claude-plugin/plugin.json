@@ -1,6 +1,6 @@
 {
   "name": "coolify",
-  "description": "管理 Coolify 基礎設施 — 部署應用、資料庫管理、問題診斷（43 個 MCP 工具）",
+  "description": "管理 Coolify 基礎設施 — 部署應用、資料庫管理與問題診斷",
   "version": "1.32.0",
   "author": {
     "name": "Terry Chen"

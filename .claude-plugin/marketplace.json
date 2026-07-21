@@ -1,5 +1,6 @@
 {
   "name": "jurislm-tools",
+  "description": "JurisLM 內部使用的基礎設施、可觀測性、內容處理與開發工作流 plugins",
   "owner": {
     "name": "Terry Chen",
     "email": "zxtw17985321@gmail.com"
@@ -8,7 +9,7 @@
     {
       "name": "coolify",
       "source": "./plugins/coolify",
-      "description": "管理 Coolify 基礎設施 — 部署應用、資料庫管理、問題診斷（43 個 MCP 工具）",
+      "description": "管理 Coolify 基礎設施 — 部署應用、資料庫管理與問題診斷",
       "version": "1.32.0",
       "author": {
         "name": "Terry Chen"
@@ -17,7 +18,7 @@
     {
       "name": "hetzner",
       "source": "./plugins/hetzner",
-      "description": "管理 Hetzner Cloud 資源 — 建立伺服器、SSH 金鑰、規格查詢（17 個 MCP 工具）",
+      "description": "管理 Hetzner Cloud 資源 — 伺服器、SSH 金鑰、Volume 與 Storage Box",
       "author": {
         "name": "Terry Chen"
       }
@@ -25,7 +26,7 @@
     {
       "name": "langfuse",
       "source": "./plugins/langfuse",
-      "description": "Langfuse LLM 可觀測性 — Prompt 版本管理、Trace 分析、評分記錄（50 個 MCP 工具）",
+      "description": "Langfuse LLM 可觀測性 — Prompt 版本、Trace、Observation 與評分管理",
       "author": {
         "name": "Terry Chen"
       }
