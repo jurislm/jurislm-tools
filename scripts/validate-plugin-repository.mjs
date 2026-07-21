@@ -30,6 +30,13 @@ const RUNNER_BOOLEAN_OPTIONS = {
   bun: new Set(["--bun", "--no-install", "--silent", "--verbose"]),
   bunx: new Set(["--bun", "--no-install", "--silent", "--verbose"]),
 };
+const SHELL_VALUE_OPTIONS = new Set([
+  "-O",
+  "-o",
+  "--init-file",
+  "--option",
+  "--rcfile",
+]);
 const IGNORED_DIRECTORIES = new Set([".git", "node_modules"]);
 const IGNORED_RELATIVE_DIRECTORIES = new Set([
   path.join(".claude", "worktrees"),
@@ -208,7 +215,11 @@ function runnerCommandAt(tokens, index) {
   return undefined;
 }
 
-function findNpmPackageLaunchers(server, additionalCommandTexts = []) {
+function findNpmPackageLaunchers(
+  server,
+  additionalCommandTexts = [],
+  readLocalScript,
+) {
   const launchers = [];
   const command = typeof server?.command === "string"
     ? path.basename(server.command)
@@ -256,6 +267,10 @@ function findNpmPackageLaunchers(server, additionalCommandTexts = []) {
       const tokens = tokenizeShell(segment);
       for (let index = 0; index < tokens.length; index += 1) {
         const token = path.basename(cleanShellToken(tokens[index]));
+        const localScript = readLocalScript?.(cleanShellToken(tokens[index]));
+        if (localScript) {
+          commandTexts.push(localScript);
+        }
         if (token === "eval" && tokens[index + 1]) {
           commandTexts.push(tokens[index + 1]);
         }
@@ -264,6 +279,10 @@ function findNpmPackageLaunchers(server, additionalCommandTexts = []) {
             if (/^-[^-]*c/.test(tokens[cursor])) {
               commandTexts.push(tokens[cursor + 1]);
               break;
+            }
+            if (SHELL_VALUE_OPTIONS.has(tokens[cursor])) {
+              cursor += 1;
+              continue;
             }
             if (!tokens[cursor].startsWith("-")) {
               break;
@@ -350,19 +369,37 @@ function validatePackageRunnerReferences(root, pluginPath, mcp, errors) {
   }
 
   for (const [serverName, server] of Object.entries(mcp)) {
+    function readLocalScript(command) {
+      if (
+        typeof command !== "string" ||
+        (!command.startsWith(".") && !command.includes("/"))
+      ) {
+        return undefined;
+      }
+      const scriptPath = path.resolve(pluginPath, command);
+      if (
+        !scriptPath.startsWith(`${root}${path.sep}`) ||
+        !existsSync(scriptPath) ||
+        !statSync(scriptPath).isFile()
+      ) {
+        return undefined;
+      }
+      return readFileSync(scriptPath, "utf8");
+    }
+
     const additionalCommandTexts = [];
     if (typeof server?.command === "string") {
-      const scriptPath = path.resolve(pluginPath, server.command);
-      if (
-        scriptPath.startsWith(`${root}${path.sep}`) &&
-        existsSync(scriptPath) &&
-        statSync(scriptPath).isFile()
-      ) {
-        additionalCommandTexts.push(readFileSync(scriptPath, "utf8"));
+      const localScript = readLocalScript(server.command);
+      if (localScript) {
+        additionalCommandTexts.push(localScript);
       }
     }
 
-    for (const launcher of findNpmPackageLaunchers(server, additionalCommandTexts)) {
+    for (const launcher of findNpmPackageLaunchers(
+      server,
+      additionalCommandTexts,
+      readLocalScript,
+    )) {
       const packageSpecs = packageSpecsFromRunnerArgs(
         launcher.args,
         launcher.kind,

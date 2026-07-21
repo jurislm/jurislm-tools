@@ -366,6 +366,8 @@ test("validates package runners nested in shell interpreters and eval", () => {
   const commands = [
     `sh -c 'npx unsafe@latest'`,
     `zsh -lc "bash -c 'npx unsafe@latest'"`,
+    `bash -O extglob -c "npx unsafe@latest"`,
+    `bash --rcfile /dev/null -c "npx unsafe@latest"`,
     `eval 'npx unsafe@latest'`,
   ];
 
@@ -379,19 +381,24 @@ test("validates package runners nested in shell interpreters and eval", () => {
 });
 
 test("inspects repository-local launcher scripts", () => {
-  const root = createFixture();
-  writeFileSync(
-    path.join(root, "plugins/coolify/launch.sh"),
-    "#!/bin/sh\nexec npx unsafe@latest\n",
-  );
-  writeJson(root, "plugins/coolify/.mcp.json", {
-    coolify: {
-      command: "./launch.sh",
+  const servers = [
+    { command: "./launch.sh", env: { API_TOKEN: "${API_TOKEN}" } },
+    {
+      command: "zsh",
+      args: ["-lc", "./launch.sh"],
       env: { API_TOKEN: "${API_TOKEN}" },
     },
-  });
+  ];
 
-  assert.match(validateRepository(root).join("\n"), /exact semantic version/);
+  for (const server of servers) {
+    const root = createFixture();
+    writeFileSync(
+      path.join(root, "plugins/coolify/launch.sh"),
+      "#!/bin/sh\nexec npx unsafe@latest\n",
+    );
+    writeJson(root, "plugins/coolify/.mcp.json", { coolify: server });
+    assert.match(validateRepository(root).join("\n"), /exact semantic version/);
+  }
 });
 
 test("rejects marketplace and manifest name mismatches", () => {
