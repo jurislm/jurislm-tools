@@ -6,15 +6,15 @@ Date: 2026-07-21
 
 | Command | Result |
 |---|---|
-| `npm run validate` | PASS: 7 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
+| `npm run validate` | PASS: 8 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
 | `node scripts/check-version-sync.mjs` | PASS: `Version sync OK: 1.32.0`. |
 | `openspec validate harden-plugin-packaging-and-validation --strict` | PASS: change is valid. |
 | `git diff --check` | PASS: no whitespace errors. |
 
 The repository test suite covers mutable credential-bearing npm references,
 marketplace/path/manifest name mismatches, missing source paths, malformed JSON,
-and reversed installation identifiers in both the root and per-plugin README
-files.
+local Claude worktree exclusion, and reversed installation identifiers in both
+the root and per-plugin README files.
 
 ## Native runtime acceptance
 

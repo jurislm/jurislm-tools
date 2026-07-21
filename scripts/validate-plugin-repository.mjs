@@ -13,6 +13,9 @@ const EXACT_SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 const CREDENTIAL_NAME = /\b[A-Z][A-Z0-9_]*(?:TOKEN|KEY|SECRET|PASSWORD)\b/;
 const PACKAGE_REFERENCE = /(@[a-z0-9._-]+\/[a-z0-9._-]+)@([^\s"'\\]+)/gi;
 const IGNORED_DIRECTORIES = new Set([".git", "node_modules"]);
+const IGNORED_RELATIVE_DIRECTORIES = new Set([
+  path.join(".claude", "worktrees"),
+]);
 
 function relative(root, filePath) {
   return path.relative(root, filePath) || ".";
@@ -28,6 +31,12 @@ function listJsonFiles(root) {
       }
 
       const entryPath = path.join(directory, entry.name);
+      if (
+        entry.isDirectory() &&
+        IGNORED_RELATIVE_DIRECTORIES.has(path.relative(root, entryPath))
+      ) {
+        continue;
+      }
       if (entry.isDirectory()) {
         visit(entryPath);
       } else if (entry.isFile() && entry.name.endsWith(".json")) {

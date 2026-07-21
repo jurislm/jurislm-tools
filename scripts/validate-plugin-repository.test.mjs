@@ -119,6 +119,15 @@ test("reports malformed repository JSON", () => {
   assert.match(validateRepository(root).join("\n"), /invalid JSON/);
 });
 
+test("ignores local Claude worktrees outside repository content", () => {
+  const root = createFixture();
+  const worktreePath = path.join(root, ".claude/worktrees/other");
+  mkdirSync(worktreePath, { recursive: true });
+  writeFileSync(path.join(worktreePath, "broken.json"), "{broken\n");
+
+  assert.deepEqual(validateRepository(root), []);
+});
+
 test("rejects reversed marketplace installation identifiers", () => {
   const root = createFixture();
   writeFileSync(
