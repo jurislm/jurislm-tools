@@ -213,8 +213,11 @@ edge case → Green → Refactor）：
 
 全部 tasks 完成、經 verification-before-completion 確認有據後，若使用者
 不接受 GitHub App 範圍且已依上方規則驗證 App auto-review 停用，先在 push／
-建立 PR 前完成 CLI 預檢與 review，逐項處理並驗證 findings；此路徑不等待
-GitHub App 回報。完成後才進行下列 push／PR 鏈。其他情況直接進行：
+建立 PR 前完成 CLI 預檢與 review；若有 finding，逐項修正、驗證並 commit，
+確認 worktree clean 後，對最終 HEAD 重新執行完整 diff／config 掃描與 CLI
+review。重複此迴圈直到沒有需處理 finding；此路徑不等待 GitHub App 回報。
+只有最後一輪掃描與 review 都涵蓋即將 push 的 HEAD，才進行下列 push／PR 鏈。
+其他情況直接進行：
 `git push -u <remote> <change-name>` → `gh pr create --repo
 <owner>/<repo> --base main --head <change-name> ...` 開 PR（PR body
 含 `Closes #<issue-num>`）→ 記下 PR number；PR labels 與 assignee 是
