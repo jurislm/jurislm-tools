@@ -9,7 +9,7 @@ import {
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
-const EXACT_SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
+const SEMVER_SHAPE = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
 const NPX_VALUE_OPTIONS = new Set([
   "--cache",
   "--call",
@@ -117,10 +117,20 @@ function findNpmPackageLaunchers(server) {
   const args = Array.isArray(server?.args)
     ? server.args.filter((value) => typeof value === "string")
     : [];
+  const npmExecIndex = command === "npm" ? findNpmExecIndex(args) : -1;
 
   if (command === "npx") {
     launchers.push(args);
-  } else if (command === "npm" && (args[0] === "exec" || args[0] === "x")) {
+  } else if (npmExecIndex >= 0) {
+    launchers.push(args.slice(npmExecIndex + 1));
+  } else if (
+    (command === "pnpm" || command === "yarn") &&
+    args[0] === "dlx"
+  ) {
+    launchers.push(args.slice(1));
+  } else if (command === "bunx") {
+    launchers.push(args);
+  } else if (command === "bun" && args[0] === "x") {
     launchers.push(args.slice(1));
   }
 
@@ -129,7 +139,8 @@ function findNpmPackageLaunchers(server) {
   }
 
   for (const commandText of collectStrings(server?.args)) {
-    for (const segment of commandText.split(/(?:&&|\|\||[;&|\n\r])/)) {
+    const normalizedCommand = commandText.replace(/\\\r?\n/g, " ");
+    for (const segment of normalizedCommand.split(/(?:&&|\|\||[;&|\n\r])/)) {
       const tokens = segment.trim().split(/\s+/).filter(Boolean);
       for (let index = 0; index < tokens.length; index += 1) {
         const token = path.basename(cleanShellToken(tokens[index]));
@@ -137,10 +148,25 @@ function findNpmPackageLaunchers(server) {
           launchers.push(tokens.slice(index + 1));
           break;
         }
+        if (token === "npm") {
+          const execIndex = findNpmExecIndex(tokens, index + 1);
+          if (execIndex >= 0) {
+            launchers.push(tokens.slice(execIndex + 1));
+            break;
+          }
+        }
         if (
-          token === "npm" &&
-          (tokens[index + 1] === "exec" || tokens[index + 1] === "x")
+          (token === "pnpm" || token === "yarn") &&
+          tokens[index + 1] === "dlx"
         ) {
+          launchers.push(tokens.slice(index + 2));
+          break;
+        }
+        if (token === "bunx") {
+          launchers.push(tokens.slice(index + 1));
+          break;
+        }
+        if (token === "bun" && tokens[index + 1] === "x") {
           launchers.push(tokens.slice(index + 2));
           break;
         }
@@ -162,6 +188,39 @@ function splitPackageSpec(spec) {
   };
 }
 
+function isExactSemver(version) {
+  const match = SEMVER_SHAPE.exec(version);
+  if (!match) {
+    return false;
+  }
+
+  for (const component of match.slice(1, 4)) {
+    if (component.length > 1 && component.startsWith("0")) {
+      return false;
+    }
+  }
+
+  const prerelease = match[4];
+  if (prerelease) {
+    for (const identifier of prerelease.split(".")) {
+      if (/^\d+$/.test(identifier) && identifier.length > 1 && identifier.startsWith("0")) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+function findNpmExecIndex(args, startIndex = 0) {
+  for (let index = startIndex; index < args.length; index += 1) {
+    if (args[index] === "exec" || args[index] === "x") {
+      return index;
+    }
+  }
+  return -1;
+}
+
 function validatePackageRunnerReferences(root, pluginPath, mcp, errors) {
   const mcpPath = path.join(pluginPath, ".mcp.json");
   if (!mcp || typeof mcp !== "object" || Array.isArray(mcp)) {
@@ -180,7 +239,7 @@ function validatePackageRunnerReferences(root, pluginPath, mcp, errors) {
 
       for (const spec of packageSpecs) {
         const { version } = splitPackageSpec(spec);
-        if (!version || !EXACT_SEMVER.test(version)) {
+        if (!version || !isExactSemver(version)) {
           errors.push(
             `${relative(root, mcpPath)} server ${serverName}: ${spec} must use an exact semantic version`,
           );

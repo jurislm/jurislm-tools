@@ -225,6 +225,59 @@ test("rejects mutable npm exec packages", () => {
   assert.match(validateRepository(root).join("\n"), /exact semantic version/);
 });
 
+test("finds npm exec after global options in structured and shell forms", () => {
+  const servers = [
+    { command: "npm", args: ["--silent", "exec", "unsafe@latest"] },
+    {
+      command: "zsh",
+      args: ["-lc", "npm --silent exec unsafe@latest"],
+    },
+  ];
+
+  for (const server of servers) {
+    const root = createFixture();
+    writeJson(root, "plugins/coolify/.mcp.json", { coolify: server });
+    assert.match(validateRepository(root).join("\n"), /exact semantic version/);
+  }
+});
+
+test("accepts backslash-newline continuation before an exact package", () => {
+  const root = createFixture();
+  writeJson(root, "plugins/coolify/.mcp.json", {
+    coolify: {
+      command: "zsh",
+      args: ["-lc", "npx \\\n@jurislm/coolify-mcp@1.2.3"],
+    },
+  });
+
+  assert.deepEqual(validateRepository(root), []);
+});
+
+test("rejects mutable packages from equivalent package runners", () => {
+  const runners = [
+    { command: "pnpm", args: ["dlx", "unsafe@latest"] },
+    { command: "yarn", args: ["dlx", "unsafe@latest"] },
+    { command: "bunx", args: ["unsafe@latest"] },
+    { command: "bun", args: ["x", "unsafe@latest"] },
+  ];
+
+  for (const runner of runners) {
+    const root = createFixture();
+    writeJson(root, "plugins/coolify/.mcp.json", { coolify: runner });
+    assert.match(validateRepository(root).join("\n"), /exact semantic version/);
+  }
+});
+
+test("rejects invalid semver strings that npm can treat as tags", () => {
+  for (const version of ["1.2.3-...", "1.2.3-foo..bar", "01.2.3", "1.2.3-01"]) {
+    const root = createFixture();
+    writeJson(root, "plugins/coolify/.mcp.json", {
+      coolify: { command: "npx", args: ["-y", `unsafe@${version}`] },
+    });
+    assert.match(validateRepository(root).join("\n"), /exact semantic version/);
+  }
+});
+
 test("rejects marketplace and manifest name mismatches", () => {
   const root = createFixture();
   writeJson(root, "plugins/coolify/.claude-plugin/plugin.json", {

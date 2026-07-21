@@ -6,7 +6,7 @@ Date: 2026-07-21
 
 | Command | Result |
 |---|---|
-| `npm run validate` | PASS: 19 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
+| `npm run validate` | PASS: 23 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
 | `node scripts/check-version-sync.mjs` | PASS: `Version sync OK: 1.32.0`. |
 | `openspec validate harden-plugin-packaging-and-validation --strict` | PASS: change is valid. |
 | `git diff --check` | PASS: no whitespace errors. |
@@ -37,6 +37,12 @@ compares marketplace names and sources, plugin manifest directories, and
 documented installation IDs as complete sets, rejecting duplicates and orphaned
 artifacts. Final re-review also verified newline and background-operator shell
 boundaries, which now isolate every package-runner invocation.
+The final GitHub follow-up also extended the same exact-version policy to
+`pnpm dlx`, `yarn dlx`, `bunx`, and `bun x` package runners.
+Final parser verification covers npm global options before `exec` or `x` and
+preserves backslash-newline shell continuations before boundary splitting.
+Strict SemVer verification also rejects invalid prerelease and core identifiers
+that npm could otherwise interpret as mutable dist-tags.
 
 ## Native runtime acceptance
 
