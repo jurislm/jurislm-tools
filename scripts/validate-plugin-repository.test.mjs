@@ -58,6 +58,10 @@ function createFixture() {
     },
   });
   writeFileSync(
+    path.join(root, "plugins/coolify/README.md"),
+    "# Coolify\n\n`claude plugin install coolify@test-market`\n",
+  );
+  writeFileSync(
     path.join(root, "README.md"),
     "# Test\n\n`claude plugin install coolify@test-market`\n",
   );
@@ -123,4 +127,17 @@ test("rejects reversed marketplace installation identifiers", () => {
   );
 
   assert.match(validateRepository(root).join("\n"), /coolify@test-market/);
+});
+
+test("rejects reversed installation identifiers in plugin README files", () => {
+  const root = createFixture();
+  writeFileSync(
+    path.join(root, "plugins/coolify/README.md"),
+    "# Coolify\n\n`claude plugin install test-market@coolify`\n",
+  );
+
+  assert.match(
+    validateRepository(root).join("\n"),
+    /plugins\/coolify\/README\.md.*coolify@test-market/,
+  );
 });

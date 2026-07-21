@@ -168,6 +168,18 @@ export function validateRepository(rootDirectory = process.cwd()) {
     if (!readme.includes(installationId)) {
       errors.push(`README.md: missing installation identifier ${installationId}`);
     }
+
+    const pluginReadmePath = path.join(pluginPath, "README.md");
+    if (!existsSync(pluginReadmePath)) {
+      errors.push(`${relative(root, pluginReadmePath)}: plugin README is missing`);
+    } else {
+      const pluginReadme = readFileSync(pluginReadmePath, "utf8");
+      if (!pluginReadme.includes(installationId)) {
+        errors.push(
+          `${relative(root, pluginReadmePath)}: missing installation identifier ${installationId}`,
+        );
+      }
+    }
   }
 
   return errors;

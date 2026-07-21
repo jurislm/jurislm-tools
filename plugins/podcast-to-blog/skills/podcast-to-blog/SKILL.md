@@ -46,7 +46,7 @@ ffmpeg -version 2>/dev/null || echo "NEED_FFMPEG"
 ```bash
 SCRIPT_DIR=$(find ~/.claude/plugins -path "*/podcast-to-blog/scripts" -type d 2>/dev/null | head -1)
 if [ -z "$SCRIPT_DIR" ]; then
-  echo "ERROR: 找不到 podcast-to-blog scripts，請確認 plugin 已正確安裝（/plugin install jurislm-tools@podcast-to-blog）"
+  echo "ERROR: 找不到 podcast-to-blog scripts，請確認 plugin 已正確安裝（claude plugin install podcast-to-blog@jurislm-tools）"
   exit 1
 fi
 python3 "${SCRIPT_DIR}/fetch_podcast_audio.py" "<APPLE_PODCASTS_URL>" /tmp/podcast_audio.mp3

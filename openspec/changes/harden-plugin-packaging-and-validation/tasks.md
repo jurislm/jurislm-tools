@@ -2,6 +2,7 @@
 
 - [x] 1.1 Add RED coverage in `scripts/validate-plugin-repository.test.mjs` for mutable credential-bearing npm references, mismatched marketplace entry/path/manifest names, missing source paths, malformed repository JSON, and invalid installation identifiers.
 - [x] 1.2 Implement the dependency-free checks in `scripts/validate-plugin-repository.mjs` until `scripts/validate-plugin-repository.test.mjs` passes, preserving the existing release-version behavior in `scripts/check-version-sync.mjs`.
+- [x] 1.3 Extend `scripts/validate-plugin-repository.test.mjs` and `scripts/validate-plugin-repository.mjs` so every marketplace plugin owns a README with the correct `plugin@marketplace` installation identifier.
 
 ## 2. Immutable MCP launchers
 
@@ -22,8 +23,8 @@
 - [x] 4.3 Synchronize `plugins/hetzner/.claude-plugin/plugin.json` with the Hetzner marketplace description without editing its release-managed version.
 - [x] 4.4 Synchronize `plugins/langfuse/.claude-plugin/plugin.json` with the Langfuse marketplace description without editing its release-managed version.
 - [x] 4.5 Rewrite `README.md` installation and inventory sections for the nine current plugins, verified `plugin@jurislm-tools` identifiers, current Skill surfaces, and non-duplicated MCP capability descriptions.
-- [ ] 4.6 Update `CLAUDE.md`, `.github/copilot-instructions.md`, and `openspec/specs/_overview/marketplace-architecture.md` to GitHub Flow, the nine-plugin architecture, current install syntax, pinned-dependency policy, and aggregate validation commands.
-- [ ] 4.7 Update shared dependency policy in `openspec/specs/infra/infra-overview.md` and remove stale aggregate tool-count claims without changing any individual plugin implementation.
+- [x] 4.6 Update `CLAUDE.md`, `.github/copilot-instructions.md`, and `openspec/specs/_overview/marketplace-architecture.md` to GitHub Flow, the nine-plugin architecture, current install syntax, pinned-dependency policy, and aggregate validation commands.
+- [x] 4.7 Update shared dependency policy in `openspec/specs/infra/infra-overview.md` and remove stale aggregate tool-count claims without changing any individual plugin implementation.
 
 ## 5. Verification and delivery evidence
 

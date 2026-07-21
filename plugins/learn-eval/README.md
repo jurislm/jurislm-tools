@@ -5,7 +5,7 @@
 ## 安裝
 
 ```bash
-/plugin install jurislm-tools@learn-eval
+claude plugin install learn-eval@jurislm-tools
 ```
 
 ## 內容
