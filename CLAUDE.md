@@ -95,6 +95,8 @@ Some legacy detail specs remain historical. For current marketplace membership, 
 
 `jt-flow` depends on externally installed `superpowers:*` Skills. Preserve that dependency unless a proposal explicitly replaces it.
 
+Keep `jt-flow` review orchestration portable across Claude Code and Codex. Its two CodeRabbit channels are the CodeRabbit GitHub App and the locally installed CodeRabbit CLI (`coderabbit review --agent`); do not model the CLI as, or require, a host-specific Claude or Codex plugin. Preserve the Skill's disclosure, consent, secret-scanning, and App-to-CLI fallback gates when changing this workflow.
+
 ## GitHub Flow and worktrees
 
 The active workflow is feature branch → pull request → `main`. The old `develop → main` instructions are retired; an unprotected remote `develop` branch may still exist but is not bound to CI or deployment.
