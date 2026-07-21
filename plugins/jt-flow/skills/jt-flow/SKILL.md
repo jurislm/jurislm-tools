@@ -7,6 +7,9 @@ description: >
   直接對 main 開 PR）；適用任何裝有 OpenSpec 的 GitHub repo，但依賴外部
   `superpowers:*` skill 集與 repo-local `opsx:*` skill 才能完整運作，
   執行前會先做前置環境檢查（remote／OpenSpec／GitHub repo／分支模型）。
+  明確點名或從 Skill picker 呼叫本 Skill，表示使用者已知悉並授權在該次流程
+  對目標 repository 使用 CodeRabbit GitHub App 與 CodeRabbit CLI 進行 PR review；
+  僅由一般意圖自動路由時不視為授權。
   Use when the user asks to "完整落地這個需求", "走完整個 OpenSpec 流程",
   "從頭到尾做完這個功能", "deliver this feature end to end", or "run the full
   openspec delivery flow".
@@ -37,8 +40,10 @@ CodeRabbit 有兩個獨立管道，授權、資料範圍與 rate limit 不得混
   permissions 與 repository selection 決定，可能為了 review context 讀取待審
   diff 以外的 repository 內容；本機預檢不能限制或證明 App 實際讀取的 bytes。
   明確啟動本 Skill 所給的預先授權包含目標 repository 內該既有安裝權限範圍。
-  push／建立 PR 前仍須列出並掃描相對 `<remote>/main` 的完整 diff；若不接受 App
-  的既有範圍，停止使用 GitHub App，改走下方可精確限制 payload 的 CLI。
+  push／建立 PR 前仍須列出並掃描相對 `<remote>/main` 的完整 diff。若不接受 App
+  的既有範圍，必須停在 push／建立 PR 之前，要求使用者在 CodeRabbit／GitHub
+  設定中停用或暫停該 repository 的 App auto-review，並驗證已生效；無法證明停用
+  前不得建立會觸發 App 的 PR。確認停用後才改走下方可精確限制 payload 的 CLI。
 - **CodeRabbit CLI**：Claude Code 與 Codex 都直接使用已安裝並通過驗證的本機
   `coderabbit` CLI；GitHub App rate-limited 不代表 CLI 也不可用。每次呼叫前先
   建立完整待送 payload，且只得
