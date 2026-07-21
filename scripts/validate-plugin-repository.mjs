@@ -452,7 +452,11 @@ export function validateRepository(rootDirectory = process.cwd()) {
   }
 
   const marketplace = parsedJson.get(marketplacePath);
-  if (!marketplace) {
+  if (marketplace === undefined) {
+    return errors;
+  }
+  if (!marketplace || typeof marketplace !== "object" || Array.isArray(marketplace)) {
+    errors.push(".claude-plugin/marketplace.json: document root must be an object");
     return errors;
   }
 
@@ -529,7 +533,14 @@ export function validateRepository(rootDirectory = process.cwd()) {
     }
 
     const manifest = parsedJson.get(manifestPath);
-    if (manifest && manifest.name !== entry.name) {
+    if (
+      manifest !== undefined &&
+      (!manifest || typeof manifest !== "object" || Array.isArray(manifest))
+    ) {
+      errors.push(
+        `${relative(root, manifestPath)}: document root must be an object`,
+      );
+    } else if (manifest && manifest.name !== entry.name) {
       errors.push(
         `${relative(root, manifestPath)}: manifest name ${String(manifest.name)} does not match marketplace entry ${entry.name}`,
       );

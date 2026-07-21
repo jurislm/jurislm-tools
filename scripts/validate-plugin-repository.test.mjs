@@ -384,6 +384,11 @@ test("inspects repository-local launcher scripts", () => {
   const servers = [
     { command: "./launch.sh", env: { API_TOKEN: "${API_TOKEN}" } },
     {
+      command: "bash",
+      args: ["./launch.sh"],
+      env: { API_TOKEN: "${API_TOKEN}" },
+    },
+    {
       command: "zsh",
       args: ["-lc", "./launch.sh"],
       env: { API_TOKEN: "${API_TOKEN}" },
@@ -411,6 +416,22 @@ test("rejects marketplace and manifest name mismatches", () => {
   });
 
   assert.match(validateRepository(root).join("\n"), /manifest name/);
+});
+
+test("rejects non-object marketplace document roots", () => {
+  for (const value of [null, false, 0, "", []]) {
+    const root = createFixture();
+    writeJson(root, ".claude-plugin/marketplace.json", value);
+    assert.match(validateRepository(root).join("\n"), /root must be an object/);
+  }
+});
+
+test("rejects non-object plugin manifest roots", () => {
+  for (const value of [null, false, 0, "", []]) {
+    const root = createFixture();
+    writeJson(root, "plugins/coolify/.claude-plugin/plugin.json", value);
+    assert.match(validateRepository(root).join("\n"), /root must be an object/);
+  }
 });
 
 test("rejects missing marketplace source paths", () => {
