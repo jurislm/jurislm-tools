@@ -19,11 +19,12 @@ claude plugin install jt-flow@jurislm-tools
 
 完整流程需要 OpenSpec repo-local `opsx:*` Skills，以及另行安裝的 `superpowers:*` Skills。
 
-明確啟動任一 Entry Skill，也代表使用者預先授權在該次流程指定的 repository
-範圍內使用 `coderabbit@claude-plugins-official` 的 CodeRabbit GitHub App、
-`coderabbit:code-review` Skill 與 CLI 備援審查 PR／branch diff；完整資料範圍、
-免重複確認規則、送出前 payload 預檢與安全邊界以各 Skill 內的「CodeRabbit
-plugin 預先授權」為準。
+明確點名／呼叫任一 Entry Skill，也代表使用者預先授權在該次流程指定的
+repository 範圍內使用 `coderabbit@claude-plugins-official` 的 CodeRabbit
+GitHub App、`coderabbit:code-review` Skill 與 CLI 備援；僅由一般意圖自動路由
+不構成預先授權。GitHub App 依既有 installation permissions 取用 review context，
+CLI 則只送出完整掃描過的精確 payload；完整免重複確認規則、預檢與安全邊界以各
+Skill 內的「CodeRabbit plugin 預先授權」為準。
 
 ## Version
 
