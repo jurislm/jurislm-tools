@@ -268,6 +268,29 @@ test("rejects mutable packages from equivalent package runners", () => {
   }
 });
 
+test("uses runner-specific global options and option arity", () => {
+  const servers = [
+    { command: "pnpm", args: ["--silent", "dlx", "unsafe@latest"] },
+    { command: "yarn", args: ["--silent", "dlx", "unsafe@latest"] },
+    { command: "bun", args: ["--silent", "x", "unsafe@latest"] },
+    { command: "pnpm", args: ["dlx", "-c", "unsafe@latest", "safe@1.2.3"] },
+    {
+      command: "zsh",
+      args: ["-lc", "pnpm --silent dlx unsafe@latest"],
+    },
+    {
+      command: "zsh",
+      args: ["-lc", "bun --silent x unsafe@latest"],
+    },
+  ];
+
+  for (const server of servers) {
+    const root = createFixture();
+    writeJson(root, "plugins/coolify/.mcp.json", { coolify: server });
+    assert.match(validateRepository(root).join("\n"), /exact semantic version/);
+  }
+});
+
 test("rejects invalid semver strings that npm can treat as tags", () => {
   for (const version of ["1.2.3-...", "1.2.3-foo..bar", "01.2.3", "1.2.3-01"]) {
     const root = createFixture();
@@ -294,6 +317,13 @@ test("validates package runners nested in call payloads", () => {
       args: [
         "-lc",
         'npx --package safe@1.2.3 -c "npx unsafe@latest"',
+      ],
+    },
+    {
+      command: "zsh",
+      args: [
+        "-lc",
+        'npx --package safe@1.2.3 --call="npx unsafe@latest"',
       ],
     },
   ];

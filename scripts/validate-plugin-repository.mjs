@@ -81,7 +81,47 @@ function cleanShellToken(token) {
   return token.replace(/^["']+|["']+$/g, "");
 }
 
-function packageSpecsFromRunnerArgs(args) {
+function tokenizeShell(command) {
+  const tokens = [];
+  let token = "";
+  let quote;
+
+  for (let index = 0; index < command.length; index += 1) {
+    const character = command[index];
+    if (quote) {
+      if (character === quote) {
+        quote = undefined;
+      } else if (character === "\\" && quote === '"' && command[index + 1]) {
+        token += command[index + 1];
+        index += 1;
+      } else {
+        token += character;
+      }
+    } else if (character === '"' || character === "'") {
+      quote = character;
+    } else if (/\s/.test(character)) {
+      if (token) {
+        tokens.push(token);
+        token = "";
+      }
+    } else if (character === "\\" && command[index + 1]) {
+      token += command[index + 1];
+      index += 1;
+    } else {
+      token += character;
+    }
+  }
+
+  if (token) {
+    tokens.push(token);
+  }
+  return tokens;
+}
+
+function packageSpecsFromRunnerArgs(args, runnerKind) {
+  const valueOptions = runnerKind === "npx" || runnerKind === "npm"
+    ? NPX_VALUE_OPTIONS
+    : new Set();
   const explicitPackages = [];
   for (let index = 0; index < args.length; index += 1) {
     const token = cleanShellToken(args[index]);
@@ -100,7 +140,7 @@ function packageSpecsFromRunnerArgs(args) {
         return [cleanShellToken(args[index + 1])];
       }
       return [];
-    } else if (NPX_VALUE_OPTIONS.has(token)) {
+    } else if (valueOptions.has(token)) {
       index += 1;
     } else if (!token.startsWith("-")) {
       return explicitPackages.length > 0 ? explicitPackages : [token];
@@ -128,22 +168,25 @@ function callPayloadsFromArgs(args) {
 function runnerCommandAt(tokens, index) {
   const token = path.basename(cleanShellToken(tokens[index]));
   if (token === "npx" || token === "bunx") {
-    return { position: index, argsStart: index + 1 };
+    return { kind: token, position: index, argsStart: index + 1 };
   }
   if (token === "npm") {
     const execIndex = findNpmExecIndex(tokens, index + 1);
     return execIndex >= 0
-      ? { position: index, argsStart: execIndex + 1 }
+      ? { kind: "npm", position: index, argsStart: execIndex + 1 }
       : undefined;
   }
-  if (
-    (token === "pnpm" || token === "yarn") &&
-    tokens[index + 1] === "dlx"
-  ) {
-    return { position: index, argsStart: index + 2 };
+  if (token === "pnpm" || token === "yarn") {
+    const dlxIndex = tokens.indexOf("dlx", index + 1);
+    return dlxIndex >= 0
+      ? { kind: token, position: index, argsStart: dlxIndex + 1 }
+      : undefined;
   }
-  if (token === "bun" && tokens[index + 1] === "x") {
-    return { position: index, argsStart: index + 2 };
+  if (token === "bun") {
+    const xIndex = tokens.indexOf("x", index + 1);
+    return xIndex >= 0
+      ? { kind: "bun", position: index, argsStart: xIndex + 1 }
+      : undefined;
   }
   return undefined;
 }
@@ -159,27 +202,38 @@ function findNpmPackageLaunchers(server) {
   const npmExecIndex = command === "npm" ? findNpmExecIndex(args) : -1;
 
   if (command === "npx") {
-    launchers.push(args);
+    launchers.push({ kind: "npx", args });
   } else if (npmExecIndex >= 0) {
-    launchers.push(args.slice(npmExecIndex + 1));
-  } else if (
-    (command === "pnpm" || command === "yarn") &&
-    args[0] === "dlx"
-  ) {
-    launchers.push(args.slice(1));
+    launchers.push({ kind: "npm", args: args.slice(npmExecIndex + 1) });
+  } else if (command === "pnpm" || command === "yarn") {
+    const dlxIndex = args.indexOf("dlx");
+    if (dlxIndex >= 0) {
+      launchers.push({ kind: command, args: args.slice(dlxIndex + 1) });
+    }
   } else if (command === "bunx") {
-    launchers.push(args);
-  } else if (command === "bun" && args[0] === "x") {
-    launchers.push(args.slice(1));
+    launchers.push({ kind: "bunx", args });
+  } else if (command === "bun") {
+    const xIndex = args.indexOf("x");
+    if (xIndex >= 0) {
+      launchers.push({ kind: "bun", args: args.slice(xIndex + 1) });
+    }
   }
 
   const commandTexts = launchers.length > 0
-    ? callPayloadsFromArgs(args)
+    ? launchers
+      .filter(({ kind }) => kind === "npx" || kind === "npm")
+      .flatMap(({ args: launcherArgs }) => callPayloadsFromArgs(launcherArgs))
     : collectStrings(server?.args);
-  for (const commandText of commandTexts) {
+  const seenCommandTexts = new Set();
+  for (let textIndex = 0; textIndex < commandTexts.length; textIndex += 1) {
+    const commandText = commandTexts[textIndex];
+    if (seenCommandTexts.has(commandText)) {
+      continue;
+    }
+    seenCommandTexts.add(commandText);
     const normalizedCommand = commandText.replace(/\\\r?\n/g, " ");
     for (const segment of normalizedCommand.split(/(?:&&|\|\||[;&|\n\r])/)) {
-      const tokens = segment.trim().split(/\s+/).filter(Boolean);
+      const tokens = tokenizeShell(segment);
       const runners = [];
       for (let index = 0; index < tokens.length; index += 1) {
         const runner = runnerCommandAt(tokens, index);
@@ -189,7 +243,14 @@ function findNpmPackageLaunchers(server) {
       }
       for (let index = 0; index < runners.length; index += 1) {
         const nextPosition = runners[index + 1]?.position ?? tokens.length;
-        launchers.push(tokens.slice(runners[index].argsStart, nextPosition));
+        const launcher = {
+          kind: runners[index].kind,
+          args: tokens.slice(runners[index].argsStart, nextPosition),
+        };
+        launchers.push(launcher);
+        if (launcher.kind === "npx" || launcher.kind === "npm") {
+          commandTexts.push(...callPayloadsFromArgs(launcher.args));
+        }
       }
     }
   }
@@ -248,8 +309,11 @@ function validatePackageRunnerReferences(root, pluginPath, mcp, errors) {
   }
 
   for (const [serverName, server] of Object.entries(mcp)) {
-    for (const launcherArgs of findNpmPackageLaunchers(server)) {
-      const packageSpecs = packageSpecsFromRunnerArgs(launcherArgs);
+    for (const launcher of findNpmPackageLaunchers(server)) {
+      const packageSpecs = packageSpecsFromRunnerArgs(
+        launcher.args,
+        launcher.kind,
+      );
       if (packageSpecs.length === 0) {
         errors.push(
           `${relative(root, mcpPath)} server ${serverName}: npm package launcher has no package reference`,

@@ -6,7 +6,7 @@ Date: 2026-07-21
 
 | Command | Result |
 |---|---|
-| `npm run validate` | PASS: 24 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
+| `npm run validate` | PASS: 25 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
 | `node scripts/check-version-sync.mjs` | PASS: `Version sync OK: 1.32.0`. |
 | `openspec validate harden-plugin-packaging-and-validation --strict` | PASS: change is valid. |
 | `git diff --check` | PASS: no whitespace errors. |
@@ -45,6 +45,10 @@ Strict SemVer verification also rejects invalid prerelease and core identifiers
 that npm could otherwise interpret as mutable dist-tags.
 Explicit `-c` and `--call` payloads are recursively inspected so an exact outer
 package cannot conceal a mutable nested package runner.
+Runner-specific parsing distinguishes npx call options from pnpm shell mode and
+locates pnpm, yarn, and bun subcommands after supported global options.
+Quote-aware shell tokenization preserves equals-form call payloads and queues
+every nested package runner for independent validation.
 
 ## Native runtime acceptance
 
