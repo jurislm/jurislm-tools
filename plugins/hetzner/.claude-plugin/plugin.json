@@ -1,6 +1,6 @@
 {
   "name": "hetzner",
-  "description": "管理 Hetzner Cloud 資源 — 建立伺服器、SSH 金鑰、Volume、Storage Box（含空間用量查詢與備份前檢查）、規格查詢（42 個 MCP 工具）",
+  "description": "管理 Hetzner Cloud 資源 — 伺服器、SSH 金鑰、Volume 與 Storage Box",
   "version": "1.32.0",
   "author": {
     "name": "Terry Chen"

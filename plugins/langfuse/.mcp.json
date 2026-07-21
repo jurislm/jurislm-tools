@@ -3,7 +3,7 @@
     "command": "zsh",
     "args": [
       "-lc",
-      "exec env -i HOME=\"$HOME\" PATH=\"$PATH\" USER=\"$USER\" SHELL=\"$SHELL\" TERM=\"$TERM\" LOGNAME=\"$LOGNAME\" LANGFUSE_PUBLIC_KEY=\"$LANGFUSE_PUBLIC_KEY\" LANGFUSE_SECRET_KEY=\"$LANGFUSE_SECRET_KEY\" LANGFUSE_HOST=\"$LANGFUSE_HOST\" npx -y @jurislm/langfuse-mcp@latest"
+      "exec env -i HOME=\"$HOME\" PATH=\"$PATH\" USER=\"$USER\" SHELL=\"$SHELL\" TERM=\"$TERM\" LOGNAME=\"$LOGNAME\" LANGFUSE_PUBLIC_KEY=\"$LANGFUSE_PUBLIC_KEY\" LANGFUSE_SECRET_KEY=\"$LANGFUSE_SECRET_KEY\" LANGFUSE_HOST=\"$LANGFUSE_HOST\" npx -y @jurislm/langfuse-mcp@1.3.2"
     ]
   }
 }

@@ -2,93 +2,87 @@
 
 ## Purpose
 
-定義 `jurislm-tools` Plugin Marketplace 的整體結構、plugin 組成方式，以及 Marketplace 在 Claude Code 生態系中的角色與邊界。
+定義 `jurislm-tools` 的 marketplace 結構、跨 runtime 邊界、版本管理與交付流程。
 
-## System Context
+## System context
 
-`jurislm-tools` 是一個掛載於 Claude Code 的 Plugin Marketplace（`source: "directory"`），本地目錄直接掛載，不需透過 npm 或 GitHub remote 安裝。使用者在 Claude Code 中執行 `/plugin install jurislm-tools@<plugin-name>` 即可安裝個別 plugin。
+`.claude-plugin/marketplace.json` 是唯一 canonical marketplace。Claude Code 原生讀取此格式；Codex 透過已驗證的 Claude-marketplace compatibility path 發現同一份 entries，不維護第二套 `.codex-plugin` 或 `.agents` metadata。
 
-```
-.claude-plugin/marketplace.json   ← Marketplace 定義檔（入口）
-plugins/
-├── <plugin-name>/
-│   ├── .claude-plugin/plugin.json   ← Plugin 元資料（name, version, description）
-│   ├── skills/<name>/SKILL.md       ← Skill（自動觸發或手動呼叫）
-│   ├── commands/<name>.md           ← Slash command（/name）
-│   ├── agents/<name>.md             ← Agent 定義（subagent_type）
-│   ├── hooks/                       ← PreToolUse / PostToolUse / Stop hooks
-│   ├── rules/                       ← 規則文件（語言分層）
-│   └── .mcp.json                    ← MCP Server 設定（Hybrid plugin 專用）
+```text
+.claude-plugin/marketplace.json
+plugins/<plugin-name>/
+├── .claude-plugin/plugin.json
+├── .mcp.json                       # Hybrid plugin only
+├── skills/<name>/SKILL.md
+├── commands/<name>.md              # Optional compatibility entry
+└── README.md
 ```
 
-## Plugin 列表（12 個）
+Marketplace entry name、source folder basename 與 manifest name 必須一致。
 
-| Plugin | 類型 | 版本 | 主要產物 |
-|--------|------|------|---------|
-| hooks-and-rules | Base | 1.19.0 | hook（commit-discipline-gate.js）+ rules（5 語言） |
-| coolify | Hybrid | 1.19.0 | MCP（@jurislm/coolify-mcp）+ skill + command |
-| hetzner | Hybrid | 1.19.0 | MCP（@jurislm/hetzner-mcp）+ skill + command |
-| langfuse | Hybrid | 1.19.0 | MCP（@jurislm/langfuse-mcp）+ skill + command |
-| repo-standards | Skill | 1.19.0 | skill + command |
-| pr-review | Skill | 1.19.0 | skill + command |
-| podcast-to-blog | Skill | 1.19.0 | skill + command + Python scripts |
-| codebase-sync | Skill | 1.19.0 | skill + command |
-| plan | Cmd+Agent | 1.19.0 | command + planner agent |
-| tdd | Cmd+Agent | 1.19.0 | command（shim） + tdd-guide agent |
-| tdd-workflow | Skill | 1.19.0 | skill（auto-activate） |
-| learn-eval | Command | 1.19.0 | command only |
+## Published plugins
 
-## Plugin 類型定義
+| Plugin | Type | Primary artifact |
+|---|---|---|
+| `coolify` | Hybrid | Exact-version MCP launcher + Skill |
+| `hetzner` | Hybrid | Exact-version MCP launcher + Skill |
+| `langfuse` | Hybrid | Exact-version MCP launcher + Skill |
+| `higgsfield` | Hybrid | OAuth remote MCP + Skills |
+| `repo-standards` | Skill | Repository standards |
+| `podcast-to-blog` | Skill | Transcription and writing workflow |
+| `codebase-sync` | Skill | Documentation synchronization |
+| `learn-eval` | Skill | Session-pattern extraction |
+| `jt-flow` | Skills | Single-request and issue-queue delivery |
 
-- **Base**：不含 skill/command，提供 hook 與 rules 基礎設施
-- **Hybrid**：同時包含 MCP Server 設定（`.mcp.json`）與 skill/command
-- **Skill**：僅含 SKILL.md（有或無對應 command），無 MCP
-- **Cmd+Agent**：command 作為入口，執行時委派給對應 agent
-- **Command**：純 command，無 skill 亦無 agent
+## Dependency integrity
+
+Local MCP launchers that receive credentials must pin exact semantic versions. Current approved packages are:
+
+- `@jurislm/coolify-mcp@3.6.0`
+- `@jurislm/hetzner-mcp@1.5.0`
+- `@jurislm/langfuse-mcp@1.3.2`
+
+Mutable tags, unversioned packages, and ranges are rejected by repository validation.
 
 ## Versioning
 
-所有 plugin 的版本號由 **Release Please** 自動管理，不得手動修改。
+Release Please owns all nine plugin manifest versions and `.claude-plugin/marketplace.json` at `$.plugins[0].version`. `coolify` must remain entry zero unless the release configuration changes in the same proposal. New entries append by default.
 
-- `feat:` → minor bump（1.18.x → 1.19.0）
-- `fix:` → patch bump（1.19.0 → 1.19.1）
-- `docs:` / `chore:` → 不觸發版本升級
+## Delivery
 
-`release-please-config.json` 的 `extra-files` 設定同步更新：
-- `plugins/jurislm-tools/.claude-plugin/plugin.json` → `$.version`
-- `.claude-plugin/marketplace.json` → `$.plugins[0].version`
-
-**重要**：`marketplace.json` 的版本更新使用陣列索引 `$.plugins[0].version`，因此 `jurislm-tools` 必須永遠是 `plugins` 陣列第一個元素。
-
-## 本地掛載更新流程
-
-```
-.worktrees/develop 修改
-  → commit + push（develop 分支）
-  → PR develop → main
-  → merge
-  → git pull origin main（在 main worktree 根目錄）
-  → /reload-plugins（在 Claude Code 中）
+```text
+origin/main → feature worktree → PR to main → quality and review gates → merge
 ```
 
-## 環境變數約定
+The root checkout remains on `main`; implementation occurs in `.claude/worktrees/<change-name>` based on current `origin/main`. The historical `develop` branch is not a delivery stage.
 
-Hybrid plugin 的 MCP Server 需要環境變數，一律寫入 `~/.zshenv`（非 `~/.zshrc`）：
+## Installation
 
-| Plugin | 必要環境變數 |
-|--------|------------|
-| coolify | `COOLIFY_ACCESS_TOKEN`, `COOLIFY_BASE_URL` |
-| hetzner | `HETZNER_API_TOKEN` |
-| langfuse | `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` |
+Claude identifiers use `plugin@marketplace`:
 
-## Detail Specs
+```bash
+claude plugin marketplace add https://github.com/jurislm/jurislm-tools.git
+claude plugin install coolify@jurislm-tools
+```
 
-- [infra/infra-overview.md](../infra/infra-overview.md) — Coolify + Hetzner
-- [observability/langfuse-detail.md](../observability/langfuse-detail.md) — Langfuse
-- [dev-workflow/dev-workflow-overview.md](../dev-workflow/dev-workflow-overview.md) — plan + tdd + tdd-workflow + pr-review
-- [docs-and-standards/repo-standards-detail.md](../docs-and-standards/repo-standards-detail.md) — repo-standards
-- [docs-and-standards/codebase-sync-detail.md](../docs-and-standards/codebase-sync-detail.md) — codebase-sync
-- [content/podcast-to-blog-detail.md](../content/podcast-to-blog-detail.md) — podcast-to-blog
-- [learning/learn-eval-detail.md](../learning/learn-eval-detail.md) — learn-eval
-- [discipline/hooks-and-rules-detail.md](../discipline/hooks-and-rules-detail.md) — hooks-and-rules
-- [_overview/openspec-system.md](./openspec-system.md) — OpenSpec workflow system
+After install or update, start a new Claude Code or Codex session.
+
+## Validation
+
+```bash
+npm ci
+npm run validate
+claude plugin validate .
+```
+
+The aggregate command checks tests, marketplace integrity, immutable dependencies, release-version synchronization, and entry-document Markdown.
+
+## Detail specs
+
+- [Infrastructure overview](../infra/infra-overview.md)
+- [Langfuse detail](../observability/langfuse-detail.md)
+- [Repository standards detail](../docs-and-standards/repo-standards-detail.md)
+- [Codebase sync detail](../docs-and-standards/codebase-sync-detail.md)
+- [Podcast-to-blog detail](../content/podcast-to-blog-detail.md)
+- [Learn-eval detail](../learning/learn-eval-detail.md)
+- [OpenSpec system](./openspec-system.md)

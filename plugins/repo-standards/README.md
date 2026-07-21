@@ -5,7 +5,7 @@ Repo 標準審查 — AGENTS.md 讀取 CLAUDE.md、Drone CI/CD（含避免重複
 ## 安裝
 
 ```bash
-/plugin install jurislm-tools@repo-standards
+claude plugin install repo-standards@jurislm-tools
 ```
 
 ## 內容

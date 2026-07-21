@@ -5,7 +5,7 @@ Codebase 同步與探索
 ## 安裝
 
 ```bash
-/plugin install jurislm-tools@codebase-sync
+claude plugin install codebase-sync@jurislm-tools
 ```
 
 ## 內容

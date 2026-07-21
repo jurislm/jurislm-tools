@@ -3,7 +3,7 @@
     "command": "zsh",
     "args": [
       "-lc",
-      "exec env -i HOME=\"$HOME\" PATH=\"$PATH\" USER=\"$USER\" SHELL=\"$SHELL\" TERM=\"$TERM\" LOGNAME=\"$LOGNAME\" HETZNER_API_TOKEN=\"$HETZNER_API_TOKEN\" npx -y @jurislm/hetzner-mcp@latest"
+      "exec env -i HOME=\"$HOME\" PATH=\"$PATH\" USER=\"$USER\" SHELL=\"$SHELL\" TERM=\"$TERM\" LOGNAME=\"$LOGNAME\" HETZNER_API_TOKEN=\"$HETZNER_API_TOKEN\" npx -y @jurislm/hetzner-mcp@1.5.0"
     ]
   }
 }

@@ -4,6 +4,10 @@
     "markdownlint-cli": "^0.48.0"
   },
   "scripts": {
-    "lint:md": "markdownlint plugins/code-review/**/*.md"
+    "test": "node --test scripts/*.test.mjs",
+    "check:plugins": "node scripts/validate-plugin-repository.mjs",
+    "check:versions": "node scripts/check-version-sync.mjs",
+    "lint:md": "markdownlint 'README.md' 'CLAUDE.md' '.github/**/*.md' 'plugins/*/README.md' 'plugins/*/skills/*/SKILL.md' 'openspec/changes/**/*.md' 'openspec/specs/**/*.md'",
+    "validate": "npm run test && npm run check:plugins && npm run check:versions && npm run lint:md"
   }
 }

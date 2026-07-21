@@ -1,18 +1,17 @@
 # hetzner
 
-Hetzner VPS 管理 — 42 個 MCP 工具 + skill + command
+透過 MCP 與 Skill 管理 Hetzner Cloud 伺服器、SSH 金鑰、Volume 與 Storage Box。
 
 ## 安裝
 
 ```bash
-/plugin install jurislm-tools@hetzner
+claude plugin install hetzner@jurislm-tools
 ```
 
 ## 內容
 
-- MCP server (42 tools)
-- skill
-- /hetzner command
+- MCP server：`@jurislm/hetzner-mcp@1.5.0`
+- `hetzner` Skill
 
 ## 環境變數
 
@@ -41,7 +40,7 @@ export HETZNER_API_TOKEN="..."
 
 ## 使用
 
-/hetzner list-servers 或自然語言詢問 VPS 狀態。
+以自然語言詢問 VPS 狀態或要求管理 Hetzner 資源；安裝後由 `hetzner` Skill 自動路由。
 
 ## 來源
 

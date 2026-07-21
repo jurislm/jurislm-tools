@@ -2,46 +2,49 @@
 
 ## Purpose
 
-說明 `coolify` 與 `hetzner` 兩個 Hybrid plugin 的共同設計模式，以及它們在 JurisLM 基礎設施管理中的角色分工。
+說明 `coolify` 與 `hetzner` Hybrid plugins 的共同安全模式，以及 JurisLM 基礎設施管理中的角色分工。
 
-## 角色分工
+## Roles
 
-| Plugin | 負責層 | 主要操作 |
-|--------|--------|---------|
-| hetzner | 硬體層 | 伺服器建立 / 刪除 / 開關機 / 重啟、SSH 金鑰管理 |
-| coolify | 應用層 | 應用部署 / 資料庫管理 / 域名設定 / 環境變數、問題診斷 |
+| Plugin | Layer | Primary operations |
+|---|---|---|
+| `hetzner` | Infrastructure | Servers, SSH keys, Volumes, and Storage Box |
+| `coolify` | Platform | Applications, databases, domains, deployments, and diagnostics |
 
-典型工作流程：先透過 `hetzner` 建立或取得 VPS，再透過 `coolify` 在該 VPS 上部署應用程式與資料庫。
+典型流程先由 `hetzner` 建立或確認運算資源，再由 `coolify` 部署應用程式與資料庫。
 
-## 共同設計模式（Hybrid Plugin）
+## Hybrid plugin structure
 
-兩個 plugin 均採用相同的 **Hybrid Plugin** 結構：
-
-```
+```text
 plugins/<name>/
-├── .claude-plugin/plugin.json   ← plugin 元資料
-├── .mcp.json                    ← MCP Server 設定（npx 啟動）
-├── commands/<name>.md           ← /<name> slash command
+├── .claude-plugin/plugin.json
+├── .mcp.json
+├── README.md
 └── skills/<name>/
-    ├── SKILL.md                 ← skill 主體（auto-trigger 描述）
-    └── references/              ← 參考文件
+    ├── SKILL.md
+    └── references/
 ```
 
-MCP Server 均以 `npx -y @jurislm/<name>-mcp@latest` 啟動，採 `@latest` 策略（不鎖版本）。
+兩個本機 MCP launchers 都以 `env -i` 限縮傳入環境，並鎖定精確 npm 版本：
 
-## 環境變數
+- Coolify：`@jurislm/coolify-mcp@3.6.0`
+- Hetzner：`@jurislm/hetzner-mcp@1.5.0`
 
-兩個 plugin 的環境變數必須寫入 `~/.zshenv`（MCP Server 是非互動式子進程，不 source `~/.zshrc`）：
+任何 `@latest`、range 或 unversioned package 都必須被 repository validation 拒絕。
 
-| Plugin | 環境變數 | 說明 |
-|--------|---------|------|
-| coolify | `COOLIFY_ACCESS_TOKEN` | Coolify API 認證 token |
-| coolify | `COOLIFY_BASE_URL` | Coolify 實例 URL（含 protocol） |
-| hetzner | `HETZNER_API_TOKEN` | Hetzner Cloud API token（非 `HCLOUD_TOKEN`） |
+## Environment variables
 
-設定後需**完整重啟 Claude Code**（reload 不夠）。
+環境變數必須寫入 `~/.zshenv`；MCP server 是非互動式子進程，不讀取 `~/.zshrc`。
 
-## Detail Specs
+| Plugin | Variable | Purpose |
+|---|---|---|
+| `coolify` | `COOLIFY_ACCESS_TOKEN` | Coolify API authentication |
+| `coolify` | `COOLIFY_BASE_URL` | Coolify instance URL |
+| `hetzner` | `HETZNER_API_TOKEN` | Hetzner Cloud authentication |
 
-- [coolify-detail.md](./coolify-detail.md)
-- [hetzner-detail.md](./hetzner-detail.md)
+不得把 token 值寫入 repository、log 或驗證輸出。
+
+## Detail specs
+
+- [Coolify detail](./coolify-detail.md)
+- [Hetzner detail](./hetzner-detail.md)

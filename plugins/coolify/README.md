@@ -1,18 +1,17 @@
 # coolify
 
-Coolify 部署管理 — 43 個 MCP 工具 + skill + command
+透過 MCP 與 Skill 管理 Coolify 部署、應用程式、資料庫及基礎設施。
 
 ## 安裝
 
 ```bash
-/plugin install jurislm-tools@coolify
+claude plugin install coolify@jurislm-tools
 ```
 
 ## 內容
 
-- MCP server (43 tools)
-- skill
-- /coolify command
+- MCP server：`@jurislm/coolify-mcp@3.6.0`
+- `coolify` Skill
 
 ## 環境變數
 
@@ -42,7 +41,7 @@ export COOLIFY_BASE_URL="..."
 
 ## 使用
 
-/coolify list-applications 或自然語言詢問 Coolify 部署狀態。
+以自然語言詢問 Coolify 部署狀態或要求管理資源；安裝後由 `coolify` Skill 自動路由。
 
 ## 來源
 

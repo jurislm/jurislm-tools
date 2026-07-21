@@ -5,7 +5,7 @@ Podcast 音訊轉部落格文章
 ## 安裝
 
 ```bash
-/plugin install jurislm-tools@podcast-to-blog
+claude plugin install podcast-to-blog@jurislm-tools
 ```
 
 ## 內容
