@@ -6,15 +6,27 @@ Date: 2026-07-21
 
 | Command | Result |
 |---|---|
-| `npm run validate` | PASS: 8 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
+| `npm run validate` | PASS: 12 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
 | `node scripts/check-version-sync.mjs` | PASS: `Version sync OK: 1.32.0`. |
 | `openspec validate harden-plugin-packaging-and-validation --strict` | PASS: change is valid. |
 | `git diff --check` | PASS: no whitespace errors. |
 
 The repository test suite covers mutable credential-bearing npm references,
 marketplace/path/manifest name mismatches, missing source paths, malformed JSON,
-local Claude worktree exclusion, and reversed installation identifiers in both
-the root and per-plugin README files.
+local Claude worktree exclusion, bare and alternate credential names,
+per-server and per-package launcher isolation, and reversed installation
+identifiers in both the root and per-plugin README files.
+
+## Review follow-up
+
+GitHub Codex review raised three P2 issues against the initial validator. All
+three were reproduced before implementation and resolved with regression tests:
+
+- unrelated `.claude/worktrees` content is excluded from JSON discovery;
+- bare `TOKEN` plus `API_CREDENTIAL` and `GITHUB_PAT` naming forms activate the
+  credential-bearing launcher policy;
+- every server and every explicit `npx --package` specification is validated
+  independently, so one pinned package cannot conceal an unversioned package.
 
 ## Native runtime acceptance
 

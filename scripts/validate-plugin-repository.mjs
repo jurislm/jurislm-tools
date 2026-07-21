@@ -10,8 +10,15 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const EXACT_SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
-const CREDENTIAL_NAME = /\b[A-Z][A-Z0-9_]*(?:TOKEN|KEY|SECRET|PASSWORD)\b/;
-const PACKAGE_REFERENCE = /(@[a-z0-9._-]+\/[a-z0-9._-]+)@([^\s"'\\]+)/gi;
+const CREDENTIAL_NAME = /\b(?:[A-Z][A-Z0-9_]*_)?(?:TOKEN|KEY|SECRET|PASSWORD|CREDENTIAL|PAT)\b/;
+const NPX_VALUE_OPTIONS = new Set([
+  "--cache",
+  "--call",
+  "--node-options",
+  "--registry",
+  "--userconfig",
+  "-c",
+]);
 const IGNORED_DIRECTORIES = new Set([".git", "node_modules"]);
 const IGNORED_RELATIVE_DIRECTORIES = new Set([
   path.join(".claude", "worktrees"),
@@ -58,30 +65,99 @@ function readJson(root, filePath, errors) {
   }
 }
 
-function validateCredentialPackageReferences(root, pluginPath, errors) {
+function collectStrings(value) {
+  if (typeof value === "string") {
+    return [value];
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap(collectStrings);
+  }
+  if (value && typeof value === "object") {
+    return Object.values(value).flatMap(collectStrings);
+  }
+  return [];
+}
+
+function findNpxPackageSpecs(server) {
+  const specs = [];
+
+  for (const command of collectStrings(server)) {
+    const tokens = command.trim().split(/\s+/);
+    for (let index = 0; index < tokens.length; index += 1) {
+      if (tokens[index] !== "npx") {
+        continue;
+      }
+
+      const explicitPackages = [];
+      for (let cursor = index + 1; cursor < tokens.length; cursor += 1) {
+        const token = tokens[cursor];
+        if (token === "--package" || token === "-p") {
+          if (tokens[cursor + 1]) {
+            explicitPackages.push(tokens[cursor + 1]);
+            cursor += 1;
+          }
+        } else if (token.startsWith("--package=")) {
+          explicitPackages.push(token.slice("--package=".length));
+        }
+      }
+      if (explicitPackages.length > 0) {
+        specs.push(...explicitPackages);
+        continue;
+      }
+
+      for (let cursor = index + 1; cursor < tokens.length; cursor += 1) {
+        const token = tokens[cursor];
+        if (NPX_VALUE_OPTIONS.has(token)) {
+          cursor += 1;
+        } else if (!token.startsWith("-")) {
+          specs.push(token);
+          break;
+        }
+      }
+    }
+  }
+
+  return specs;
+}
+
+function splitPackageSpec(spec) {
+  const separator = spec.lastIndexOf("@");
+  if (separator <= 0) {
+    return { packageName: spec, version: undefined };
+  }
+  return {
+    packageName: spec.slice(0, separator),
+    version: spec.slice(separator + 1),
+  };
+}
+
+function validateCredentialPackageReferences(root, pluginPath, mcp, errors) {
   const mcpPath = path.join(pluginPath, ".mcp.json");
-  if (!existsSync(mcpPath)) {
+  if (!mcp || typeof mcp !== "object" || Array.isArray(mcp)) {
     return;
   }
 
-  const raw = readFileSync(mcpPath, "utf8");
-  if (!CREDENTIAL_NAME.test(raw) || !raw.includes("npx")) {
-    return;
-  }
+  for (const [serverName, server] of Object.entries(mcp)) {
+    const launcher = collectStrings(server).join(" ");
+    if (!CREDENTIAL_NAME.test(launcher) || !launcher.includes("npx")) {
+      continue;
+    }
 
-  const references = [...raw.matchAll(PACKAGE_REFERENCE)];
-  if (references.length === 0) {
-    errors.push(
-      `${relative(root, mcpPath)}: credential-bearing npx launcher has no versioned package reference`,
-    );
-    return;
-  }
-
-  for (const [, packageName, version] of references) {
-    if (!EXACT_SEMVER.test(version)) {
+    const packageSpecs = findNpxPackageSpecs(server);
+    if (packageSpecs.length === 0) {
       errors.push(
-        `${relative(root, mcpPath)}: ${packageName}@${version} must use an exact semantic version`,
+        `${relative(root, mcpPath)} server ${serverName}: credential-bearing npx launcher has no versioned package reference`,
       );
+      continue;
+    }
+
+    for (const spec of packageSpecs) {
+      const { version } = splitPackageSpec(spec);
+      if (!version || !EXACT_SEMVER.test(version)) {
+        errors.push(
+          `${relative(root, mcpPath)} server ${serverName}: ${spec} must use an exact semantic version`,
+        );
+      }
     }
   }
 }
@@ -171,7 +247,13 @@ export function validateRepository(rootDirectory = process.cwd()) {
       );
     }
 
-    validateCredentialPackageReferences(root, pluginPath, errors);
+    const mcpPath = path.join(pluginPath, ".mcp.json");
+    validateCredentialPackageReferences(
+      root,
+      pluginPath,
+      parsedJson.get(mcpPath),
+      errors,
+    );
 
     const installationId = `${entry.name}@${marketplaceName}`;
     if (!readme.includes(installationId)) {

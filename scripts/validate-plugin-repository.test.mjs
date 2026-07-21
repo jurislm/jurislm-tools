@@ -90,6 +90,78 @@ test("rejects mutable credential-bearing npm references", () => {
   assert.match(validateRepository(root).join("\n"), /exact semantic version/);
 });
 
+test("recognizes bare credential variable names", () => {
+  const root = createFixture();
+  writeJson(root, "plugins/coolify/.mcp.json", {
+    coolify: {
+      command: "zsh",
+      args: ["-lc", 'TOKEN="$TOKEN" npx -y coolify-mcp@latest'],
+    },
+  });
+
+  assert.match(validateRepository(root).join("\n"), /exact semantic version/);
+});
+
+test("validates each credential-bearing MCP server independently", () => {
+  const root = createFixture();
+  writeJson(root, "plugins/coolify/.mcp.json", {
+    safe: {
+      command: "zsh",
+      args: [
+        "-lc",
+        'SAFE_TOKEN="$SAFE_TOKEN" npx -y @jurislm/coolify-mcp@1.2.3',
+      ],
+    },
+    unsafe: {
+      command: "zsh",
+      args: ["-lc", 'UNSAFE_TOKEN="$UNSAFE_TOKEN" npx -y @jurislm/unsafe'],
+    },
+  });
+
+  assert.match(
+    validateRepository(root).join("\n"),
+    /@jurislm\/unsafe must use an exact semantic version/,
+  );
+});
+
+test("recognizes credential and PAT variable names", () => {
+  const root = createFixture();
+  writeJson(root, "plugins/coolify/.mcp.json", {
+    credential: {
+      command: "zsh",
+      args: [
+        "-lc",
+        'API_CREDENTIAL="$API_CREDENTIAL" npx -y @jurislm/unsafe@latest',
+      ],
+    },
+    pat: {
+      command: "zsh",
+      args: ["-lc", 'GITHUB_PAT="$GITHUB_PAT" npx -y unsafe@latest'],
+    },
+  });
+
+  const errors = validateRepository(root);
+  assert.equal(errors.filter((error) => /exact semantic version/.test(error)).length, 2);
+});
+
+test("rejects mixed pinned and unversioned npx package options", () => {
+  const root = createFixture();
+  writeJson(root, "plugins/coolify/.mcp.json", {
+    coolify: {
+      command: "zsh",
+      args: [
+        "-lc",
+        'API_TOKEN="$API_TOKEN" npx --package @jurislm/mutable --package @jurislm/pinned@1.2.3 run',
+      ],
+    },
+  });
+
+  assert.match(
+    validateRepository(root).join("\n"),
+    /@jurislm\/mutable must use an exact semantic version/,
+  );
+});
+
 test("rejects marketplace and manifest name mismatches", () => {
   const root = createFixture();
   writeJson(root, "plugins/coolify/.claude-plugin/plugin.json", {
