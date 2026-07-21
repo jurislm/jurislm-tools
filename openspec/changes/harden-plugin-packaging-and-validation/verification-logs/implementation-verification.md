@@ -6,7 +6,7 @@ Date: 2026-07-21
 
 | Command | Result |
 |---|---|
-| `npm run validate` | PASS: 32 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
+| `npm run validate` | PASS: 33 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
 | `node scripts/check-version-sync.mjs` | PASS: `Version sync OK: 1.32.0`. |
 | `openspec validate harden-plugin-packaging-and-validation --strict` | PASS: change is valid. |
 | `git diff --check` | PASS: no whitespace errors. |
@@ -55,6 +55,9 @@ document-root validation. CI checkout no longer persists credentials, and
 volatile counts were removed from the remaining detail documents.
 Marketplace and plugin manifest roots now receive the same explicit object-root
 validation as MCP documents, including falsy but valid JSON values.
+Shell substitution punctuation is normalized before runner matching, and bare
+interpreter script arguments are resolved only when the file exists inside the
+repository.
 
 ## Native runtime acceptance
 

@@ -97,7 +97,10 @@ function collectStrings(value) {
 }
 
 function cleanShellToken(token) {
-  return token.replace(/^["']+|["']+$/g, "");
+  return token
+    .replace(/^\$\(/, "")
+    .replace(/^[(`"']+/, "")
+    .replace(/[)`"';]+$/, "");
 }
 
 function tokenizeShell(command) {
@@ -372,7 +375,8 @@ function validatePackageRunnerReferences(root, pluginPath, mcp, errors) {
     function readLocalScript(command) {
       if (
         typeof command !== "string" ||
-        (!command.startsWith(".") && !command.includes("/"))
+        command.length === 0 ||
+        command.startsWith("-")
       ) {
         return undefined;
       }

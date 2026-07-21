@@ -193,6 +193,22 @@ test("keeps separate shell package-runner invocations isolated", () => {
   );
 });
 
+test("validates package runners inside shell substitutions", () => {
+  const commands = [
+    "(npx unsafe@latest)",
+    "echo $(npx unsafe@latest)",
+    "echo `npx unsafe@latest`",
+  ];
+
+  for (const command of commands) {
+    const root = createFixture();
+    writeJson(root, "plugins/coolify/.mcp.json", {
+      coolify: { command: "zsh", args: ["-lc", command] },
+    });
+    assert.match(validateRepository(root).join("\n"), /exact semantic version/);
+  }
+});
+
 test("treats newline and background operators as shell boundaries", () => {
   for (const separator of ["\n", " & "]) {
     const root = createFixture();
@@ -386,6 +402,11 @@ test("inspects repository-local launcher scripts", () => {
     {
       command: "bash",
       args: ["./launch.sh"],
+      env: { API_TOKEN: "${API_TOKEN}" },
+    },
+    {
+      command: "bash",
+      args: ["launch.sh"],
       env: { API_TOKEN: "${API_TOKEN}" },
     },
     {
