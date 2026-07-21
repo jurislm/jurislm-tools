@@ -10,7 +10,7 @@
       "name": "coolify",
       "source": "./plugins/coolify",
       "description": "管理 Coolify 基礎設施 — 部署應用、資料庫管理與問題診斷",
-      "version": "1.32.0",
+      "version": "1.32.1",
       "author": {
         "name": "Terry Chen"
       }

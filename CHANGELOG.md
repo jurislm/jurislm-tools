@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.32.1](https://github.com/jurislm/jurislm-tools/compare/v1.32.0...v1.32.1) (2026-07-21)
+
+
+### 🐛 Bug Fixes
+
+* harden plugin packaging and validation ([#147](https://github.com/jurislm/jurislm-tools/issues/147)) ([c419c84](https://github.com/jurislm/jurislm-tools/commit/c419c84513c72e63e0ff14fa7faad70c3fa488dd))
+
+
+### 📚 Documentation
+
+* **openspec:** archive plugin packaging hardening ([#149](https://github.com/jurislm/jurislm-tools/issues/149)) ([02e778d](https://github.com/jurislm/jurislm-tools/commit/02e778d004422762ea1d449fb9ff90258084c0c0))
+
 ## [1.32.0](https://github.com/jurislm/jurislm-tools/compare/v1.31.0...v1.32.0) (2026-07-20)
 
 
