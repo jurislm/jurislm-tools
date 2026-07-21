@@ -28,6 +28,8 @@ CodeRabbit CLI 備援；僅由一般意圖自動路由
 CLI 以明確的 base／review type 選擇已掃描的本機 change set，但仍可能依 CodeRabbit
 設定使用 code guidelines、learnings 或 codebase history；完整免重複確認規則、
 預檢與安全邊界以各 Skill 內的「CodeRabbit 審查預先授權」為準。
+預檢會掃描所有即將推送的新 commit／tree／blob，不只最終 aggregate diff；歷史中
+曾出現的 secret 必須從將推送的 objects 清除並重新掃描。
 
 CodeRabbit GitHub App 與 CodeRabbit CLI 是兩個獨立管道；任一管道 rate-limited
 不代表另一管道不可用。兩者都適用於 Claude Code 與 Codex。

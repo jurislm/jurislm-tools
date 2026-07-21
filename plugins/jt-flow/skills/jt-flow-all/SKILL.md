@@ -52,9 +52,12 @@ CodeRabbit 有兩個獨立管道，授權、資料範圍與 rate limit 不得混
   account、目前 organization 與目標 `<owner>/<repo>` 相符且有權使用。organization
   不符時用 `coderabbit auth org --agent` 選擇正確項目；CLI 無法證明 repository-level
   scope 時須取得一次人工確認，無法確認則停止。接著執行
-  `git fetch <remote> main`，確認 worktree clean，列出並掃描
-  相對 `<remote>/main` 的完整 committed diff，以及每個明確傳給 `-c` 的 instruction
-  file；接著執行 `coderabbit review --agent --type committed --base <remote>/main`
+  `git fetch <remote> main`，確認 worktree clean，列出 `<remote>/main..HEAD` 將推送的
+  所有 commit／tree／blob，使用專案既有 secret scanner 的 history／range 模式掃描；
+  沒有該模式時須逐一掃描每個 commit patch 與其新增或修改的文字、binary 內容，
+  同時掃描相對 `<remote>/main` 的完整 committed diff，以及每個明確傳給 `-c` 的
+  instruction file。只在整段即將推送的 history 與本機 payload 都通過後，才執行
+  `coderabbit review --agent --type committed --base <remote>/main`
   （有額外 instructions 才加 `-c <已列名且已掃描的檔案>...`）。CodeRabbit CLI
   可能依帳號／repository 設定自動使用 code guidelines、learnings 或 codebase history；
   本機預檢只能限制並驗證本機 change set 與明示 config，不能宣稱掌握服務端使用的
@@ -62,7 +65,8 @@ CodeRabbit 有兩個獨立管道，授權、資料範圍與 rate limit 不得混
 
 本機 change set／明示 config 預檢若發現非範本 `.env*`、credentials、tokens、keys、疑似 secret 或
 其他非審查必要的敏感資料，立即停止，不得 push、建立 PR 或呼叫 CLI，直到使用者
-人工移除／遮蔽並重新通過預檢。`.env.example`、`.env.sample`、`.env.template`
+從所有將推送的 commit／object 清除或遮蔽、處理必要的憑證輪替，並重新通過完整
+history 預檢；只在後續 commit 刪除 secret 不算清除。`.env.example`、`.env.sample`、`.env.template`
 等環境範本只有在本機輸入完整掃描確認全部值皆為明顯 placeholder、沒有任何實際
 secret-like value 時才可通過；只要有一個值無法判定為安全 placeholder 就硬停止。
 
@@ -252,8 +256,9 @@ POST 只會新增，不影響其他人）；兩者呼叫後用 `gh pr view
    - **CodeRabbit 已由本 Skill 預先授權使用**：依上方授權範圍直接進行審查，
      不得再用泛稱「安全政策」或「需要資料上傳授權」阻擋流程。App 已依使用者
      要求停用並驗證的路徑，使用 push／PR 前已完成的 CLI review，不等待 App。
-     其他路徑一律先採用 GitHub PR review；先以 `gh pr view --json headRefOid`
-     取得目前 HEAD，只有 CodeRabbit review 明確對應同一 commit SHA 才算有效，
+     其他路徑一律先採用 GitHub PR review；先以 `gh pr view <pr-num> --repo
+     <owner>/<repo> --json headRefOid` 取得目前 HEAD，只有 CodeRabbit review 明確
+     對應同一 commit SHA 才算有效，
      並只使用該結果，**不得**再執行本地 CLI。review 缺少 SHA、SHA 不符或仍對應
      舊 HEAD 時，先觸發／等待一次目前 HEAD 的 GitHub review；若仍未產出目前 HEAD
      review，或明確回報 rate-limited、usage limited、quota exhausted、受限或無法
