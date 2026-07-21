@@ -1,7 +1,7 @@
 {
   "name": "higgsfield",
   "description": "Higgsfield AI 圖像/影片/3D/音訊生成 — 官方 remote MCP（OAuth）+ 7 個 CLI skills（generate、product-photoshoot、marketplace-cards、soul-id、video-explainer、game-generation、websites）",
-  "version": "1.32.0",
+  "version": "1.32.1",
   "author": {
     "name": "Terry Chen"
   },
