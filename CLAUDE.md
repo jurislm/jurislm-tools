@@ -97,6 +97,8 @@ Some legacy detail specs remain historical. For current marketplace membership, 
 
 Keep `jt-flow` review orchestration portable across Claude Code and Codex. Its two CodeRabbit channels are the CodeRabbit GitHub App and the independently installed CodeRabbit CLI (`coderabbit review --agent --type committed --base <remote>/main`); do not model the CLI as, or require, a host-specific Claude or Codex plugin. Preserve the Skill's disclosure, consent, secret-scanning, explicit local change selection, service-side context disclosure, and App-to-CLI fallback gates when changing this workflow.
 
+CodeRabbit completion means every finding has an explicit disposition: accepted findings are fixed and verified, while rejected findings retain a concrete reason. It does not require a zero-finding response. An automatic CLI re-review after fixes is capped at one additional run; do not loop for zero findings unless the user explicitly requests it.
+
 ## GitHub Flow and worktrees
 
 The active workflow is feature branch → pull request → `main`. The old `develop → main` instructions are retired; an unprotected remote `develop` branch may still exist but is not bound to CI or deployment.

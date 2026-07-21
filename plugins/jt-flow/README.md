@@ -32,6 +32,10 @@ CLI 以明確的 base／review type 選擇已掃描的本機 change set，但仍
 CodeRabbit GitHub App 與 CodeRabbit CLI 是兩個獨立管道；任一管道 rate-limited
 不代表另一管道不可用。兩者都適用於 Claude Code 與 Codex。
 
+Review 完成以每項 finding 已採納修正或記錄不採納理由為準，不要求 CodeRabbit
+回傳零 finding。需要覆核修正後 HEAD 時，CLI 最多自動執行第二輪；不得為追求
+零 finding 無上限重跑，除非使用者明確要求。
+
 ## Version
 
 版本由根目錄 Release Please 設定集中管理，不得在 plugin manifest 手動修改。
