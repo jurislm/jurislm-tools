@@ -1,7 +1,7 @@
 {
   "name": "langfuse",
   "description": "Langfuse LLM 可觀測性 — Prompt 版本、Trace、Observation 與評分管理",
-  "version": "1.32.1",
+  "version": "1.32.2",
   "author": {
     "name": "Terry Chen"
   },
