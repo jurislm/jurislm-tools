@@ -95,6 +95,12 @@ Some legacy detail specs remain historical. For current marketplace membership, 
 
 `jt-flow` depends on externally installed `superpowers:*` Skills. Preserve that dependency unless a proposal explicitly replaces it.
 
+Keep `jt-flow` review orchestration portable across Claude Code and Codex. Its two CodeRabbit channels are the CodeRabbit GitHub App and the independently installed CodeRabbit CLI (`coderabbit review --agent --type committed --base <remote>/main`); do not model the CLI as, or require, a host-specific Claude or Codex plugin. Preserve the Skill's disclosure, consent, secret-scanning, explicit local change selection, service-side context disclosure, and App-to-CLI fallback gates when changing this workflow. Secret preflight must scan every new commit, tree, and blob that will be pushed, not only the aggregate base-to-HEAD diff; removing a secret in a later commit does not make the earlier object safe to transmit.
+
+CodeRabbit completion means every finding has an explicit disposition: accepted findings are fixed and verified, while rejected findings retain a concrete reason. It does not require a zero-finding response. Each PR or change permits only one automatic CodeRabbit CLI invocation across the entire workflow. Fixing findings or changing HEAD does not trigger another CLI review; any additional invocation requires an explicit user request.
+
+For both `jt-flow` Skills, always run `superpowers:requesting-code-review` and `/code-review` first. Then use non-waiting external review handling: skip GitHub Copilot when its quota is exhausted; move from the CodeRabbit GitHub App or PR bot to the CodeRabbit CLI when the App is limited; stop waiting and close the CodeRabbit channel when the CLI is limited. Record the external limits and continue because the mandatory Superpower review already completed; do not invoke Superpower a second time as a CLI fallback.
+
 ## GitHub Flow and worktrees
 
 The active workflow is feature branch → pull request → `main`. The old `develop → main` instructions are retired; an unprotected remote `develop` branch may still exist but is not bound to CI or deployment.

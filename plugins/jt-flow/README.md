@@ -17,7 +17,31 @@ claude plugin install jt-flow@jurislm-tools
 
 ## Dependencies
 
-完整流程需要 OpenSpec repo-local `opsx:*` Skills，以及另行安裝的 `superpowers:*` Skills。
+完整流程需要 OpenSpec repo-local `opsx:*` Skills、另行安裝的 `superpowers:*` Skills，
+以及獨立安裝並登入的 CodeRabbit CLI。`coderabbit` 是 Claude Code 與 Codex 共用的
+外部執行檔，不由任何 host plugin 提供。
+
+明確點名／呼叫任一 Entry Skill，也代表使用者預先授權在該次流程指定的
+repository 範圍內使用 CodeRabbit GitHub App，以及
+CodeRabbit CLI 備援；僅由一般意圖自動路由
+不構成預先授權。GitHub App 依既有 installation permissions 取用 review context，
+CLI 以明確的 base／review type 選擇已掃描的本機 change set，但仍可能依 CodeRabbit
+設定使用 code guidelines、learnings 或 codebase history；完整免重複確認規則、
+預檢與安全邊界以各 Skill 內的「CodeRabbit 審查預先授權」為準。
+預檢會掃描所有即將推送的新 commit／tree／blob，不只最終 aggregate diff；歷史中
+曾出現的 secret 必須從將推送的 objects 清除並重新掃描。
+
+CodeRabbit GitHub App 與 CodeRabbit CLI 是兩個獨立管道；任一管道 rate-limited
+不代表另一管道不可用。兩者都適用於 Claude Code 與 Codex。
+
+Review 完成以每項 finding 已採納修正或記錄不採納理由為準，不要求 CodeRabbit
+回傳零 finding。每個 PR／變更在整個流程中只自動呼叫 CodeRabbit CLI 一次；修正
+finding 或 HEAD 改變都不觸發重跑。只有使用者明確要求，才可追加 CLI review。
+
+Review 順序固定為：先以 `superpowers:requesting-code-review` 自查並執行
+`/code-review`；GitHub Copilot 額度用完即略過；CodeRabbit GitHub App／PR bot
+額度或 rate limit 用完即轉 CodeRabbit CLI；CLI 額度或 rate limit 用完即停止等待、
+記錄限制並結束 CodeRabbit 管道。Superpower 首輪已完成，不因 CLI 受限而重跑。
 
 ## Version
 
