@@ -28,6 +28,6 @@
 
 ## 5. Verification and delivery evidence
 
-- [ ] 5.1 Run the tests and aggregate validation from `package.json`, plus strict validation of `openspec/changes/harden-plugin-packaging-and-validation/`; record exact results in `openspec/changes/harden-plugin-packaging-and-validation/verification-logs/implementation-verification.md`.
-- [ ] 5.2 Run `claude plugin validate .`, validate each affected plugin manifest, and confirm `codex plugin list` still discovers `jurislm-tools`; record results and all six finding dispositions in `openspec/changes/harden-plugin-packaging-and-validation/verification-logs/implementation-verification.md`.
-- [ ] 5.3 Use `openspec/changes/harden-plugin-packaging-and-validation/specs/plugin-packaging-integrity/spec.md` and `tasks.md` for final behavior-level verification before PR delivery; do not archive until merged `main` is revalidated.
+- [x] 5.1 Run the tests and aggregate validation from `package.json`, plus strict validation of `openspec/changes/harden-plugin-packaging-and-validation/`; record exact results in `openspec/changes/harden-plugin-packaging-and-validation/verification-logs/implementation-verification.md`.
+- [x] 5.2 Run `claude plugin validate .`, validate each affected plugin manifest, and confirm `codex plugin list` still discovers `jurislm-tools`; record results and all six finding dispositions in `openspec/changes/harden-plugin-packaging-and-validation/verification-logs/implementation-verification.md`.
+- [x] 5.3 Use `openspec/changes/harden-plugin-packaging-and-validation/specs/plugin-packaging-integrity/spec.md` and `tasks.md` for final behavior-level verification before PR delivery; do not archive until merged `main` is revalidated.
