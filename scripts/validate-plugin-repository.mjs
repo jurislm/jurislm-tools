@@ -92,27 +92,21 @@ function packageSpecsFromRunnerArgs(args) {
       }
     } else if (token.startsWith("--package=")) {
       explicitPackages.push(token.slice("--package=".length));
-    }
-  }
-  if (explicitPackages.length > 0) {
-    return explicitPackages;
-  }
-
-  for (let index = 0; index < args.length; index += 1) {
-    const token = cleanShellToken(args[index]);
-    if (token === "--") {
+    } else if (token === "--") {
+      if (explicitPackages.length > 0) {
+        return explicitPackages;
+      }
       if (args[index + 1]) {
         return [cleanShellToken(args[index + 1])];
       }
       return [];
-    }
-    if (NPX_VALUE_OPTIONS.has(token)) {
+    } else if (NPX_VALUE_OPTIONS.has(token)) {
       index += 1;
     } else if (!token.startsWith("-")) {
-      return [token];
+      return explicitPackages.length > 0 ? explicitPackages : [token];
     }
   }
-  return [];
+  return explicitPackages;
 }
 
 function findNpmPackageLaunchers(server) {
@@ -130,8 +124,12 @@ function findNpmPackageLaunchers(server) {
     launchers.push(args.slice(1));
   }
 
+  if (launchers.length > 0) {
+    return launchers;
+  }
+
   for (const commandText of collectStrings(server?.args)) {
-    for (const segment of commandText.split(/(?:&&|\|\||[;|])/)) {
+    for (const segment of commandText.split(/(?:&&|\|\||[;&|\n\r])/)) {
       const tokens = segment.trim().split(/\s+/).filter(Boolean);
       for (let index = 0; index < tokens.length; index += 1) {
         const token = path.basename(cleanShellToken(tokens[index]));

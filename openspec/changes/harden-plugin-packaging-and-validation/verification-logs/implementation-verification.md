@@ -6,7 +6,7 @@ Date: 2026-07-21
 
 | Command | Result |
 |---|---|
-| `npm run validate` | PASS: 18 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
+| `npm run validate` | PASS: 19 tests passed; repository integrity, version sync at `1.32.0`, and scoped Markdown lint passed. |
 | `node scripts/check-version-sync.mjs` | PASS: `Version sync OK: 1.32.0`. |
 | `openspec validate harden-plugin-packaging-and-validation --strict` | PASS: change is valid. |
 | `git diff --check` | PASS: no whitespace errors. |
@@ -35,7 +35,8 @@ Independent Superpowers review then reproduced structured command/args,
 multi-invocation, and one-way inventory gaps. The final validator additionally
 compares marketplace names and sources, plugin manifest directories, and
 documented installation IDs as complete sets, rejecting duplicates and orphaned
-artifacts.
+artifacts. Final re-review also verified newline and background-operator shell
+boundaries, which now isolate every package-runner invocation.
 
 ## Native runtime acceptance
 

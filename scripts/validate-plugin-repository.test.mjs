@@ -193,6 +193,26 @@ test("keeps separate shell package-runner invocations isolated", () => {
   );
 });
 
+test("treats newline and background operators as shell boundaries", () => {
+  for (const separator of ["\n", " & "]) {
+    const root = createFixture();
+    writeJson(root, "plugins/coolify/.mcp.json", {
+      coolify: {
+        command: "zsh",
+        args: [
+          "-lc",
+          `npx @jurislm/mutable${separator}npx --package @jurislm/pinned@1.2.3 run`,
+        ],
+      },
+    });
+
+    assert.match(
+      validateRepository(root).join("\n"),
+      /@jurislm\/mutable must use an exact semantic version/,
+    );
+  }
+});
+
 test("rejects mutable npm exec packages", () => {
   const root = createFixture();
   writeJson(root, "plugins/coolify/.mcp.json", {
