@@ -26,8 +26,7 @@ Skill。
 只有使用者明確點名／呼叫 `jt-flow`（包含 Skill picker、`$jt-flow:jt-flow` 或文字
 指名使用本 Skill），或明確表示授權 CodeRabbit 時，才視為同時明確授權在該次流程
 的 PR review 階段使用 CodeRabbit GitHub App，以及
-`coderabbit@openai-curated-remote` 提供的 `coderabbit:code-review` Skill／CLI
-備援。若只是由
+CodeRabbit CLI 備援。若只是由
 「deliver this feature end to end」等一般意圖自動路由到本 Skill，不能視為已知情
 授權；第一次外部傳送前須說明下列 App／CLI 資料範圍並取得一次確認。授權成立後，
 不需再為相同 repository 與同一次流程重複詢問。
@@ -40,9 +39,9 @@ CodeRabbit 有兩個獨立管道，授權、資料範圍與 rate limit 不得混
   明確啟動本 Skill 所給的預先授權包含目標 repository 內該既有安裝權限範圍。
   push／建立 PR 前仍須列出並掃描相對 `<remote>/main` 的完整 diff；若不接受 App
   的既有範圍，停止使用 GitHub App，改走下方可精確限制 payload 的 CLI。
-- **Codex plugin／CLI 管道**：Codex 使用 `coderabbit@openai-curated-remote`
-  plugin 的 `coderabbit:code-review` Skill 呼叫本機 CodeRabbit CLI；GitHub App
-  rate-limited 不代表此管道也不可用。每次呼叫前先建立完整待送 payload，且只得
+- **CodeRabbit CLI**：Claude Code 與 Codex 都直接使用已安裝並通過驗證的本機
+  `coderabbit` CLI；GitHub App rate-limited 不代表 CLI 也不可用。每次呼叫前先
+  建立完整待送 payload，且只得
   包含相對 `<remote>/main` 的待審 PR／branch diff，以及逐一列名的必要 repository
   instructions。必須掃描將送出的全部 bytes，不得在送出時另加未經掃描的原始碼
   或 App-only context。
