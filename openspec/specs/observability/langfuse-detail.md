@@ -8,9 +8,8 @@
 
 | 產物 | 路徑 | 說明 |
 |------|------|------|
-| MCP Server | `plugins/langfuse/.mcp.json` | `@jurislm/langfuse-mcp@latest`（13 工具） |
+| MCP Server | `plugins/langfuse/.mcp.json` | `@jurislm/langfuse-mcp@1.3.2` |
 | `langfuse` skill | `plugins/langfuse/skills/langfuse/SKILL.md` | 使用指南（124 行） |
-| `/langfuse` command | `plugins/langfuse/commands/langfuse.md` | 入口 command |
 | api-reference | `plugins/langfuse/skills/langfuse/references/api-reference.md` | 工具完整參數說明 |
 
 ## 外部依賴
@@ -18,7 +17,7 @@
 ```json
 {
   "command": "npx",
-  "args": ["-y", "@jurislm/langfuse-mcp@latest"],
+  "args": ["-y", "@jurislm/langfuse-mcp@1.3.2"],
   "env": {
     "LANGFUSE_PUBLIC_KEY": "${LANGFUSE_PUBLIC_KEY}",
     "LANGFUSE_SECRET_KEY": "${LANGFUSE_SECRET_KEY}",
@@ -27,11 +26,10 @@
 }
 ```
 
-npm 套件：`@jurislm/langfuse-mcp`（jurislm/langfuse-mcp repo）  
-JurisLM 使用 `LANGFUSE_HOST=https://us.cloud.langfuse.com`  
-工具數量來源：`grep -c "server.tool" ../langfuse-mcp/src/index.ts`
+npm 套件：`@jurislm/langfuse-mcp@1.3.2`（jurislm/langfuse-mcp repo）
+JurisLM 使用 `LANGFUSE_HOST=https://us.cloud.langfuse.com`
 
-## 13 個 MCP 工具分類
+## MCP 工具分類
 
 | 類別 | 工具 | 說明 |
 |------|------|------|

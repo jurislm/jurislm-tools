@@ -1,18 +1,17 @@
 # langfuse
 
-Langfuse 可觀測性 — 50 個 MCP 工具 + skill + command
+透過 MCP 與 Skill 管理 Langfuse prompts、traces、observations 與 scores。
 
 ## 安裝
 
 ```bash
-/plugin install jurislm-tools@langfuse
+claude plugin install langfuse@jurislm-tools
 ```
 
 ## 內容
 
-- MCP server (50 tools)
-- skill
-- /langfuse command
+- MCP server：`@jurislm/langfuse-mcp@1.3.2`
+- `langfuse` Skill
 
 ## 環境變數
 
@@ -43,7 +42,7 @@ export LANGFUSE_HOST="..."
 
 ## 使用
 
-/langfuse list-prompts 或自然語言查詢 LLM traces。
+以自然語言查詢 prompts 或 traces；安裝後由 `langfuse` Skill 自動路由。
 
 ## 來源
 
