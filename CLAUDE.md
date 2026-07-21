@@ -99,7 +99,7 @@ Keep `jt-flow` review orchestration portable across Claude Code and Codex. Its t
 
 CodeRabbit completion means every finding has an explicit disposition: accepted findings are fixed and verified, while rejected findings retain a concrete reason. It does not require a zero-finding response. An automatic CLI re-review after fixes is capped at one additional run; do not loop for zero findings unless the user explicitly requests it.
 
-For both `jt-flow` Skills, quota and rate limits use a non-waiting review fallback chain: skip GitHub Copilot when its quota is exhausted; move from the CodeRabbit GitHub App or PR bot to the CodeRabbit CLI when the App is limited; move from the CLI to `superpowers:requesting-code-review` when the CLI is limited. A real review at any layer ends the fallback chain; an explicit limit must never be polled indefinitely or treated as permission to skip review entirely.
+For both `jt-flow` Skills, always run `superpowers:requesting-code-review` and `/code-review` first. Then use non-waiting external review handling: skip GitHub Copilot when its quota is exhausted; move from the CodeRabbit GitHub App or PR bot to the CodeRabbit CLI when the App is limited; stop waiting and close the CodeRabbit channel when the CLI is limited. Record the external limits and continue because the mandatory Superpower review already completed; do not invoke Superpower a second time as a CLI fallback.
 
 ## GitHub Flow and worktrees
 
