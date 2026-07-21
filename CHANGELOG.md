@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.32.2](https://github.com/jurislm/jurislm-tools/compare/v1.32.1...v1.32.2) (2026-07-21)
+
+
+### 📚 Documentation
+
+* **jt-flow:** authorize CodeRabbit reviews ([#150](https://github.com/jurislm/jurislm-tools/issues/150)) ([aaef2a1](https://github.com/jurislm/jurislm-tools/commit/aaef2a10abba8ac0cb5090b3f175a10e85fc70b7))
+
 ## [1.32.1](https://github.com/jurislm/jurislm-tools/compare/v1.32.0...v1.32.1) (2026-07-21)
 
 
