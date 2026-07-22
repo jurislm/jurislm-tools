@@ -4,7 +4,7 @@
 
 ## What Changes
 
-- Convert the existing single-request workflow into a `jt-flow` Skill.
+- Convert the existing single-request workflow into a `jt-flow-one` Skill.
 - Convert the existing queue workflow into a `jt-flow-all` Skill.
 - **BREAKING**: remove `/jt-flow` and `/jt-flow-all` slash-command entry points.
 - Update `jt-flow` marketplace metadata and repository documentation to describe the plugin as Skill-based.

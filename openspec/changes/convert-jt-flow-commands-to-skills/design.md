@@ -20,11 +20,11 @@
 
 ### One Skill per current command
 
-**Decision: two command artifacts → two Skill artifacts.** Create `skills/jt-flow/SKILL.md` for the single-request flow and `skills/jt-flow-all/SKILL.md` for the queue flow. This preserves separate intent routing and avoids embedding two invocation modes in one oversized Skill.
+**Decision: two command artifacts → two Skill artifacts.** Create `skills/jt-flow-one/SKILL.md` for the single-request flow and `skills/jt-flow-all/SKILL.md` for the queue flow. This preserves separate intent routing and avoids embedding two invocation modes in one oversized Skill.
 
 ### Convert invocation syntax into trigger guidance
 
-**Decision: `$ARGUMENTS` and slash-command references → natural-language Skill triggers and sibling-Skill references.** Each new frontmatter description will identify its use cases, while the prose will refer to `jt-flow` or `jt-flow-all` as Skills.
+**Decision: `$ARGUMENTS` and slash-command references → natural-language Skill triggers and sibling-Skill references.** Each new frontmatter description will identify its use cases, while the prose will refer to `jt-flow-one` or `jt-flow-all` as Skills.
 
 ### No compatibility layer
 

@@ -1,5 +1,5 @@
 ---
-name: jt-flow
+name: jt-flow-one
 description: >
   完整落地一個新需求：需求分析 → 建立/沿用追蹤 issue → 建立/沿用 OpenSpec
   提案（含提案同步鐵則）→ 依提案 TDD 實作 → PR → code review → merge →
@@ -20,13 +20,25 @@ description: >
 將使用者的需求描述視為本次要落地的需求；自然語言即可，不需先格式化。以下流程
 依此需求從頭執行到 main 驗收通過並歸檔。
 
+### Queue delegation contract
+
+由 `jt-flow-all` 直接委派時，輸入必須包含 issue identifier、目標
+`<owner>/<repo>`、已確認的 queue-order context 與 `codeRabbitAuthorization`。
+只有 `codeRabbitAuthorization=preauthorized` 且
+`authorizationSource=explicit-jt-flow-all` 時，才可把 queue 的明確呼叫視為同一次、
+同一 repository 的已揭露 CodeRabbit 授權；其他值都必須照下方 CodeRabbit disclosure
+與 consent gate 處理。委派結果使用下列狀態：
+`success`（完成且具驗證證據）、`paused`（等待使用者 input 或 approval）、
+`blocked`、`failed` 或 `cancelled`。只有 `success` 允許 queue 繼續下一個 item；
+其餘狀態都使 queue 停在目前 item，等待使用者決定。
+
 **多需求排隊處理，改用 `jt-flow-all` Skill**：本 Skill 假設單一需求；若使用者
 要一次整理並排序多個 issue、逐一依序落地，請使用同一 plugin 的 `jt-flow-all`
 Skill。
 
 ## CodeRabbit 審查預先授權
 
-只有使用者明確點名／呼叫 `jt-flow`（包含 Skill picker、`$jt-flow:jt-flow` 或文字
+只有使用者明確點名／呼叫 `jt-flow-one`（包含 Skill picker、`$jt-flow:jt-flow-one` 或文字
 指名使用本 Skill），或明確表示授權 CodeRabbit 時，才視為同時明確授權在該次流程
 的 PR review 階段使用 CodeRabbit GitHub App，以及
 CodeRabbit CLI 備援。若只是由

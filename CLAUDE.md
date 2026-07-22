@@ -51,7 +51,7 @@ Skills and commands are auto-discovered. A plugin manifest owns metadata; it doe
 | `podcast-to-blog` | Skill | Podcast transcription and writing |
 | `codebase-sync` | Skill | README and CLAUDE.md synchronization |
 | `learn-eval` | Skill | Reusable session-pattern extraction |
-| `jt-flow` | Skills | Single-request and issue-queue delivery workflows |
+| `jt-flow` | Skills | `jt-flow-one` single-request and `jt-flow-all` issue-queue delivery workflows |
 
 Do not restore retired `/jt:*`, `/jt-flow`, or `/jt-flow-all` command surfaces. Current Skills are triggered by intent.
 
@@ -99,7 +99,7 @@ Keep `jt-flow` review orchestration portable across Claude Code and Codex. Its t
 
 CodeRabbit completion means every finding has an explicit disposition: accepted findings are fixed and verified, while rejected findings retain a concrete reason. It does not require a zero-finding response. Each PR or change permits only one automatic CodeRabbit CLI invocation across the entire workflow. Fixing findings or changing HEAD does not trigger another CLI review; any additional invocation requires an explicit user request.
 
-For both `jt-flow` Skills, always run `superpowers:requesting-code-review` and `/code-review` first. Then use non-waiting external review handling: skip GitHub Copilot when its quota is exhausted; move from the CodeRabbit GitHub App or PR bot to the CodeRabbit CLI when the App is limited; stop waiting and close the CodeRabbit channel when the CLI is limited. Record the external limits and continue because the mandatory Superpower review already completed; do not invoke Superpower a second time as a CLI fallback.
+For both `jt-flow` plugin Skills, always run `superpowers:requesting-code-review` and `/code-review` first. Then use non-waiting external review handling: skip GitHub Copilot when its quota is exhausted; move from the CodeRabbit GitHub App or PR bot to the CodeRabbit CLI when the App is limited; stop waiting and close the CodeRabbit channel when the CLI is limited. Record the external limits and continue because the mandatory Superpower review already completed; do not invoke Superpower a second time as a CLI fallback.
 
 ## GitHub Flow and worktrees
 

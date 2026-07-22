@@ -36,7 +36,7 @@ claude plugin update coolify@jurislm-tools
 | `podcast-to-blog` | Skill | `claude plugin install podcast-to-blog@jurislm-tools` | Podcast 轉錄與繁體中文文章生成 |
 | `codebase-sync` | Skill | `claude plugin install codebase-sync@jurislm-tools` | README 與 CLAUDE.md 同步 |
 | `learn-eval` | Skill | `claude plugin install learn-eval@jurislm-tools` | 從 session 萃取可重用 patterns |
-| `jt-flow` | Skills | `claude plugin install jt-flow@jurislm-tools` | 單一需求與 issue queue 的端到端 OpenSpec 工作流 |
+| `jt-flow` | Skills | `claude plugin install jt-flow@jurislm-tools` | `jt-flow-one` 單一需求與 `jt-flow-all` issue queue 的端到端 OpenSpec 工作流 |
 
 Skills 由自然語言意圖觸發；本 repo 不再提供舊版 `/jt:*` 或 `/jt-flow` slash commands。
 
