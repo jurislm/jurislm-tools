@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.32.3](https://github.com/jurislm/jurislm-tools/compare/v1.32.2...v1.32.3) (2026-07-22)
+
+
+### ♻️ Refactoring
+
+* **jt-flow:** clarify single-request and queue workflows ([43f8ff2](https://github.com/jurislm/jurislm-tools/commit/43f8ff20eb943771ecfe94508adfe10ac461f2e4))
+
 ## [1.32.2](https://github.com/jurislm/jurislm-tools/compare/v1.32.1...v1.32.2) (2026-07-21)
 
 
