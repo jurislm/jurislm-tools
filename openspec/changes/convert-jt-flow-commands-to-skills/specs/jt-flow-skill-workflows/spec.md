@@ -22,8 +22,8 @@ The `jt-flow` plugin MUST NOT contain `commands/jt-flow.md` or `commands/jt-flow
 - **THEN** its two workflow entry points are `SKILL.md` files and no corresponding command files exist
 
 ### Requirement: Workflow content and dependencies are retained
-The migrated Skills SHALL retain the existing workflows and their dependency on externally installed `superpowers:*` Skills. The conversion SHALL NOT alter release-managed version fields.
+The migration SHALL retain the single-request delivery workflow in `jt-flow-one`, the issue-queue inventory, prioritization, ordering, and delegation workflow in `jt-flow-all`, and their dependency on externally installed `superpowers:*` Skills. A later change MAY move duplicated per-item delivery procedures from `jt-flow-all` to direct `jt-flow-one` delegation. The conversion SHALL NOT alter release-managed version fields.
 
 #### Scenario: Migrated Skill is reviewed
 - **WHEN** either migrated Skill is compared with its prior command document
-- **THEN** its workflow steps and external `superpowers:*` dependency remain present apart from invocation-format changes
+- **THEN** `jt-flow-one` retains the single-request delivery workflow, `jt-flow-all` retains queue orchestration and direct delegation, and their external `superpowers:*` dependency remains present

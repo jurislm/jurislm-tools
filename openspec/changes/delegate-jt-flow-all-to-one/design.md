@@ -33,6 +33,10 @@ After ranking is confirmed, `jt-flow-all` directly invokes `jt-flow-one` with th
 
 An explicit `jt-flow-all` invocation carries a `preauthorized` CodeRabbit context to delegated `jt-flow-one` runs for the same repository and queue. A generic intent route carries `requires-disclosure`; an internal Skill call alone never establishes consent. The queue Skill discloses the GitHub App and CLI context before carrying preauthorization, while `jt-flow-one` retains the consent gate for all other inputs.
 
+### Active changes need issues before delegation
+
+Every queue item must have an issue identifier because that identifier is part of the delegated input. When inventory finds an active change without one, the queue Skill presents the proposed tracking issue and `Tracks:#<n>` update, then performs those writes only after explicit approval. A change without approval remains outside the queue.
+
 ## Risks / Trade-offs
 
 - [Host cannot perform a literal Skill call] → State the required direct delegation semantics and pass the queue context; do not duplicate the workflow as a fallback.

@@ -8,6 +8,14 @@ After the user confirms a ranked issue queue, the `jt-flow-all` Skill SHALL dire
 - **WHEN** the user confirms a ranked queue containing multiple issues
 - **THEN** `jt-flow-all` directly invokes `jt-flow-one` for the first item and advances only after that run reaches a terminal result
 
+### Requirement: Active changes have tracking issues before queueing
+When an active OpenSpec change has no linked GitHub issue, `jt-flow-all` SHALL present the proposed tracking issue and proposal relationship, obtain explicit approval, then create the issue and record its `Tracks:#<n>` relationship before including the change in the ranked queue. Without that approval and issue identifier, the change SHALL be omitted from delegation.
+
+#### Scenario: Active change lacks an issue
+
+- **WHEN** queue inventory finds an active OpenSpec change without a linked GitHub issue
+- **THEN** the Skill obtains approval and creates the tracking issue before queueing that change
+
 ### Requirement: Single-request delivery workflow has one owner
 The `jt-flow-all` Skill MUST NOT duplicate the single-request issue confirmation, proposal, worktree, implementation, review, merge, deployment, archive, or proposal-synchronization procedures. `jt-flow-one` SHALL remain the owner of those procedures for every delegated item.
 

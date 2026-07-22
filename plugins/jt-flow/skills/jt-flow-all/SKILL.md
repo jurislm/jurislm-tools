@@ -47,8 +47,11 @@ CLI 服務端仍可能使用 repository guidelines、learnings 或 history。
 3. 完整閱讀 issue body 後分級：CRITICAL 為資安、資料遺失或 production 當機；HIGH
    為影響核心流程的功能 bug；MEDIUM 為可維護性；LOW 為風格建議。資訊不足時標為
    待補件並詢問，不得猜測。
-4. 比對 active OpenSpec changes 與 issue；記錄依賴與缺少的追蹤關聯，但不得在
-   排序確認前修改既有 artifacts 或重新編號。
+4. 比對 active OpenSpec changes 與 issue；記錄依賴與缺少的追蹤關聯。若 active
+   change 沒有對應 issue，先展示擬建立的 tracking issue 與將寫入 proposal 的
+   `Tracks:#<n>` 關聯，取得使用者明確同意後才建立 issue、補齊 metadata 並更新
+   proposal；未取得同意的 change 不得納入 queue 或委派給 `jt-flow-one`。其餘既有
+   artifacts 與重新編號不得在排序確認前修改。
 5. 重新比較所有項目的影響、急迫性、風險、工作量與依賴，產出完整排序。依賴鏈是
    下限約束；工作量只作 tie-breaker，不得沿用舊序。
 6. **停下展示完整排序**：每項須列出排序、issue、嚴重度、依賴與理由，等待使用者
