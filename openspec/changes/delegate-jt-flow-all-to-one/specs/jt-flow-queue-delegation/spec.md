@@ -23,3 +23,11 @@ Queue-order confirmation SHALL NOT bypass any proposal or approval gate owned by
 
 - **WHEN** a delegated `jt-flow-one` run reaches its proposal approval gate
 - **THEN** `jt-flow-all` waits at that item until the required approval is provided
+
+### Requirement: Queue delegation preserves CodeRabbit consent
+`jt-flow-all` SHALL pass `codeRabbitAuthorization=preauthorized` with `authorizationSource=explicit-jt-flow-all` only when the user explicitly invokes `jt-flow-all` and accepts its CodeRabbit disclosure. For all other queue invocations, it SHALL pass `codeRabbitAuthorization=requires-disclosure`, and the delegated `jt-flow-one` run SHALL apply its own disclosure and consent gate.
+
+#### Scenario: Queue is invoked by general intent
+
+- **WHEN** `jt-flow-all` is selected by general intent rather than an explicit user invocation
+- **THEN** the delegated `jt-flow-one` item requires its normal CodeRabbit disclosure before external review

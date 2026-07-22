@@ -7,6 +7,7 @@
 - Make `jt-flow-all` retain only repository preflight, multi-issue inventory, prioritization, and ordered orchestration.
 - After the user confirms the queue order, have `jt-flow-all` directly invoke `jt-flow-one` once per ranked issue and wait for its terminal result before continuing.
 - Remove the duplicated single-request delivery phases from `jt-flow-all`.
+- Carry CodeRabbit authorization context only from an explicit `jt-flow-all` invocation; otherwise preserve the delegated Skill's disclosure and consent gate.
 
 ## Capabilities
 

@@ -23,7 +23,11 @@ description: >
 ### Queue delegation contract
 
 由 `jt-flow-all` 直接委派時，輸入必須包含 issue identifier、目標
-`<owner>/<repo>` 與已確認的 queue-order context。委派結果使用下列狀態：
+`<owner>/<repo>`、已確認的 queue-order context 與 `codeRabbitAuthorization`。
+只有 `codeRabbitAuthorization=preauthorized` 且
+`authorizationSource=explicit-jt-flow-all` 時，才可把 queue 的明確呼叫視為同一次、
+同一 repository 的已揭露 CodeRabbit 授權；其他值都必須照下方 CodeRabbit disclosure
+與 consent gate 處理。委派結果使用下列狀態：
 `success`（完成且具驗證證據）、`paused`（等待使用者 input 或 approval）、
 `blocked`、`failed` 或 `cancelled`。只有 `success` 允許 queue 繼續下一個 item；
 其餘狀態都使 queue 停在目前 item，等待使用者決定。

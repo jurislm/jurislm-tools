@@ -29,6 +29,10 @@ After ranking is confirmed, `jt-flow-all` directly invokes `jt-flow-one` with th
 
 `jt-flow-one` retains ownership of issue confirmation, OpenSpec proposal, implementation, review, merge, deployment, and archive. Queue-level GO approves ordering only; it does not bypass a per-item gate.
 
+### Explicit queue invocation carries, but does not infer, review authorization
+
+An explicit `jt-flow-all` invocation carries a `preauthorized` CodeRabbit context to delegated `jt-flow-one` runs for the same repository and queue. A generic intent route carries `requires-disclosure`; an internal Skill call alone never establishes consent. The queue Skill discloses the GitHub App and CLI context before carrying preauthorization, while `jt-flow-one` retains the consent gate for all other inputs.
+
 ## Risks / Trade-offs
 
 - [Host cannot perform a literal Skill call] → State the required direct delegation semantics and pass the queue context; do not duplicate the workflow as a fallback.
