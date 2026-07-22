@@ -20,6 +20,14 @@ description: >
 將使用者的需求描述視為本次要落地的需求；自然語言即可，不需先格式化。以下流程
 依此需求從頭執行到 main 驗收通過並歸檔。
 
+### Queue delegation contract
+
+由 `jt-flow-all` 直接委派時，輸入必須包含 issue identifier、目標
+`<owner>/<repo>` 與已確認的 queue-order context。委派結果使用下列狀態：
+`success`（完成且具驗證證據）、`paused`（等待使用者 input 或 approval）、
+`blocked`、`failed` 或 `cancelled`。只有 `success` 允許 queue 繼續下一個 item；
+其餘狀態都使 queue 停在目前 item，等待使用者決定。
+
 **多需求排隊處理，改用 `jt-flow-all` Skill**：本 Skill 假設單一需求；若使用者
 要一次整理並排序多個 issue、逐一依序落地，請使用同一 plugin 的 `jt-flow-all`
 Skill。

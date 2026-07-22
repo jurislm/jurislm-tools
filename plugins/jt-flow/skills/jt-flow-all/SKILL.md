@@ -51,11 +51,11 @@ plugin 的 `jt-flow-one` Skill。
 2. `jt-flow-one` 是每個 item 的唯一 delivery owner，負責需求核對、issue、OpenSpec
    proposal、worktree、TDD、review、PR、merge、部署與歸檔，以及這些流程中的所有
    approval gates。queue GO 只確認排序，不能取代任何 per-item GO。
-3. 等待被委派的 `jt-flow-one` run 回傳終態後才處理下一項。若該 run 暫停等待使用者
-   input 或 approval，queue 必須停在該 item；若它失敗、被阻塞或被取消，停止 queue
-   並回報狀態，等待使用者決定是否繼續。
-4. 已完成的 item 必須有 `jt-flow-one` 的驗證證據。僅在目前 item 成功完成後，才直接
-   委派下一個已排序 item；未經使用者明確要求不得平行處理。
+3. `jt-flow-one` 回傳 `success`、`paused`、`blocked`、`failed` 或 `cancelled`。
+   `paused` 不是終態，queue 必須停在該 item；`blocked`、`failed` 與 `cancelled`
+   也停止 queue 並回報狀態，等待使用者決定是否繼續。
+4. 已完成的 item 必須以 `success` 與 `jt-flow-one` 的驗證證據表示。僅在目前 item
+   成功完成後，才直接委派下一個已排序 item；不得平行處理。
 
 佇列清空後，回報每個 item 的終態與任何待決阻塞項目。
 

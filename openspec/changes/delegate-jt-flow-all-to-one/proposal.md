@@ -25,5 +25,5 @@ Affected plugin: `jt-flow`, specifically `plugins/jt-flow/skills/jt-flow-all/SKI
 ## Non-goals
 
 - Do not change `jt-flow-one` workflow semantics or its proposal and approval gates.
-- Do not permit parallel issue delivery unless the user explicitly requests it and the individual delivery workflows allow it.
+- Do not add or permit parallel issue delivery; process one ranked issue at a time and wait for its terminal result.
 - Do not change queue ranking criteria or create a host-specific Skill invocation mechanism.

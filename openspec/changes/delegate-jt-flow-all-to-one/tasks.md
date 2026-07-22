@@ -5,5 +5,5 @@
 
 ## 2. Validate workflow ownership
 
-- [x] 2.1 Run `openspec validate delegate-jt-flow-all-to-one --strict` and Markdown linting for `plugins/jt-flow/skills/jt-flow-all/SKILL.md`.
+- [x] 2.1 Run `npm ci`, `npm run validate`, `claude plugin validate .`, Markdown linting, and `openspec validate delegate-jt-flow-all-to-one --strict`.
 - [x] 2.2 Verify `jt-flow-all` contains no duplicated single-request lifecycle phases and directly delegates each confirmed queue item to `jt-flow-one`.

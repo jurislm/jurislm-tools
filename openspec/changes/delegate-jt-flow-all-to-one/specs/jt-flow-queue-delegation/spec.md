@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Ordered queue delivery delegates to the single-request Skill
-After the user confirms a ranked issue queue, the `jt-flow-all` Skill SHALL directly invoke `jt-flow-one` once for each ranked issue, passing the issue identifier, target repository, and queue-order context. It SHALL wait for each delegated run's terminal result before invoking the next item.
+After the user confirms a ranked issue queue, the `jt-flow-all` Skill SHALL directly invoke `jt-flow-one` once for each ranked issue, passing the issue identifier, target repository, and queue-order context. A delegated run SHALL return `success`, `paused`, `blocked`, `failed`, or `cancelled`; only `success` SHALL permit invocation of the next item.
 
 #### Scenario: Confirmed queue advances in order
 

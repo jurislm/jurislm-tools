@@ -10,5 +10,5 @@
 
 ## 3. Validate the rename
 
-- [x] 3.1 Run JSON parsing, `node scripts/check-version-sync.mjs`, and `openspec validate rename-jt-flow-single-skill --strict`.
+- [x] 3.1 Run `npm ci`, `npm run validate`, `claude plugin validate .`, JSON parsing, `node scripts/check-version-sync.mjs`, Markdown linting for entry documents and OpenSpec artifacts, and `openspec validate rename-jt-flow-single-skill --strict`.
 - [x] 3.2 Verify the `jt-flow-one` Skill exists, the retired `skills/jt-flow/` path is absent, and current source and documentation do not route single-request work to `jt-flow`.
