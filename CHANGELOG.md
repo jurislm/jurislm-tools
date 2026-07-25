@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.32.4](https://github.com/jurislm/jurislm-tools/compare/v1.32.3...v1.32.4) (2026-07-25)
+
+
+### 🐛 Bug Fixes
+
+* **jt-flow:** use bounded Superpowers code review ([83e4baa](https://github.com/jurislm/jurislm-tools/commit/83e4baa4bad0834377708f6057833fd96c842923)), closes [#156](https://github.com/jurislm/jurislm-tools/issues/156)
+
+
+### 📚 Documentation
+
+* **openspec:** archive bounded review change ([28d2690](https://github.com/jurislm/jurislm-tools/commit/28d26909dda44bdb250440fbc4f4d6e5e2eb7e58))
+
 ## [1.32.3](https://github.com/jurislm/jurislm-tools/compare/v1.32.2...v1.32.3) (2026-07-22)
 
 
