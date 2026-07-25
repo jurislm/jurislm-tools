@@ -250,10 +250,12 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
      SHA 以記錄覆蓋範圍。任一真實 review 都會用完唯一預算；若無法證明 review
      對應目前 HEAD，記錄該覆蓋限制並改由本地驗證與 CI 覆核，不再觸發 App 或 CLI。
      只有 App 完全沒有產出真實 review，或明確回報 rate-limited、usage limited、
-     quota exhausted、受限或無法審查，才停止等待 App，並在建立 PR 後依上方預檢執行
-     `coderabbit review --agent --type committed --base <remote>/main`。CLI 若產出
-     真實 review，即依 receiving-code-review 規則處理；CLI 若明確回報 rate limit、
-     usage limit 或 quota exhausted，立即停止等待 CLI，記錄 App 與 CLI 的外部限制
+         quota exhausted、受限或無法審查，才停止等待 App，並在建立 PR 後依上方預檢執行
+         `coderabbit review --agent --type committed --base <remote>/main`。CLI 若產出
+         真實 review，即依 receiving-code-review 規則處理。CLI 一經呼叫即耗盡唯一
+         fallback，無論是否產出真實 review、回報何種錯誤或中斷，都不得重試。
+         CLI 若明確回報 rate limit、
+         usage limit 或 quota exhausted，立即停止等待 CLI，記錄 App 與 CLI 的外部限制
      後結束 CodeRabbit 管道並繼續流程。CodeRabbit 任一管道產出真實 review，就停止
      fallback，不再要求 review 對應修正後的 HEAD。
    - **外部 review 不因修正重啟**：CodeRabbit 或 Copilot finding 的修正與後續 push

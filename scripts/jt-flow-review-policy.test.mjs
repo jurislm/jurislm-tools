@@ -45,3 +45,10 @@ test("does not restart CodeRabbit when a real review lacks current SHA proof", (
     /真實 review.*無法證明.*目前 HEAD.*不再觸發 App 或 CLI/s,
   );
 });
+
+test("exhausts the CodeRabbit CLI fallback after its first invocation", () => {
+  assert.match(
+    skill,
+    /CLI 一經呼叫即耗盡唯一\s+fallback.*無論.*產出真實 review.*不得重試/s,
+  );
+});
