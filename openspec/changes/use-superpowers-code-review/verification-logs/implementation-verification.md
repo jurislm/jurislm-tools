@@ -15,7 +15,7 @@ Tracking issue: #156
 
 | Command | Result |
 |---|---|
-| `npm run validate` | PASS：36 tests, plugin repository validation, version synchronization at `1.32.3`, and Markdown lint |
+| `npm run validate` | PASS：37 tests, plugin repository validation, version synchronization at `1.32.3`, and Markdown lint |
 | `claude plugin validate .` | PASS：marketplace manifest validation |
 | `openspec validate use-superpowers-code-review --strict` | PASS：change is valid |
 | ``rg -n '`/code-review`' CLAUDE.md plugins/jt-flow`` | PASS：no current JT Flow references |
@@ -30,3 +30,15 @@ Tracking issue: #156
 - Copilot has one review budget per PR or change.
 - External finding fixes and later pushes use tests, acceptance, CI,
   mergeability, and resolved threads instead of restarting external review.
+
+## Local review disposition
+
+The first Superpowers review returned two Important findings:
+
+- Accepted and fixed：a real CodeRabbit App review with missing or stale SHA
+  proof now consumes the sole budget instead of retriggering App or CLI.
+- Accepted and fixed：the retired-command regression check now detects bare
+  `/code-review` text, not only the backticked form.
+
+Both fixes were covered by failing tests before implementation. The focused
+suite then passed 4／4 and the repository suite passed 37／37.

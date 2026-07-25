@@ -246,12 +246,11 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
      review 後即用完 CodeRabbit 審查預算，修正 finding 或後續 push 都不得重新
      觸發、呼叫或等待 CodeRabbit review。
      其他路徑一律先採用 GitHub PR review；先以 `gh pr view <pr-num> --repo
-     <owner>/<repo> --json headRefOid` 取得目前 HEAD，只有 CodeRabbit review 明確
-     對應同一 commit SHA 才算有效，
-     並只使用該結果，**不得**再執行本地 CLI。review 缺少 SHA、SHA 不符或仍對應
-     舊 HEAD 時，先觸發／等待一次目前 HEAD 的 GitHub review；若仍未產出目前 HEAD
-     review，或明確回報 rate-limited、usage limited、quota exhausted、受限或無法
-     審查，立即停止等待 App，並在建立 PR 後依上方預檢執行
+     <owner>/<repo> --json headRefOid` 取得目前 HEAD，並核對 CodeRabbit review 的
+     SHA 以記錄覆蓋範圍。任一真實 review 都會用完唯一預算；若無法證明 review
+     對應目前 HEAD，記錄該覆蓋限制並改由本地驗證與 CI 覆核，不再觸發 App 或 CLI。
+     只有 App 完全沒有產出真實 review，或明確回報 rate-limited、usage limited、
+     quota exhausted、受限或無法審查，才停止等待 App，並在建立 PR 後依上方預檢執行
      `coderabbit review --agent --type committed --base <remote>/main`。CLI 若產出
      真實 review，即依 receiving-code-review 規則處理；CLI 若明確回報 rate limit、
      usage limit 或 quota exhausted，立即停止等待 CLI，記錄 App 與 CLI 的外部限制

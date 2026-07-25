@@ -9,7 +9,7 @@ const skill = readFileSync(
 const readme = readFileSync("plugins/jt-flow/README.md", "utf8");
 const guidance = readFileSync("CLAUDE.md", "utf8");
 const currentPolicy = `${skill}\n${readme}\n${guidance}`;
-const containsRetiredCodeReviewCommand = (policy) => /`\/code-review`/.test(policy);
+const containsRetiredCodeReviewCommand = (policy) => /\/code-review/.test(policy);
 
 test("uses portable Superpowers review without slash command dependency", () => {
   assert.equal(containsRetiredCodeReviewCommand(currentPolicy), false);
