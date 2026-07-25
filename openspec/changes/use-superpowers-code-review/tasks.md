@@ -12,6 +12,8 @@
 - [x] 2.2 Limit CodeRabbit App and CLI to one combined effective review and
   Copilot to one review per PR or change.
 - [x] 2.3 Synchronize the JT Flow README and repository guidance.
+- [x] 2.4 Make the first CodeRabbit CLI invocation exhaust the fallback for
+  every outcome, including errors and interruptions.
 
 ## 3. Verify
 

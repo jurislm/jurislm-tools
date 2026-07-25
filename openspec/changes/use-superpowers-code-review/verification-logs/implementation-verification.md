@@ -51,3 +51,8 @@ GitHub Codex later raised one P2 finding against the PR:
 
 The fix was covered by a failing fifth focused test before implementation.
 The focused suite then passed 5／5 and the repository suite passed 38／38.
+
+The next local Superpowers review found that the CLI invocation rule was not
+yet explicit in the OpenSpec contract. The design, delta spec, and tasks were
+synchronized with the no-retry semantics, and the Skill indentation was
+aligned for readability.

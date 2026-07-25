@@ -51,6 +51,13 @@ external reviewer.
 - **WHEN** the CodeRabbit GitHub App cannot produce a real review
 - **THEN** the workflow may invoke the CodeRabbit CLI once as fallback
 
+#### Scenario: CLI fallback returns no review
+
+- **WHEN** the CodeRabbit CLI is invoked and returns no real review because of
+  an error, interruption, rate limit, or any other outcome
+- **THEN** that invocation exhausts the fallback and the workflow does not
+  invoke the CLI again
+
 #### Scenario: App review SHA cannot be verified
 
 - **WHEN** the CodeRabbit GitHub App produces a real review whose SHA metadata
