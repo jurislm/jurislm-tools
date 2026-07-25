@@ -52,6 +52,10 @@ CodeRabbit 有兩個獨立管道，授權、資料範圍與 rate limit 不得混
   permissions 與 repository selection 決定，可能為了 review context 讀取待審
   diff 以外的 repository 內容；本機預檢不能限制或證明 App 實際讀取的 bytes。
   明確啟動本 Skill 所給的預先授權包含目標 repository 內該既有安裝權限範圍。
+  repository 的 `.coderabbit.yaml` 必須保持 `reviews.auto_review.enabled: false`，
+  並於 push 前驗證，避免 finding 修正或後續 push 自動產生第二次 review。PR
+  建立後只可明確要求一次 App review；第一次要求無論結果都不得再次要求，並須等
+  該次要求進入成功、失敗或受限的終態後，才能判斷是否改走 CLI fallback。
   push／建立 PR 前仍須列出並掃描相對 `<remote>/main` 的完整 diff。若不接受 App
   的既有範圍，必須停在 push／建立 PR 之前，要求使用者在 CodeRabbit／GitHub
   設定中停用或暫停該 repository 的 App auto-review，並驗證已生效；無法證明停用
@@ -245,12 +249,15 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
      CodeRabbit 的 GitHub App 與 CLI 合計最多一次有效 review；任一管道產出真實
      review 後即用完 CodeRabbit 審查預算，修正 finding 或後續 push 都不得重新
      觸發、呼叫或等待 CodeRabbit review。
-     其他路徑一律先採用 GitHub PR review；先以 `gh pr view <pr-num> --repo
-     <owner>/<repo> --json headRefOid` 取得目前 HEAD，並核對 CodeRabbit review 的
-     SHA 以記錄覆蓋範圍。任一真實 review 都會用完唯一預算；若無法證明 review
-     對應目前 HEAD，記錄該覆蓋限制並改由本地驗證與 CI 覆核，不再觸發 App 或 CLI。
-     只有 App 完全沒有產出真實 review，或明確回報 rate-limited、usage limited、
-     quota exhausted、受限或無法審查，才停止等待 App，並在建立 PR 後依上方預檢執行
+     其他路徑一律先驗證 `.coderabbit.yaml` 已停用 auto-review，建立 PR 後明確
+     要求一次 GitHub App review，且不得再次要求。收到 CodeRabbit review 後，以
+     `gh pr view <pr-num> --repo <owner>/<repo> --json headRefOid` 重新取得最新
+     HEAD，再僅以該值核對 review SHA 以記錄覆蓋範圍。任一真實 review 都會用完
+     唯一預算；若無法取得最新 HEAD，或無法證明 review 對應目前 HEAD，記錄該
+     覆蓋限制並改由本地驗證與 CI 覆核，不再觸發 App 或 CLI。
+     只有該次 App 要求進入終態且完全沒有產出真實 review，或明確回報 rate-limited、
+     usage limited、quota exhausted、受限或無法審查，才停止等待 App，並在建立 PR
+     後依上方預檢執行
      `coderabbit review --agent --type committed --base <remote>/main`。CLI 若產出
      真實 review，即依 receiving-code-review 規則處理。CLI 一經呼叫即耗盡唯一
      fallback，無論是否產出真實 review、回報何種錯誤或中斷，都不得重試。

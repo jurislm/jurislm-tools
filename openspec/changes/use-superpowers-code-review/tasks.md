@@ -14,6 +14,8 @@
 - [x] 2.3 Synchronize the JT Flow README and repository guidance.
 - [x] 2.4 Make the first CodeRabbit CLI invocation exhaust the fallback for
   every outcome, including errors and interruptions.
+- [x] 2.5 Disable CodeRabbit auto-review and require exactly one explicit App
+  request so later pushes cannot start another review.
 
 ## 3. Verify
 

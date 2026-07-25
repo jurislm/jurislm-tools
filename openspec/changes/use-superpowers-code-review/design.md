@@ -24,14 +24,17 @@ handling findings; it does not create another review.
 ### Share one effective CodeRabbit budget
 
 The GitHub App remains preferred and the CLI remains fallback. Together they
-may produce one effective review per PR or change. If the App produces a real
-review, the CLI is not called. If the App cannot produce one, the CLI may be
-called once. That first invocation exhausts the fallback whether it returns a
-real review, an error, or an interruption; it is never retried. After either
-channel produces a real review, fixes and later pushes do not restart
-CodeRabbit. A real App review with missing, stale, or unverifiable SHA metadata
-still consumes the budget; record that coverage limitation and verify final
-`HEAD` locally instead of requesting another App or CLI review.
+may produce one effective review per PR or change. Repository auto-review is
+disabled, and the workflow explicitly requests the App exactly once, preventing
+later pushes from starting another review. If the App produces a real review,
+the CLI is not called. If that sole App request reaches a terminal outcome
+without a real review, the CLI may be called once. That first invocation
+exhausts the fallback whether it returns a real review, an error, or an
+interruption; it is never retried. After either channel produces a real review,
+fixes and later pushes do not restart CodeRabbit. A real App review with
+missing, stale, or unverifiable SHA metadata still consumes the budget; record
+that coverage limitation and verify final `HEAD` locally instead of requesting
+another App or CLI review.
 
 ### Limit Copilot to one review
 

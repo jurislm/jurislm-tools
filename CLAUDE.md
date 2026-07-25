@@ -97,9 +97,28 @@ Some legacy detail specs remain historical. For current marketplace membership, 
 
 Keep `jt-flow` review orchestration portable across Claude Code and Codex. Its two CodeRabbit channels are the CodeRabbit GitHub App and the independently installed CodeRabbit CLI (`coderabbit review --agent --type committed --base <remote>/main`); do not model the CLI as, or require, a host-specific Claude or Codex plugin. Preserve the Skill's disclosure, consent, secret-scanning, explicit local change selection, service-side context disclosure, and App-to-CLI fallback gates when changing this workflow. Secret preflight must scan every new commit, tree, and blob that will be pushed, not only the aggregate base-to-HEAD diff; removing a secret in a later commit does not make the earlier object safe to transmit.
 
-CodeRabbit completion means every finding has an explicit disposition: accepted findings are fixed and verified, while rejected findings retain a concrete reason. It does not require a zero-finding response. The CodeRabbit GitHub App and CLI together permit at most one effective review per PR or change: prefer the App, use the CLI at most once only when the App cannot produce a review, and stop the fallback as soon as either channel produces a real review.
+CodeRabbit completion means every finding has an explicit disposition: accepted
+findings are fixed and verified, while rejected findings retain a concrete
+reason. It does not require a zero-finding response. Keep CodeRabbit
+`reviews.auto_review.enabled` false and explicitly request the App once so later
+pushes cannot create another automatic review. The CodeRabbit GitHub App and CLI
+together permit at most one effective review per PR or change: prefer the App,
+wait for that sole request to reach a terminal outcome, use the CLI at most once
+only when the App cannot produce a review, and stop the fallback as soon as
+either channel produces a real review.
 
-For both `jt-flow` plugin Skills, use `superpowers:requesting-code-review` as the local reviewer. Each completed code-change batch permits at most one Superpowers review; an accepted finding that changes code creates a new batch eligible for one more review, while no intervening code change means no repeat review. Use `superpowers:receiving-code-review` to verify findings, not as another reviewer. Copilot permits at most one review per PR or change. Fixes and later pushes must not restart CodeRabbit or Copilot; final `HEAD` is covered by tests, behavioral acceptance, CI, mergeability, and resolved review threads. Skip Copilot when its quota is exhausted, move from the CodeRabbit App to the CLI when the App cannot produce a review, and close the CodeRabbit channel when the CLI is limited.
+Only `jt-flow-one` owns local code review and uses
+`superpowers:requesting-code-review`; `jt-flow-all` only orchestrates its issue
+queue and must not initiate or own an additional review. Each completed
+code-change batch permits at most one Superpowers review; an accepted finding
+that changes code creates a new batch eligible for one more review, while no
+intervening code change means no repeat review. Use
+`superpowers:receiving-code-review` to verify findings, not as another reviewer.
+Copilot permits at most one review per PR or change. Fixes and later pushes must
+not restart CodeRabbit or Copilot; final `HEAD` is covered by tests, behavioral
+acceptance, CI, mergeability, and resolved review threads. Skip Copilot when its
+quota is exhausted, move from the CodeRabbit App to the CLI when the App cannot
+produce a review, and close the CodeRabbit channel when the CLI is limited.
 
 ## GitHub Flow and worktrees
 

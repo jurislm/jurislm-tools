@@ -9,16 +9,18 @@ Tracking issue: #156
 - `node --test scripts/jt-flow-review-policy.test.mjs` failed 3／3 before the
   workflow documents changed. Failures identified the existing
   `/code-review` dependency and missing local／external review budgets.
-- The same focused command passed 3／3 after the minimal workflow update.
+- The focused command passed 5／5 after the workflow and fallback edge cases
+  were implemented.
 
 ## Final verification
 
 | Command | Result |
 |---|---|
+| `npm ci` | PASS：clean dependency installation completed |
 | `npm run validate` | PASS：38 tests, plugin repository validation, version synchronization at `1.32.3`, and Markdown lint |
 | `claude plugin validate .` | PASS：marketplace manifest validation |
 | `openspec validate use-superpowers-code-review --strict` | PASS：change is valid |
-| ``rg -n '`/code-review`' CLAUDE.md plugins/jt-flow`` | PASS：no current JT Flow references |
+| `rg -n '/code-review' CLAUDE.md plugins/jt-flow` | PASS：no current JT Flow references |
 
 ## Contract evidence
 
@@ -27,6 +29,8 @@ Tracking issue: #156
 - `superpowers:receiving-code-review` evaluates findings and is not counted as
   another reviewer.
 - CodeRabbit App and CLI share one effective review budget per PR or change.
+- CodeRabbit auto-review is disabled; the workflow explicitly requests the App
+  once so finding fixes and later pushes cannot start another automatic review.
 - Copilot has one review budget per PR or change.
 - External finding fixes and later pushes use tests, acceptance, CI,
   mergeability, and resolved threads instead of restarting external review.

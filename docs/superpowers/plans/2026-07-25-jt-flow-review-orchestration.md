@@ -51,7 +51,7 @@ runner, repository validation scripts.
 - Produces: A strict OpenSpec contract and repository test for current JT Flow
   review documentation.
 
-- [ ] **Step 1: Create the OpenSpec artifacts**
+- [x] **Step 1: Create the OpenSpec artifacts**
 
 Write a proposal that identifies the unavailable `/code-review` dependency,
 the portable Superpowers replacement, and the external review iteration cost.
@@ -78,7 +78,7 @@ external reviewer.
 Record corresponding scenarios and implementation tasks for Skill,
 documentation, tests, strict validation, and native plugin validation.
 
-- [ ] **Step 2: Validate the OpenSpec change**
+- [x] **Step 2: Validate the OpenSpec change**
 
 Run:
 
@@ -88,7 +88,7 @@ openspec validate use-superpowers-code-review --strict
 
 Expected: `use-superpowers-code-review` is valid.
 
-- [ ] **Step 3: Write the failing repository policy test**
+- [x] **Step 3: Write the failing repository policy test**
 
 Create `scripts/jt-flow-review-policy.test.mjs`:
 
@@ -129,7 +129,7 @@ test("limits each external reviewer to one effective review", () => {
 });
 ```
 
-- [ ] **Step 4: Run the focused test and verify RED**
+- [x] **Step 4: Run the focused test and verify RED**
 
 Run:
 
@@ -140,12 +140,12 @@ node --test scripts/jt-flow-review-policy.test.mjs
 Expected: FAIL because current JT Flow documents still contain
 `` `/code-review` `` and do not encode the new review budgets.
 
-- [ ] **Step 5: Commit the specification and RED test**
+- [x] **Step 5: Commit the specification and RED test**
 
 ```bash
 git add openspec/changes/use-superpowers-code-review \
   scripts/jt-flow-review-policy.test.mjs
-git commit -m "test(jt-flow): define review orchestration policy"
+git commit -m "chore(jt-flow): define review orchestration policy"
 ```
 
 ### Task 2: Implement the portable bounded review workflow
@@ -164,7 +164,7 @@ git commit -m "test(jt-flow): define review orchestration policy"
 - Produces: Published JT Flow behavior that is portable across Claude Code and
   Codex.
 
-- [ ] **Step 1: Replace the local review sequence in `jt-flow-one`**
+- [x] **Step 1: Replace the local review sequence in `jt-flow-one`**
 
 Remove every `` `/code-review` `` reference. State that
 `superpowers:requesting-code-review` runs once for the completed code batch,
@@ -172,7 +172,7 @@ then `superpowers:receiving-code-review` verifies each finding. If accepted
 findings change code, that creates a new batch eligible for one new local
 review. Without intervening code changes, local review must not repeat.
 
-- [ ] **Step 2: Bound CodeRabbit across both channels**
+- [x] **Step 2: Bound CodeRabbit across both channels**
 
 Preserve App-to-CLI fallback, but define one effective review budget shared by
 the App and CLI. If the App produces a real review, never call the CLI. If the
@@ -180,19 +180,19 @@ App cannot produce one, call the CLI at most once. After either channel
 produces a real review, fixes and later pushes do not trigger another
 CodeRabbit review.
 
-- [ ] **Step 3: Bound Copilot**
+- [x] **Step 3: Bound Copilot**
 
 State that each PR or change may receive at most one Copilot review. Once it
 arrives, fixes and later pushes must not request or wait for another. Preserve
 the existing quota-exhaustion exception.
 
-- [ ] **Step 4: Synchronize README and repository guidance**
+- [x] **Step 4: Synchronize README and repository guidance**
 
 Apply the same local changed-batch rule and external one-effective-review
 budgets to `plugins/jt-flow/README.md` and `CLAUDE.md`. Keep the text concise
 and preserve all disclosure and safety boundaries.
 
-- [ ] **Step 5: Run the focused test and verify GREEN**
+- [x] **Step 5: Run the focused test and verify GREEN**
 
 Run:
 
@@ -202,12 +202,12 @@ node --test scripts/jt-flow-review-policy.test.mjs
 
 Expected: 3 tests pass.
 
-- [ ] **Step 6: Mark implemented OpenSpec tasks**
+- [x] **Step 6: Mark implemented OpenSpec tasks**
 
 Mark the Skill, documentation, and focused-test tasks complete. Leave final
 aggregate validation unchecked until Task 3 succeeds.
 
-- [ ] **Step 7: Commit the implementation**
+- [x] **Step 7: Commit the implementation**
 
 ```bash
 git add CLAUDE.md plugins/jt-flow/README.md \
@@ -230,18 +230,19 @@ git commit -m "fix(jt-flow): use bounded Superpowers reviews"
 - Consumes: Completed review-policy implementation.
 - Produces: Recorded evidence that the change is valid and publishable.
 
-- [ ] **Step 1: Run repository validation**
+- [x] **Step 1: Run repository validation**
 
 Run:
 
 ```bash
+npm ci
 npm run validate
 ```
 
 Expected: all Node tests, repository checks, version synchronization, and
 Markdown lint pass.
 
-- [ ] **Step 2: Run native plugin validation**
+- [x] **Step 2: Run native plugin validation**
 
 Run:
 
@@ -251,7 +252,7 @@ claude plugin validate .
 
 Expected: marketplace validation passes.
 
-- [ ] **Step 3: Run strict OpenSpec validation**
+- [x] **Step 3: Run strict OpenSpec validation**
 
 Run:
 
@@ -261,23 +262,23 @@ openspec validate use-superpowers-code-review --strict
 
 Expected: `use-superpowers-code-review` is valid.
 
-- [ ] **Step 4: Verify the retired dependency is absent**
+- [x] **Step 4: Verify the retired dependency is absent**
 
 Run:
 
 ```bash
-rg -n '`/code-review`' CLAUDE.md plugins/jt-flow
+rg -n '/code-review' CLAUDE.md plugins/jt-flow
 ```
 
 Expected: exit status 1 with no matches.
 
-- [ ] **Step 5: Record verification and complete tasks**
+- [x] **Step 5: Record verification and complete tasks**
 
 Write the exact commands and observed pass results to
 `implementation-verification.md`, then mark the remaining validation tasks
 complete.
 
-- [ ] **Step 6: Commit verification evidence**
+- [x] **Step 6: Commit verification evidence**
 
 ```bash
 git add openspec/changes/use-superpowers-code-review

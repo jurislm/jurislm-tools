@@ -23,10 +23,12 @@ a finding-evaluation protocol and does not count as another review.
 ### CodeRabbit review
 
 CodeRabbit may produce at most one effective review for the entire PR or
-change. Prefer the GitHub App. If the App cannot produce a review, the CLI may
-be used once as the fallback. As soon as either channel produces a real review,
-the CodeRabbit review budget is consumed: do not invoke, trigger, or wait for
-another CodeRabbit review after fixes or later pushes.
+change. Keep auto-review disabled and explicitly request the GitHub App once.
+Only after that request reaches a successful, failed, or limited terminal
+outcome without a real review may the CLI be used once as the fallback. As soon
+as either channel produces a real review, the CodeRabbit review budget is
+consumed: do not invoke, trigger, or wait for another CodeRabbit review after
+fixes or later pushes.
 
 The existing disclosure, consent, secret scanning, App scope, CLI scope, and
 untrusted-feedback rules remain unchanged.

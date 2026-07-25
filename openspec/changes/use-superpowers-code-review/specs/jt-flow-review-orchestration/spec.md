@@ -38,7 +38,14 @@ review.
 CodeRabbit SHALL produce at most one effective review, across its GitHub App
 and CLI channels combined, for a PR or change. Copilot SHALL produce at most
 one review for a PR or change. Fixes and later pushes MUST NOT restart either
-external reviewer.
+external reviewer. CodeRabbit auto-review SHALL be disabled and the workflow
+SHALL explicitly request the App at most once.
+
+#### Scenario: CodeRabbit App review is requested
+
+- **WHEN** the PR is ready for external review
+- **THEN** auto-review is disabled and the workflow requests the App once
+- **AND** later pushes do not automatically or explicitly request another review
 
 #### Scenario: CodeRabbit App produces a review
 
@@ -48,7 +55,8 @@ external reviewer.
 
 #### Scenario: CodeRabbit App cannot produce a review
 
-- **WHEN** the CodeRabbit GitHub App cannot produce a real review
+- **WHEN** the sole CodeRabbit GitHub App request reaches a terminal outcome
+  without producing a real review
 - **THEN** the workflow may invoke the CodeRabbit CLI once as fallback
 
 #### Scenario: CLI fallback returns no review
