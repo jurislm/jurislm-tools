@@ -15,6 +15,6 @@
 
 ## 3. Verify
 
-- [ ] 3.1 Pass the focused policy test and `npm run validate`.
-- [ ] 3.2 Pass `claude plugin validate .` and strict OpenSpec validation.
-- [ ] 3.3 Record implementation verification evidence.
+- [x] 3.1 Pass the focused policy test and `npm run validate`.
+- [x] 3.2 Pass `claude plugin validate .` and strict OpenSpec validation.
+- [x] 3.3 Record implementation verification evidence.
