@@ -51,6 +51,13 @@ external reviewer.
 - **WHEN** the CodeRabbit GitHub App cannot produce a real review
 - **THEN** the workflow may invoke the CodeRabbit CLI once as fallback
 
+#### Scenario: App review SHA cannot be verified
+
+- **WHEN** the CodeRabbit GitHub App produces a real review whose SHA metadata
+  is missing, stale, or cannot be verified against current `HEAD`
+- **THEN** the review consumes the CodeRabbit budget, the workflow records the
+  coverage limitation, and neither the App nor CLI is invoked again
+
 #### Scenario: External findings are fixed
 
 - **WHEN** CodeRabbit or Copilot findings cause a later code push
