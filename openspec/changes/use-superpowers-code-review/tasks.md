@@ -7,11 +7,11 @@
 
 ## 2. Update the published workflow
 
-- [ ] 2.1 Replace `/code-review` with change-batch-scoped
+- [x] 2.1 Replace `/code-review` with change-batch-scoped
   `superpowers:requesting-code-review` in `jt-flow-one`.
-- [ ] 2.2 Limit CodeRabbit App and CLI to one combined effective review and
+- [x] 2.2 Limit CodeRabbit App and CLI to one combined effective review and
   Copilot to one review per PR or change.
-- [ ] 2.3 Synchronize the JT Flow README and repository guidance.
+- [x] 2.3 Synchronize the JT Flow README and repository guidance.
 
 ## 3. Verify
 
