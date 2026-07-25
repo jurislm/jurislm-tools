@@ -32,16 +32,21 @@ CLI 以明確的 base／review type 選擇已掃描的本機 change set，但仍
 曾出現的 secret 必須從將推送的 objects 清除並重新掃描。
 
 CodeRabbit GitHub App 與 CodeRabbit CLI 是兩個獨立管道；任一管道 rate-limited
-不代表另一管道不可用。兩者都適用於 Claude Code 與 Codex。
+不代表另一管道不可用。兩者都適用於 Claude Code 與 Codex，但 GitHub App 與 CLI
+合計最多一次有效 review；`.coderabbit.yaml` 停用 auto-review，由流程明確要求
+一次 App review。只有該要求進入成功、失敗或受限終態且沒有真實 review，才能
+改走 CLI fallback；任一管道成功產出後就停止 fallback。
 
 Review 完成以每項 finding 已採納修正或記錄不採納理由為準，不要求 CodeRabbit
-回傳零 finding。每個 PR／變更在整個流程中只自動呼叫 CodeRabbit CLI 一次；修正
-finding 或 HEAD 改變都不觸發重跑。只有使用者明確要求，才可追加 CLI review。
+回傳零 finding。Copilot 每個 PR／變更最多一次 review。CodeRabbit 或 Copilot
+finding 的修正與後續 push 都不得重新啟動外部 review。
 
-Review 順序固定為：先以 `superpowers:requesting-code-review` 自查並執行
-`/code-review`；GitHub Copilot 額度用完即略過；CodeRabbit GitHub App／PR bot
-額度或 rate limit 用完即轉 CodeRabbit CLI；CLI 額度或 rate limit 用完即停止等待、
-記錄限制並結束 CodeRabbit 管道。Superpower 首輪已完成，不因 CLI 受限而重跑。
+本地 review 使用 `superpowers:requesting-code-review`：每批程式碼變更最多一次，
+finding 修正造成新一批程式碼變更時可再 review 一次；沒有程式碼變更不得重跑。
+`superpowers:receiving-code-review` 只負責核實 findings，不是額外的 review。
+GitHub Copilot 額度用完即略過；CodeRabbit GitHub App／PR bot 的唯一要求進入
+終態且無法產出時轉 CodeRabbit CLI，CLI 無法產出時記錄限制並結束 CodeRabbit
+管道。
 
 ## Version
 
