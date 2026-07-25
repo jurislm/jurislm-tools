@@ -2,6 +2,8 @@
 
 Date: 2026-07-25（台灣時間）
 
+Tracking issue: #156
+
 ## TDD evidence
 
 - `node --test scripts/jt-flow-review-policy.test.mjs` failed 3／3 before the

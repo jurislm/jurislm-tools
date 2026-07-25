@@ -1,5 +1,7 @@
 # Change: Use portable bounded reviews in JT Flow
 
+Closes #156
+
 ## Why
 
 `jt-flow-one` requires `/code-review`, but that command is not an available
