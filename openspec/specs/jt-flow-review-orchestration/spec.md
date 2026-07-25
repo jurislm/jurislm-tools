@@ -1,6 +1,11 @@
 # JT Flow Review Orchestration
 
-## ADDED Requirements
+## Purpose
+
+Define portable, bounded local and external code-review orchestration for
+`jt-flow-one`.
+
+## Requirements
 
 ### Requirement: Local review is portable and change-batch scoped
 
@@ -40,6 +45,16 @@ and CLI channels combined, for a PR or change. Copilot SHALL produce at most
 one review for a PR or change. Fixes and later pushes MUST NOT restart either
 external reviewer. CodeRabbit auto-review SHALL be disabled and the workflow
 SHALL explicitly request the App at most once.
+
+A real review is a CodeRabbit App or CLI result that completes code analysis
+and submits review findings, including a result with zero actionable findings.
+A trigger
+acknowledgement, pending or in-progress state, skipped response, error,
+interruption, rate limit, quota limit, or other unavailable response is not a
+real review. A terminal outcome is either a submitted real review or an
+explicit final skipped, failed, errored, interrupted, rate-limited,
+quota-limited, or unavailable response. A trigger acknowledgement, pending
+state, or in-progress state is not terminal.
 
 #### Scenario: CodeRabbit App review is requested
 

@@ -36,6 +36,14 @@ missing, stale, or unverifiable SHA metadata still consumes the budget; record
 that coverage limitation and verify final `HEAD` locally instead of requesting
 another App or CLI review.
 
+“Real review” means CodeRabbit App or CLI completed code analysis and submitted
+review findings, including a zero-finding result. Trigger acknowledgement,
+pending, in-progress, skipped, error, interruption, rate-limit, quota-limit, and
+other unavailable responses are not real reviews. “Terminal outcome” means
+either a submitted real review or an explicit final skipped, failed, errored,
+interrupted, rate-limited, quota-limited, or unavailable response;
+acknowledgement, pending, and in-progress states are not terminal.
+
 ### Limit Copilot to one review
 
 Each PR or change may receive one Copilot review. Fixes and later pushes do not
