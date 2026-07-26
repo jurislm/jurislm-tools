@@ -51,7 +51,7 @@ Skills and commands are auto-discovered. A plugin manifest owns metadata; it doe
 | `podcast-to-blog` | Skill | Podcast transcription and writing |
 | `codebase-sync` | Skill | README and CLAUDE.md synchronization |
 | `learn-eval` | Skill | Reusable session-pattern extraction |
-| `jt-flow` | Skills | `jt-flow-one` single-request and `jt-flow-all` issue-queue delivery workflows |
+| `jt-flow` | Skills | `jt-flow-one` single-request and `jt-flow-all` active OpenSpec change-queue delivery workflows |
 
 Do not restore retired `/jt:*`, `/jt-flow`, or `/jt-flow-all` command surfaces. Current Skills are triggered by intent.
 
