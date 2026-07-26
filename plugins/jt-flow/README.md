@@ -11,7 +11,7 @@ claude plugin install jt-flow@jurislm-tools
 ## Entry Skills
 
 - `jt-flow-one`：單一需求的端到端交付流程。
-- `jt-flow-all`：盤點、排序並依序交付多個 issues。
+- `jt-flow-all`：依 active OpenSpec changes 的既有順序逐項交付。
 
 本 plugin 不提供 `/jt-flow` 或 `/jt-flow-all` slash commands；請以自然語言觸發對應 Skill。
 

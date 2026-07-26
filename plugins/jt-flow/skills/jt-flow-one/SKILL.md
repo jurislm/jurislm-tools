@@ -32,9 +32,9 @@ description: >
 `blocked`、`failed` 或 `cancelled`。只有 `success` 允許 queue 繼續下一個 item；
 其餘狀態都使 queue 停在目前 item，等待使用者決定。
 
-**多需求排隊處理，改用 `jt-flow-all` Skill**：本 Skill 假設單一需求；若使用者
-要一次整理並排序多個 issue、逐一依序落地，請使用同一 plugin 的 `jt-flow-all`
-Skill。
+**多個 active changes 排隊處理，改用 `jt-flow-all` Skill**：本 Skill 假設單一
+需求；若使用者要依 `openspec/changes/` 的既有順序逐一落地，請使用同一 plugin 的
+`jt-flow-all` Skill。
 
 ## CodeRabbit 審查預先授權
 

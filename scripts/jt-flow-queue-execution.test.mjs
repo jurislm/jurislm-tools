@@ -21,3 +21,16 @@ test("queue handoff wording does not imply subagent delegation", () => {
   assert.doesNotMatch(allSkill, /委派|delivery owner/i);
   assert.doesNotMatch(oneSkill, /委派|delegation/i);
 });
+
+test("jt-flow-all follows the existing active OpenSpec change order", () => {
+  assert.match(allSkill, /active `openspec\/changes\/`/);
+  assert.match(allSkill, /既有順序/);
+  assert.match(allSkill, /不得重新排序/);
+});
+
+test("jt-flow-all does not inventory the full GitHub issue backlog", () => {
+  assert.doesNotMatch(allSkill, /抓取完整 open issue 集合/);
+  assert.doesNotMatch(allSkill, /gh issue list[\s\S]*--limit 500/);
+  assert.doesNotMatch(allSkill, /重新比較所有項目/);
+  assert.doesNotMatch(allSkill, /等待使用者明確 GO/);
+});
