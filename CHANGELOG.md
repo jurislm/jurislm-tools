@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.32.5](https://github.com/jurislm/jurislm-tools/compare/v1.32.4...v1.32.5) (2026-07-26)
+
+
+### 🐛 Bug Fixes
+
+* keep jt-flow-all in the primary agent ([#160](https://github.com/jurislm/jurislm-tools/issues/160)) ([c14c4a5](https://github.com/jurislm/jurislm-tools/commit/c14c4a5d79d7726a79e650ce7d307eeebeeae3a7))
+
 ## [1.32.4](https://github.com/jurislm/jurislm-tools/compare/v1.32.3...v1.32.4) (2026-07-25)
 
 
