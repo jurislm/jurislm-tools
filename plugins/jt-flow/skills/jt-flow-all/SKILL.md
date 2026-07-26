@@ -2,10 +2,8 @@
 name: jt-flow-all
 description: >
   盤點並排序一批 GitHub issue（依嚴重度／影響／依賴重新排序，非沿用舊序），展示
-  完整排序並等待使用者確認（GO）後，直接逐項依序委派給 jt-flow-one Skill 完成
-  端到端交付。jt-flow-all 只負責多 issue 的盤點、優先級與順序控制；每個 issue 的
-  OpenSpec、TDD、PR、review、merge、部署與歸檔全部由 jt-flow-one 擁有。適用任何
-  裝有 OpenSpec 的 GitHub repo。
+  完整排序並等待使用者確認（GO）後，由目前主代理依序套用 jt-flow-one Skill
+  完成各項交付。適用任何裝有 OpenSpec 的 GitHub repo。
   Use when the user asks to "整理這批 issue 依序做完", "排序這些需求並落地",
   "處理整個 issue 佇列", "triage and deliver this issue backlog", or "work
   through this queue of issues end to end".
@@ -19,18 +17,18 @@ description: >
 **單一需求不需要排隊**：若使用者只有一個明確的需求／issue，要直接使用同一
 plugin 的 `jt-flow-one` Skill。
 
-## CodeRabbit 委派授權
+## CodeRabbit 授權承接
 
 只有使用者明確點名／呼叫 `jt-flow-all`（包含 Skill picker、
 `$jt-flow:jt-flow-all` 或文字指名）時，才可將該次目標 repository 的
-CodeRabbit 授權 context 傳給被委派的 `jt-flow-one`。此授權涵蓋：GitHub App
+CodeRabbit 授權 context 沿用到各 queue item 的 `jt-flow-one` 流程。此授權涵蓋：GitHub App
 可能依既有 installation permissions 讀取待審 diff 以外的 repository 內容；以及
 CodeRabbit CLI 在本機安全預檢後，將即將推送的 commit range 與明示 config 交給服務。
 CLI 服務端仍可能使用 repository guidelines、learnings 或 history。
 
 若本 Skill 僅由一般意圖自動路由，或使用者未接受上述範圍，第一次外部傳送前必須
 在目前 item 依 `jt-flow-one` 的 CodeRabbit disclosure 與 consent gate 取得同意。
-內部直接委派本身不是使用者同意，不得用來略過這個 gate。
+內部沿用 Skill 本身不是使用者同意，不得用來略過這個 gate。
 
 ## Phase 1 — 需求佇列盤點與排序
 
@@ -50,36 +48,37 @@ CLI 服務端仍可能使用 repository guidelines、learnings 或 history。
 4. 比對 active OpenSpec changes 與 issue；記錄依賴與缺少的追蹤關聯。若 active
    change 沒有對應 issue，先展示擬建立的 tracking issue 與將寫入 proposal 的
    `Tracks:#<n>` 關聯，取得使用者明確同意後才建立 issue、補齊 metadata 並更新
-   proposal；未取得同意的 change 不得納入 queue 或委派給 `jt-flow-one`。其餘既有
+   proposal；未取得同意的 change 不得納入 queue 或進入 `jt-flow-one` 流程。其餘既有
    artifacts 與重新編號不得在排序確認前修改。
 5. 重新比較所有項目的影響、急迫性、風險、工作量與依賴，產出完整排序。依賴鏈是
    下限約束；工作量只作 tie-breaker，不得沿用舊序。
 6. **停下展示完整排序**：每項須列出排序、issue、嚴重度、依賴與理由，等待使用者
    明確 GO。
 
-## Phase 2 — 直接逐項委派
+## Phase 2 — 由同一主代理逐項執行
 
 使用者確認排序後，依序處理每個 queue item：
 
-1. 直接呼叫 `jt-flow-one`，傳入該 item 的 issue identifier、目標
+1. 由目前主代理在同一 task context 中載入並遵循 `jt-flow-one`，帶入該 item 的
+   issue identifier、目標
    `<owner>/<repo>`、已確認的 queue-order context，以及 `codeRabbitAuthorization`
    context：只有明確呼叫 `jt-flow-all` 時才傳入 `preauthorized` 與
    `authorizationSource=explicit-jt-flow-all`；其他情況一律傳入
-   `requires-disclosure`。不得只要求使用者自行改呼叫 `jt-flow-one`，也不得在本
-   Skill 重述其 delivery procedure。
-2. `jt-flow-one` 是每個 item 的唯一 delivery owner，負責需求核對、issue、OpenSpec
-   proposal、worktree、TDD、review、PR、merge、部署與歸檔，以及這些流程中的所有
-   approval gates。queue GO 只確認排序，不能取代任何 per-item GO。
-3. `jt-flow-one` 回傳 `success`、`paused`、`blocked`、`failed` 或 `cancelled`。
+   `requires-disclosure`。不得建立或安排子代理處理 queue item，也不得只要求使用者
+   自行改呼叫 `jt-flow-one`。
+2. 各 item 的交付程序與 approval gates 全部以 `jt-flow-one` 為準，本 Skill 不重述。
+   queue GO 只確認排序，不能取代任何 per-item GO。
+3. 每個 item 記錄為 `success`、`paused`、`blocked`、`failed` 或 `cancelled`。
    `paused` 不是終態，queue 必須停在該 item；`blocked`、`failed` 與 `cancelled`
    也停止 queue 並回報狀態，等待使用者決定是否繼續。
 4. 已完成的 item 必須以 `success` 與 `jt-flow-one` 的驗證證據表示。僅在目前 item
-   成功完成後，才直接委派下一個已排序 item；不得平行處理。
+   成功完成後，才進入下一個已排序 item；不得平行處理。
 
 佇列清空後，回報每個 item 的終態與任何待決阻塞項目。
 
 ## Non-goals
 
 - 不重複 `jt-flow-one` 的單一需求交付流程或其安全／審查規則。
+- 不為 queue item 建立子代理。
 - 不建立 host-specific 的 Skill 呼叫 API。
 - 不因 queue GO 而繞過 individual issue 的 proposal 或 approval gate。
