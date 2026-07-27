@@ -7,8 +7,8 @@
 
 - [x] 2.1 Update `package.json` and `package-lock.json` with `npm install --save-dev markdownlint-cli@^0.49.1`, then use `npm update brace-expansion` to refresh the vulnerable retained lock resolution within `minimatch`'s supported range; do not use `--force`, add `overrides`, or add `brace-expansion` as a direct dependency.
 - [x] 2.2 Restore the original `package-lock.json` root name if npm derives it from the worktree directory, then review the package diff and resolved `npm ls` tree to verify that changes are limited to `markdownlint-cli` and the transitive closure required by that upgrade.
-- [ ] 2.3 Declare `engines.node = "^22.22.2 || ^24.15.0 || >=26.0.0"` in `package.json` and its lockfile root package entry.
-- [ ] 2.4 Add the exact supported Node.js range to contributor setup/validation guidance in `README.md` and `CLAUDE.md`.
+- [x] 2.3 Declare `engines.node = "^22.22.2 || ^24.15.0 || >=26.0.0"` in `package.json` and its lockfile root package entry.
+- [x] 2.4 Add the exact supported Node.js range to contributor setup/validation guidance in `README.md` and `CLAUDE.md`.
 
 ## 3. Verify security and behavior
 
@@ -17,7 +17,7 @@
 - [x] 3.3 Run `npm run validate`, `claude plugin validate .`, and `openspec validate fix-markdownlint-audit-findings --strict`.
 - [x] 3.4 Record commands, resolved versions, audit metadata, and validation results in `openspec/changes/fix-markdownlint-audit-findings/verification-logs/2026-07-27-implementation-verification.md`.
 - [x] 3.5 Verify the local Node.js version satisfies `22.22.2` and confirm `.github/workflows/version-check.yml` selects the current Node.js 22 patch; task 4.2 retains actual CI execution verification.
-- [ ] 3.6 Verify `package.json`, `package-lock.json`, `README.md`, and `CLAUDE.md` expose the exact same supported Node.js range, then rerun the audit and full repository validations.
+- [x] 3.6 Verify `package.json`, `package-lock.json`, `README.md`, and `CLAUDE.md` expose the exact same supported Node.js range, then rerun the audit and full repository validations.
 
 ## 4. Review and delivery
 

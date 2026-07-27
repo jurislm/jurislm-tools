@@ -10,6 +10,10 @@ The repository is primarily JSON, YAML, JavaScript validation scripts, and Markd
 
 ## Required validation
 
+The repository development toolchain supports Node.js
+`^22.22.2 || ^24.15.0 || >=26.0.0`. Confirm the active Node.js version satisfies
+this range before installing dependencies or running validation.
+
 ```bash
 npm ci
 npm run validate

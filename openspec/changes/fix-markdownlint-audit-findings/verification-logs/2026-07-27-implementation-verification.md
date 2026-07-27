@@ -183,6 +183,12 @@ PR review then identified that the effective range must remain visible after
 OpenSpec archive and must be enforceable at the root package boundary. The
 proposal now requires the exact supported range
 `^22.22.2 || ^24.15.0 || >=26.0.0` in `package.json`, `package-lock.json`,
-`README.md`, and `CLAUDE.md`. Implementation tasks 2.3, 2.4, and 3.6 remain
-open pending user approval of this material scope expansion. Tasks 4.2 and 4.3
-also remain open for PR/CI and post-merge archive evidence.
+`README.md`, and `CLAUDE.md`. The user approved this material expansion.
+
+A machine comparison confirmed all four files expose that exact range. A fresh
+`npm ci` and full audit again reported zero vulnerabilities, all 42 tests
+passed, repository validation and Markdown lint passed, native plugin
+validation passed, and the synchronized OpenSpec change remained strict-valid.
+The CodeRabbit request was not restarted; the updated HEAD will be covered by
+these validations, CI, mergeability, and resolved review threads. Tasks 4.2 and
+4.3 remain open for updated PR/CI and post-merge archive evidence.
