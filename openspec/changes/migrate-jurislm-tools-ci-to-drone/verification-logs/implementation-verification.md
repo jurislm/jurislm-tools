@@ -61,9 +61,18 @@ exit 0
 
 ## Pending live gates
 
-- Add and read back the Drone `RELEASE_PLEASE_TOKEN` repo secret without
-  exposing its value.
 - Push the branch and confirm a successful Drone pull-request build plus
   matching GitHub status.
 - Confirm post-merge `main` validation and release pipeline results.
 - Update PR #171 from `main` and confirm its Drone status.
+
+## Drone secret readback
+
+The existing local credential was written to the Drone repository without
+printing its value. `drone secret ls jurislm/jurislm-tools` returned:
+
+```text
+RELEASE_PLEASE_TOKEN
+Pull Request Read: false
+Pull Request Write: false
+```

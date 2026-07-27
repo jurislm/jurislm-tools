@@ -29,7 +29,7 @@
 - [x] 4.1 Run `scripts/validate-drone-yml.sh`, `npm run validate`,
   `claude plugin validate .`, and strict OpenSpec validation; record results in
   `openspec/changes/migrate-jurislm-tools-ci-to-drone/verification-logs/implementation-verification.md`.
-- [ ] 4.2 Configure the `RELEASE_PLEASE_TOKEN` Drone repo secret from the
+- [x] 4.2 Configure the `RELEASE_PLEASE_TOKEN` Drone repo secret from the
   approved local credential without exposing it, and read back only its name
   and pull-request policy.
 - [ ] 4.3 Push the feature branch, open its PR, and record a successful live
