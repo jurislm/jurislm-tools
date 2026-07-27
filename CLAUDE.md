@@ -122,7 +122,7 @@ produce a review, and close the CodeRabbit channel when the CLI is limited.
 
 ## GitHub Flow and worktrees
 
-The active workflow is feature branch → pull request → `main`. The old `develop → main` instructions are retired; an unprotected remote `develop` branch may still exist but is not bound to CI or deployment.
+The active workflow is feature branch → pull request → `main`. The repository does not maintain a `develop` branch.
 
 - Keep the repository root on `main`.
 - Fetch `origin/main` before starting work.
