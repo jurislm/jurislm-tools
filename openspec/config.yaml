@@ -16,8 +16,8 @@ context: |
     docs:/chore: → no version bump
     Never manually edit version numbers
 
-  Branch workflow: develop worktree (.worktrees/develop) → PR → main
-    Main branch is production; direct push is forbidden.
+  Branch workflow: feature worktree (.claude/worktrees/<change-name>) → PR → main
+    The repository does not maintain develop; direct push to main is forbidden.
 
   Spec structure (openspec/specs/):
     _overview/  — marketplace-architecture, openspec-system

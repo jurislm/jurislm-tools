@@ -71,7 +71,7 @@ Higgsfield 使用 remote MCP OAuth，不需本機 API key。
 
 ## 開發與驗證
 
-本 repo 採 GitHub Flow：feature branch 直接對 `main` 開 PR，禁止直接 push `main`。開始修改前請從最新 `origin/main` 建立獨立 worktree。
+本 repo 採 GitHub Flow：feature branch 直接對 `main` 開 PR，不維護 `develop` 分支，並禁止直接 push `main`。開始修改前請從最新 `origin/main` 建立獨立 worktree。
 
 ```bash
 npm ci
