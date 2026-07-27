@@ -34,5 +34,5 @@
   and pull-request policy.
 - [x] 4.3 Push the feature branch, open its PR, and record a successful live
   Drone build plus matching GitHub commit status before merge.
-- [ ] 4.4 After merge, read back the `main` Drone validation and release
+- [x] 4.4 After merge, read back the `main` Drone validation and release
   results, then update PR #171 from `main` and verify its Drone status.

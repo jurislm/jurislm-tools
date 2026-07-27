@@ -59,13 +59,6 @@ git diff --check
 exit 0
 ```
 
-## Pending live gates
-
-- Push the branch and confirm a successful Drone pull-request build plus
-  matching GitHub status.
-- Confirm post-merge `main` validation and release pipeline results.
-- Update PR #171 from `main` and confirm its Drone status.
-
 ## Drone secret readback
 
 The existing local credential was written to the Drone repository without
@@ -127,6 +120,33 @@ target: https://ci.jurislm.com/jurislm/jurislm-tools/1
 
 This is a real PR webhook build, not a Drone `custom` event. The final
 documentation update must produce the same successful status before merge.
+
+## Post-merge and dependent-PR readback
+
+PR #173 merged as `27dd346b48a2fd74a22434200cf84cc9628504b2`.
+Drone Build #3 processed that exact SHA as a `push` event on
+`refs/heads/main` and completed successfully:
+
+```text
+validate / validate: success, exit 0
+release / github-release: success, exit 0
+release / release-pr: success, exit 0
+GitHub continuous-integration/drone/push: success
+```
+
+PR #171 was then updated from `main` without force-push. Its final migrated
+head `79e6ad333ca9680fcfc799f13ba17cb050b1c541` produced Drone Build #6:
+
+```text
+Event: pull_request
+Ref: refs/pull/171/head
+Status: success
+GitHub continuous-integration/drone/pr: success
+```
+
+PR #171 subsequently merged as
+`cda24c485c59061a52f211031b47eff882a12e6c`. Drone Build #7 processed that
+exact `main` push successfully, including both validation and release stages.
 
 ## Review disposition
 
