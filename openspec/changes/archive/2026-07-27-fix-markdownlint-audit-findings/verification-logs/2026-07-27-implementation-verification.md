@@ -211,3 +211,19 @@ these validations, CI, mergeability, and resolved review threads.
 
 Task 4.3 remains open for merged-main verification, living-spec sync, and
 OpenSpec archive evidence.
+
+## Merged-main verification
+
+- PR #168 was squash-merged to `main` as
+  `4c748f75b49685757449d011a526d98e820b5e05`.
+- Issue #167 closed automatically with the merge.
+- A fresh install from merged `main` reported 0 vulnerabilities.
+- Merged-main validation passed 42/42 tests, repository validation, Markdown
+  lint, native plugin validation, and strict validation of the active change.
+- The exact Node.js range is present in package metadata, lockfile root,
+  README, and CLAUDE on merged `main`.
+- Release Please run `30242608440` completed successfully for the merge commit.
+- The new `development-dependency-security` capability was synced to
+  `openspec/specs/development-dependency-security/spec.md`.
+- All artifacts and tasks were archived to
+  `openspec/changes/archive/2026-07-27-fix-markdownlint-audit-findings/`.
