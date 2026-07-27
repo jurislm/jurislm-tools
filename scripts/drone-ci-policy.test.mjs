@@ -72,3 +72,61 @@ steps:
     rmSync(temporaryDirectory, { recursive: true, force: true });
   }
 });
+
+test("the validator rejects a second validate step that can escape isolation", () => {
+  const temporaryDirectory = mkdtempSync(join(tmpdir(), "drone-ci-policy-"));
+  const fixturePath = join(temporaryDirectory, ".drone.yml");
+
+  writeFileSync(
+    fixturePath,
+    `kind: pipeline
+type: docker
+name: validate
+trigger:
+  event: [push, pull_request]
+  ref: [refs/heads/main, refs/pull/*/head]
+steps:
+  - name: prepare
+    image: node:22.22.2-bookworm-slim
+    commands: [echo preparing]
+  - name: validate
+    image: node:latest
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands: [npm ci, npm run validate]
+---
+kind: pipeline
+type: docker
+name: release
+trigger:
+  event: [push]
+  ref: [refs/heads/main]
+steps:
+  - name: github-release
+    image: node:22.22.2-bookworm-slim
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands:
+      - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+  - name: release-pr
+    image: node:22.22.2-bookworm-slim
+    depends_on: [github-release]
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands:
+      - npx --yes release-please@17.10.4 release-pr --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+`,
+  );
+
+  try {
+    const result = validate(fixturePath);
+
+    assert.notEqual(result.status, 0);
+    assert.match(`${result.stdout}\n${result.stderr}`, /exactly one validate step/i);
+  } finally {
+    rmSync(temporaryDirectory, { recursive: true, force: true });
+  }
+});

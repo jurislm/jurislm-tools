@@ -24,10 +24,6 @@ function list(value) {
   return Array.isArray(value) ? value : [];
 }
 
-function commands(pipeline) {
-  return list(pipeline?.steps).flatMap((step) => list(step.commands));
-}
-
 requireValue(pipelines.length === 2, "expected exactly two pipelines");
 requireValue(
   [...byName.keys()].sort().join(",") === "release,validate",
@@ -37,7 +33,12 @@ requireValue(
 const validate = byName.get("validate");
 const validateEvents = list(validate?.trigger?.event);
 const validateRefs = list(validate?.trigger?.ref);
-const validateStep = list(validate?.steps)[0];
+const validateSteps = list(validate?.steps);
+const validateStep = validateSteps[0];
+requireValue(
+  validateSteps.length === 1,
+  "validate must contain exactly one validate step",
+);
 requireValue(
   validateEvents.includes("push") && validateEvents.includes("pull_request"),
   "validate must run for push and pull_request",
@@ -53,8 +54,8 @@ requireValue(
   "validate must use the exact supported Node image",
 );
 requireValue(
-  commands(validate).includes("npm ci") &&
-    commands(validate).includes("npm run validate"),
+  list(validateStep?.commands).includes("npm ci") &&
+    list(validateStep?.commands).includes("npm run validate"),
   "validate must install locked dependencies and run npm run validate",
 );
 requireValue(

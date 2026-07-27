@@ -42,8 +42,8 @@ zero.
 
 ```text
 npm run validate
-tests 44
-pass 44
+tests 45
+pass 45
 fail 0
 Plugin repository validation passed
 Version sync OK: 1.32.5
@@ -76,3 +76,14 @@ RELEASE_PLEASE_TOKEN
 Pull Request Read: false
 Pull Request Write: false
 ```
+
+## Review disposition
+
+The local code review found one Important issue: the initial validator checked
+the first validate step's image and secret isolation while aggregating commands
+from every step. A second step could therefore escape the contract.
+
+The fix added a negative fixture that initially passed incorrectly, then
+required exactly one validate step and bound its image, commands, and lack of
+release credentials to that same step. The focused suite now reports three
+passing tests, including both negative fixtures.
