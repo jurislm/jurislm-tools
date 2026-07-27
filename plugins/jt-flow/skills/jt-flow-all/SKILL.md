@@ -51,7 +51,9 @@ CLI 服務端仍可能使用 repository guidelines、learnings 或 history。
    `requires-disclosure`。不得建立或安排子代理處理 queue item，也不得只要求使用者
    自行改呼叫 `jt-flow-one`。
 2. 各 item 的交付程序與 approval gates 全部以 `jt-flow-one` 為準，本 Skill 不重述。
-   依既有順序開始 queue 不取代任何 per-item GO。
+   依既有順序開始 queue 不取代尚未取得的 per-item GO；但 change artifacts 或目前
+   對話已有可證實、已記錄的明確 proposal GO 時，沿用該 GO，不得只因進入 queue
+   而重複詢問。GO 後直接依 `jt-flow-one` 的 bounded 例外契約執行到終態。
 3. 每個 item 記錄為 `success`、`paused`、`blocked`、`failed` 或 `cancelled`。
    `paused` 不是終態，queue 必須停在該 item；`blocked`、`failed` 與 `cancelled`
    也停止 queue 並回報狀態，等待使用者決定是否繼續。
@@ -66,4 +68,5 @@ CLI 服務端仍可能使用 repository guidelines、learnings 或 history。
 - 不掃描完整 GitHub issue backlog、不做 issue triage、不重新排序 OpenSpec changes。
 - 不為 queue item 建立子代理。
 - 不建立 host-specific 的 Skill 呼叫 API。
-- 不因 queue 已開始而繞過 individual change 的 proposal 或 approval gate。
+- 不因 queue 已開始而繞過尚未完成的 individual change proposal GO，也不讓已記錄
+  的明確 proposal GO 因 queue context 無故失效。

@@ -15,6 +15,13 @@ claude plugin install jt-flow@jurislm-tools
 
 本 plugin 不提供 `/jt-flow` 或 `/jt-flow-all` slash commands；請以自然語言觸發對應 Skill。
 
+`jt-flow-one` 以 proposal GO 作為唯一正常停頓點：明確呼叫先授權 issue 與 OpenSpec
+準備；GO 後即授權實作、push、PR、review finding 處置、merge、部署驗收、issue
+關閉與歸檔，不再逐項確認。只有證據無法排除的目標歧義、重大範圍／架構／依賴／
+production 風險變更、secret 或敏感 payload、缺少權限或平台強制 approval、未揭露
+的破壞性 production mutation，以及高風險 rollback 才暫停。`jt-flow-all` 沿用可
+證實且已記錄的 proposal GO，不因 queue context 重複詢問。
+
 ## Dependencies
 
 完整流程需要 OpenSpec repo-local `opsx:*` Skills、另行安裝的 `superpowers:*` Skills，
