@@ -89,7 +89,13 @@ Commit types:
 - `fix:` for incorrect behavior or information.
 - `docs:` or `chore:` for non-behavioral maintenance.
 
-Release Please runs from `.github/workflows/release.yml` after pushes to `main`. Repository quality runs on pull requests through `.github/workflows/version-check.yml`. This repository does not use Drone.
+Repository quality and Release Please run on the self-hosted Drone instance
+through `.drone.yml`. The `validate` pipeline covers pull requests and pushes
+to `main`; the `release` pipeline runs only after pushes to `main`, reads
+`RELEASE_PLEASE_TOKEN` from a repo-scoped Drone secret, cuts any outstanding
+merged release before opening or updating the next release PR, and never
+receives that token in pull-request builds. Do not add overlapping GitHub
+Actions validation or release workflows.
 
 ## OpenSpec
 

@@ -1,0 +1,69 @@
+# Implementation verification
+
+Date: 2026-07-27 (Asia/Taipei)
+
+## TDD evidence
+
+Before `.drone.yml` or its validator existed:
+
+```text
+node --test scripts/drone-ci-policy.test.mjs
+tests 2
+pass 0
+fail 2
+bash: scripts/validate-drone-yml.sh: No such file or directory
+```
+
+After the minimal validator and configuration were added:
+
+```text
+node --test scripts/drone-ci-policy.test.mjs
+tests 2
+pass 2
+fail 0
+```
+
+The second test executes the real validator against a temporary valid Drone
+document whose release steps are reversed. The validator exits nonzero with
+`github-release must run before release-pr`.
+
+## Static Drone validation
+
+```text
+npm run validate:drone
+validated .drone.yml: validate + release
+exit 0
+```
+
+The command also ran `drone lint .drone.yml` through Drone CLI 1.9.0 and exited
+zero.
+
+## Repository validation
+
+```text
+npm run validate
+tests 44
+pass 44
+fail 0
+Plugin repository validation passed
+Version sync OK: 1.32.5
+markdownlint exit 0
+
+claude plugin validate .
+Validation passed
+
+openspec validate --all --strict
+Totals: 8 passed, 0 failed
+
+git diff --check
+exit 0
+```
+
+## Pending live gates
+
+- Add and read back the Drone `RELEASE_PLEASE_TOKEN` repo secret without
+  exposing its value.
+- Push the branch and confirm a successful Drone pull-request build plus
+  matching GitHub status.
+- Confirm post-merge `main` validation and release pipeline results.
+- Update PR #171 from `main` and confirm its Drone status.

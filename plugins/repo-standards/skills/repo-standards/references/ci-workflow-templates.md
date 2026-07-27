@@ -7,7 +7,7 @@
 > | Coolify web app（如 memory-dessert）| Drone | Drone | Drone `deploy` pipeline（deploy-gating，模板 A）|
 > | Monorepo（如 entire）| Drone（per-package pipeline）| Drone | 每個 app 一個 deploy step |
 > | npm / MCP（如 coolify-mcp）| Drone | release-please + npm publish | npm（無 Coolify 部署）|
-> | Plugin（純文字，如 jurislm-tools）| GitHub Actions `version-check.yml`（JSON / 版本驗證）| GitHub Actions `release.yml` | — |
+> | Plugin（content-first）| GitHub Actions（預設）或 Drone aggregate validation（明確選擇，如 jurislm-tools）| 與 CI 使用同一平台 | — |
 >
 > Code review：人工 `/code-review` + bot（CodeRabbit / Copilot）。**自動 Claude PR 審查已從標準移除（2026-06-02）**，不再設 `claude-code-review.yml` / `claude.yml` 或 Drone `claude-review` pipeline。Copilot 自訂指示模板見 `references/code-review-setup.md`。
 
@@ -120,13 +120,19 @@ trigger:
   event: [push]
   ref: [refs/heads/main]
 steps:
-  - name: release-please
+  - name: github-release
     image: node:20-alpine
     environment:
       RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
     commands:
-      - npx release-please release-pr --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
       - npx release-please github-release --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+  - name: release-pr
+    image: node:20-alpine
+    depends_on: [github-release]
+    environment:
+      RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
+    commands:
+      - npx release-please release-pr --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
     resources: { limits: { cpu: 2000, memory: 3221225472 } }
 
 ---
@@ -169,7 +175,7 @@ steps:
 - **`oven/bun` image 無 `psql`** → 只有需要的 pipeline（`cli`）才 `apt-get update -qq && apt-get install -y -qq postgresql-client` + `db migrate`。
 - 測試委派 Turborepo：各 pipeline 用不同 filter，如 `bun run turbo run test --filter=entire-cli` / `--filter="@modules/*"` / `--filter=!entire-cli --filter=!entire-ops …`（排除式）。
 - **`build` pipeline 直跑 `cd apps/web && bun run build`（非 turbo）**——對齊 GA build job、避免 turbo strict env stripping。
-- **`release` pipeline 與模板 A 不同**：用 `bunx`（非 `npx`）、`trigger.branch: [main]`（非 `trigger.ref`）。⚠️ 標準應為兩步——`release-pr`（維護版本 PR）+ `github-release`（從已合併的 release PR cut tag）；只有 `release-pr` 不會自動建立 tag/release，建立 monorepo release pipeline 時兩步都要有。
+- **`release` pipeline 與模板 A 不同**：用 `bunx`（非 `npx`）、`trigger.branch: [main]`（非 `trigger.ref`）。標準為兩步——先 `github-release`（從已合併的 release PR cut tag），再 `release-pr`（維護下一個版本 PR）；只有 `release-pr` 不會自動建立 tag/release。
 
 > Monorepo 多 app 部署較複雜（每個 app 一個 Coolify UUID），deploy-gating 須為每個 app 各設一個 deploy step / pipeline。
 
@@ -182,7 +188,7 @@ steps:
 - **release-please + npm publish**：Drone `release` pipeline（模板 A 的 release-please 兩步 + 一個 npm publish step，用 `NPM_TOKEN` secret）。骨架：
 
 ```yaml
-# release pipeline（push main only）：release-pr → github-release → npm publish
+# release pipeline（push main only）：github-release → release-pr → npm publish
 # publish step 僅在「真的有新版被 cut」時才發布；NPM_TOKEN 為 Drone repo-scope secret。
   - name: npm-publish
     image: oven/bun:1.3.14
@@ -206,10 +212,13 @@ steps:
 
 ## 標準模板 D：Plugin repo（jurislm-tools / jurislm-plugins）
 
-- 純文字 plugin，不需 lint / typecheck / test，只需 JSON 驗證 + release-please。
-- **plugin 類型在 GitHub Actions 執行**：JSON / 版本驗證用 `version-check.yml`，release-please 用 `release.yml`。
+- Content-first plugin 不需 compilation，但仍可有 repository tests、JSON /
+  version integrity 與 Markdown lint。
+- 預設平台是 GitHub Actions：驗證用 `version-check.yml`，release-please
+  用 `release.yml`。
 - `release-please` 用 `release-type: simple` + `extra-files` 同步 `plugin.json` / `marketplace.json` 版本號（見 SKILL.md「Release 設定」）。
-- 若選擇用 Drone 跑 JSON 驗證（取代 GHA `version-check.yml`），validate pipeline 範本：
+- 若明確選擇 Drone，validation 與 release 必須一起遷移，並刪除功能
+  重疊的 GHA。小型 repo 使用 aggregate validate pipeline：
 
 ```yaml
 ---
@@ -221,18 +230,19 @@ trigger:
   event: [push, pull_request]
   ref: [refs/heads/main, refs/pull/*/head]
 steps:
-  - name: validate-json
-    image: alpine:3.20
+  - name: validate
+    image: node:<EXACT-SUPPORTED-VERSION>
     commands:
-      - apk add --no-cache jq
-      - jq . .claude-plugin/marketplace.json
-      - find plugins -name plugin.json -exec jq . {} \;
-# + release-please pipeline（同模板 A，push main only）
+      - npm ci
+      - npm run validate
+# + release pipeline（同模板 A，push main only，github-release → release-pr）
 ```
 
 - **部分 plugin（如 `jurislm-plugins`）有 `sync-plugins.yml`**（GHA）：發版後把 plugin 定義同步到 PostgreSQL DB（dev + prod）。觸發為**手動 `workflow_dispatch`**——因 `GITHUB_TOKEN` 建立的 release 不會自動觸發其他 workflow（GitHub 安全限制）。設定需 DB 連線 secret。
 
-> plugin 類型的 `release.yml` / `version-check.yml` / `sync-plugins.yml` 是其正常的 release / 驗證 / 同步機制，不應移除。
+> Plugin repo 未選 Drone 時，`release.yml` / `version-check.yml` /
+> `sync-plugins.yml` 是正常機制，不應誤刪。已選 Drone 時，移除前兩個
+> 重疊 workflow；具獨立手動同步語意的 `sync-plugins.yml` 不在此規則內。
 
 ---
 
@@ -334,7 +344,12 @@ for repo in $(gh repo list jurislm --limit 50 \
 done
 ```
 
-單一平台檢查：每個 repo 的 CI / release 只應有其類型對應的一套機制（見開頭表格）。若同時存在 Drone `.drone.yml` 與功能重疊的舊 GHA `ci.yml` / `release.yml`，移除其一避免雙跑。注意 plugin 類型的 `release.yml` / `version-check.yml` 是其正常機制不要誤刪。Code Review 的 `claude-code-review.yml` / `claude.yml`（及 Drone `claude-review` pipeline）**已從標準移除（2026-06-02）**，audit 既有 repo 時應一併清除。
+單一平台檢查：每個 repo 的 CI / release 只應有一套已選定機制。若
+同時存在 Drone `.drone.yml` 與功能重疊的舊 GHA `ci.yml` /
+`release.yml`，移除其一避免雙跑。Plugin repo 預設的 `release.yml` /
+`version-check.yml` 不應誤刪；但明確選擇 Drone 後，兩者必須一起移除。
+Code Review 的 `claude-code-review.yml` / `claude.yml`（及 Drone
+`claude-review` pipeline）已從標準移除，audit 時應一併清除。
 
 ---
 
