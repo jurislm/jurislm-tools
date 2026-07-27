@@ -25,9 +25,11 @@ requires user selection.
 ### Proposal GO authorizes the complete delivery chain
 
 Proposal GO authorizes implementation, commits, push, PR creation, review
-requests already disclosed by the Skill, finding disposition, merge, deployment
-verification, issue closure, and archive. Normal progression does not ask again
-for merge or archive authorization.
+requests already disclosed by the Skill, and finding disposition only after
+every accepted finding is fixed and verified or every rejected finding retains
+a concrete recorded reason. It then authorizes merge, deployment verification,
+issue closure, and archive. Normal progression does not ask again for merge or
+archive authorization.
 
 For an intent-routed run without CodeRabbit preauthorization, the proposal
 summary contains the existing App and CLI disclosure. The same proposal GO
@@ -83,5 +85,6 @@ delegated.
 
 A focused repository test will assert the positive authorization contract,
 the single normal proposal gate, automatic post-GO continuation, and the
-bounded exception categories. It will also reject the old project-dependent
-merge-authorization wording.
+bounded exception categories, including reuse of an already recorded proposal
+GO when an active proposal enters `jt-flow-all`. It will also reject the old
+project-dependent merge-authorization wording.

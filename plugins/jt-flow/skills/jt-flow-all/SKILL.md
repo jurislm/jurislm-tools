@@ -23,7 +23,8 @@ CodeRabbit 授權 context 沿用到各 queue item 的 `jt-flow-one` 流程。此
 CodeRabbit CLI 在本機安全預檢後，將即將推送的 commit range 與明示 config 交給服務。
 CLI 服務端仍可能使用 repository guidelines、learnings 或 history。
 
-若本 Skill 僅由一般意圖自動路由，或使用者未接受上述範圍，必須在目前 item 依
+明確點名／呼叫本 Skill 即代表接受上述範圍，使用同一個 `preauthorized` consent
+狀態沿用到各 item。若本 Skill 僅由一般意圖自動路由，必須在目前 item 依
 `jt-flow-one` 把 CodeRabbit disclosure 納入 proposal 摘要，並以同一次 proposal
 GO 取得 consent。不得把 consent 延後成 GO 後另一個正常停頓點；內部沿用 Skill
 本身不是使用者同意，不得用來略過這個 gate。
@@ -52,9 +53,11 @@ GO 取得 consent。不得把 consent 延後成 GO 後另一個正常停頓點�
    `requires-disclosure`。不得建立或安排子代理處理 queue item，也不得只要求使用者
    自行改呼叫 `jt-flow-one`。
 2. 各 item 的交付程序與 approval gates 全部以 `jt-flow-one` 為準，本 Skill 不重述。
-   依既有順序開始 queue 不取代尚未取得的 per-item GO；但 change artifacts 或目前
-   對話已有可證實、已記錄的明確 proposal GO 時，沿用該 GO，不得只因進入 queue
-   而重複詢問。GO 後直接依 `jt-flow-one` 的 bounded 例外契約執行到終態。
+   依既有順序開始 queue 不取代尚未取得的 per-item GO；只有已記錄的明確 proposal
+   GO 之 change identifier、proposal 路徑、目標 `<owner>/<repo>` 與核准範圍全部
+   符合目前 item 時，才沿用該 GO，不得只因進入 queue 而重複詢問。任一欄不符或
+   無法證實時，必須為目前 item 取得 GO；GO 後直接依 `jt-flow-one` 的 bounded
+   例外契約執行到終態。
 3. 每個 item 記錄為 `success`、`paused`、`blocked`、`failed` 或 `cancelled`。
    `paused` 不是終態，queue 必須停在該 item；`blocked`、`failed` 與 `cancelled`
    也停止 queue 並回報狀態，等待使用者決定是否繼續。

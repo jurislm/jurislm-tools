@@ -13,12 +13,16 @@ const allSkill = readFileSync(
 const readme = readFileSync("plugins/jt-flow/README.md", "utf8");
 const guidance = readFileSync("CLAUDE.md", "utf8");
 
-const sectionContaining = (document, heading) => {
+const rawSectionContaining = (document, heading) => {
   const section = document
     .split(/(?=^## )/m)
     .find((candidate) => candidate.startsWith(`## ${heading}`));
   assert.ok(section, `missing policy section: ${heading}`);
-  return section.replaceAll("\n", " ");
+  return section;
+};
+const normalize = (document) => document.replace(/\s+/g, " ").trim();
+const sectionContaining = (document, heading) => {
+  return normalize(rawSectionContaining(document, heading));
 };
 
 test("explicit invocation authorizes proposal preparation without implementation", () => {
@@ -31,6 +35,7 @@ test("explicit invocation authorizes proposal preparation without implementation
 test("proposal GO authorizes the complete normal delivery chain", () => {
   const contract = sectionContaining(oneSkill, "端到端授權契約");
   const flow = sectionContaining(oneSkill, "流程");
+  const normalizedSkill = normalize(oneSkill);
 
   assert.match(
     contract,
@@ -46,18 +51,28 @@ test("proposal GO authorizes the complete normal delivery chain", () => {
     /proposal GO 已包含 merge 授權.*直接合併.*不得再次詢問/s,
   );
   assert.doesNotMatch(
-    oneSkill,
-    /merge 前.*(?:專案|project|repository).*(?:規則|policy).*(?:詢問|確認|授權|approval)/i,
+    normalizedSkill,
+    /merge 前.{0,160}(?:專案|project|repository).{0,160}(?:規則|policy).{0,160}(?:詢問|確認|授權|approval)/i,
   );
   assert.doesNotMatch(
-    oneSkill,
-    /(?:再次|重新).*(?:徵求|詢問|確認).*merge.*(?:授權|approval)/i,
+    normalizedSkill,
+    /merge 前(?:仍|必須|需要|應).{0,160}(?:再次|重新).{0,160}(?:授權|approval|確認)/i,
+  );
+  assert.doesNotMatch(
+    normalizedSkill,
+    /merge.{0,160}(?:依|視).{0,160}(?:專案|project|repository).{0,160}(?:規則|policy).{0,160}(?:授權|approval|確認)/i,
   );
 });
 
 test("post-GO pauses are limited to observable safety exceptions", () => {
   const exceptions = sectionContaining(oneSkill, "端到端授權契約");
+  const rawExceptions = rawSectionContaining(oneSkill, "端到端授權契約");
+  const boundedList = rawExceptions
+    .split("proposal GO 後唯一允許暫停並要求使用者 input／approval 的情況是：")[1]
+    .split("同一核准範圍內")[0];
+  const bullets = boundedList.match(/^- /gm) ?? [];
 
+  assert.equal(bullets.length, 6);
   assert.match(exceptions, /歧義/);
   assert.match(exceptions, /重大.*範圍|material.*scope/i);
   assert.match(exceptions, /架構/);
@@ -89,15 +104,35 @@ test("intent-routed CodeRabbit consent is completed at proposal GO", () => {
 test("delegated items reuse recorded proposal GO", () => {
   const queuePolicy = sectionContaining(allSkill, "Phase 2 — 由同一主代理逐項執行");
 
+  assert.match(queuePolicy, /已記錄的明確 proposal GO.*沿用.*不得.*重複/s);
+  assert.match(
+    queuePolicy,
+    /change identifier.*proposal 路徑.*<owner>\/<repo>.*核准範圍.*目前 item/s,
+  );
   assert.match(queuePolicy, /不得.*重複.*GO/);
   assert.match(queuePolicy, /bounded|例外/i);
-  assert.match(oneSkill, /jt-flow-all.*已記錄.*proposal GO.*有效/s);
 });
 
 test("published guidance describes one normal checkpoint", () => {
-  assert.match(readme, /proposal GO.*唯一.*正常.*停頓|唯一.*正常.*proposal GO/s);
+  const normalizedReadme = normalize(readme);
+  const normalizedGuidance = normalize(guidance);
+
   assert.match(
-    guidance,
+    normalizedReadme,
+    /proposal GO.*唯一.*正常.*停頓|唯一.*正常.*proposal GO/s,
+  );
+  assert.match(
+    normalizedGuidance,
     /proposal GO.*sole normal-path checkpoint|sole normal-path checkpoint.*proposal GO/is,
   );
+  for (const policy of [normalizedReadme, normalizedGuidance]) {
+    assert.doesNotMatch(
+      policy,
+      /merge 前.*(?:再次|重新).*(?:授權|approval|確認)/i,
+    );
+    assert.doesNotMatch(
+      policy,
+      /proposal GO 後.*CodeRabbit.*(?:consent|確認).*(?:第二|再次|另一)/i,
+    );
+  }
 });

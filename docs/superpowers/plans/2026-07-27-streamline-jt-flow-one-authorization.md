@@ -147,5 +147,7 @@ runner, repository validation scripts.
 
 - [ ] **Step 4: Complete GitHub Flow**
 
-  Push the branch, create a PR closing #170, complete bounded reviews, wait for
-  CI and mergeability, merge, verify `main`, and archive the OpenSpec change.
+  Push the branch and create a PR closing #170. For every CodeRabbit finding,
+  fix and verify accepted findings or retain a concrete reason for rejection.
+  Then wait for CI and mergeability, merge, verify `main`, and archive the
+  OpenSpec change.

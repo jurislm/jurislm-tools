@@ -55,15 +55,17 @@ gate。
 
 ### Queue execution contract
 
-目前主代理由 `jt-flow-all` 進入本 Skill 時，輸入必須包含 issue identifier、目標
-`<owner>/<repo>`、已確認的 queue-order context 與 `codeRabbitAuthorization`。
+目前主代理由 `jt-flow-all` 進入本 Skill 時，輸入必須包含 change identifier、
+proposal 路徑、issue identifier、目標 `<owner>/<repo>`、已核准範圍、已確認的
+queue-order context 與 `codeRabbitAuthorization`。
 只有 `codeRabbitAuthorization=preauthorized` 且
 `authorizationSource=explicit-jt-flow-all` 時，才可把 queue 的明確呼叫視為同一次、
 同一 repository 的已揭露 CodeRabbit 授權；其他值都必須照下方 CodeRabbit disclosure
 與 consent gate 處理。queue item 若帶有可由對話或 change artifacts 證實的已記錄
-proposal GO，該 GO 對同一 proposal 仍然有效，不得只因進入 `jt-flow-all` 而再次
-詢問；若尚未 GO，仍在完成 proposal 後停一次。GO 後依上述唯一允許暫停的 bounded
-例外契約執行。執行結果使用下列狀態：
+proposal GO，只有該 GO 的 change identifier、proposal 路徑、目標 `<owner>/<repo>`
+與核准範圍都和目前 item 相符時才仍然有效，不得只因進入 `jt-flow-all` 而再次
+詢問；任一欄不符或無法證實時，仍在完成目前 proposal 後取得 GO。GO 後依上述唯一
+允許暫停的 bounded 例外契約執行。執行結果使用下列狀態：
 `success`（完成且具驗證證據）、`paused`（等待使用者 input 或 approval）、
 `blocked`、`failed` 或 `cancelled`。只有 `success` 允許 queue 繼續下一個 item；
 其餘狀態都使 queue 停在目前 item，等待使用者決定。

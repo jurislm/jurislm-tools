@@ -15,6 +15,8 @@ interruptive.
 - Make proposal approval the sole normal-path user checkpoint.
 - Define proposal GO as authorization to continue through implementation,
   push, PR, review disposition, merge, deployment verification, and archive.
+- Require every accepted review finding to be fixed and verified, and every
+  rejected finding to retain a concrete reason before merge.
 - Replace broad or ambiguous pause language with a bounded exception contract.
 - Pause only when evidence cannot resolve the target, the approved architecture
   or scope materially changes, or a secret, permission, platform approval,

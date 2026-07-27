@@ -20,9 +20,11 @@ implementation before proposal GO.
 ### Requirement: Proposal GO authorizes end-to-end delivery
 
 Proposal GO SHALL authorize implementation, commit, push, PR creation,
-authorized review requests, finding disposition, merge, deployment
-verification, issue closure, and OpenSpec archive for the approved scope. The
-workflow MUST NOT request another normal-path authorization for those actions.
+authorized review requests, finding disposition, merge, deployment verification,
+issue closure, and OpenSpec archive for the approved scope. Before merge, every
+accepted finding MUST be fixed and verified, and every rejected finding MUST
+retain a concrete reason. The workflow MUST NOT request another normal-path
+authorization for those actions.
 
 #### Scenario: Approved proposal reaches merge
 
@@ -51,10 +53,11 @@ consent into another normal checkpoint after proposal GO.
 
 After proposal GO, the workflow SHALL pause only when evidence cannot resolve a
 target or behavior ambiguity, the implementation requires a material scope or
-architecture change or new production risk, a secret or sensitive payload is
-detected, required credentials or permissions or platform approval are
-missing, an unapproved irreversible production mutation is required, or
-rollback has database, schema, data-loss, or unclear-target risk.
+architecture change, a new external dependency, or new production risk, a secret
+or sensitive payload is detected, required credentials or permissions or
+platform approval are missing, an unapproved irreversible production mutation
+is required, or rollback has database, schema, data-loss, or unclear-target
+risk.
 
 #### Scenario: Implementation detail changes within approved scope
 

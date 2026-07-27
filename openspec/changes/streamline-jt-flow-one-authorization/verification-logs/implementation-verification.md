@@ -5,7 +5,8 @@ Date: 2026-07-27
 ## TDD evidence
 
 The focused authorization policy test was added before the Skill changes.
-Its baseline run failed all five tests because the published policy lacked:
+Its baseline run contained five tests, all of which failed because the
+published policy lacked:
 
 - a positive explicit-invocation contract;
 - proposal-GO authorization for the complete delivery chain;
@@ -14,7 +15,9 @@ Its baseline run failed all five tests because the published policy lacked:
 - synchronized one-checkpoint documentation.
 
 After the minimal Skill and documentation changes, the same focused command
-passed all five tests.
+passed all five tests. Local review then identified the intent-routed
+CodeRabbit consent interaction; a sixth regression test was added before that
+fix and failed, then passed after consent was folded into proposal GO.
 
 ## Pressure-scenario evidence
 
@@ -56,3 +59,32 @@ Three read-only agent scenarios were run before and after the Skill change.
 - Minor finding accepted: the focused test now positively checks the merge-gate
   paragraph and rejects broader project-policy or repeat-approval wording,
   instead of excluding only the original sentence verbatim.
+
+## CodeRabbit CLI review disposition
+
+The sole App request reached a rate-limit terminal outcome, so one authenticated
+CLI fallback reviewed the complete committed change and returned 12 findings.
+The fallback is exhausted and will not be rerun.
+
+Accepted and fixed:
+
+- Parse and enforce exactly six top-level bounded-exception bullets.
+- Scope merge reauthorization checks to normalized policy text.
+- Require the queue policy itself to reuse GO only when change identifier,
+  proposal path, repository, and approved scope match the current item.
+- Add public-document contradiction checks for merge and consent.
+- Add the missing new-external-dependency condition to the delta spec.
+- State queue reuse explicitly in the design's testing section.
+- Require accepted findings to be fixed and verified and rejected findings to
+  retain concrete reasons before merge.
+- Replace vague review-disposition wording in the implementation plan.
+- Clarify that the initial five tests passed before the sixth consent test was
+  added during local review.
+- Make explicit `jt-flow-all` invocation one consent state and remove wording
+  that could imply a second consent gate.
+
+Rejected with reason:
+
+- Do not add worktree creation to the plan's final GitHub Flow step. The plan
+  was written inside an already-created and verified feature worktree; creating
+  a worktree after implementation would reverse the required lifecycle.
