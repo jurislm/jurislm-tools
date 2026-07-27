@@ -255,7 +255,13 @@ describe('MyModule', () => {
 
 ## Release 設定
 
-release-please 依 repo 類型決定執行平台：**Coolify web app / npm-MCP / monorepo** 用 Drone `.drone.yml` 的 `release-please` pipeline；**plugin 類型**（純文字）用 GitHub Actions `release.yml`。標準皆為兩步：`release-pr`（維護版本 PR）+ `github-release`（從已合併的 release PR cut tag）。完整 pipeline 模板與各類型變體見 `references/ci-workflow-templates.md`。
+release-please 依 repo 類型與明確的平台決策執行：**Coolify web app /
+npm-MCP / monorepo** 使用 Drone；**plugin 類型**預設使用 GitHub Actions，
+但可像 `jurislm-tools` 一樣明確選擇 Drone。選擇 Drone 的 plugin repo
+必須把驗證與 release 一起遷移，不得保留功能重疊的 GitHub Actions。
+Drone 的標準順序是先 `github-release`（cut 已合併 release PR），再
+`release-pr`（維護下一個版本 PR）。完整模板與變體見
+`references/ci-workflow-templates.md`。
 
 ### `.drone.yml` 的 release-please pipeline（只在 push main 跑）
 
@@ -268,17 +274,23 @@ trigger:
   event: [push]
   ref: [refs/heads/main]
 steps:
-  - name: release-please
+  - name: github-release
     image: node:20-alpine
     environment:
       RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
     commands:
-      - npx release-please release-pr --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
       - npx release-please github-release --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+  - name: release-pr
+    image: node:20-alpine
+    depends_on: [github-release]
+    environment:
+      RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
+    commands:
+      - npx release-please release-pr --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
 ```
 
 **規則**：
-- 先 `release-pr`（維護版本 PR）再 `github-release`（建 tag / release），兩者皆冪等。
+- 先 `github-release`（建 tag / release）再 `release-pr`（維護下一個版本 PR），兩者皆冪等；若反過來，尚未 cut 的已合併 release PR 可能阻擋新 release PR。
 - **`RELEASE_PLEASE_TOKEN`** 為 Drone repo-scope secret（scopes `repo` + `workflow`；Drone Web UI Settings → Secrets）。
 - **`release-type` 不可寫在 pipeline** — 必須只放在 `release-please-config.json`（否則 Release Please 會忽略 config 的 `extra-files`，導致 `plugin.json` / `marketplace.json` 版本號不被更新）。
 - **`--config-file` + `--manifest-file` 必填** — 明確引用 config，避免隱性 drift。
@@ -340,9 +352,13 @@ steps:
 
 ⚠️ **重要**：`marketplace.json` 用 `$.plugins[0].version`（index，非 filter），目標 plugin **必須是陣列第一個元素**。
 
-### Plugin 類型的 release / 驗證（GitHub Actions）
+### Plugin 類型的 release / 驗證
 
-Plugin 類型（純文字 plugin）的 release-please 跑在 GitHub Actions `release.yml`、版本一致性檢查跑在 `version-check.yml`（無 `.drone.yml`）。
+Plugin 類型預設以 GitHub Actions `release.yml` 跑 Release Please，並以
+`version-check.yml` 跑驗證。Repo 也可以明確選擇 Drone；此時
+`.drone.yml` 必須同時提供 PR / `main` 的 aggregate validation 與
+`main`-only release pipeline，並移除功能重疊的 `release.yml` /
+`version-check.yml`。`jurislm-tools` 是 Drone 變體的標準範例。
 
 部分 plugin（如 `jurislm-plugins`）另有 `sync-plugins.yml`：發版後同步 plugin 定義到 PostgreSQL DB（dev + prod）。
 
@@ -389,7 +405,12 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ## CI Workflow 設定（Drone CI）
 
-**lint / typecheck / test 在 Drone（`https://ci.jurislm.com`）執行**——Coolify web app / npm-MCP / monorepo 類型用 repo 根目錄 `.drone.yml`；**plugin 類型（純文字）**用 GitHub Actions `version-check.yml` 做 JSON / 版本驗證（各類型平台對照見 `references/ci-workflow-templates.md` 開頭表格）。Drone 每個檢查是一個獨立 pipeline（YAML document，`---` 分隔），各自 clone + `bun install`；GitHub PR 只顯示 1 個 aggregated check（`drone/pr`）。
+**lint / typecheck / test 在 Drone（`https://ci.jurislm.com`）執行**——
+Coolify web app / npm-MCP / monorepo 類型使用 repo 根目錄
+`.drone.yml`。Plugin 類型預設用 GitHub Actions，但允許明確選擇 Drone；
+選擇後 validation 與 release 必須都由 Drone 擁有。大型 repo 可把檢查
+拆成多個 pipeline；小型 plugin repo 可用單一 aggregate `validate`
+pipeline。GitHub PR 顯示一個 aggregated check（`drone/pr`）。
 
 > 完整模板（Coolify Web App / Monorepo / npm 套件 / Plugin 變體 + deploy + secrets）見 `references/ci-workflow-templates.md`。
 
@@ -422,7 +443,10 @@ for repo in $(gh repo list jurislm --limit 50 \
 done
 ```
 
-單一平台原則：每個 repo 的 CI / release 應只用其類型對應的一套平台（見開頭表格），勿讓 Drone 與舊 GHA `ci.yml` / `release.yml` 雙系統並行。注意 plugin 類型的 `release.yml` / `version-check.yml` 是其正常機制（非殘留）。
+單一平台原則：每個 repo 的 CI / release 應只使用一套已選定平台。
+Plugin repo 預設的 `release.yml` / `version-check.yml` 不是殘留；但當該
+repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migration
+中移除，避免雙跑。
 
 ### 規範回填協議
 
@@ -472,8 +496,8 @@ done
 - **AGENTS.md**：若 repo 內存在 `AGENTS.md`，更新為讀取同層或 repo 根目錄 `CLAUDE.md`；不要複製 CLAUDE 全文
 - **Worktree**：`git worktree add .worktrees/develop develop`，`.gitignore` 加 `.worktrees/`
 - **Bun**：`"packageManager": "bun@1.3.14"`，scripts 換成 `bun run vitest` 等
-- **Release**：`.drone.yml` 的 `release-please` pipeline（push main only），`release-type` 放在 config，Plugin repo 加 `extra-files`，secret `RELEASE_PLEASE_TOKEN`
+- **Release**：Drone repo 使用 `main`-only release pipeline，依序執行 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.worktrees/`
-- **CI**：`.drone.yml` 各 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）
+- **CI**：Drone repo 的檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；plugin repo 若選 Drone，validation 與 release 一起遷移並移除重疊 GHA
 - **CD**（Coolify web app）：`.drone.yml` 加 `deploy` pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
 - **Code Review**：人工 `/code-review` + bot（CodeRabbit / Copilot via `.github/copilot-instructions.md`）；**無**自動 Claude review（2026-06-02 移除）
