@@ -76,4 +76,3 @@ remote branch state.
 ## Open Questions
 
 None.
-

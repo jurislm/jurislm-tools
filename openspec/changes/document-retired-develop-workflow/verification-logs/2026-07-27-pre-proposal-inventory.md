@@ -56,4 +56,3 @@ Date: 2026-07-27 (Asia/Taipei)
   plugins and a `develop` worktree. The verified repository state above
   overrides that context for this proposal. Updating the config is outside the
   user-approved two-file scope.
-
