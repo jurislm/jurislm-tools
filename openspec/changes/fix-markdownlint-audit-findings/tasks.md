@@ -22,5 +22,5 @@
 ## 4. Review and delivery
 
 - [x] 4.1 Use `openspec verify`/the repo-local verification workflow to compare `package.json`, `package-lock.json`, and the evidence log against the `development-dependency-security` spec.
-- [ ] 4.2 Complete local review, secret preflight, PR review, CI, mergeability, and review-thread resolution without broadening the dependency scope.
+- [x] 4.2 Complete local review, secret preflight, PR review, CI, mergeability, and review-thread resolution without broadening the dependency scope.
 - [ ] 4.3 After the implementation PR reaches `main`, verify the merged commit and audit/validation evidence, sync the new living spec, and archive `openspec/changes/fix-markdownlint-audit-findings/`.

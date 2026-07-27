@@ -190,5 +190,24 @@ A machine comparison confirmed all four files expose that exact range. A fresh
 passed, repository validation and Markdown lint passed, native plugin
 validation passed, and the synchronized OpenSpec change remained strict-valid.
 The CodeRabbit request was not restarted; the updated HEAD will be covered by
-these validations, CI, mergeability, and resolved review threads. Tasks 4.2 and
-4.3 remain open for updated PR/CI and post-merge archive evidence.
+these validations, CI, mergeability, and resolved review threads.
+
+## PR review and CI
+
+- PR #168 targets `main` from `codex/fix-markdownlint-audit-findings`.
+- The single explicit CodeRabbit App request reviewed commit `fbdc398`; its one
+  actionable privacy finding was fixed. The App was not requested again after
+  later pushes.
+- Codex review on `fbdc398` identified the missing contributor-facing engine
+  contract. The user approved the scope expansion, and commit `f8fabc0`
+  implemented the exact range in package metadata, README, and CLAUDE.
+- Copilot reported quota exhaustion and was not retried.
+- Both review threads received in-thread technical replies and are resolved.
+- Push preflight rescanned the complete six-commit history at `f8fabc0` with no
+  environment files, binaries, or secret assignments.
+- Repository Quality run `30242477665` passed on `f8fabc0`; GitHub reported the
+  PR mergeable. A final docs-only evidence commit will be covered by one final
+  CI and mergeability readback before merge.
+
+Task 4.3 remains open for merged-main verification, living-spec sync, and
+OpenSpec archive evidence.
