@@ -1,7 +1,8 @@
 {
   "private": true,
   "devDependencies": {
-    "markdownlint-cli": "^0.49.1"
+    "markdownlint-cli": "^0.49.1",
+    "yaml": "2.9.0"
   },
   "engines": {
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
@@ -11,6 +12,7 @@
     "check:plugins": "node scripts/validate-plugin-repository.mjs",
     "check:versions": "node scripts/check-version-sync.mjs",
     "lint:md": "markdownlint 'README.md' 'CLAUDE.md' '.github/**/*.md' 'plugins/*/README.md' 'plugins/*/skills/*/SKILL.md' 'openspec/changes/**/*.md' 'openspec/specs/**/*.md'",
+    "validate:drone": "bash scripts/validate-drone-yml.sh",
     "validate": "npm run test && npm run check:plugins && npm run check:versions && npm run lint:md"
   }
 }
