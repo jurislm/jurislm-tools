@@ -20,14 +20,54 @@ description: >
 將使用者的需求描述視為本次要落地的需求；自然語言即可，不需先格式化。以下流程
 依此需求從頭執行到 main 驗收通過並歸檔。
 
+## 端到端授權契約
+
+使用者明確點名／呼叫 `jt-flow-one`，即授權本 Skill 在目標 repository 內完成
+現況盤點、建立或更新 tracking issue，以及建立或更新 OpenSpec artifacts，不需
+為這些 proposal 準備動作逐項確認；proposal GO 之前仍不得建立 feature worktree
+或進入實作。
+
+使用者對 proposal 明確給出 GO，即授權本 Skill 在已核准範圍內連續完成實作、
+commit、push、建立 PR、已揭露的 review request、finding 處置、merge、部署驗收、
+issue 關閉與 OpenSpec 歸檔。正常交付鏈不得重複詢問授權，也不得把驗證 gate
+誤當成使用者 approval gate。
+
+若本 Skill 只是由一般意圖自動路由、尚未取得 CodeRabbit consent，必須把下方
+CodeRabbit App／CLI 資料範圍放進 proposal 摘要，在同一次 proposal GO 之前完成
+disclosure；使用者在該揭露後給出 GO，才同時記錄 proposal approval 與本次流程的
+CodeRabbit consent。不得把這個可預見的 consent 延後成 GO 後的另一個正常停頓點。
+
+proposal GO 後唯一允許暫停並要求使用者 input／approval 的情況是：
+
+- 依 repository、issue、proposal、code 與使用者需求證據仍無法排除目標或預期行為
+  的真實歧義；
+- 需要超出已核准 proposal 的重大範圍擴張、重大架構變更、新外部依賴或新
+  production 風險；
+- 發現 secret、credential、敏感資料或其他不應傳送的 payload；
+- 缺少必要 credential、permission，或 host／外部平台強制要求人工 approval；
+- 需要 proposal 未揭露的不可逆或破壞性 production mutation；
+- rollback／回退涉及 DB、schema、資料遺失風險，或無法明確辨識安全回復目標。
+
+同一核准範圍內的實作細節、測試修正、review finding 修正、commit、push、PR、
+merge、部署觀察與驗收、issue 關閉及歸檔都不是上述例外，不得因此暫停。遇到外部
+服務 rate limit／quota 等已有明確降級規則時，依該規則記錄後繼續，不新增 approval
+gate。
+
 ### Queue execution contract
 
-目前主代理由 `jt-flow-all` 進入本 Skill 時，輸入必須包含 issue identifier、目標
-`<owner>/<repo>`、已確認的 queue-order context 與 `codeRabbitAuthorization`。
+目前主代理由 `jt-flow-all` 進入本 Skill 時，輸入必須包含 change identifier、
+proposal 路徑、issue identifier、目標 `<owner>/<repo>`、已核准範圍、已確認的
+queue-order context 與 `codeRabbitAuthorization`。
 只有 `codeRabbitAuthorization=preauthorized` 且
-`authorizationSource=explicit-jt-flow-all` 時，才可把 queue 的明確呼叫視為同一次、
-同一 repository 的已揭露 CodeRabbit 授權；其他值都必須照下方 CodeRabbit disclosure
-與 consent gate 處理。執行結果使用下列狀態：
+`authorizationSource=explicit-coderabbit-consent`，並能用目前 context 或 durable
+approval record 證明使用者已看過下方資料範圍後明確接受時，才可沿用同一
+repository 的 CodeRabbit 授權；只點名 `jt-flow-all` 不構成此 consent。其他值都
+必須照下方 CodeRabbit disclosure 與 consent gate 處理。queue item 若帶有可由
+對話或 change artifacts 證實的已記錄
+proposal GO，只有該 GO 的 change identifier、proposal 路徑、目標 `<owner>/<repo>`
+與核准範圍都和目前 item 相符時才仍然有效，不得只因進入 `jt-flow-all` 而再次
+詢問；任一欄不符或無法證實時，仍在完成目前 proposal 後取得 GO。GO 後依上述唯一
+允許暫停的 bounded 例外契約執行。執行結果使用下列狀態：
 `success`（完成且具驗證證據）、`paused`（等待使用者 input 或 approval）、
 `blocked`、`failed` 或 `cancelled`。只有 `success` 允許 queue 繼續下一個 item；
 其餘狀態都使 queue 停在目前 item，等待使用者決定。
@@ -43,8 +83,11 @@ description: >
 的 PR review 階段使用 CodeRabbit GitHub App，以及
 CodeRabbit CLI 備援。若只是由
 「deliver this feature end to end」等一般意圖自動路由到本 Skill，不能視為已知情
-授權；第一次外部傳送前須說明下列 App／CLI 資料範圍並取得一次確認。授權成立後，
-不需再為相同 repository 與同一次流程重複詢問。
+授權；必須在 proposal 摘要中揭露下列 App／CLI 資料範圍，並以同一次 proposal GO
+取得 consent，不得等到 proposal GO 後或第一次外部傳送前才新增確認。授權成立後，
+不需再為相同 repository 與同一次流程重複詢問。若是已先 GO、但沒有可驗證
+CodeRabbit consent 紀錄的既有 proposal，外部傳送所需 consent 屬於缺少必要
+permission，依【端到端授權契約】例外處理，不得推定。
 
 CodeRabbit 有兩個獨立管道，授權、資料範圍與 rate limit 不得混為一談：
 
@@ -144,8 +187,9 @@ secret-like value 時才可通過；只要有一個值無法判定為安全 plac
 design／specs delta／tasks，不只改一份，記錄新方案與 why）→ ②
 `openspec validate --strict` → ③ 影響已完成 phase 就回頭確認驗收是否仍
 成立、需要時補測試 → ④ 獨立 commit 說明變更原因 → 才繼續下一步。不可先
-動 code 事後補 spec。純實作細節優化同步完可自行繼續；動了架構或範圍 →
-停下等使用者 GO。
+動 code 事後補 spec。同一核准範圍內的實作細節優化或結構整理，同步完可自行
+繼續；只有重大範圍擴張、重大架構變更、新外部依賴或新 production 風險才依【端到端
+授權契約】停下等使用者 GO。
 
 0. 需求分析（不建檔案）
    - superpowers:using-superpowers 確認適用技能 → superpowers:brainstorming
@@ -161,8 +205,11 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
    - 只命中 1 筆且範圍明確相符 → 沿用該 issue：`gh issue comment
      <issue-num> --repo <owner>/<repo> --body "<本次範圍補充>"`，需要時
      `gh issue edit <issue-num> --repo <owner>/<repo>` 同步標題／
-     labels；命中多筆或無法確定哪筆真正對應本次需求 → 列出候選（標題＋
-     連結）請使用者選定，不可自行猜一筆就沿用；都沒有 → `gh issue
+     labels；只命中 1 筆但用 issue body、code、既有 proposal 與使用者需求仍
+     無法明確證實範圍相符 → 視為真實歧義，列出該候選請使用者確認，不得沿用或
+     另建重複 issue；命中多筆時先用上述證據交叉
+     驗證，只有一筆可明確證實相符就沿用；證據仍無法排除真實歧義 → 列出候選
+     （標題＋連結）請使用者選定，不可猜測；都沒有 → `gh issue
      create --repo <owner>/<repo>` 新建（含背景／範圍／驗收標準），補
      labels + assignee
    - 記下 issue number，後續 proposal／PR／commit 皆引用 `Closes #<n>`
@@ -171,9 +218,13 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
    - 先查有無相關既有提案：`ls openspec/changes/`（active）+
      `openspec/changes/archive/`，grep 各 proposal.md 比對需求關鍵詞
    - 只命中 1 個 active 提案且範圍明確相符 → 沿用，用 opsx:continue 或
-     直接編輯既有 4 artifacts（依提案同步鐵則）；命中多個或無法確定
-     哪個真正對應 → 列出候選（proposal 標題＋路徑）請使用者選定，不可
-     自行猜一個就沿用或編輯；命中 archive → 汲取前作教訓，仍建新
+     直接編輯既有 4 artifacts（依提案同步鐵則）；只命中 1 個 active 提案但用
+     proposal、specs、tasks、code 與使用者需求仍無法明確證實範圍相符 → 視為
+     真實歧義，列出該候選請使用者確認，不得沿用或另建重複 change；命中多個時
+     先用 proposal、
+     specs、tasks、code 與使用者需求交叉驗證，只有一個可明確證實相符就沿用；
+     證據仍無法排除真實歧義 → 列出候選（proposal 標題＋路徑）請使用者選定，
+     不可猜測；命中 archive → 汲取前作教訓，仍建新
      change，proposal.md 註明「延續／取代 archive/<date>-<name>」；
      都沒有 → 依命名格式取名（先核對現有最大處理順序尾綴），用
      opsx:ff（或 opsx:new → opsx:continue）產出全新 4 artifacts
@@ -183,6 +234,14 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
      verification-logs/；跑 `openspec validate --strict`
    - **停下，展示 proposal／design／tasks 摘要，等使用者 GO——未經
      確認不得進入 worktree 與實作**
+   - 收到 GO 後、建立 worktree 前，立即建立或更新
+     `openspec/changes/<change>/verification-logs/proposal-go.md`，至少記錄
+     approval status、change identifier、proposal 路徑、issue identifier、
+     目標 `<owner>/<repo>`、已核准範圍、可回溯的 proposal GO evidence
+     （例如該 task context 的明確 `GO` 訊息與時間）及 CodeRabbit consent
+     狀態。不得記錄 secret 或敏感 payload。此檔是後續 resume／queue reuse
+     的 durable evidence；只憑「應該曾經核准」或無法對應目前 proposal 的
+     對話摘要不得沿用。
 
 3. 建立 feature worktree（拿到 GO 後）
    先 `git fetch <remote> main` 同步最新（`<remote>` 為前置檢查步驟 2
@@ -281,8 +340,8 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
      **Release Please PR**：GitHub 有時會在所有實際 checks 成功時仍回報
      `UNSTABLE`；此時不以 `CLEAN` 為唯一 gate，改確認 `mergeable=MERGEABLE`、
      所有實際 checks 成功、無未解 review thread，且無 branch protection 或
-     required-review blocker，全部成立才可合併。是否需要當回合再次徵求合併
-     授權，依專案既有授權規則判斷。
+     required-review blocker，全部成立才可合併。proposal GO 已包含 merge 授權；
+     gates 全部成立後直接合併，不得再次詢問。
 
 6. Merge 後：Monitor 盯部署到終態，確認 health check 通過（含 commit
    比對）；失敗先 systematic-debugging 找根因，需要回退時先確認：要退回

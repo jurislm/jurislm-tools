@@ -105,6 +105,21 @@ Some legacy detail specs remain historical. For current marketplace membership, 
 
 `jt-flow` depends on externally installed `superpowers:*` Skills. Preserve that dependency unless a proposal explicitly replaces it.
 
+For `jt-flow-one`, proposal GO is the sole normal-path checkpoint. Explicit
+invocation authorizes issue and OpenSpec preparation; proposal GO authorizes
+implementation, commits, push, PR, disclosed reviews, finding disposition,
+merge, deployment verification, issue closure, and archive. Do not add another
+normal authorization prompt for those actions. After GO, pause only for
+evidence-unresolved target or behavior ambiguity, material scope or architecture
+change or new external dependency or production risk, secrets or sensitive
+payloads, missing permissions or platform-enforced approval, an unapproved
+destructive production mutation, or rollback with database, schema, data-loss,
+or unclear-target risk. A `jt-flow-all` item reuses a recorded explicit proposal
+GO and must not ask again solely because the item entered the queue. For
+intent-routed runs without CodeRabbit consent, include the App and CLI
+disclosure in the proposal summary and let the same proposal GO record consent;
+do not defer this predictable consent into a second normal checkpoint.
+
 Keep `jt-flow` review orchestration portable across Claude Code and Codex. Its two CodeRabbit channels are the CodeRabbit GitHub App and the independently installed CodeRabbit CLI (`coderabbit review --agent --type committed --base <remote>/main`); do not model the CLI as, or require, a host-specific Claude or Codex plugin. Preserve the Skill's disclosure, consent, secret-scanning, explicit local change selection, service-side context disclosure, and App-to-CLI fallback gates when changing this workflow. Secret preflight must scan every new commit, tree, and blob that will be pushed, not only the aggregate base-to-HEAD diff; removing a secret in a later commit does not make the earlier object safe to transmit.
 
 CodeRabbit completion means every finding has an explicit disposition: accepted

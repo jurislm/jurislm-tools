@@ -34,3 +34,11 @@ test("jt-flow-all does not inventory the full GitHub issue backlog", () => {
   assert.doesNotMatch(allSkill, /重新比較所有項目/);
   assert.doesNotMatch(allSkill, /等待使用者明確 GO/);
 });
+
+test("explicit queue invocation does not imply CodeRabbit consent", () => {
+  assert.doesNotMatch(allSkill, /明確點名／呼叫本 Skill 即代表接受/);
+  assert.match(
+    allSkill,
+    /明確.*CodeRabbit consent evidence.*preauthorized.*否則.*requires-disclosure/s,
+  );
+});
