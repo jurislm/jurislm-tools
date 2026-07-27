@@ -23,9 +23,10 @@ CodeRabbit 授權 context 沿用到各 queue item 的 `jt-flow-one` 流程。此
 CodeRabbit CLI 在本機安全預檢後，將即將推送的 commit range 與明示 config 交給服務。
 CLI 服務端仍可能使用 repository guidelines、learnings 或 history。
 
-若本 Skill 僅由一般意圖自動路由，或使用者未接受上述範圍，第一次外部傳送前必須
-在目前 item 依 `jt-flow-one` 的 CodeRabbit disclosure 與 consent gate 取得同意。
-內部沿用 Skill 本身不是使用者同意，不得用來略過這個 gate。
+若本 Skill 僅由一般意圖自動路由，或使用者未接受上述範圍，必須在目前 item 依
+`jt-flow-one` 把 CodeRabbit disclosure 納入 proposal 摘要，並以同一次 proposal
+GO 取得 consent。不得把 consent 延後成 GO 後另一個正常停頓點；內部沿用 Skill
+本身不是使用者同意，不得用來略過這個 gate。
 
 ## Phase 1 — 讀取 OpenSpec changes 既有順序
 

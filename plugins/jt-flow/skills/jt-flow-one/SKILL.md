@@ -32,6 +32,11 @@ commit、push、建立 PR、已揭露的 review request、finding 處置、merge
 issue 關閉與 OpenSpec 歸檔。正常交付鏈不得重複詢問授權，也不得把驗證 gate
 誤當成使用者 approval gate。
 
+若本 Skill 只是由一般意圖自動路由、尚未取得 CodeRabbit consent，必須把下方
+CodeRabbit App／CLI 資料範圍放進 proposal 摘要，在同一次 proposal GO 之前完成
+disclosure；使用者在該揭露後給出 GO，才同時記錄 proposal approval 與本次流程的
+CodeRabbit consent。不得把這個可預見的 consent 延後成 GO 後的另一個正常停頓點。
+
 proposal GO 後唯一允許暫停並要求使用者 input／approval 的情況是：
 
 - 依 repository、issue、proposal、code 與使用者需求證據仍無法排除目標或預期行為
@@ -74,8 +79,11 @@ proposal GO，該 GO 對同一 proposal 仍然有效，不得只因進入 `jt-fl
 的 PR review 階段使用 CodeRabbit GitHub App，以及
 CodeRabbit CLI 備援。若只是由
 「deliver this feature end to end」等一般意圖自動路由到本 Skill，不能視為已知情
-授權；第一次外部傳送前須說明下列 App／CLI 資料範圍並取得一次確認。授權成立後，
-不需再為相同 repository 與同一次流程重複詢問。
+授權；必須在 proposal 摘要中揭露下列 App／CLI 資料範圍，並以同一次 proposal GO
+取得 consent，不得等到 proposal GO 後或第一次外部傳送前才新增確認。授權成立後，
+不需再為相同 repository 與同一次流程重複詢問。若是已先 GO、但沒有可驗證
+CodeRabbit consent 紀錄的既有 proposal，外部傳送所需 consent 屬於缺少必要
+permission，依【端到端授權契約】例外處理，不得推定。
 
 CodeRabbit 有兩個獨立管道，授權、資料範圍與 rate limit 不得混為一談：
 

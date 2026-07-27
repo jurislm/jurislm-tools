@@ -30,6 +30,7 @@ test("explicit invocation authorizes proposal preparation without implementation
 
 test("proposal GO authorizes the complete normal delivery chain", () => {
   const contract = sectionContaining(oneSkill, "端到端授權契約");
+  const flow = sectionContaining(oneSkill, "流程");
 
   assert.match(
     contract,
@@ -39,6 +40,18 @@ test("proposal GO authorizes the complete normal delivery chain", () => {
   assert.doesNotMatch(
     oneSkill,
     /是否需要當回合再次徵求合併授權，依專案既有授權規則判斷/,
+  );
+  assert.match(
+    flow,
+    /proposal GO 已包含 merge 授權.*直接合併.*不得再次詢問/s,
+  );
+  assert.doesNotMatch(
+    oneSkill,
+    /merge 前.*(?:專案|project|repository).*(?:規則|policy).*(?:詢問|確認|授權|approval)/i,
+  );
+  assert.doesNotMatch(
+    oneSkill,
+    /(?:再次|重新).*(?:徵求|詢問|確認).*merge.*(?:授權|approval)/i,
   );
 });
 
@@ -55,6 +68,21 @@ test("post-GO pauses are limited to observable safety exceptions", () => {
   assert.match(
     exceptions,
     /實作細節.*測試修正.*review.*push.*PR.*merge.*部署.*issue.*歸檔.*不得.*暫停/s,
+  );
+});
+
+test("intent-routed CodeRabbit consent is completed at proposal GO", () => {
+  const contract = sectionContaining(oneSkill, "端到端授權契約");
+  const consent = sectionContaining(oneSkill, "CodeRabbit 審查預先授權");
+
+  assert.match(
+    contract,
+    /一般意圖.*CodeRabbit.*disclosure.*proposal.*GO.*之前|proposal.*GO.*同一次.*consent/is,
+  );
+  assert.match(consent, /proposal.*摘要.*揭露.*GO.*consent/is);
+  assert.doesNotMatch(
+    consent,
+    /第一次外部傳送前須.*(?:取得|獲得).*(?:確認|consent)/is,
   );
 });
 

@@ -31,6 +31,22 @@ workflow MUST NOT request another normal-path authorization for those actions.
 - **THEN** the workflow merges and continues through deployment verification
   and archive without another authorization prompt
 
+### Requirement: Intent-routed review consent shares the proposal checkpoint
+
+When an intent-routed `jt-flow-one` run lacks CodeRabbit preauthorization, the
+workflow SHALL include the existing App and CLI disclosure in the proposal
+summary. A proposal GO after that disclosure SHALL record both proposal
+approval and CodeRabbit consent. The workflow MUST NOT defer this predictable
+consent into another normal checkpoint after proposal GO.
+
+#### Scenario: Intent routing reaches proposal review
+
+- **WHEN** `jt-flow-one` was selected from general delivery intent
+- **AND** no CodeRabbit consent has been recorded for this workflow
+- **THEN** the proposal summary includes the App and CLI disclosure
+- **AND** the user's proposal GO records consent for the disclosed review
+  channels
+
 ### Requirement: Post-GO pauses use bounded exceptions
 
 After proposal GO, the workflow SHALL pause only when evidence cannot resolve a

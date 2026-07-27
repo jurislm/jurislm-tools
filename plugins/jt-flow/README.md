@@ -21,6 +21,8 @@ claude plugin install jt-flow@jurislm-tools
 production 風險變更、secret 或敏感 payload、缺少權限或平台強制 approval、未揭露
 的破壞性 production mutation，以及高風險 rollback 才暫停。`jt-flow-all` 沿用可
 證實且已記錄的 proposal GO，不因 queue context 重複詢問。
+一般意圖自動路由尚未取得 CodeRabbit consent 時，資料範圍揭露會併入 proposal
+摘要並由同一次 GO 確認，不延後成 PR 前的第二個正常停頓點。
 
 ## Dependencies
 

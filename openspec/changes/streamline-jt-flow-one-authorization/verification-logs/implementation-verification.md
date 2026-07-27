@@ -28,9 +28,9 @@ Three read-only agent scenarios were run before and after the Skill change.
 
 ## Validation evidence
 
-- `node --test scripts/jt-flow-authorization-policy.test.mjs`: 5 tests passed,
+- `node --test scripts/jt-flow-authorization-policy.test.mjs`: 6 tests passed,
   0 failed.
-- `npm run validate`: 47 tests passed, plugin repository validation passed,
+- `npm run validate`: 48 tests passed, plugin repository validation passed,
   version synchronization reported `1.32.5`, and Markdown lint passed.
 - `claude plugin validate .`: marketplace validation passed.
 - `openspec validate streamline-jt-flow-one-authorization --strict`: change is
@@ -45,3 +45,14 @@ Three read-only agent scenarios were run before and after the Skill change.
 - `jt-flow-all` still contains queue coordination only; it references the
   `jt-flow-one` lifecycle instead of duplicating it.
 - The old project-dependent merge-authorization sentence was removed.
+
+## Local review disposition
+
+- Important finding accepted: intent-routed CodeRabbit consent could otherwise
+  conflict with the bounded post-GO exception list. The existing disclosure was
+  moved into the proposal summary so the same GO records both approvals; an
+  old proposal without verifiable consent remains a missing-permission
+  exception.
+- Minor finding accepted: the focused test now positively checks the merge-gate
+  paragraph and rejects broader project-policy or repeat-approval wording,
+  instead of excluding only the original sentence verbatim.

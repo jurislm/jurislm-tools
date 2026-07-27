@@ -29,6 +29,12 @@ requests already disclosed by the Skill, finding disposition, merge, deployment
 verification, issue closure, and archive. Normal progression does not ask again
 for merge or archive authorization.
 
+For an intent-routed run without CodeRabbit preauthorization, the proposal
+summary contains the existing App and CLI disclosure. The same proposal GO
+records both proposal approval and CodeRabbit consent. A resumed historical
+proposal with no verifiable consent record treats external transmission consent
+as a missing permission exception rather than silently inferring it.
+
 ### Use one bounded exception contract
 
 After proposal GO, pause only for an observable exception:
