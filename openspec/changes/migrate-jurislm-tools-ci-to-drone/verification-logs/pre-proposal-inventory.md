@@ -24,8 +24,10 @@ Date: 2026-07-27 (Asia/Taipei)
 - The `main` branch has no branch-protection rule, so no required status context
   needs replacement during this migration.
 - `drone info` authenticates as repository owner.
-- `drone repo info jurislm/jurislm-tools` confirms that the public repository is
-  activated, but its config field is empty.
+- `drone repo info jurislm/jurislm-tools` confirmed that the public repository
+  was visible in Drone's synchronized repository list, but its config field was
+  empty. This did not prove activation; the live cutover later established the
+  distinction.
 - `drone build ls jurislm/jurislm-tools --limit 5` returned no builds.
 - `drone secret ls jurislm/jurislm-tools` returned no repo-scoped secrets.
 - A local variable named `JURISLM_DRONE_RELEASE_PLEASE_TOKEN` exists; its value

@@ -77,6 +77,34 @@ Pull Request Read: false
 Pull Request Write: false
 ```
 
+## Drone activation correction
+
+Opening PR #173 produced no Drone build or GitHub Drone status. GitHub's
+repository hook list was empty, and `drone repo repair
+jurislm/jurislm-tools` failed with:
+
+```text
+client error 404: {"message":"sql: no rows in result set"}
+```
+
+This proved that earlier `drone repo info` output came from Drone's synchronized
+repository list, not an activated repository. `drone repo enable
+jurislm/jurislm-tools` then reported successful activation. Immediate readback
+showed:
+
+```text
+Config: .drone.yml
+webhook active: true
+webhook events: create, delete, deployment, pull_request, push
+webhook last response: 200 OK
+RELEASE_PLEASE_TOKEN
+Pull Request Read: false
+Pull Request Write: false
+```
+
+The evidence correction is committed and pushed so the resulting PR synchronize
+event exercises the newly connected webhook without a synthetic custom build.
+
 ## Review disposition
 
 The local code review found one Important issue: the initial validator checked
