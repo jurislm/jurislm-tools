@@ -73,6 +73,8 @@ Higgsfield 使用 remote MCP OAuth，不需本機 API key。
 
 本 repo 採 GitHub Flow：feature branch 直接對 `main` 開 PR，不維護 `develop` 分支，並禁止直接 push `main`。開始修改前請從最新 `origin/main` 建立獨立 worktree。
 
+開發工具鏈支援的 Node.js 版本為 `^22.22.2 || ^24.15.0 || >=26.0.0`；執行安裝或驗證前請先確認本機版本符合此範圍。
+
 ```bash
 npm ci
 npm run validate
