@@ -11,7 +11,10 @@ reintroducing the retired branch model. Closes #164.
   to `main` and that the repository does not maintain `develop`.
 - Update `CLAUDE.md` to remove the stale allowance for a remote `develop`
   branch and make the same current-state workflow explicit.
-- Validate the documentation and read back the remote branch state.
+- Update only the branch-workflow context in `openspec/config.yaml` so future
+  OpenSpec instructions do not reintroduce the retired branch.
+- Validate the documentation and OpenSpec change with the repository's full
+  required command set, then read back the remote branch state.
 
 ## Capabilities
 
@@ -19,7 +22,8 @@ reintroducing the retired branch model. Closes #164.
 
 - `github-flow-entry-documentation`: Requires the repository entry documents to
   describe the verified feature branch → pull request → `main` workflow without
-  presenting `develop` as active or retained.
+  presenting `develop` as active or retained, and requires active OpenSpec
+  context to agree with that workflow.
 
 ### Modified Capabilities
 
@@ -27,13 +31,15 @@ None.
 
 ## Impact
 
-This is a documentation-only repository workflow clarification affecting
-`README.md` and `CLAUDE.md`. It changes no marketplace plugin, runtime behavior,
-dependency, release-managed version, CI workflow, or deployment system.
+This is a repository workflow clarification affecting `README.md`, `CLAUDE.md`,
+and the branch-workflow lines in `openspec/config.yaml`. It changes no
+marketplace plugin, runtime behavior, dependency, release-managed version, CI
+workflow, or deployment system.
 
 ## Non-goals
 
 - Do not change plugin implementation or plugin-specific documentation.
-- Do not modify `openspec/config.yaml` or clean unrelated historical artifacts.
+- Do not rewrite unrelated stale inventory or plugin-type context in
+  `openspec/config.yaml`, or clean unrelated historical artifacts.
 - Do not remove or rewrite the archived branch that preserves the retired
   `develop` history.

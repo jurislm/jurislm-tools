@@ -18,15 +18,31 @@ repository does not maintain a `develop` branch.
 - **THEN** the documented pull request target is `main`
 - **AND** the guidance does not allow an active or retained `develop` branch
 
+### Requirement: Active OpenSpec context uses the supported branch model
+
+The repository's active OpenSpec project context SHALL describe feature
+branches opening pull requests directly to `main` and SHALL NOT direct future
+changes through a `develop` branch or develop worktree.
+
+#### Scenario: OpenSpec instructions provide project context
+
+- **WHEN** a repo-local OpenSpec Skill requests artifact instructions
+- **THEN** the returned project context describes feature branch → pull request
+  → `main`
+- **AND** the context does not direct the Skill through `develop`
+
 ### Requirement: Documentation claims use independent evidence
 
-The change SHALL validate repository documentation locally and SHALL verify the
-remote branch-state claim through a separate GitHub readback.
+The change SHALL run `npm ci`, `npm run validate`,
+`claude plugin validate .`, and
+`openspec validate document-retired-develop-workflow --strict`, and SHALL verify
+the remote branch-state claim through a separate GitHub readback.
 
 #### Scenario: Local documentation validation succeeds
 
 - **WHEN** the documentation changes are ready for completion
-- **THEN** repository validation and native Claude plugin validation pass
+- **THEN** dependency installation, repository validation, native Claude plugin
+  validation, and strict OpenSpec validation all pass
 
 #### Scenario: Remote branch claim is verified
 

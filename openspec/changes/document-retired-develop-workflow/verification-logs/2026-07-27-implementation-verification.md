@@ -2,6 +2,14 @@
 
 Date: 2026-07-27 (Asia/Taipei)
 
+## Review follow-up status
+
+This log records the originally approved two-file implementation at commit
+`65ccae104f2609fc91cd0e48ec7288d68377ecf5`. PR review subsequently identified
+that active OpenSpec context still injects the retired `develop` workflow and
+that final validation must include `npm ci`. The proposal and tasks have been
+reopened; this is not the final verification record for the expanded scope.
+
 ## Scope
 
 - `README.md`: the existing development paragraph now states that feature

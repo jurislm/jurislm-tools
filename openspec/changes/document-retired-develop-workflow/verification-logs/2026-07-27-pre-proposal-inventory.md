@@ -40,9 +40,10 @@ Date: 2026-07-27 (Asia/Taipei)
   documentation-only change.
 - Pull requests run `.github/workflows/version-check.yml`; Release Please runs
   `.github/workflows/release.yml` after pushes to `main`.
-- Required final validation is `npm run validate`,
-  `claude plugin validate .`, Markdown claim inspection, and GitHub branch
-  readback.
+- Required final validation is `npm ci`, `npm run validate`,
+  `claude plugin validate .`,
+  `openspec validate document-retired-develop-workflow --strict`, Markdown claim
+  inspection, and GitHub branch readback.
 
 ## OpenSpec and concurrent work
 
@@ -53,6 +54,7 @@ Date: 2026-07-27 (Asia/Taipei)
 - Archived packaging and review-orchestration changes establish that
   documentation validation is separate from release or deployment state.
 - `openspec/config.yaml` contains stale historical context describing twelve
-  plugins and a `develop` worktree. The verified repository state above
-  overrides that context for this proposal. Updating the config is outside the
-  user-approved two-file scope.
+  plugins and a `develop` worktree. PR review confirmed that leaving the branch
+  context unchanged would inject the retired workflow into future artifact
+  instructions. The proposal now includes a narrow correction to those
+  branch-workflow lines while leaving unrelated stale context out of scope.
