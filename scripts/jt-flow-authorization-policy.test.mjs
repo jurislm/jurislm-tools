@@ -86,6 +86,19 @@ test("post-GO pauses are limited to observable safety exceptions", () => {
   );
 });
 
+test("a single unclear issue or proposal is treated as genuine ambiguity", () => {
+  const flow = sectionContaining(oneSkill, "流程");
+
+  assert.match(
+    flow,
+    /只命中 1 筆.*無法明確證實.*真實歧義.*請使用者/s,
+  );
+  assert.match(
+    flow,
+    /只命中 1 個 active 提案.*無法明確證實.*真實歧義.*請使用者/s,
+  );
+});
+
 test("intent-routed CodeRabbit consent is completed at proposal GO", () => {
   const contract = sectionContaining(oneSkill, "端到端授權契約");
   const consent = sectionContaining(oneSkill, "CodeRabbit 審查預先授權");

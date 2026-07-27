@@ -203,7 +203,9 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
    - 只命中 1 筆且範圍明確相符 → 沿用該 issue：`gh issue comment
      <issue-num> --repo <owner>/<repo> --body "<本次範圍補充>"`，需要時
      `gh issue edit <issue-num> --repo <owner>/<repo>` 同步標題／
-     labels；命中多筆時先用 issue body、code、既有 proposal 與使用者需求交叉
+     labels；只命中 1 筆但用 issue body、code、既有 proposal 與使用者需求仍
+     無法明確證實範圍相符 → 視為真實歧義，列出該候選請使用者確認，不得沿用或
+     另建重複 issue；命中多筆時先用上述證據交叉
      驗證，只有一筆可明確證實相符就沿用；證據仍無法排除真實歧義 → 列出候選
      （標題＋連結）請使用者選定，不可猜測；都沒有 → `gh issue
      create --repo <owner>/<repo>` 新建（含背景／範圍／驗收標準），補
@@ -214,7 +216,10 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
    - 先查有無相關既有提案：`ls openspec/changes/`（active）+
      `openspec/changes/archive/`，grep 各 proposal.md 比對需求關鍵詞
    - 只命中 1 個 active 提案且範圍明確相符 → 沿用，用 opsx:continue 或
-     直接編輯既有 4 artifacts（依提案同步鐵則）；命中多個時先用 proposal、
+     直接編輯既有 4 artifacts（依提案同步鐵則）；只命中 1 個 active 提案但用
+     proposal、specs、tasks、code 與使用者需求仍無法明確證實範圍相符 → 視為
+     真實歧義，列出該候選請使用者確認，不得沿用或另建重複 change；命中多個時
+     先用 proposal、
      specs、tasks、code 與使用者需求交叉驗證，只有一個可明確證實相符就沿用；
      證據仍無法排除真實歧義 → 列出候選（proposal 標題＋路徑）請使用者選定，
      不可猜測；命中 archive → 汲取前作教訓，仍建新

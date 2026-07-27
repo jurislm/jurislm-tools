@@ -31,9 +31,9 @@ Three read-only agent scenarios were run before and after the Skill change.
 
 ## Validation evidence
 
-- `node --test scripts/jt-flow-authorization-policy.test.mjs`: 6 tests passed,
+- `node --test scripts/jt-flow-authorization-policy.test.mjs`: 7 tests passed,
   0 failed.
-- `npm run validate`: 48 tests passed, plugin repository validation passed,
+- `npm run validate`: 49 tests passed, plugin repository validation passed,
   version synchronization reported `1.32.5`, and Markdown lint passed.
 - `claude plugin validate .`: marketplace validation passed.
 - `openspec validate streamline-jt-flow-one-authorization --strict`: change is
@@ -88,3 +88,11 @@ Rejected with reason:
 - Do not add worktree creation to the plan's final GitHub Flow step. The plan
   was written inside an already-created and verified feature worktree; creating
   a worktree after implementation would reverse the required lifecycle.
+
+## PR review disposition
+
+- P2 finding accepted: exactly one search candidate with an unclear scope was
+  not explicitly routed. Both issue and active-proposal flows now classify that
+  state as genuine ambiguity, present the sole candidate for confirmation, and
+  prohibit silently reusing it or creating a duplicate. A seventh focused
+  regression test was added before the fix.
