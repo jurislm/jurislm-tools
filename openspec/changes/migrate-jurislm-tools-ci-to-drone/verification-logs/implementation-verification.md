@@ -105,6 +105,29 @@ Pull Request Write: false
 The evidence correction is committed and pushed so the resulting PR synchronize
 event exercises the newly connected webhook without a synthetic custom build.
 
+## Live pull-request build
+
+Pushing the activation-evidence correction produced Drone Build #1:
+
+```text
+Status: success
+Event: pull_request
+Commit: 53e5e473293415011b832173d747d2bb3896aeb3
+Ref: refs/pull/173/head
+```
+
+GitHub commit-status readback for the same SHA returned:
+
+```text
+context: continuous-integration/drone/pr
+state: success
+description: Build is passing
+target: https://ci.jurislm.com/jurislm/jurislm-tools/1
+```
+
+This is a real PR webhook build, not a Drone `custom` event. The final
+documentation update must produce the same successful status before merge.
+
 ## Review disposition
 
 The local code review found one Important issue: the initial validator checked

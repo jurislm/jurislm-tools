@@ -32,7 +32,7 @@
 - [x] 4.2 Configure the `RELEASE_PLEASE_TOKEN` Drone repo secret from the
   approved local credential without exposing it, and read back only its name
   and pull-request policy.
-- [ ] 4.3 Push the feature branch, open its PR, and record a successful live
+- [x] 4.3 Push the feature branch, open its PR, and record a successful live
   Drone build plus matching GitHub commit status before merge.
 - [ ] 4.4 After merge, read back the `main` Drone validation and release
   results, then update PR #171 from `main` and verify its Drone status.
