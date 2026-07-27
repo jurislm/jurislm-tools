@@ -177,5 +177,12 @@ The local review found one Minor documentation precision issue: the artifacts
 originally described compatibility as Node.js 22 broadly, while the locked
 transitive tree requires at least `22.22.2`. The proposal, design, spec, tasks,
 and this evidence log now state the effective minimum explicitly. There are no
-remaining correctness or coherence findings. Tasks 4.2 and 4.3 remain open
-because they require PR/CI and post-merge archive evidence respectively.
+remaining local-review correctness or coherence findings.
+
+PR review then identified that the effective range must remain visible after
+OpenSpec archive and must be enforceable at the root package boundary. The
+proposal now requires the exact supported range
+`^22.22.2 || ^24.15.0 || >=26.0.0` in `package.json`, `package-lock.json`,
+`README.md`, and `CLAUDE.md`. Implementation tasks 2.3, 2.4, and 3.6 remain
+open pending user approval of this material scope expansion. Tasks 4.2 and 4.3
+also remain open for PR/CI and post-merge archive evidence.

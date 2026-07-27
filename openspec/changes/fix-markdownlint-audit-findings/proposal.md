@@ -19,6 +19,9 @@ Closes #167
   preserving the existing Markdown lint command and repository validations.
 - Document and verify the upgraded tree's effective Node.js minimum of
   `22.22.2`.
+- Publish the complete supported Node.js engine range in package metadata and
+  contributor-facing README/CLAUDE setup guidance so unsupported installs fail
+  clearly instead of relying on transitive advisory engine declarations.
 - Record reproducible before/after dependency-tree and audit evidence.
 - Avoid dependency overrides, `npm audit fix --force`, unrelated package
   updates, and release-managed version changes.
@@ -36,7 +39,8 @@ None.
 
 ## Impact
 
-- Affected files: `package.json`, `package-lock.json`, and this OpenSpec change.
+- Affected files: `package.json`, `package-lock.json`, `README.md`,
+  `CLAUDE.md`, and this OpenSpec change.
 - Affected dependency: development-only `markdownlint-cli`; no production
   dependency or published plugin runtime package changes.
 - Affected validation: npm audit, Markdown lint, repository tests, plugin

@@ -71,9 +71,27 @@ compatibility, not permanent coupling to one patch version.
 
 ### Keep the change development-only
 
-Only `package.json`, `package-lock.json`, and OpenSpec evidence may change.
-Review the lockfile diff to confirm no production, plugin runtime, or unrelated
-package movement.
+Only `package.json`, `package-lock.json`, contributor-facing Node prerequisite
+guidance in `README.md`/`CLAUDE.md`, and OpenSpec evidence may change. Review the
+lockfile diff to confirm no production, plugin runtime, or unrelated package
+movement.
+
+### Make the effective engine range an enforceable public contract
+
+Add the most restrictive locked transitive engine range to root
+`package.json.engines.node`: `^22.22.2 || ^24.15.0 || >=26.0.0`. Mirror that
+exact range in README contributor setup and CLAUDE required-validation guidance.
+This prevents contributors from treating every Node.js 22 or 24 patch as
+supported merely because npm normally treats transitive engine declarations as
+advisory.
+
+Alternative: record only `>=22.22.2`. Rejected because locked `ini@7.0.0`
+explicitly excludes Node.js 23 and early Node.js 24, so a monotonic minimum
+would overstate compatibility.
+
+Alternative: leave the range only in temporary OpenSpec evidence. Rejected
+because that disappears from the active contributor path after archive and
+does not give npm a root engine contract.
 
 ## Risks / Trade-offs
 
@@ -96,8 +114,11 @@ package movement.
 3. Restore invariant lockfile root metadata if npm derives it from the linked
    worktree directory, then confirm the remaining diff is limited to the
    intended dependency closure.
-4. Run the full audit and all repository validations.
-5. If any contract fails, revert the two package files in the feature branch;
+4. Add the exact effective Node.js range to root package metadata and
+   contributor setup documentation.
+5. Run the full audit and all repository validations.
+6. If any contract fails, revert the package and contributor-document changes
+   in the feature branch;
    no deployed service, data, or schema rollback is required.
 
 ## Open Questions

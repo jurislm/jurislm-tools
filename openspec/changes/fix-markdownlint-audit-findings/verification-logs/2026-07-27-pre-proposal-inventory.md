@@ -6,10 +6,6 @@ Date: 2026-07-27 (Asia/Taipei)
 
 - Repository root was clean on `main` at
   `821d8c25b1448ec40b0e9f12cd9feef58f83ea96`.
-- The unique GitHub remote is `origin`, and its fetch and push URLs both resolve
-  to `jurislm/jurislm-tools`.
-- GitHub reports `main` as the default branch and the current account has admin
-  access.
 - No local or remote `develop` branch exists. Repository Quality runs for pull
   requests on Node.js 22; Release Please runs after pushes to `main`.
 - The repository has no application deployment pipeline.

@@ -51,6 +51,18 @@ Markdown lint, native plugin validation, and OpenSpec strict validation.
 - **THEN** the repository records the highest effective minimum and verifies
   both the local and CI-selected Node.js versions meet it
 
+### Requirement: Effective Node.js compatibility is contributor-visible
+
+The repository MUST declare the effective supported Node.js range
+`^22.22.2 || ^24.15.0 || >=26.0.0` in root package metadata and MUST mirror that
+exact range in contributor-facing README and CLAUDE validation guidance.
+
+#### Scenario: Contributor installs dependencies
+
+- **WHEN** a contributor prepares to run `npm ci` or repository validation
+- **THEN** the root package metadata and setup documentation identify the exact
+  supported Node.js range before installation
+
 ### Requirement: Dependency changes remain narrowly scoped
 
 The committed package diff MUST contain only the direct lint dependency update
