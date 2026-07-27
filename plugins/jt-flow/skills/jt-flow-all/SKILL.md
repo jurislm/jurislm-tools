@@ -16,18 +16,16 @@ description: >
 
 ## CodeRabbit 授權承接
 
-只有使用者明確點名／呼叫 `jt-flow-all`（包含 Skill picker、
-`$jt-flow:jt-flow-all` 或文字指名）時，才可將該次目標 repository 的
-CodeRabbit 授權 context 沿用到各 queue item 的 `jt-flow-one` 流程。此授權涵蓋：GitHub App
-可能依既有 installation permissions 讀取待審 diff 以外的 repository 內容；以及
-CodeRabbit CLI 在本機安全預檢後，將即將推送的 commit range 與明示 config 交給服務。
-CLI 服務端仍可能使用 repository guidelines、learnings 或 history。
+明確點名／呼叫 `jt-flow-all` 只授權建立並執行 change queue，不代表使用者已看過
+或接受 CodeRabbit 的 App／CLI 資料範圍。只有目前 task context 或 durable
+approval record 含明確 CodeRabbit consent evidence，且能證明使用者在看到
+`jt-flow-one` 的完整 disclosure 後接受，才可把 `preauthorized` consent 狀態沿用
+到同一目標 repository 的各 item。
 
-明確點名／呼叫本 Skill 即代表接受上述範圍，使用同一個 `preauthorized` consent
-狀態沿用到各 item。若本 Skill 僅由一般意圖自動路由，必須在目前 item 依
+沒有上述 evidence 時一律傳入 `requires-disclosure`：目前 item 必須依
 `jt-flow-one` 把 CodeRabbit disclosure 納入 proposal 摘要，並以同一次 proposal
-GO 取得 consent。不得把 consent 延後成 GO 後另一個正常停頓點；內部沿用 Skill
-本身不是使用者同意，不得用來略過這個 gate。
+GO 取得 consent。這不新增另一個 checkpoint；不得把 consent 延後成 GO 後的正常
+停頓點，也不得用 Skill 名稱或內部 handoff 推定使用者同意。
 
 ## Phase 1 — 讀取 OpenSpec changes 既有順序
 
@@ -50,9 +48,9 @@ GO 取得 consent。不得把 consent 延後成 GO 後另一個正常停頓點�
    （如有）、目標 `<owner>/<repo>`、已核准範圍、proposal GO evidence
    （`verification-logs/proposal-go.md` 的路徑與對應 approval record）、
    OpenSpec 既有順序 context，以及 `codeRabbitAuthorization`
-   context：只有明確呼叫 `jt-flow-all` 時才傳入 `preauthorized` 與
-   `authorizationSource=explicit-jt-flow-all`；其他情況一律傳入
-   `requires-disclosure`。不得建立或安排子代理處理 queue item，也不得只要求使用者
+   context：只有存在上述明確 CodeRabbit consent evidence 時才傳入
+   `preauthorized` 與 `authorizationSource=explicit-coderabbit-consent`；否則
+   一律傳入 `requires-disclosure`。不得建立或安排子代理處理 queue item，也不得只要求使用者
    自行改呼叫 `jt-flow-one`。
 2. 各 item 的交付程序與 approval gates 全部以 `jt-flow-one` 為準，本 Skill 不重述。
    依既有順序開始 queue 不取代尚未取得的 per-item GO；只有

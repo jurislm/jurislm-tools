@@ -35,11 +35,13 @@ authorization for those actions.
 
 ### Requirement: Intent-routed review consent shares the proposal checkpoint
 
-When an intent-routed `jt-flow-one` run lacks CodeRabbit preauthorization, the
-workflow SHALL include the existing App and CLI disclosure in the proposal
-summary. A proposal GO after that disclosure SHALL record both proposal
-approval and CodeRabbit consent. The workflow MUST NOT defer this predictable
-consent into another normal checkpoint after proposal GO.
+When an intent-routed `jt-flow-one` run or `jt-flow-all` queue item lacks
+explicit CodeRabbit consent evidence after disclosure, the workflow SHALL
+include the existing App and CLI disclosure in the proposal summary. Naming
+`jt-flow-all` alone MUST NOT count as consent. A proposal GO after that
+disclosure SHALL record both proposal approval and CodeRabbit consent. The
+workflow MUST NOT defer this predictable consent into another normal checkpoint
+after proposal GO.
 
 #### Scenario: Intent routing reaches proposal review
 
@@ -48,6 +50,14 @@ consent into another normal checkpoint after proposal GO.
 - **THEN** the proposal summary includes the App and CLI disclosure
 - **AND** the user's proposal GO records consent for the disclosed review
   channels
+
+#### Scenario: Explicit queue invocation lacks review consent evidence
+
+- **WHEN** the user explicitly invokes `jt-flow-all`
+- **AND** neither current context nor a durable approval record proves consent
+  after the CodeRabbit disclosure
+- **THEN** the queue passes `requires-disclosure` to `jt-flow-one`
+- **AND** the current item's proposal GO remains the only consent checkpoint
 
 ### Requirement: Post-GO pauses use bounded exceptions
 

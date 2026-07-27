@@ -80,8 +80,10 @@ Accepted and fixed:
 - Replace vague review-disposition wording in the implementation plan.
 - Clarify that the initial five tests passed before the sixth consent test was
   added during local review.
-- Make explicit `jt-flow-all` invocation one consent state and remove wording
-  that could imply a second consent gate.
+- Initial disposition superseded by later PR evidence: explicit
+  `jt-flow-all` invocation does not itself prove informed CodeRabbit consent.
+  The queue now requires explicit consent evidence or passes
+  `requires-disclosure`, keeping disclosure and consent in the same proposal GO.
 
 Rejected with reason:
 
@@ -110,3 +112,9 @@ old policy. After both Skill changes and artifact synchronization, the focused
 suite passed 7/7. With the merged Drone migration present, `npm run validate`
 passed 52/52, strict validation passed for the active change, and Claude plugin
 validation passed.
+- P1 finding accepted: explicit `jt-flow-all` invocation previously implied
+  CodeRabbit consent even though the invocation description did not disclose
+  the App/CLI data scope. It now requires explicit consent evidence; otherwise
+  each item uses `requires-disclosure` and folds consent into proposal GO.
+- P2 finding accepted: the bounded exception named only architecture
+  replacement. It now covers every material architecture change.

@@ -43,8 +43,8 @@ After proposal GO, pause only for an observable exception:
 
 - target repository, issue, proposal, or intended behavior remains genuinely
   ambiguous after evidence-based resolution;
-- implementation requires a material scope expansion, architecture replacement,
-  new external dependency, or new production risk outside the approved
+- implementation requires a material scope expansion, material architecture
+  change, new external dependency, or new production risk outside the approved
   proposal;
 - secret or sensitive payload is detected;
 - required credentials, permissions, or a platform-enforced approval are
@@ -63,6 +63,14 @@ budget remain intact. Explicit Skill invocation still carries the documented
 CodeRabbit authorization; intent-based routing still needs its existing
 disclosure. This change removes redundant workflow confirmations, not external
 data safeguards.
+
+Explicit `jt-flow-all` invocation authorizes queue execution but does not itself
+prove informed CodeRabbit consent because its invocation description does not
+contain the App and CLI data scope. Queue items therefore receive
+`requires-disclosure` unless the current context or a durable approval record
+contains explicit consent after that disclosure. The disclosure and consent
+remain folded into the item's proposal GO rather than creating another
+checkpoint.
 
 ### Delegated queue items inherit the same lifecycle
 

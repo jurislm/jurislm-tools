@@ -41,8 +41,8 @@ proposal GO 後唯一允許暫停並要求使用者 input／approval 的情況�
 
 - 依 repository、issue、proposal、code 與使用者需求證據仍無法排除目標或預期行為
   的真實歧義；
-- 需要超出已核准 proposal 的重大範圍擴張、架構替換、新外部依賴或新 production
-  風險；
+- 需要超出已核准 proposal 的重大範圍擴張、重大架構變更、新外部依賴或新
+  production 風險；
 - 發現 secret、credential、敏感資料或其他不應傳送的 payload；
 - 缺少必要 credential、permission，或 host／外部平台強制要求人工 approval；
 - 需要 proposal 未揭露的不可逆或破壞性 production mutation；
@@ -59,9 +59,11 @@ gate。
 proposal 路徑、issue identifier、目標 `<owner>/<repo>`、已核准範圍、已確認的
 queue-order context 與 `codeRabbitAuthorization`。
 只有 `codeRabbitAuthorization=preauthorized` 且
-`authorizationSource=explicit-jt-flow-all` 時，才可把 queue 的明確呼叫視為同一次、
-同一 repository 的已揭露 CodeRabbit 授權；其他值都必須照下方 CodeRabbit disclosure
-與 consent gate 處理。queue item 若帶有可由對話或 change artifacts 證實的已記錄
+`authorizationSource=explicit-coderabbit-consent`，並能用目前 context 或 durable
+approval record 證明使用者已看過下方資料範圍後明確接受時，才可沿用同一
+repository 的 CodeRabbit 授權；只點名 `jt-flow-all` 不構成此 consent。其他值都
+必須照下方 CodeRabbit disclosure 與 consent gate 處理。queue item 若帶有可由
+對話或 change artifacts 證實的已記錄
 proposal GO，只有該 GO 的 change identifier、proposal 路徑、目標 `<owner>/<repo>`
 與核准範圍都和目前 item 相符時才仍然有效，不得只因進入 `jt-flow-all` 而再次
 詢問；任一欄不符或無法證實時，仍在完成目前 proposal 後取得 GO。GO 後依上述唯一
@@ -186,7 +188,7 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
 `openspec validate --strict` → ③ 影響已完成 phase 就回頭確認驗收是否仍
 成立、需要時補測試 → ④ 獨立 commit 說明變更原因 → 才繼續下一步。不可先
 動 code 事後補 spec。同一核准範圍內的實作細節優化或結構整理，同步完可自行
-繼續；只有重大範圍擴張、架構替換、新外部依賴或新 production 風險才依【端到端
+繼續；只有重大範圍擴張、重大架構變更、新外部依賴或新 production 風險才依【端到端
 授權契約】停下等使用者 GO。
 
 0. 需求分析（不建檔案）

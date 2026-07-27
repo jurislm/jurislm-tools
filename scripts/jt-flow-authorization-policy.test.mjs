@@ -75,7 +75,8 @@ test("post-GO pauses are limited to observable safety exceptions", () => {
   assert.equal(bullets.length, 6);
   assert.match(exceptions, /歧義/);
   assert.match(exceptions, /重大.*範圍|material.*scope/i);
-  assert.match(exceptions, /架構/);
+  assert.match(exceptions, /重大.*架構變更/);
+  assert.doesNotMatch(exceptions, /架構替換/);
   assert.match(exceptions, /secret|敏感/i);
   assert.match(exceptions, /權限|permission/i);
   assert.match(exceptions, /不可逆|破壞性/);
