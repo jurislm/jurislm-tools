@@ -14,6 +14,13 @@ overrides when a compatible direct upgrade is available.
 - **THEN** the direct dependency and its lockfile closure are upgraded without
   changing production or plugin runtime dependencies
 
+#### Scenario: Existing lock retains a vulnerable compatible resolution
+
+- **WHEN** the direct upgrade still resolves a vulnerable transitive version
+  even though a fixed version satisfies the upstream dependency range
+- **THEN** the repository refreshes only that transitive lock resolution
+  without adding it as a direct dependency or an override
+
 ### Requirement: Full audit verifies the remediated dependency tree
 
 The repository MUST run the full npm audit after dependency installation and
@@ -47,4 +54,5 @@ release-managed versions or unrelated dependencies.
 
 - **WHEN** the dependency update is ready to commit
 - **THEN** reviewers can verify from `package.json` and `package-lock.json` that
-  no unrelated package or release-managed version changed
+  no unrelated package, lockfile root metadata, or release-managed version
+  changed

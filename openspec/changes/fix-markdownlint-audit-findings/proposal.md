@@ -13,6 +13,8 @@ Closes #167
 
 - Upgrade `markdownlint-cli` from the `0.48` line to `0.49.1` and refresh only
   the npm dependency lock data required by that upgrade.
+- Refresh any still-vulnerable transitive resolution within the upgraded
+  package's declared compatible range when npm preserves an older lock entry.
 - Require a full `npm audit` result with zero known vulnerabilities while
   preserving the existing Markdown lint command and repository validations.
 - Record reproducible before/after dependency-tree and audit evidence.

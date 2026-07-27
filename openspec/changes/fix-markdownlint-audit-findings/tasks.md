@@ -1,12 +1,12 @@
 ## 1. Establish the failing security baseline
 
-- [ ] 1.1 Run `npm audit --json` and `npm ls markdownlint-cli js-yaml markdown-it linkify-it brace-expansion --all`, then record the five-finding baseline in `openspec/changes/fix-markdownlint-audit-findings/verification-logs/2026-07-27-implementation-verification.md`.
-- [ ] 1.2 Confirm with `npm audit --omit=dev --json` that `package.json` has no production dependency finding before changing the development toolchain.
+- [x] 1.1 Run `npm audit --json` and `npm ls markdownlint-cli js-yaml markdown-it linkify-it brace-expansion --all`, then record the five-finding baseline in `openspec/changes/fix-markdownlint-audit-findings/verification-logs/2026-07-27-implementation-verification.md`.
+- [x] 1.2 Confirm with `npm audit --omit=dev --json` that `package.json` has no production dependency finding before changing the development toolchain.
 
 ## 2. Upgrade the owning development dependency
 
-- [ ] 2.1 Update `package.json` and `package-lock.json` with `npm install --save-dev markdownlint-cli@^0.49.1`; do not use `--force` or add `overrides`.
-- [ ] 2.2 Review the `package.json` and `package-lock.json` diff and resolved `npm ls` tree to verify that changes are limited to `markdownlint-cli` and the transitive closure required by that upgrade.
+- [ ] 2.1 Update `package.json` and `package-lock.json` with `npm install --save-dev markdownlint-cli@^0.49.1`, then use `npm update brace-expansion` to refresh the vulnerable retained lock resolution within `minimatch`'s supported range; do not use `--force`, add `overrides`, or add `brace-expansion` as a direct dependency.
+- [ ] 2.2 Restore the original `package-lock.json` root name if npm derives it from the worktree directory, then review the package diff and resolved `npm ls` tree to verify that changes are limited to `markdownlint-cli` and the transitive closure required by that upgrade.
 
 ## 3. Verify security and behavior
 

@@ -35,7 +35,10 @@ the repository.
 
 Use `npm install --save-dev markdownlint-cli@^0.49.1` in the isolated worktree.
 This expresses the existing caret-based dependency policy while moving the
-minimum version to the first verified fixed release.
+minimum version to the first verified fixed release. If npm preserves a
+vulnerable transitive lock entry that remains within the upgraded dependency's
+declared range, use a package-scoped `npm update <transitive>` to refresh only
+that resolution.
 
 Alternative: pin exactly `0.49.1`. Rejected because this non-credential-bearing
 development tool already uses caret semantics, and this change does not propose
@@ -44,6 +47,12 @@ a broader dependency policy change.
 Alternative: use npm `overrides` for `js-yaml`, `markdown-it`, `linkify-it`, and
 `brace-expansion`. Rejected because it bypasses the direct package's tested
 dependency ranges and creates repository-owned compatibility risk.
+
+The first Green attempt established that `minimatch@10.2.5` legitimately
+declares `brace-expansion ^5.0.5`, but npm retained vulnerable
+`brace-expansion@5.0.6` from the old lockfile. Refreshing that package to
+`5.0.8` is within the upstream range and is therefore part of the required
+lockfile closure, not an override or new direct dependency.
 
 ### Treat the audit as the TDD acceptance boundary
 
@@ -77,8 +86,11 @@ package movement.
 ## Migration Plan
 
 1. Capture the failing audit count and current dependency tree.
-2. Update the direct development dependency and lockfile in one npm operation.
-3. Confirm the diff is limited to the intended dependency closure.
+2. Update the direct development dependency, then refresh only any vulnerable
+   transitive resolution retained within the new supported dependency range.
+3. Restore invariant lockfile root metadata if npm derives it from the linked
+   worktree directory, then confirm the remaining diff is limited to the
+   intended dependency closure.
 4. Run the full audit and all repository validations.
 5. If any contract fails, revert the two package files in the feature branch;
    no deployed service, data, or schema rollback is required.
