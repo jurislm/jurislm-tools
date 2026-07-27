@@ -1,0 +1,22 @@
+## 1. Protect the authorization contract
+
+- [ ] 1.1 Add a focused failing policy test in
+  `scripts/jt-flow-authorization-policy.test.mjs` for explicit invocation,
+  proposal GO, automatic post-GO continuation, bounded exceptions, and queue
+  delegation.
+
+## 2. Update the JT Flow Skills
+
+- [ ] 2.1 Add the positive authorization and bounded-exception contracts to
+  `plugins/jt-flow/skills/jt-flow-one/SKILL.md`.
+- [ ] 2.2 Align delegated-item continuation in
+  `plugins/jt-flow/skills/jt-flow-all/SKILL.md`.
+- [ ] 2.3 Synchronize `plugins/jt-flow/README.md` and `CLAUDE.md` with the
+  normal-path checkpoint contract.
+
+## 3. Verify
+
+- [ ] 3.1 Pass the focused policy test and `npm run validate`.
+- [ ] 3.2 Pass `claude plugin validate .` and strict OpenSpec validation.
+- [ ] 3.3 Record verification evidence under
+  `openspec/changes/streamline-jt-flow-one-authorization/verification-logs/`.
