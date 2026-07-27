@@ -2,13 +2,11 @@
 
 Date: 2026-07-27 (Asia/Taipei)
 
-## Review follow-up status
+## Review follow-up
 
-This log records the originally approved two-file implementation at commit
-`65ccae104f2609fc91cd0e48ec7288d68377ecf5`. PR review subsequently identified
-that active OpenSpec context still injects the retired `develop` workflow and
-that final validation must include `npm ci`. The proposal and tasks have been
-reopened; this is not the final verification record for the expanded scope.
+PR review identified that active OpenSpec context still injected the retired
+`develop` workflow and that final validation needed to include `npm ci`. The
+proposal was expanded and re-approved before the configuration change.
 
 ## Scope
 
@@ -17,10 +15,17 @@ reopened; this is not the final verification record for the expanded scope.
   maintain `develop`, and that direct pushes to `main` remain prohibited.
 - `CLAUDE.md`: the existing GitHub Flow section now states the same supported
   branch model and no longer allows a remote `develop` branch.
+- `openspec/config.yaml`: only the branch-workflow context changed; fresh
+  artifact instructions now return feature worktree → pull request → `main` and
+  state that the repository does not maintain `develop`.
 - No plugin implementation, manifest, dependency, release-managed version,
   workflow, or deployment file changed.
 
 ## Local validation
+
+`npm ci` exited 0 after installing 74 packages from the committed lockfile. It
+reported five existing audit findings (two moderate, three high); dependency
+remediation remains outside this documentation/configuration change.
 
 `npm run validate` exited 0:
 
@@ -33,6 +38,10 @@ reopened; this is not the final verification record for the expanded scope.
 
 `openspec validate document-retired-develop-workflow --strict` exited 0 and
 reported the change valid.
+
+Fresh `openspec instructions proposal --change
+document-retired-develop-workflow --json` context contained the supported
+feature-worktree workflow and did not contain a `develop` worktree directive.
 
 ## Remote readback
 
@@ -47,7 +56,8 @@ reported the change valid.
 
 - README contributor scenario: satisfied by the updated development paragraph.
 - CLAUDE agent scenario: satisfied by the updated GitHub Flow section.
-- Local validation scenario: satisfied by the repository and native plugin
-  validators.
+- OpenSpec context scenario: satisfied by the fresh instructions readback.
+- Local validation scenario: satisfied by dependency installation, repository
+  validation, native plugin validation, and strict OpenSpec validation.
 - Remote branch scenario: satisfied by the independent remote and GitHub
   readbacks.

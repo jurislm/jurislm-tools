@@ -9,21 +9,21 @@
 
 ## 2. Validation and evidence
 
-- [ ] 2.1 Run `npm ci` against the committed `package-lock.json`.
-- [ ] 2.2 Run `npm run validate` to check tests, marketplace integrity, version
+- [x] 2.1 Run `npm ci` against the committed `package-lock.json`.
+- [x] 2.2 Run `npm run validate` to check tests, marketplace integrity, version
   synchronization, and Markdown lint for `README.md` and `CLAUDE.md`.
-- [ ] 2.3 Run `claude plugin validate .` to validate the marketplace using the
+- [x] 2.3 Run `claude plugin validate .` to validate the marketplace using the
   native Claude validator.
-- [ ] 2.4 Run
+- [x] 2.4 Run
   `openspec validate document-retired-develop-workflow --strict`.
-- [ ] 2.5 Query the `origin` remote and GitHub pull requests to confirm there is
+- [x] 2.5 Query the `origin` remote and GitHub pull requests to confirm there is
   no active `develop` branch or develop-based pull request.
-- [ ] 2.6 Record the final validation evidence under
+- [x] 2.6 Record the final validation evidence under
   `openspec/changes/document-retired-develop-workflow/verification-logs/`.
 
 ## 3. Active OpenSpec context
 
-- [ ] 3.1 Update only the branch-workflow lines in `openspec/config.yaml` to
+- [x] 3.1 Update only the branch-workflow lines in `openspec/config.yaml` to
   describe feature branch → pull request → `main` without `develop`.
-- [ ] 3.2 Inspect fresh OpenSpec instructions to confirm their returned project
+- [x] 3.2 Inspect fresh OpenSpec instructions to confirm their returned project
   context no longer directs work through `develop`.
