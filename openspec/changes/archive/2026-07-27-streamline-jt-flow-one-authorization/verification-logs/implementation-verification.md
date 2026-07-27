@@ -112,9 +112,24 @@ old policy. After both Skill changes and artifact synchronization, the focused
 suite passed 7/7. With the merged Drone migration present, `npm run validate`
 passed 52/52, strict validation passed for the active change, and Claude plugin
 validation passed.
+
 - P1 finding accepted: explicit `jt-flow-all` invocation previously implied
   CodeRabbit consent even though the invocation description did not disclose
   the App/CLI data scope. It now requires explicit consent evidence; otherwise
   each item uses `requires-disclosure` and folds consent into proposal GO.
 - P2 finding accepted: the bounded exception named only architecture
   replacement. It now covers every material architecture change.
+
+## Delivery readback
+
+- PR #171 final head:
+  `79e6ad333ca9680fcfc799f13ba17cb050b1c541`.
+- Drone Build #6: `pull_request`, `refs/pull/171/head`, success.
+- GitHub `continuous-integration/drone/pr`: success for the same SHA.
+- Unresolved review threads before merge: 0.
+- Squash merge:
+  `cda24c485c59061a52f211031b47eff882a12e6c`.
+- Issue #170: closed by the merge.
+- Drone Build #7: `push`, `refs/heads/main`, validation and release stages
+  successful.
+- GitHub `continuous-integration/drone/push`: success for the merge SHA.
