@@ -79,6 +79,96 @@ The proposal was synchronized before continuing: use a scoped transitive
 refresh within the upstream-supported range, without an override or new direct
 dependency.
 
+### Accepted dependency tree
+
+Commands:
+
+```bash
+npm update brace-expansion
+npm ls markdownlint-cli js-yaml markdown-it linkify-it brace-expansion --all
+```
+
+Relevant result:
+
+```text
+markdownlint-cli@0.49.1
+├── js-yaml@5.2.2
+├─┬ markdown-it@14.3.0
+│ └── linkify-it@5.0.2
+└─┬ minimatch@10.2.5
+  └── brace-expansion@5.0.8
+```
+
+`package.json` contains only the direct development dependency
+`markdownlint-cli: ^0.49.1`; it has no `overrides` and does not declare
+`brace-expansion`. The lockfile root name was restored to `jurislm-tools`.
+
+### Fresh-install audit
+
+Commands:
+
+```bash
+npm ci
+npm audit --json
+```
+
+Result: both exited 0. The audit metadata was:
+
+```json
+{
+  "info": 0,
+  "low": 0,
+  "moderate": 0,
+  "high": 0,
+  "critical": 0,
+  "total": 0
+}
+```
+
 ## Validation
 
-Pending implementation.
+The following commands completed successfully after the fresh install:
+
+```bash
+npm run lint:md
+npm run validate
+claude plugin validate .
+openspec validate fix-markdownlint-audit-findings --strict
+git diff --check
+```
+
+Results:
+
+- The unchanged Markdown lint command passed without content, rule, or scope
+  changes.
+- All 42 Node tests passed with 0 failures.
+- Plugin repository validation passed.
+- Version synchronization remained `1.32.5`.
+- Native Claude plugin validation passed.
+- The OpenSpec change remained strict-valid.
+- The package diff consists of `package.json`, `package-lock.json`, and the
+  OpenSpec evidence/task updates; no plugin runtime or release-managed file
+  changed.
+
+## OpenSpec implementation verification
+
+| Dimension | Status |
+|---|---|
+| Completeness | 9/11 tasks complete; only PR delivery and post-merge archive remain |
+| Correctness | 4/4 requirements and 5/5 scenarios mapped to package/audit evidence |
+| Coherence | Direct upgrade plus scoped compatible lock refresh follows the synchronized design |
+
+Fresh machine checks confirmed:
+
+- Direct range is exactly `markdownlint-cli: ^0.49.1`.
+- No package or lockfile `overrides` exists.
+- `brace-expansion` was not added as a direct dependency.
+- Lockfile root name remains `jurislm-tools`.
+- Lock resolutions are `markdownlint-cli@0.49.1` and
+  `brace-expansion@5.0.8`.
+- Full audit metadata remains zero at every severity.
+- No `.claude-plugin`, `plugins`, Release Please manifest, or release
+  configuration file is in the implementation diff.
+
+There are no correctness or coherence findings. Tasks 4.2 and 4.3 remain open
+because they require PR/CI and post-merge archive evidence respectively.
