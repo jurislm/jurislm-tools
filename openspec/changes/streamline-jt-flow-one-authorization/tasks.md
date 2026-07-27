@@ -13,6 +13,9 @@
   `plugins/jt-flow/skills/jt-flow-all/SKILL.md`.
 - [x] 2.3 Synchronize `plugins/jt-flow/README.md` and `CLAUDE.md` with the
   normal-path checkpoint contract.
+- [x] 2.4 Persist proposal GO evidence in
+  `openspec/changes/<change>/verification-logs/proposal-go.md` and pass its
+  matching fields through `plugins/jt-flow/skills/jt-flow-all/SKILL.md`.
 
 ## 3. Verify
 

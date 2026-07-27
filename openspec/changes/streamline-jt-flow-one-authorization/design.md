@@ -72,6 +72,13 @@ to a terminal result without normal-path pauses. Existing active proposals that
 already received an explicit GO do not need a second GO solely because they are
 delegated.
 
+Proposal GO is persisted immediately in the change's
+`verification-logs/proposal-go.md`, binding the change identifier, proposal
+path, repository, issue, approved scope, approval evidence, and review-consent
+state. Queue handoff passes both these fields and the evidence path to
+`jt-flow-one`; matching is therefore durable across task contexts rather than
+depending on conversational memory.
+
 ## Rejected Alternatives
 
 - Remove every pause: unsafe when the target, scope, credentials, secrets, or
@@ -86,5 +93,6 @@ delegated.
 A focused repository test will assert the positive authorization contract,
 the single normal proposal gate, automatic post-GO continuation, and the
 bounded exception categories, including reuse of an already recorded proposal
-GO when an active proposal enters `jt-flow-all`. It will also reject the old
-project-dependent merge-authorization wording.
+GO when an active proposal enters `jt-flow-all`, durable GO recording, and
+complete queue handoff fields. It will also reject the old project-dependent
+merge-authorization wording.

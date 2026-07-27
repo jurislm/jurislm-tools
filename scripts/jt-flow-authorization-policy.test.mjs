@@ -116,11 +116,20 @@ test("intent-routed CodeRabbit consent is completed at proposal GO", () => {
 
 test("delegated items reuse recorded proposal GO", () => {
   const queuePolicy = sectionContaining(allSkill, "Phase 2 — 由同一主代理逐項執行");
+  const executionContract = normalize(oneSkill);
 
   assert.match(queuePolicy, /已記錄的明確 proposal GO.*沿用.*不得.*重複/s);
   assert.match(
     queuePolicy,
     /change identifier.*proposal 路徑.*<owner>\/<repo>.*核准範圍.*目前 item/s,
+  );
+  assert.match(
+    queuePolicy,
+    /proposal 路徑.*已核准範圍.*proposal GO.*evidence/s,
+  );
+  assert.match(
+    executionContract,
+    /verification-logs\/proposal-go\.md.*change identifier.*proposal 路徑.*<owner>\/<repo>.*核准範圍/s,
   );
   assert.match(queuePolicy, /不得.*重複.*GO/);
   assert.match(queuePolicy, /bounded|例外/i);

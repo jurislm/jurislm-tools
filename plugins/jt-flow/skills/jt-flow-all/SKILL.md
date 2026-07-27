@@ -46,15 +46,18 @@ GO 取得 consent。不得把 consent 延後成 GO 後另一個正常停頓點�
 依 OpenSpec changes 既有順序處理每個 queue item：
 
 1. 由目前主代理在同一 task context 中載入並遵循 `jt-flow-one`，帶入該 item 的
-   change identifier、該 change 已記錄的 issue identifier（如有）、目標
-   `<owner>/<repo>`、OpenSpec 既有順序 context，以及 `codeRabbitAuthorization`
+   change identifier、proposal 路徑、該 change 已記錄的 issue identifier
+   （如有）、目標 `<owner>/<repo>`、已核准範圍、proposal GO evidence
+   （`verification-logs/proposal-go.md` 的路徑與對應 approval record）、
+   OpenSpec 既有順序 context，以及 `codeRabbitAuthorization`
    context：只有明確呼叫 `jt-flow-all` 時才傳入 `preauthorized` 與
    `authorizationSource=explicit-jt-flow-all`；其他情況一律傳入
    `requires-disclosure`。不得建立或安排子代理處理 queue item，也不得只要求使用者
    自行改呼叫 `jt-flow-one`。
 2. 各 item 的交付程序與 approval gates 全部以 `jt-flow-one` 為準，本 Skill 不重述。
-   依既有順序開始 queue 不取代尚未取得的 per-item GO；只有已記錄的明確 proposal
-   GO 之 change identifier、proposal 路徑、目標 `<owner>/<repo>` 與核准範圍全部
+   依既有順序開始 queue 不取代尚未取得的 per-item GO；只有
+   `verification-logs/proposal-go.md` 內已記錄的明確 proposal GO evidence 之
+   change identifier、proposal 路徑、目標 `<owner>/<repo>` 與核准範圍全部
    符合目前 item 時，才沿用該 GO，不得只因進入 queue 而重複詢問。任一欄不符或
    無法證實時，必須為目前 item 取得 GO；GO 後直接依 `jt-flow-one` 的 bounded
    例外契約執行到終態。

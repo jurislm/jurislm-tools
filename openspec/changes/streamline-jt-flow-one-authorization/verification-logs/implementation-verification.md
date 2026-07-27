@@ -96,3 +96,17 @@ Rejected with reason:
   state as genuine ambiguity, present the sole candidate for confirmation, and
   prohibit silently reusing it or creating a duplicate. A seventh focused
   regression test was added before the fix.
+- P2 finding accepted: `jt-flow-all` required proposal path and approved scope
+  for GO matching but omitted them from its handoff. The handoff now includes
+  both fields plus the durable approval-evidence reference.
+- P2 finding accepted: proposal GO reuse depended on conversational evidence
+  without a durable artifact. `jt-flow-one` now records
+  `verification-logs/proposal-go.md` immediately after GO, binding the change,
+  proposal, issue, repository, scope, approval evidence, and consent state
+  without recording secrets.
+
+The new queue regression assertions were added first and failed against the
+old policy. After both Skill changes and artifact synchronization, the focused
+suite passed 7/7. With the merged Drone migration present, `npm run validate`
+passed 52/52, strict validation passed for the active change, and Claude plugin
+validation passed.

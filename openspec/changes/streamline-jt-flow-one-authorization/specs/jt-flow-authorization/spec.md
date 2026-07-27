@@ -79,7 +79,10 @@ risk.
 A `jt-flow-all` delegated item SHALL retain its proposal GO gate and SHALL
 continue automatically to a terminal result after that GO. An active proposal
 with an already recorded explicit GO MUST NOT require another GO solely because
-it is delegated.
+it is delegated. On receipt, the workflow SHALL persist proposal GO evidence
+under the change verification logs, binding the change identifier, proposal
+path, repository, issue, approved scope, and consent state. Queue handoff MUST
+pass those matching fields and the durable evidence reference.
 
 #### Scenario: Approved active change enters a queue
 
@@ -87,3 +90,11 @@ it is delegated.
   explicit user approval
 - **THEN** `jt-flow-one` treats that approval as the item proposal GO
 - **AND** proceeds under the bounded-exception contract
+
+#### Scenario: Approved change resumes in another task context
+
+- **WHEN** a queue item has a durable proposal GO record whose change,
+  proposal path, repository, and approved scope match the current item
+- **THEN** `jt-flow-all` passes the record and matching fields to `jt-flow-one`
+- **AND** the workflow reuses the approval without relying on conversational
+  memory or requesting another GO

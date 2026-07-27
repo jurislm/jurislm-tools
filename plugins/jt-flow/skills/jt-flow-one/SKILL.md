@@ -232,6 +232,14 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
      verification-logs/；跑 `openspec validate --strict`
    - **停下，展示 proposal／design／tasks 摘要，等使用者 GO——未經
      確認不得進入 worktree 與實作**
+   - 收到 GO 後、建立 worktree 前，立即建立或更新
+     `openspec/changes/<change>/verification-logs/proposal-go.md`，至少記錄
+     approval status、change identifier、proposal 路徑、issue identifier、
+     目標 `<owner>/<repo>`、已核准範圍、可回溯的 proposal GO evidence
+     （例如該 task context 的明確 `GO` 訊息與時間）及 CodeRabbit consent
+     狀態。不得記錄 secret 或敏感 payload。此檔是後續 resume／queue reuse
+     的 durable evidence；只憑「應該曾經核准」或無法對應目前 proposal 的
+     對話摘要不得沿用。
 
 3. 建立 feature worktree（拿到 GO 後）
    先 `git fetch <remote> main` 同步最新（`<remote>` 為前置檢查步驟 2
