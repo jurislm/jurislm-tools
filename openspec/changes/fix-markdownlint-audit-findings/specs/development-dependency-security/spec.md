@@ -40,9 +40,16 @@ Markdown lint, native plugin validation, and OpenSpec strict validation.
 
 #### Scenario: Updated lint toolchain is validated
 
-- **WHEN** the upgraded dependency tree is installed on Node.js 22
+- **WHEN** the upgraded dependency tree is installed on Node.js `>=22.22.2`
 - **THEN** `npm run validate`, `claude plugin validate .`, and strict OpenSpec
   validation all complete successfully without weakening lint rules or scope
+
+#### Scenario: Node.js compatibility is evaluated
+
+- **WHEN** the direct dependency and its locked transitives declare different
+  Node.js 22 engine floors
+- **THEN** the repository records the highest effective minimum and verifies
+  both the local and CI-selected Node.js versions meet it
 
 ### Requirement: Dependency changes remain narrowly scoped
 

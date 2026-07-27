@@ -154,7 +154,7 @@ Results:
 
 | Dimension | Status |
 |---|---|
-| Completeness | 9/11 tasks complete; only PR delivery and post-merge archive remain |
+| Completeness | 10/12 tasks complete; only PR delivery and post-merge archive remain |
 | Correctness | 4/4 requirements and 5/5 scenarios mapped to package/audit evidence |
 | Coherence | Direct upgrade plus scoped compatible lock refresh follows the synchronized design |
 
@@ -166,9 +166,16 @@ Fresh machine checks confirmed:
 - Lockfile root name remains `jurislm-tools`.
 - Lock resolutions are `markdownlint-cli@0.49.1` and
   `brace-expansion@5.0.8`.
+- The effective engine minimum is Node.js `22.22.2`, set by locked
+  `ini@7.0.0`; local Node.js is `22.23.1`, and CI's floating Node.js 22
+  selection resolves to a current compatible patch.
 - Full audit metadata remains zero at every severity.
 - No `.claude-plugin`, `plugins`, Release Please manifest, or release
   configuration file is in the implementation diff.
 
-There are no correctness or coherence findings. Tasks 4.2 and 4.3 remain open
+The local review found one Minor documentation precision issue: the artifacts
+originally described compatibility as Node.js 22 broadly, while the locked
+transitive tree requires at least `22.22.2`. The proposal, design, spec, tasks,
+and this evidence log now state the effective minimum explicitly. There are no
+remaining correctness or coherence findings. Tasks 4.2 and 4.3 remain open
 because they require PR/CI and post-merge archive evidence respectively.

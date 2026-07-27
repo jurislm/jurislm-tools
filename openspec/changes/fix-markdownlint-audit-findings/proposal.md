@@ -4,8 +4,8 @@ The repository's only direct npm dependency, the development-only
 `markdownlint-cli@0.48.0`, currently resolves four vulnerable transitive
 packages and causes `npm ci` to report five audit findings. The lint toolchain
 should be upgraded now because its fixed release is compatible with the
-repository's existing Node.js 22 baseline and can remove the findings without
-changing runtime plugins.
+repository's current Node.js 22 environment. The upgraded lock requires Node.js
+`>=22.22.2` and can remove the findings without changing runtime plugins.
 
 Closes #167
 
@@ -17,6 +17,8 @@ Closes #167
   package's declared compatible range when npm preserves an older lock entry.
 - Require a full `npm audit` result with zero known vulnerabilities while
   preserving the existing Markdown lint command and repository validations.
+- Document and verify the upgraded tree's effective Node.js minimum of
+  `22.22.2`.
 - Record reproducible before/after dependency-tree and audit evidence.
 - Avoid dependency overrides, `npm audit fix --force`, unrelated package
   updates, and release-managed version changes.

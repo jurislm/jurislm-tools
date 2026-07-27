@@ -14,6 +14,7 @@
 - [x] 3.2 Run the unchanged Markdown lint contract through `npm run lint:md` and confirm no rule, scope, or Markdown content change is required.
 - [x] 3.3 Run `npm run validate`, `claude plugin validate .`, and `openspec validate fix-markdownlint-audit-findings --strict`.
 - [x] 3.4 Record commands, resolved versions, audit metadata, and validation results in `openspec/changes/fix-markdownlint-audit-findings/verification-logs/2026-07-27-implementation-verification.md`.
+- [x] 3.5 Verify the local Node.js version satisfies `22.22.2` and confirm `.github/workflows/version-check.yml` selects the current Node.js 22 patch; task 4.2 retains actual CI execution verification.
 
 ## 4. Review and delivery
 

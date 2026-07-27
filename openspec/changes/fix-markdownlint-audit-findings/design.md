@@ -7,10 +7,12 @@ runtime exposure: `npm audit --omit=dev` is clean and this repository has no
 application deployment. Nevertheless, the dependency tree is installed in CI
 and on contributor machines.
 
-The upstream `markdownlint-cli@0.49.1` release requires Node.js 22, matching both
-the repository workflow and the current local environment. It replaces the
-affected dependency lines while preserving the command-line interface used by
-the repository.
+The upstream `markdownlint-cli@0.49.1` release requires Node.js 22, while its
+locked `commander@15.0.0` and `ini@7.0.0` transitives raise the effective
+minimum to Node.js `22.22.2`. The current local environment is `22.23.1`, and
+the repository workflow's floating Node.js 22 selection resolves to a
+compatible current patch. The upgrade replaces the affected dependency lines
+while preserving the command-line interface used by the repository.
 
 ## Goals / Non-Goals
 
@@ -22,6 +24,8 @@ the repository.
 - Keep the package change reviewable by limiting dependency edits to
   `markdownlint-cli` and its lockfile closure.
 - Produce evidence for the resolved dependency tree and zero-result full audit.
+- State and verify the effective Node.js minimum as `22.22.2`, rather than
+  implying compatibility with every Node.js 22 patch.
 
 **Non-Goals:**
 
@@ -73,8 +77,9 @@ package movement.
 
 ## Risks / Trade-offs
 
-- `markdownlint-cli@0.49.1` raises its Node.js floor from 20 to 22 → CI and the
-  local environment already run Node.js 22; verify the engine after install.
+- The upgraded lock raises the effective Node.js floor from 20 to `22.22.2` →
+  the local environment is `22.23.1`; CI selects the current Node.js 22 patch,
+  and validation must confirm it remains at or above the effective minimum.
 - A new linter release may expose new Markdown violations → run the unchanged
   lint command before accepting the upgrade; do not weaken rules to force green.
 - Caret resolution can advance within the `0.49` line on future installs →
