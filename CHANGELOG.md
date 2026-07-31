@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.33.1](https://github.com/jurislm/jurislm-tools/compare/v1.33.0...v1.33.1) (2026-07-31)
+
+
+### 📚 Documentation
+
+* **openspec:** archive dependency-aware jt-flow rollout ([#175](https://github.com/jurislm/jurislm-tools/issues/175)) ([#177](https://github.com/jurislm/jurislm-tools/issues/177)) ([51e2373](https://github.com/jurislm/jurislm-tools/commit/51e237363f54ab78c9e100be6761040df946ed5a))
+
 ## [1.33.0](https://github.com/jurislm/jurislm-tools/compare/v1.32.5...v1.33.0) (2026-07-31)
 
 
