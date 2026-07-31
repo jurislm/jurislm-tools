@@ -19,9 +19,9 @@
 
 ## Task 4: Align documentation and living policy
 
-- [ ] 4.1 Update `plugins/jt-flow/README.md` and repository `README.md` so they describe dependency-aware dispatch and serialized integration instead of immutable ordered completion.
-- [ ] 4.2 Update repository `CLAUDE.md` to require clean refreshed-remote snapshots, proposal `Delivery Relations`, item-local blocking, and one integration lane.
-- [ ] 4.3 Confirm the active delta cleanly targets `openspec/specs/jt-flow-queue-delegation/spec.md`; keep the living spec at deployed behavior until archive applies the successor requirements.
+- [x] 4.1 Update `plugins/jt-flow/README.md` and repository `README.md` so they describe dependency-aware dispatch and serialized integration instead of immutable ordered completion.
+- [x] 4.2 Update repository `CLAUDE.md` to require clean refreshed-remote snapshots, proposal `Delivery Relations`, item-local blocking, and one integration lane.
+- [x] 4.3 Confirm the active delta cleanly targets `openspec/specs/jt-flow-queue-delegation/spec.md`; keep the living spec at deployed behavior until archive applies the successor requirements.
 
 ## Task 5: Verify, release, and record rollout boundaries
 
