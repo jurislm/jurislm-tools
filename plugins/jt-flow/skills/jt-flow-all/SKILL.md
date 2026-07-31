@@ -1,77 +1,158 @@
 ---
 name: jt-flow-all
 description: >
-  Use when the user wants to deliver every active OpenSpec change in sequence,
-  work through the current OpenSpec change queue, or asks to "按照 OpenSpec
-  changes 順序做完" or "依序處理全部 changes".
+  Use when the user wants to deliver every active OpenSpec change as a
+  dependency-aware queue, work through the current OpenSpec change queue, or
+  asks to "按照 OpenSpec changes 做完".
 ---
 
-## Input
+## Scope and non-goals
 
-將使用者指定的目標 repo（未指定則使用目前所在 repo）與其中 active
-`openspec/changes/` 作為輸入。`archive/`、隱藏項目及非 change 檔案不納入佇列。
+`jt-flow-all` is a Markdown policy contract, not a runtime scheduler. It
+coordinates whole active OpenSpec changes and delegates their delivery to
+`jt-flow-one`; it does not implement a service, database, lock, task scheduler,
+or host-specific invocation API. `jt-flow-one` remains the single owner of an
+item's implementation, isolated worktree, proposal gates, quality review, PR,
+CI, external-review disposition, merge, production verification, and archive.
 
-**單一 change 不需要排隊**：若只有一個 active change，要直接使用同一 plugin 的
-`jt-flow-one` Skill。
+Never infer a missing relationship as safe, create an Issue/change for an
+unmapped record, dispatch only a subset of a change's tasks, bypass an exact
+proposal GO, or duplicate `jt-flow-one` implementation quality review.
 
-## CodeRabbit 授權承接
+## CodeRabbit authorization handoff
 
-明確點名／呼叫 `jt-flow-all` 只授權建立並執行 change queue，不代表使用者已看過
-或接受 CodeRabbit 的 App／CLI 資料範圍。只有目前 task context 或 durable
-approval record 含明確 CodeRabbit consent evidence，且能證明使用者在看到
-`jt-flow-one` 的完整 disclosure 後接受，才可把 `preauthorized` consent 狀態沿用
-到同一目標 repository 的各 item。
+Calling `jt-flow-all` authorizes creation and execution of the change queue; it
+does not itself authorize CodeRabbit's App/CLI data scope. Only explicit
+CodeRabbit consent evidence in the current task context or a durable approval
+record, proving acceptance after the complete `jt-flow-one` disclosure, permits
+`codeRabbitAuthorization=preauthorized` for items in the same target repository.
 
-沒有上述 evidence 時一律傳入 `requires-disclosure`：目前 item 必須依
-`jt-flow-one` 把 CodeRabbit disclosure 納入 proposal 摘要，並以同一次 proposal
-GO 取得 consent。這不新增另一個 checkpoint；不得把 consent 延後成 GO 後的正常
-停頓點，也不得用 Skill 名稱或內部 handoff 推定使用者同意。
+Otherwise pass `codeRabbitAuthorization=requires-disclosure`. The owner must
+include the disclosure in its proposal summary and receive consent in that same
+proposal GO. This adds no checkpoint and must not defer consent until after GO.
+Skill names or internal handoffs never prove consent.
 
-## Phase 1 — 讀取 OpenSpec changes 既有順序
+## Phase 1 — refreshed remote dependency snapshot
 
-1. 確認目標 repository、GitHub remote 與 OpenSpec 已安裝。
-2. 只讀取 active `openspec/changes/`，依該 repository 已記錄的既有順序建立 queue。
-   目錄名稱已有序號或其他排序慣例時原樣沿用；**不得重新排序**或重新編號，也不得依
-   issue 嚴重度、影響、急迫性、依賴或工作量改變順序。
-3. 不掃描完整 GitHub issue backlog。只在處理當前 change 時，從該 change artifacts
-   讀取已記錄的 tracking issue；缺少或不一致時交由該 item 的 `jt-flow-one` 流程依其
-   approval gate 處理。
-4. 開始前簡短列出將依序處理的 active changes，作為執行紀錄；這不是重新排序或新增
-   queue GO gate。若使用者已要求執行，列出後直接進入第一項。
+1. Resolve the actual GitHub remote, fetch --prune it, and record the refreshed
+   `<remote>/main` SHA as the dependency snapshot revision. Build inventory from
+   a clean detached snapshot of `<remote>/main`, never from a dirty or stale
+   caller worktree. Prefer native workspace isolation; otherwise create a
+   validated temporary detached git worktree, use it read-only, record the map,
+   then remove it.
+2. From that same snapshot, paginate all open Issues and read all active
+   OpenSpec changes. Each whole active change is one execution unit and names
+   one primary Issue. Classify every other open Issue as related, deferred, or
+   unmapped. Report deferred or unmapped Issues without creating work or
+   blocking unrelated items.
+3. Inventory every current proposal's `Priority`, `Hard dependencies`,
+   `Acceptance dependencies`, `External blockers`, `Affected areas`,
+   `Production targets`, and primary/related Issue mapping. Each external
+   blocker must declare a `dispatch` or `integration` gate. Derive reverse
+   `Blocks` edges and candidate parallelism from those records; authors do not
+   duplicate them. `mvp-critical` ranks before `supporting`; `deferred` stays
+   paused. Existing recorded order is only a tie-breaker.
+4. Missing, contradictory, cyclic, or otherwise invalid relation data is not
+   safe to infer. Mark only the affected item `BLOCKED`, recording the
+   correction owner, reason, resume condition, and affected descendants.
+   Hard-dependency cycles block cycle members and their descendants, while
+   unrelated nodes remain eligible. Affected-area overlap is a coordination
+   warning, not a hard dependency: analysis and isolated implementation may
+   proceed, but rebase, merge, and production mutation stay serialized.
+5. Before dispatch, appoint one independent proposal-scope overdesign reviewer
+   for the current material proposal revision. The review asks whether scope is
+   too broad, duplicates capabilities, or puts deferred work on the MVP path.
+   Repeat only after material scope, architecture, dependency, or production
+   risk changes. External-review quota exhaustion uses the existing bounded
+   skip rules and does not permanently block the queue.
 
-## Phase 2 — 由同一主代理逐項執行
+## Fixed state decisions
 
-依 OpenSpec changes 既有順序處理每個 queue item：
+Record each execution unit using exactly one of `AWAITING_GO`, `READY`,
+`ACTIVE`, `WAITING`, `BLOCKED`, `PAUSED`, `INTEGRATION_READY`, `SUCCESS`,
+`FAILED`, or `CANCELLED`.
 
-1. 由目前主代理在同一 task context 中載入並遵循 `jt-flow-one`，帶入該 item 的
-   change identifier、proposal 路徑、該 change 已記錄的 issue identifier
-   （如有）、目標 `<owner>/<repo>`、已核准範圍、proposal GO evidence
-   （`verification-logs/proposal-go.md` 的路徑與對應 approval record）、
-   OpenSpec 既有順序 context，以及 `codeRabbitAuthorization`
-   context：只有存在上述明確 CodeRabbit consent evidence 時才傳入
-   `preauthorized` 與 `authorizationSource=explicit-coderabbit-consent`；否則
-   一律傳入 `requires-disclosure`。不得建立或安排子代理處理 queue item，也不得只要求使用者
-   自行改呼叫 `jt-flow-one`。
-2. 各 item 的交付程序與 approval gates 全部以 `jt-flow-one` 為準，本 Skill 不重述。
-   依既有順序開始 queue 不取代尚未取得的 per-item GO；只有
-   `verification-logs/proposal-go.md` 內已記錄的明確 proposal GO evidence 之
-   change identifier、proposal 路徑、目標 `<owner>/<repo>` 與核准範圍全部
-   符合目前 item 時，才沿用該 GO，不得只因進入 queue 而重複詢問。任一欄不符或
-   無法證實時，必須為目前 item 取得 GO；GO 後直接依 `jt-flow-one` 的 bounded
-   例外契約執行到終態。
-3. 每個 item 記錄為 `success`、`paused`、`blocked`、`failed` 或 `cancelled`。
-   `paused` 不是終態，queue 必須停在該 item；`blocked`、`failed` 與 `cancelled`
-   也停止 queue 並回報狀態，等待使用者決定是否繼續。
-4. 已完成的 item 必須以 `success` 與 `jt-flow-one` 的驗證證據表示。僅在目前 item
-   成功完成後，才依既有順序進入下一個 item；不得平行處理。
+| Fixed input | Expected state and policy |
+| --- | --- |
+| Complete, consistent relations; exact proposal GO; every hard predecessor is `SUCCESS` | `READY` |
+| Proposal GO missing or mismatched to change, proposal path, Issue, repository, or approved scope | `AWAITING_GO`; descendants wait |
+| A `READY` change is assigned to an item owner | `ACTIVE`; it consumes that owner's one capacity slot |
+| Valid but unresolved hard dependency or dispatch-gated external blocker | `WAITING`; record what, why, owner, resume condition, and affected descendants |
+| Required relationship absent, contradictory, invalid, or cyclic | `BLOCKED`; record correction owner, reason, resume condition, and affected descendants |
+| Explicitly `deferred` or postponed | `PAUSED`; it consumes no item-owner capacity and does not block unrelated MVP work |
+| Implementation, required tests, `jt-flow-one` quality review, PR checks, review disposition, and current item HEAD readback complete | `INTEGRATION_READY` |
+| Acceptance dependencies satisfied and permitted integration, verification, and archive complete | `SUCCESS` |
+| The item owner reports an irrecoverable delivery failure | `FAILED`; only its descendants are affected |
+| The user explicitly cancels an item | `CANCELLED`; only its descendants are affected |
 
-佇列清空後，回報每個 item 的終態與任何待決阻塞項目。
+Hard dependencies prevent dispatch until every predecessor is `SUCCESS`.
+Acceptance dependencies permit work through `INTEGRATION_READY` but prevent an
+integration permit and `SUCCESS` until satisfied. A valid unresolved
+integration-gated external blocker is `WAITING` at integration rather than a
+dispatch blocker. `WAITING` always means a valid unresolved condition;
+`BLOCKED` always means delivery metadata needs correction.
 
-## Non-goals
+`AWAITING_GO`, `WAITING`, `BLOCKED`, `PAUSED`, `FAILED`, or `CANCELLED` affects
+only that item and its dependency descendants. The coordinator continues to
+dispatch unrelated `READY` changes. Do not partially dispatch an oversized
+change: it stays non-ready until its proposal is reduced or an independently
+approved successor change has its own exact GO.
 
-- 不重複 `jt-flow-one` 的單一需求交付流程或其安全／審查規則。
-- 不掃描完整 GitHub issue backlog、不做 issue triage、不重新排序 OpenSpec changes。
-- 不為 queue item 建立子代理。
-- 不建立 host-specific 的 Skill 呼叫 API。
-- 不因 queue 已開始而繞過尚未完成的 individual change proposal GO，也不讓已記錄
-  的明確 proposal GO 因 queue context 無故失效。
+## Phase 2 — 由同一主代理逐項執行 coordinator dispatch、bounded ownership and handoff
+
+The primary agent is the coordinator and reserves one available agent slot.
+Each remaining available slot may own one `READY` change. Start an item owner
+from the target repository's clean main checkout; `jt-flow-one` creates and
+owns the item's isolated feature worktree. When the host has no delegation
+capacity, apply this same state table sequentially without changing its safety
+semantics. When a slot is released, assign the next independent `READY` change
+without waiting for active independent work to finish.
+
+The same primary agent performs coordinator dispatch, not each item's delivery.
+For the current item, invoke `jt-flow-one` with the exact change identifier,
+proposal path, primary/related Issue mapping, target repository, approved scope,
+durable proposal GO evidence, dependency snapshot revision, integration policy,
+and CodeRabbit authorization context. In the durable record this is the exact
+`change identifier`、`proposal 路徑`、`<owner>/<repo>`、`核准範圍` of the 目前 item;
+the `proposal 路徑`、`已核准範圍` and `proposal GO evidence` must all match.
+已記錄的明確 proposal GO 可沿用，不得重複詢問或重複取得 GO；mismatch remains
+`AWAITING_GO` and follows `jt-flow-one`'s bounded safety exceptions. The
+coordinator verifies `jt-flow-one` evidence but never initiates a second
+implementation code review.
+
+An owner that is not `SUCCESS` returns its precise state and evidence to the
+coordinator. `ACTIVE` consumes one owner slot; `WAITING`, `BLOCKED`, `PAUSED`,
+`FAILED`, `CANCELLED`, and `AWAITING_GO` release it. Continue isolated work for
+unrelated ready changes; do not treat an item-local pause or failure as a global
+queue stop.
+
+## Phase 3 — one exact-SHA integration lane
+
+An owner may return `INTEGRATION_READY` only after the fixed-state evidence
+above. Before requesting an integration permit, it fetches remote main, proves
+its item contains the verified main SHA or rebases, reruns required checks, and
+reads current mergeability.
+
+The coordinator issues at most one integration permit. The permit contains the
+exact repository, change identifier, item HEAD SHA, and verified main SHA; only
+the matching owner may merge or perform any production mutation. A changed item
+HEAD invalidates the permit. A changed main SHA requires updating from current
+main, rerunning required checks, fresh mergeability evidence, and a new permit;
+neither SHA refresh needs a new proposal GO by itself.
+
+Two `INTEGRATION_READY` items wait for this single lane rather than merge in
+parallel. The permit holder merges or mutates production, verifies the target,
+then archives. If it fails or is cancelled before any production mutation, the
+coordinator may revoke the permit only after proving no production mutation
+began. If mutation began, hold the lane until the target is verified healthy or
+restored to a known rollback state. With unknown production state, no new permit
+is issued; unrelated development and tests continue, but the integration lane
+is `WAITING` with an owner and resume condition.
+
+## Completion record
+
+Report the dependency snapshot revision, every item state, relationship or GO
+evidence, capacity allocation, integration permit evidence, affected descendants,
+unmapped records, and any owner/resume condition. The first rollout against a
+repository is read-only dependency-map validation; proposal edits, dispatch, and
+production work require their separately authorized gates.
