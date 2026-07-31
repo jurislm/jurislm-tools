@@ -147,6 +147,14 @@ test("delegated item keeps a mismatched GO local and requires an exact current i
   assert.match(executionContract, /任一欄不符.*`AWAITING_GO`/is);
   assert.match(executionContract, /unrelated `READY`.*continue/i);
   assert.match(executionContract, /clean.*main.*isolated feature worktree/is);
+  assert.match(
+    executionContract,
+    /clean main source checkout.*fetch remote main.*resolve.*record.*exact remote-main SHA\/ref/is,
+  );
+  assert.match(
+    executionContract,
+    /create.*isolated feature worktree.*directly from.*exact remote-main SHA\/ref/is,
+  );
   assert.match(executionContract, /`INTEGRATION_READY`/);
   assert.match(
     executionContract,

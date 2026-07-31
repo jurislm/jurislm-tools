@@ -59,8 +59,9 @@ gate。
 proposal 路徑、issue identifier、目標 `<owner>/<repo>`、已核准範圍、durable
 proposal GO evidence、dependency snapshot revision、integration policy 與
 `codeRabbitAuthorization`。delegated owner 先從 target repository 的 clean main
-checkout 開始：fetch remote main，並由本 Skill 自己建立及擁有基於該 clean main 的
-isolated feature worktree。
+source checkout 開始：fetch remote main，resolve and record the exact remote-main
+SHA/ref，並由本 Skill 自己 create an isolated feature worktree directly from that exact
+remote-main SHA/ref。
 
 只有 `codeRabbitAuthorization=preauthorized` 且
 `authorizationSource=explicit-coderabbit-consent`，並能用目前 context 或 durable
@@ -74,13 +75,15 @@ proposal GO，只有該 GO 的 change identifier、proposal 路徑、issue ident
 `AWAITING_GO`；其 descendants 等待，但 unrelated `READY` items continue。取得這個
 item 的正確 GO 後，依上述唯一允許暫停的 bounded 例外契約執行。
 
-`jt-flow-all` 在 dispatch 前只做 one independent proposal overdesign review，且只對
-current material proposal revision 重做；`jt-flow-one` 是 implementation quality review
-的 sole owner，包含既有的每個 code batch 一次 Superpowers review、外部 review
-disposition 與修正驗證。`jt-flow-all` 只驗證本 Skill 的 quality-review evidence，
-must not initiate a duplicate implementation code review。若 Copilot 明確回報 quota
-exhausted，record the skip and continue this item and the queue；這不是 item 或 queue 的
-blocker，且不得為此要求第二次 Copilot review。
+`jt-flow-all` 在 dispatch 前必須 appoint one independent proposal overdesign reviewer to
+perform one independent proposal overdesign review for the current material proposal revision，
+並 record the reviewer's disposition and evidence；只有 scope、architecture、dependency
+或 production risk 的 material change 才重做。`jt-flow-one` 是 implementation quality review
+的 sole owner，包含既有的每個 code batch 一次 Superpowers review、外部 review disposition
+與修正驗證。`jt-flow-all` 只驗證本 Skill 的 quality-review evidence；must not initiate a
+duplicate implementation code review。若 Copilot 明確回報 quota exhausted，
+record the skip and continue this item and the queue；這不是 item 或 queue 的 blocker，且不得
+為此要求第二次 Copilot review。
 
 delegated item 完成 implementation、required tests、`jt-flow-one` quality review、PR、
 CI、external-review disposition 與 current item HEAD readback 後，必須在 merge、任何

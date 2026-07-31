@@ -116,7 +116,15 @@ test("delegated review separates one proposal overdesign review from jt-flow-one
 
   assert.match(
     queueContract,
-    /jt-flow-all.*one independent.*proposal.*overdesign review.*material proposal revision.*jt-flow-one.*implementation quality review.*sole owner.*jt-flow-all.*must not initiate.*duplicate/is,
+    /jt-flow-all.*one independent.*proposal.*overdesign review.*material proposal revision/is,
+  );
+  assert.match(
+    queueContract,
+    /jt-flow-one.*implementation quality review.*sole owner.*jt-flow-all.*must not initiate.*duplicate/is,
+  );
+  assert.match(
+    queueContract,
+    /jt-flow-all.*appoint.*one independent proposal overdesign reviewer.*current material proposal revision.*record.*disposition.*evidence/is,
   );
 });
 
