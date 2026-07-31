@@ -1,6 +1,7 @@
 # jt-flow
 
-使用 OpenSpec、GitHub Flow、TDD 與 review gates 完整交付單一需求或依序處理 issue queue。
+使用 OpenSpec、GitHub Flow、TDD 與 review gates 完整交付單一需求，或以相依關係
+派送 active OpenSpec changes 並序列化整合。
 
 ## 安裝
 
@@ -11,7 +12,8 @@ claude plugin install jt-flow@jurislm-tools
 ## Entry Skills
 
 - `jt-flow-one`：單一需求的端到端交付流程。
-- `jt-flow-all`：依 active OpenSpec changes 的既有順序逐項交付。
+- `jt-flow-all`：從已更新 remote snapshot 建立 dependency map，於可用容量內派送
+  whole `READY` changes，並以單一 lane 整合。
 
 本 plugin 不提供 `/jt-flow` 或 `/jt-flow-all` slash commands；請以自然語言觸發對應 Skill。
 
@@ -23,6 +25,34 @@ production 風險變更、secret 或敏感 payload、缺少權限或平台強制
 證實且已記錄的 proposal GO，不因 queue context 重複詢問。
 一般意圖自動路由尚未取得 CodeRabbit consent 時，資料範圍揭露會併入 proposal
 摘要並由同一次 GO 確認，不延後成 PR 前的第二個正常停頓點。
+
+## Dependency-aware queue policy
+
+`jt-flow-all` 不使用 caller 的 dirty 或 stale worktree：它以乾淨、已 fetch/prune
+的 remote `main` snapshot 盤點 active changes 與 open Issues。每個 active change 都
+是完整的 delivery unit，並由 proposal 的 Delivery Relations 記錄 `Priority`、hard
+與 acceptance dependencies、external blockers（`dispatch` 或 `integration` gate）、
+affected areas、production targets、以及 primary/related Issue mapping；coordinator
+從這些資料推導 reverse blockers 與可安全並行的候選項目。
+
+缺漏、矛盾、cycle 或不可驗證的關係資料只讓該 item `BLOCKED`，並記錄修正 owner、
+resume condition 與 descendants；有效但未解的條件是 `WAITING`。無關 `READY` items
+仍可繼續，且不會只派送同一 change 的部分 tasks。primary agent 是 coordinator 並
+保留一個 agent slot；每個其餘可用 slot 只能交給一個 `READY` change 的
+`jt-flow-one` owner。該 owner 自己建立並擁有 isolated worktree、實作、測試、PR、
+review、驗收與 archive；無 delegation capacity 時套用相同規則循序執行。
+
+`jt-flow-one` 完成 implementation、required tests、implementation quality review、
+PR checks、external-review disposition 與 current HEAD readback 後，才回傳
+`INTEGRATION_READY`。coordinator 一次只可核發一張 exact-SHA permit，其中
+repository、change、item HEAD SHA 與 refreshed main SHA 必須完全相符；只有持有該
+permit 的 owner 可以 merge 或做 production mutation，並在驗證後 archive。item 或
+main SHA 漂移會使 permit 失效，必須刷新整合證據，但不單因此要求新的 proposal GO。
+
+Dispatch 前的獨立 proposal overdesign review 只檢查 scope 與 MVP 適切性；
+`jt-flow-one` 是 implementation quality review 的唯一 owner，`jt-flow-all` 不會
+複製程式碼審查。外部 reviewer quota exhausted 時記錄 bounded skip 後繼續，不會永久
+block item 或 queue。
 
 ## Dependencies
 

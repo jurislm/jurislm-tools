@@ -101,7 +101,7 @@ Actions validation or release workflows.
 
 `openspec/` and repo-local `opsx:*` Skills provide the specification workflow; they are not marketplace plugins. Artifact order is `proposal → design → specs → tasks`.
 
-Some legacy detail specs remain historical. For current marketplace membership, prefer `.claude-plugin/marketplace.json`, plugin manifests, and the repository integrity checker. When changing an owned area, update its living OpenSpec documentation in the same proposal.
+Some legacy detail specs remain historical. For current marketplace membership, prefer `.claude-plugin/marketplace.json`, plugin manifests, and the repository integrity checker. When changing an owned area, update its living OpenSpec documentation in the same proposal. For an active OpenSpec delta that changes a deployed requirement, keep the living spec at deployed behavior until the successor change is archived; the delta must modify the existing requirement by its exact name rather than silently pre-applying the successor to the living spec.
 
 `jt-flow` depends on externally installed `superpowers:*` Skills. Preserve that dependency unless a proposal explicitly replaces it.
 
@@ -119,6 +119,31 @@ GO and must not ask again solely because the item entered the queue. For
 intent-routed runs without CodeRabbit consent, include the App and CLI
 disclosure in the proposal summary and let the same proposal GO record consent;
 do not defer this predictable consent into a second normal checkpoint.
+
+For `jt-flow-all`, resolve the actual remote, fetch and prune it, then derive
+the queue from a clean detached snapshot of refreshed remote `main`, never a
+dirty or stale caller worktree. Every new or updated proposal must declare
+Delivery Relations: priority, hard dependencies, acceptance dependencies,
+external blockers with a `dispatch` or `integration` gate, affected areas,
+production targets, and primary/related Issue mapping. Derive reverse blockers
+and parallel candidates from those relations; do not infer missing data as
+safe or require authors to duplicate derived edges. Missing, contradictory,
+cyclic, or unverifiable data blocks only its item and descendants with a
+correction owner and resume condition; valid unresolved dependencies wait only
+at their item gate, while unrelated `READY` changes continue.
+
+The primary agent is the coordinator and reserves one agent slot; each
+remaining slot may own one whole `READY` change through `jt-flow-one`, which
+alone owns its isolated worktree and delivery. Do not dispatch partial change
+tasks. An item reaches `INTEGRATION_READY` only after its implementation,
+required tests, `jt-flow-one` quality review, PR checks, review disposition,
+and current HEAD readback. Keep merge and all production mutation in one
+integration lane: issue at most one permit whose repository, change, item HEAD
+SHA, and verified remote-main SHA exactly match the owner. SHA drift invalidates
+the permit and needs refreshed integration evidence, not a new proposal GO by
+itself. Proposal-scope overdesign review is independent and bounded;
+`jt-flow-one` remains the sole implementation-quality reviewer. Preserve
+existing quota-exhausted skip rules rather than permanently blocking the queue.
 
 Keep `jt-flow` review orchestration portable across Claude Code and Codex. Its two CodeRabbit channels are the CodeRabbit GitHub App and the independently installed CodeRabbit CLI (`coderabbit review --agent --type committed --base <remote>/main`); do not model the CLI as, or require, a host-specific Claude or Codex plugin. Preserve the Skill's disclosure, consent, secret-scanning, explicit local change selection, service-side context disclosure, and App-to-CLI fallback gates when changing this workflow. Secret preflight must scan every new commit, tree, and blob that will be pushed, not only the aggregate base-to-HEAD diff; removing a secret in a later commit does not make the earlier object safe to transmit.
 
