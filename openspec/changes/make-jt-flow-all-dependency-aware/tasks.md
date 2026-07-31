@@ -12,10 +12,10 @@
 
 ## Task 3: Preserve single-item gates without duplicating review
 
-- [ ] 3.1 Add RED policy coverage in `scripts/jt-flow-authorization-policy.test.mjs` for item-local GO mismatch and permits bound to exact repo, change, item HEAD, refreshed main, mergeability, and fresh required checks.
-- [ ] 3.2 Add RED policy coverage in `scripts/jt-flow-review-policy.test.mjs` for one proposal overdesign reviewer, `jt-flow-one`-only code-quality review, and Copilot quota-exhausted skip behavior.
-- [ ] 3.3 Update `plugins/jt-flow/skills/jt-flow-one/SKILL.md` so delegated owners start from clean main, create their own isolated worktree, stop at `INTEGRATION_READY`, and integrate only under a matching current-item/current-main permit, without weakening proposal GO, TDD, review, CI, deploy, or archive gates.
-- [ ] 3.4 Run the focused authorization, review-policy, and queue-execution tests and keep one effective implementation-quality review per code batch.
+- [x] 3.1 Add RED policy coverage in `scripts/jt-flow-authorization-policy.test.mjs` for item-local GO mismatch and permits bound to exact repo, change, item HEAD, refreshed main, mergeability, and fresh required checks.
+- [x] 3.2 Add RED policy coverage in `scripts/jt-flow-review-policy.test.mjs` for one proposal overdesign reviewer, `jt-flow-one`-only code-quality review, and Copilot quota-exhausted skip behavior.
+- [x] 3.3 Update `plugins/jt-flow/skills/jt-flow-one/SKILL.md` so delegated owners start from clean main, create their own isolated worktree, stop at `INTEGRATION_READY`, and integrate only under a matching current-item/current-main permit, without weakening proposal GO, TDD, review, CI, deploy, or archive gates.
+- [x] 3.4 Run the focused authorization, review-policy, and queue-execution tests and keep one effective implementation-quality review per code batch.
 
 ## Task 4: Align documentation and living policy
 
