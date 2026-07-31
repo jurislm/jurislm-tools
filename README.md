@@ -50,8 +50,9 @@ Item 通過實作、測試、PR 與 `jt-flow-one` 的品質審查後才是
 `INTEGRATION_READY`。coordinator 一次只授予一個 repository、item HEAD SHA 與
 remote-main SHA 完全相符的 integration permit，因此 merge 與任何 production
 mutation 都走單一 lane。proposal 的獨立 overdesign review 與 `jt-flow-one` 的
-implementation quality review 分工；外部 reviewer quota exhausted 時依既有
-bounded skip 規則記錄並繼續，不把整個 queue 永久卡住。
+implementation quality review 分工；Copilot quota exhausted 或 CodeRabbit
+quota/rate-limit exhausted 時，依既有 bounded-skip 規則記錄限制並繼續，不把整個
+queue 永久卡住。
 
 ## MCP 套件政策
 
