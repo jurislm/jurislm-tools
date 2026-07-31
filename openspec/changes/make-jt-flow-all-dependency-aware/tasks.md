@@ -6,9 +6,9 @@
 
 ## Task 2: Make queue dispatch dependency-aware
 
-- [ ] 2.1 Add RED policy-contract assertions and fixed input/expected-state cases in `scripts/jt-flow-queue-execution.test.mjs` for clean refreshed-remote inventory, relation validation, whole-change dispatch, descendant-only blocking, pause/failure isolation, bounded capacity, integration-only conflict serialization, and safe permit release after failure; do not claim to test a runtime scheduler.
-- [ ] 2.2 Replace the serial queue contract in `plugins/jt-flow/skills/jt-flow-all/SKILL.md` with the approved change-level graph, fixed state table, coordinator capacity rule, item-owner handoff, and single integration lane bound to fresh item and main SHAs.
-- [ ] 2.3 Run `node --test scripts/jt-flow-queue-execution.test.mjs` and refactor only enough to keep the dependency-aware contract clear and portable.
+- [x] 2.1 Add RED policy-contract assertions and fixed input/expected-state cases in `scripts/jt-flow-queue-execution.test.mjs` for clean refreshed-remote inventory, relation validation, whole-change dispatch, descendant-only blocking, pause/failure isolation, bounded capacity, integration-only conflict serialization, and safe permit release after failure; do not claim to test a runtime scheduler.
+- [x] 2.2 Replace the serial queue contract in `plugins/jt-flow/skills/jt-flow-all/SKILL.md` with the approved change-level graph, fixed state table, coordinator capacity rule, item-owner handoff, and single integration lane bound to fresh item and main SHAs.
+- [x] 2.3 Run `node --test scripts/jt-flow-queue-execution.test.mjs` and refactor only enough to keep the dependency-aware contract clear and portable.
 
 ## Task 3: Preserve single-item gates without duplicating review
 
