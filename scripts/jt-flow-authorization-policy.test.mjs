@@ -136,6 +136,30 @@ test("delegated items reuse recorded proposal GO", () => {
   assert.match(queuePolicy, /bounded|例外/i);
 });
 
+test("delegated item keeps a mismatched GO local and requires an exact current integration permit", () => {
+  const executionContract = sectionContaining(oneSkill, "Queue execution contract");
+
+  assert.match(
+    executionContract,
+    /change identifier.*proposal 路徑.*issue identifier.*<owner>\/<repo>.*已核准範圍/is,
+  );
+  assert.match(executionContract, /proposal GO.*目前 item.*相符/is);
+  assert.match(executionContract, /任一欄不符.*`AWAITING_GO`/is);
+  assert.match(executionContract, /unrelated `READY`.*continue/i);
+  assert.match(executionContract, /clean.*main.*isolated feature worktree/is);
+  assert.match(executionContract, /`INTEGRATION_READY`/);
+  assert.match(
+    executionContract,
+    /integration permit.*exact.*repository.*change identifier.*item HEAD SHA.*refreshed.*main SHA/is,
+  );
+  assert.match(
+    executionContract,
+    /contains.*main SHA.*or rebase.*rerun.*required checks.*current mergeability/is,
+  );
+  assert.match(executionContract, /item HEAD.*main SHA.*(?:changes|drifts).*fresh permit/is);
+  assert.match(executionContract, /SHA 漂移.*不需要.*新的 proposal GO/is);
+});
+
 test("published guidance describes one normal checkpoint", () => {
   const normalizedReadme = normalize(readme);
   const normalizedGuidance = normalize(guidance);

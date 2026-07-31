@@ -108,3 +108,22 @@ test("exhausts the CodeRabbit CLI fallback after its first invocation", () => {
     /CLI 一經呼叫即耗盡唯一\s+fallback.*無論.*產出真實 review.*不得重試/s,
   );
 });
+
+test("delegated review separates one proposal overdesign review from jt-flow-one quality review", () => {
+  const queueContract = skill
+    .split("## Queue execution contract\n", 2)[1]
+    .split("\n## ", 2)[0];
+
+  assert.match(
+    queueContract,
+    /jt-flow-all.*one independent.*proposal.*overdesign review.*material proposal revision.*jt-flow-one.*implementation quality review.*sole owner.*jt-flow-all.*must not initiate.*duplicate/is,
+  );
+});
+
+test("Copilot quota exhaustion records a skip without blocking a delegated item or queue", () => {
+  const queueContract = skill
+    .split("## Queue execution contract\n", 2)[1]
+    .split("\n## ", 2)[0];
+
+  assert.match(queueContract, /quota\s+exhausted.*record.*skip.*continue.*item.*queue/is);
+});

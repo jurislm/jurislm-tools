@@ -30,7 +30,7 @@ description: >
 使用者對 proposal 明確給出 GO，即授權本 Skill 在已核准範圍內連續完成實作、
 commit、push、建立 PR、已揭露的 review request、finding 處置、merge、部署驗收、
 issue 關閉與 OpenSpec 歸檔。正常交付鏈不得重複詢問授權，也不得把驗證 gate
-誤當成使用者 approval gate。
+誤當成使用者 approval gate；不再尋求額外授權或重複確認。
 
 若本 Skill 只是由一般意圖自動路由、尚未取得 CodeRabbit consent，必須把下方
 CodeRabbit App／CLI 資料範圍放進 proposal 摘要，在同一次 proposal GO 之前完成
@@ -53,24 +53,51 @@ merge、部署觀察與驗收、issue 關閉及歸檔都不是上述例外，不
 服務 rate limit／quota 等已有明確降級規則時，依該規則記錄後繼續，不新增 approval
 gate。
 
-### Queue execution contract
+## Queue execution contract
 
-目前主代理由 `jt-flow-all` 進入本 Skill 時，輸入必須包含 change identifier、
-proposal 路徑、issue identifier、目標 `<owner>/<repo>`、已核准範圍、已確認的
-queue-order context 與 `codeRabbitAuthorization`。
+當 `jt-flow-all` 委派目前 item 給本 Skill 時，輸入必須包含 change identifier、
+proposal 路徑、issue identifier、目標 `<owner>/<repo>`、已核准範圍、durable
+proposal GO evidence、dependency snapshot revision、integration policy 與
+`codeRabbitAuthorization`。delegated owner 先從 target repository 的 clean main
+checkout 開始：fetch remote main，並由本 Skill 自己建立及擁有基於該 clean main 的
+isolated feature worktree。
+
 只有 `codeRabbitAuthorization=preauthorized` 且
 `authorizationSource=explicit-coderabbit-consent`，並能用目前 context 或 durable
 approval record 證明使用者已看過下方資料範圍後明確接受時，才可沿用同一
 repository 的 CodeRabbit 授權；只點名 `jt-flow-all` 不構成此 consent。其他值都
 必須照下方 CodeRabbit disclosure 與 consent gate 處理。queue item 若帶有可由
 對話或 change artifacts 證實的已記錄
-proposal GO，只有該 GO 的 change identifier、proposal 路徑、目標 `<owner>/<repo>`
-與核准範圍都和目前 item 相符時才仍然有效，不得只因進入 `jt-flow-all` 而再次
-詢問；任一欄不符或無法證實時，仍在完成目前 proposal 後取得 GO。GO 後依上述唯一
-允許暫停的 bounded 例外契約執行。執行結果使用下列狀態：
-`success`（完成且具驗證證據）、`paused`（等待使用者 input 或 approval）、
-`blocked`、`failed` 或 `cancelled`。只有 `success` 允許 queue 繼續下一個 item；
-其餘狀態都使 queue 停在目前 item，等待使用者決定。
+proposal GO，只有該 GO 的 change identifier、proposal 路徑、issue identifier、
+目標 `<owner>/<repo>` 與核准範圍都和目前 item 相符時才仍然有效，不得只因進入
+`jt-flow-all` 而再次詢問。任一欄不符或無法證實時，只有目前 item 進入
+`AWAITING_GO`；其 descendants 等待，但 unrelated `READY` items continue。取得這個
+item 的正確 GO 後，依上述唯一允許暫停的 bounded 例外契約執行。
+
+`jt-flow-all` 在 dispatch 前只做 one independent proposal overdesign review，且只對
+current material proposal revision 重做；`jt-flow-one` 是 implementation quality review
+的 sole owner，包含既有的每個 code batch 一次 Superpowers review、外部 review
+disposition 與修正驗證。`jt-flow-all` 只驗證本 Skill 的 quality-review evidence，
+must not initiate a duplicate implementation code review。若 Copilot 明確回報 quota
+exhausted，record the skip and continue this item and the queue；這不是 item 或 queue 的
+blocker，且不得為此要求第二次 Copilot review。
+
+delegated item 完成 implementation、required tests、`jt-flow-one` quality review、PR、
+CI、external-review disposition 與 current item HEAD readback 後，必須在 merge、任何
+production mutation、deployment verification 或 archive 前停止並回傳
+`INTEGRATION_READY`。在向 coordinator 請求 permit 前，owner 必須 fetch remote main，
+prove item contains the refreshed main SHA or rebase，rerun required checks，並取得 current
+mergeability。coordinator 的 integration permit 必須 exact match repository、change
+identifier、item HEAD SHA 與 refreshed main SHA；只有持有該 matching current-item／
+current-main permit 的 owner 可進行 merge 或任何 production mutation，之後才依本 Skill
+既有 merge、deployment verification 與 archive gates 完成交付。
+
+item HEAD 或 refreshed main SHA changes／drifts 時，permit 立即失效；owner 必須更新
+current evidence、必要時 rebase、rerun required checks、重新讀取 mergeability，並取得
+fresh permit。SHA 漂移只要求刷新 permit evidence，不需要新的 proposal GO。此 delegated
+contract 的結果可為 `INTEGRATION_READY`、`AWAITING_GO`、`WAITING`、`BLOCKED`、
+`PAUSED`、`FAILED`、`CANCELLED` 或 permit 後驗證完成的 `SUCCESS`；除 dependency
+descendants 外，非 `SUCCESS` 不得暫停 unrelated `READY` items。
 
 **多個 active changes 排隊處理，改用 `jt-flow-all` Skill**：本 Skill 假設單一
 需求；若使用者要依 `openspec/changes/` 的既有順序逐一落地，請使用同一 plugin 的
