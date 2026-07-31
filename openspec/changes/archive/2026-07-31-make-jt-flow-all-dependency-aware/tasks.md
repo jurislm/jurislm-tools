@@ -25,7 +25,7 @@
 
 ## Task 5: Verify, release, and record rollout boundaries
 
-- [ ] 5.1 Run `node --version`, `npm ci`, `npm run validate`, `claude plugin validate .`, `openspec validate make-jt-flow-all-dependency-aware --strict`, the repository secret scan, and the final whole-branch quality review owned by this item's `jt-flow-one` delivery.
-- [ ] 5.2 Update `jurislm/jurislm-tools#175` with verified implementation and PR evidence, then complete PR, CI, review, merge, Release Please publication, plugin update, and installed-Skill readback without editing release versions manually.
-- [ ] 5.3 After the plugin release, backfill only existing `jurislm/entire` Issues from refreshed `origin/main`; retain proposal edits as a follow-on rollout gate until docs-only merges cannot trigger unsafe deployment.
-- [ ] 5.4 Run a read-only dependency-map acceptance for `#855`, `#898` artifact reconciliation, and `#777/#778` MVP relations; record that relation analysis is not partial execution and leave all item dispatch, proposal edits, and production work to a separately authorized follow-on rollout.
+- [x] 5.1 Run `node --version`, `npm ci`, `npm run validate`, `claude plugin validate .`, `openspec validate make-jt-flow-all-dependency-aware --strict`, the repository secret scan, and the final whole-branch quality review owned by this item's `jt-flow-one` delivery.
+- [x] 5.2 Update `jurislm/jurislm-tools#175` with verified implementation and PR evidence, then complete PR, CI, review, merge, Release Please publication, plugin update, and installed-Skill readback without editing release versions manually.
+- [x] 5.3 After the plugin release, backfill only existing `jurislm/entire` Issues from refreshed `origin/main`; retain proposal edits as a follow-on rollout gate until docs-only merges cannot trigger unsafe deployment.
+- [x] 5.4 Run a read-only dependency-map acceptance for `#855`, `#898` artifact reconciliation, and `#777/#778` MVP relations; record that relation analysis is not partial execution and leave all item dispatch, proposal edits, and production work to a separately authorized follow-on rollout.

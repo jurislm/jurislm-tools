@@ -13,6 +13,11 @@ After the coordinator confirms a dependency snapshot, `jt-flow-all` SHALL invoke
 - **WHEN** one active item becomes `BLOCKED` and another item has no dependency path from it
 - **THEN** the blocked item records its blocker and descendants while the independent item remains eligible for dispatch
 
+#### Scenario: Confirmed queue advances in order
+
+- **WHEN** a legacy ranked queue is confirmed for multiple active changes
+- **THEN** rank is used only as priority and a deterministic tie-breaker among otherwise equivalent items; every relation-complete `READY` change remains eligible for bounded parallel dispatch, and a non-success result affects only that item and its dependency descendants
+
 ### Requirement: Active changes have tracking issues before queueing
 `jt-flow-all` SHALL paginate all open Issues and read all active OpenSpec changes from the same clean dependency snapshot. Each whole active change SHALL remain one execution unit and identify one primary tracking Issue; other open Issues SHALL be classified as related, deferred, or unmapped. The workflow MUST NOT automatically create an Issue or change merely because an unmapped record exists.
 
@@ -25,6 +30,11 @@ After the coordinator confirms a dependency snapshot, `jt-flow-all` SHALL invoke
 
 - **WHEN** some tasks in one active change are ready but other tasks have unsatisfied dependencies
 - **THEN** the coordinator does not partially dispatch it and requires an approved reduced proposal or separately approved successor change
+
+#### Scenario: Active change lacks an issue
+
+- **WHEN** an active change lacks a valid primary tracking Issue mapping
+- **THEN** only that item is `BLOCKED` with a correction owner and resume condition; the workflow does not automatically create an Issue or change, and unrelated ready items continue
 
 ### Requirement: Per-item gates remain effective
 Queue orchestration SHALL NOT bypass any proposal, consent, or approval gate owned by `jt-flow-one`. Before any delegated fetch or feature-worktree mutation, the coordinator and owner SHALL match durable proposal GO evidence to the exact change identifier, proposal path, Issue, repository, and approved scope. A missing or mismatched proposal GO SHALL place only that item in `AWAITING_GO`; only a `READY` item MAY then fetch remote main, resolve and record its exact SHA/ref, and create its isolated feature worktree. Approval, waiting, failure, or cancellation of one item SHALL NOT pause unrelated items.
