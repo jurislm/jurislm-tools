@@ -36,9 +36,23 @@ claude plugin update coolify@jurislm-tools
 | `podcast-to-blog` | Skill | `claude plugin install podcast-to-blog@jurislm-tools` | Podcast 轉錄與繁體中文文章生成 |
 | `codebase-sync` | Skill | `claude plugin install codebase-sync@jurislm-tools` | README 與 CLAUDE.md 同步 |
 | `learn-eval` | Skill | `claude plugin install learn-eval@jurislm-tools` | 從 session 萃取可重用 patterns |
-| `jt-flow` | Skills | `claude plugin install jt-flow@jurislm-tools` | `jt-flow-one` 單一需求與 `jt-flow-all` 依 active changes 順序執行的 OpenSpec 工作流 |
+| `jt-flow` | Skills | `claude plugin install jt-flow@jurislm-tools` | `jt-flow-one` 單一需求與 `jt-flow-all` 依相依關係派送 active changes、序列化整合的 OpenSpec 工作流 |
 
 Skills 由自然語言意圖觸發；本 repo 不再提供舊版 `/jt:*` 或 `/jt-flow` slash commands。
+
+`jt-flow-all` 先以乾淨、已更新的 remote `main` snapshot 建立 whole-change
+dependency map；每個 proposal 都以 Delivery Relations 記錄優先序、相依、外部
+blocker、受影響區域、production target 與 Issue 對應。關係缺漏或矛盾只會讓該
+item `BLOCKED`，不會停止無關的 `READY` items；coordinator 保留一個 agent slot，
+其餘可用容量交由 `jt-flow-one` 擁有各 item 的 worktree、實作與品質審查。
+
+Item 通過實作、測試、PR 與 `jt-flow-one` 的品質審查後才是
+`INTEGRATION_READY`。coordinator 一次只授予一個 repository、item HEAD SHA 與
+remote-main SHA 完全相符的 integration permit，因此 merge 與任何 production
+mutation 都走單一 lane。proposal 的獨立 overdesign review 與 `jt-flow-one` 的
+implementation quality review 分工；Copilot quota exhausted 或 CodeRabbit
+quota/rate-limit exhausted 時，依既有 bounded-skip 規則記錄限制並繼續，不把整個
+queue 永久卡住。
 
 ## MCP 套件政策
 
