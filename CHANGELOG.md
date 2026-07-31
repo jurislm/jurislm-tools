@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.33.0](https://github.com/jurislm/jurislm-tools/compare/v1.32.5...v1.33.0) (2026-07-31)
+
+
+### 🚀 New Features
+
+* **jt-flow:** make queue delivery dependency-aware ([#176](https://github.com/jurislm/jurislm-tools/issues/176)) ([fcfcdc9](https://github.com/jurislm/jurislm-tools/commit/fcfcdc9a732bf30c93fed85fcde3a36a07c0077f)), refs [#175](https://github.com/jurislm/jurislm-tools/issues/175)
+* **jt-flow:** streamline authorization checkpoints ([#171](https://github.com/jurislm/jurislm-tools/issues/171)) ([cda24c4](https://github.com/jurislm/jurislm-tools/commit/cda24c485c59061a52f211031b47eff882a12e6c))
+
+
+### 🐛 Bug Fixes
+
+* **jt-flow:** follow OpenSpec change order ([#162](https://github.com/jurislm/jurislm-tools/issues/162)) ([6ac0293](https://github.com/jurislm/jurislm-tools/commit/6ac0293ae5b3dc5b5fe95eb119ee82d50a46dc81))
+
+
+### 📚 Documentation
+
+* clarify main-only GitHub Flow ([#165](https://github.com/jurislm/jurislm-tools/issues/165)) ([b3498c0](https://github.com/jurislm/jurislm-tools/commit/b3498c0e89a73abccee05ab8a97c484728cf103d))
+* **openspec:** archive delivered CI and flow changes ([#174](https://github.com/jurislm/jurislm-tools/issues/174)) ([fa4df7b](https://github.com/jurislm/jurislm-tools/commit/fa4df7b97ab0d337642b8298984f1746a79b54f1))
+* **openspec:** archive dependency audit remediation ([#169](https://github.com/jurislm/jurislm-tools/issues/169)) ([5a7c25c](https://github.com/jurislm/jurislm-tools/commit/5a7c25c790c7a44be49d91bb0060cec800bd7fa1))
+* **openspec:** archive main-only workflow change ([#166](https://github.com/jurislm/jurislm-tools/issues/166)) ([821d8c2](https://github.com/jurislm/jurislm-tools/commit/821d8c25b1448ec40b0e9f12cd9feef58f83ea96))
+
 ## [1.32.5](https://github.com/jurislm/jurislm-tools/compare/v1.32.4...v1.32.5) (2026-07-26)
 
 
