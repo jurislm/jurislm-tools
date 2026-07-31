@@ -13,62 +13,78 @@ const oneSkill = readFileSync(
 
 const stateCases = [
   {
-    input: "完整且一致的關係資料、精確 proposal GO，且所有 hard dependencies 已 SUCCESS",
+    input: "Complete, consistent relations; exact proposal GO; every hard predecessor is `SUCCESS`",
     expectedState: "READY",
   },
   {
-    input: "proposal GO 缺少或與 change、proposal path、Issue、repository、scope 不符",
+    input: "Proposal GO missing or mismatched to change, proposal path, Issue, repository, or approved scope",
     expectedState: "AWAITING_GO",
   },
   {
-    input: "READY change 已指派給一個 item owner",
+    input: "A `READY` change is assigned to an item owner",
     expectedState: "ACTIVE",
   },
   {
-    input: "有效但未解決的 hard dependency 或 dispatch external blocker",
+    input: "Valid but unresolved hard dependency or dispatch-gated external blocker",
     expectedState: "WAITING",
   },
   {
-    input: "關係欄位缺少、矛盾、無效，或 hard-dependency cycle",
+    input: "Required relationship absent, contradictory, invalid, or cyclic",
     expectedState: "BLOCKED",
   },
   {
-    input: "標記為 deferred 或明確 postponed",
+    input: "`Production targets` absent, `unknown`, or unverifiable",
+    expectedState: "BLOCKED",
+  },
+  {
+    input: "Explicit `Production targets: none` with otherwise complete valid relations",
+    expectedState: "READY",
+  },
+  {
+    input: "Explicitly `deferred` or postponed",
     expectedState: "PAUSED",
   },
   {
-    input: "實作、測試、jt-flow-one quality review、PR checks、review disposition 與 HEAD readback 完成",
+    input: "Implementation, required tests, `jt-flow-one` quality review, PR checks, review disposition, and current item HEAD readback complete",
     expectedState: "INTEGRATION_READY",
   },
   {
-    input: "接受依賴已滿足並完成持有 permit 的整合、驗證與歸檔",
+    input: "Acceptance dependencies satisfied and permitted integration, verification, and archive complete",
     expectedState: "SUCCESS",
   },
   {
-    input: "item owner 回報不可恢復的交付失敗",
+    input: "The item owner reports an irrecoverable delivery failure",
     expectedState: "FAILED",
   },
   {
-    input: "使用者明確取消 item",
+    input: "The user explicitly cancels an item",
     expectedState: "CANCELLED",
   },
 ];
 
+const fixedStateTable = allSkill
+  .split("## Fixed state decisions\n", 2)[1]
+  .split("\n## Phase 2", 2)[0]
+  .split("\n")
+  .filter(
+    (line) =>
+      line.startsWith("| ") &&
+      !line.startsWith("| Fixed input ") &&
+      !line.startsWith("| ---"),
+  )
+  .map((line) => {
+    const [, input, expected] = line.split("|");
+    return { input: input.trim(), expected: expected.trim() };
+  });
+
 test("dependency-aware queue contract records fixed state decisions without claiming a runtime scheduler", () => {
   assert.deepEqual(
+    fixedStateTable.map(({ input }) => input),
+    stateCases.map(({ input }) => input),
+  );
+  assert.deepEqual(
+    fixedStateTable.map(({ expected }) => expected.match(/^`(\w+)`/)[1]),
     stateCases.map(({ expectedState }) => expectedState),
-    [
-      "READY",
-      "AWAITING_GO",
-      "ACTIVE",
-      "WAITING",
-      "BLOCKED",
-      "PAUSED",
-      "INTEGRATION_READY",
-      "SUCCESS",
-      "FAILED",
-      "CANCELLED",
-    ],
   );
   assert.match(allSkill, /`AWAITING_GO`[\s\S]*`READY`[\s\S]*`ACTIVE`[\s\S]*`WAITING`[\s\S]*`BLOCKED`[\s\S]*`PAUSED`[\s\S]*`INTEGRATION_READY`[\s\S]*`SUCCESS`[\s\S]*`FAILED`[\s\S]*`CANCELLED`/);
   assert.match(allSkill, /valid unresolved[\s\S]*`WAITING`|`WAITING`[\s\S]*valid unresolved/i);
@@ -78,6 +94,13 @@ test("dependency-aware queue contract records fixed state decisions without clai
   assert.match(allSkill, /irrecoverable delivery failure[\s\S]*`FAILED`/);
   assert.match(allSkill, /explicitly cancels an item[\s\S]*`CANCELLED`/);
   assert.match(allSkill, /Markdown policy contract, not a runtime scheduler/);
+});
+
+test("production target metadata fails closed without confusing it with an unknown post-mutation target", () => {
+  assert.match(allSkill, /`Production targets` absent, `unknown`, or unverifiable[\s\S]*`BLOCKED`/);
+  assert.match(allSkill, /`Production targets` absent, `unknown`, or unverifiable[\s\S]*no integration permit may issue/);
+  assert.match(allSkill, /Explicit `Production targets: none` with otherwise complete valid relations[\s\S]*`READY`/);
+  assert.match(allSkill, /After a production mutation begins[\s\S]*unknown production state[\s\S]*integration lane\s+is `WAITING`/);
 });
 
 test("queue inventory is built from a clean refreshed remote main snapshot", () => {
@@ -125,7 +148,7 @@ test("integration uses one exact-SHA lane and releases it safely after failure",
   assert.match(allSkill, /changed item\s+HEAD invalidates the permit/);
   assert.match(allSkill, /changed main SHA[\s\S]*new permit/);
   assert.match(allSkill, /revoke the permit only after proving no production mutation\s+began/);
-  assert.match(allSkill, /unknown production state, no new permit\s+is issued/);
+  assert.match(allSkill, /After a production mutation begins, an\s+unknown production state issues no new permit/);
   assert.match(allSkill, /unrelated.*development.*tests.*continue/is);
 });
 

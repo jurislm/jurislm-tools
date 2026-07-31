@@ -55,6 +55,9 @@ Skill names or internal handoffs never prove consent.
 4. Missing, contradictory, cyclic, or otherwise invalid relation data is not
    safe to infer. Mark only the affected item `BLOCKED`, recording the
    correction owner, reason, resume condition, and affected descendants.
+   `Production targets: none` is an explicit valid value. An absent, `unknown`,
+   or unverifiable `Production targets` value is invalid relation metadata:
+   mark that item `BLOCKED` and issue no integration permit until corrected.
    Hard-dependency cycles block cycle members and their descendants, while
    unrelated nodes remain eligible. Affected-area overlap is a coordination
    warning, not a hard dependency: analysis and isolated implementation may
@@ -79,6 +82,8 @@ Record each execution unit using exactly one of `AWAITING_GO`, `READY`,
 | A `READY` change is assigned to an item owner | `ACTIVE`; it consumes that owner's one capacity slot |
 | Valid but unresolved hard dependency or dispatch-gated external blocker | `WAITING`; record what, why, owner, resume condition, and affected descendants |
 | Required relationship absent, contradictory, invalid, or cyclic | `BLOCKED`; record correction owner, reason, resume condition, and affected descendants |
+| `Production targets` absent, `unknown`, or unverifiable | `BLOCKED`; correct the relation metadata and no integration permit may issue |
+| Explicit `Production targets: none` with otherwise complete valid relations | `READY`; `none` is a valid explicit no-target value |
 | Explicitly `deferred` or postponed | `PAUSED`; it consumes no item-owner capacity and does not block unrelated MVP work |
 | Implementation, required tests, `jt-flow-one` quality review, PR checks, review disposition, and current item HEAD readback complete | `INTEGRATION_READY` |
 | Acceptance dependencies satisfied and permitted integration, verification, and archive complete | `SUCCESS` |
@@ -145,9 +150,10 @@ parallel. The permit holder merges or mutates production, verifies the target,
 then archives. If it fails or is cancelled before any production mutation, the
 coordinator may revoke the permit only after proving no production mutation
 began. If mutation began, hold the lane until the target is verified healthy or
-restored to a known rollback state. With unknown production state, no new permit
-is issued; unrelated development and tests continue, but the integration lane
-is `WAITING` with an owner and resume condition.
+restored to a known rollback state. After a production mutation begins, an
+unknown production state issues no new permit; unrelated development and tests
+continue, but the integration lane is `WAITING` with an owner and resume
+condition.
 
 ## Completion record
 
