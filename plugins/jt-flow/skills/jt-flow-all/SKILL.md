@@ -21,11 +21,12 @@ proposal GO, or duplicate `jt-flow-one` implementation quality review.
 
 ## CodeRabbit authorization handoff
 
-Calling `jt-flow-all` authorizes creation and execution of the change queue; it
-does not itself authorize CodeRabbit's App/CLI data scope. Only explicit
-CodeRabbit consent evidence in the current task context or a durable approval
-record, proving acceptance after the complete `jt-flow-one` disclosure, permits
-`codeRabbitAuthorization=preauthorized` for items in the same target repository.
+Invoking or routing to `jt-flow-all` authorizes queue coordination but does not
+itself prove CodeRabbit consent. Only durable evidence proving that the user saw
+the complete `jt-flow-one` disclosure and explicitly consented permits
+`codeRabbitAuthorization=preauthorized` with
+`authorizationSource=explicit-coderabbit-consent` for items in the same target
+repository.
 
 Otherwise pass `codeRabbitAuthorization=requires-disclosure`. The owner must
 include the disclosure in its proposal summary and receive consent in that same
@@ -58,16 +59,23 @@ Skill names or internal handoffs never prove consent.
    `Production targets: none` is an explicit valid value. An absent, `unknown`,
    or unverifiable `Production targets` value is invalid relation metadata:
    mark that item `BLOCKED` and issue no integration permit until corrected.
-   Hard-dependency cycles block cycle members and their descendants, while
-   unrelated nodes remain eligible. Affected-area overlap is a coordination
-   warning, not a hard dependency: analysis and isolated implementation may
-   proceed, but rebase, merge, and production mutation stay serialized.
+   Hard-dependency, acceptance-only and mixed hard/acceptance cycles are all
+   invalid; they block cycle members and their descendants while unrelated
+   nodes remain eligible. Affected-area overlap is a coordination warning, not
+   a hard dependency: analysis and isolated implementation may proceed, but
+   rebase, merge, and production mutation stay serialized.
 5. Before dispatch, appoint one independent proposal-scope overdesign reviewer
    for the current material proposal revision. The review asks whether scope is
    too broad, duplicates capabilities, or puts deferred work on the MVP path.
    Repeat only after material scope, architecture, dependency, or production
    risk changes. External-review quota exhaustion uses the existing bounded
    skip rules and does not permanently block the queue.
+6. Before every subsequent dispatch or integration-permit decision, reread
+   remote main. Any SHA drift invalidates the whole dependency snapshot. Rebuild
+   the clean snapshot, active changes, Delivery Relations, reverse edges,
+   descendants, and eligibility before proceeding. The refreshed graph may
+   reclassify an `ACTIVE` or `INTEGRATION_READY` item; stale state is not
+   authoritative.
 
 ## Fixed state decisions
 
@@ -82,6 +90,8 @@ Record each execution unit using exactly one of `AWAITING_GO`, `READY`,
 | A `READY` change is assigned to an item owner | `ACTIVE`; it consumes that owner's one capacity slot |
 | Valid but unresolved hard dependency or dispatch-gated external blocker | `WAITING`; record what, why, owner, resume condition, and affected descendants |
 | Required relationship absent, contradictory, invalid, or cyclic | `BLOCKED`; record correction owner, reason, resume condition, and affected descendants |
+| Acceptance-only dependency cycle | `BLOCKED`; invalid integration deadlock, with cycle members and descendants recorded |
+| Mixed hard/acceptance dependency cycle | `BLOCKED`; invalid dispatch/integration deadlock, with cycle members and descendants recorded |
 | `Production targets` absent, `unknown`, or unverifiable | `BLOCKED`; correct the relation metadata and no integration permit may issue |
 | Explicit `Production targets: none` with otherwise complete valid relations | `READY`; `none` is a valid explicit no-target value |
 | Explicitly `deferred` or postponed | `PAUSED`; it consumes no item-owner capacity and does not block unrelated MVP work |
@@ -103,12 +113,20 @@ dispatch unrelated `READY` changes. Do not partially dispatch an oversized
 change: it stays non-ready until its proposal is reduced or an independently
 approved successor change has its own exact GO.
 
-## Phase 2 — 由同一主代理逐項執行 coordinator dispatch、bounded ownership and handoff
+## Phase 2 — dependency-aware coordinator dispatch and bounded item ownership
 
 The primary agent is the coordinator and reserves one available agent slot.
-Each remaining available slot may own one `READY` change. Start an item owner
-from the target repository's clean main checkout; `jt-flow-one` creates and
-owns the item's isolated feature worktree. When the host has no delegation
+Each remaining available slot may own one `READY` change. Before any delegated
+fetch or feature-worktree mutation, compare durable proposal GO with the exact
+change identifier, proposal path, primary Issue, target repository, and approved
+scope. A missing, mismatched, or unverifiable field returns item-local
+`AWAITING_GO` before any worktree creation; descendants wait while unrelated
+`READY` changes continue.
+
+Only after that comparison makes the item `READY` may its owner start from the
+target repository's clean main checkout, fetch remote main, resolve and record
+the exact remote-main SHA/ref, and ask `jt-flow-one` to create and own the item's
+isolated feature worktree from that ref. When the host has no delegation
 capacity, apply this same state table sequentially without changing its safety
 semantics. When a slot is released, assign the next independent `READY` change
 without waiting for active independent work to finish.
@@ -135,30 +153,56 @@ queue stop.
 
 An owner may return `INTEGRATION_READY` only after the fixed-state evidence
 above. Before requesting an integration permit, it fetches remote main, proves
-its item contains the verified main SHA or rebases, reruns required checks, and
-reads current mergeability.
+its item contains the refreshed main SHA or rebases, determines the exact
+current required-check set, waits for every required check to reach terminal
+success, and reads current mergeability. Evidence records the exact repository,
+change identifier, item HEAD SHA, refreshed main SHA, required-check set,
+per-check terminal-success conclusions, current mergeability result, and
+readback time.
 
-The coordinator issues at most one integration permit. The permit contains the
-exact repository, change identifier, item HEAD SHA, and verified main SHA; only
-the matching owner may merge or perform any production mutation. A changed item
-HEAD invalidates the permit. A changed main SHA requires updating from current
-main, rerunning required checks, fresh mergeability evidence, and a new permit;
-neither SHA refresh needs a new proposal GO by itself.
+The coordinator issues at most one integration permit and fails closed. It must
+reread every bound field at permit grant and again immediately before merge or
+any production mutation. Only the matching owner may integrate.
+
+| Permit evidence fixture | Decision |
+| --- | --- |
+| Exact current repository, change, item HEAD, refreshed main, required-check set and terminal-success results, mergeable result, and fresh readback time | `GRANT` |
+| Current required-check set differs from the recorded set | `WITHHOLD_OR_INVALIDATE` |
+| Any required check is pending, failed, unknown, non-terminal, missing, or bound to another item HEAD | `WITHHOLD_OR_INVALIDATE` |
+| Item HEAD differs from permit evidence | `INVALIDATE` |
+| Remote-main SHA differs from permit or dependency snapshot | `INVALIDATE_AND_REBUILD` |
+| Mergeability is unknown or non-mergeable | `WITHHOLD_OR_INVALIDATE` |
+| Permit evidence readback time is missing or stale | `WITHHOLD_OR_INVALIDATE` |
+
+Item-HEAD drift requires fresh integration evidence, not a new proposal GO.
+Remote-main drift invalidates both permit and dependency snapshot: rebuild the
+snapshot, relations, descendants, and eligibility before rebase, required-check
+reruns, fresh mergeability readback, and any new permit.
 
 Two `INTEGRATION_READY` items wait for this single lane rather than merge in
-parallel. The permit holder merges or mutates production, verifies the target,
-then archives. If it fails or is cancelled before any production mutation, the
-coordinator may revoke the permit only after proving no production mutation
-began. If mutation began, hold the lane until the target is verified healthy or
-restored to a known rollback state. After a production mutation begins, an
-unknown production state issues no new permit; unrelated development and tests
-continue, but the integration lane is `WAITING` with an owner and resume
-condition.
+parallel. Lane release follows these fixed evidence decisions:
+
+| Lane evidence fixture | Decision |
+| --- | --- |
+| No merge, no production mutation, and no derived downstream pipeline began | `REVOKE` |
+| A merge occurred | `HOLD` |
+| A production mutation occurred | `HOLD` |
+| A derived downstream pipeline began | `HOLD` |
+| All downstream CI and deployment are verified healthy | `RELEASE_AFTER_VERIFICATION` |
+| The system is restored to a known rollback state | `RELEASE_AFTER_ROLLBACK` |
+
+The coordinator may revoke a stopped or cancelled permit only under the
+`REVOKE` row. Once merge, production mutation, or a derived CI, release,
+deployment, or other downstream pipeline begins, the lane stays held until a
+release row is proved. Unknown merge, pipeline, or production state issues no
+new permit; unrelated development and tests continue, but the integration lane
+is `WAITING` with an owner and resume condition.
 
 ## Completion record
 
 Report the dependency snapshot revision, every item state, relationship or GO
-evidence, capacity allocation, integration permit evidence, affected descendants,
+evidence, capacity allocation, integration permit identity/check/mergeability/
+readback evidence, lane and downstream-pipeline state, affected descendants,
 unmapped records, and any owner/resume condition. The first rollout against a
-repository is read-only dependency-map validation; proposal edits, dispatch, and
-production work require their separately authorized gates.
+repository is read-only dependency-map validation; proposal edits, dispatch,
+and production work require their separately authorized gates.

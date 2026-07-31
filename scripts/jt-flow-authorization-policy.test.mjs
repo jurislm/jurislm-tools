@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 const oneSkill = readFileSync(
@@ -12,6 +12,15 @@ const allSkill = readFileSync(
 );
 const readme = readFileSync("plugins/jt-flow/README.md", "utf8");
 const guidance = readFileSync("CLAUDE.md", "utf8");
+const livingQueueSpec = readFileSync(
+  "openspec/specs/jt-flow-queue-delegation/spec.md",
+  "utf8",
+);
+const activeQueueDeltaPath =
+  "openspec/changes/make-jt-flow-all-dependency-aware/specs/jt-flow-queue-delegation/spec.md";
+const activeQueueDelta = existsSync(activeQueueDeltaPath)
+  ? readFileSync(activeQueueDeltaPath, "utf8")
+  : null;
 
 const rawSectionContaining = (document, heading) => {
   const section = document
@@ -23,6 +32,31 @@ const rawSectionContaining = (document, heading) => {
 const normalize = (document) => document.replace(/\s+/g, " ").trim();
 const sectionContaining = (document, heading) => {
   return normalize(rawSectionContaining(document, heading));
+};
+const rawRequirement = (document, requirementName) => {
+  const matches = document
+    .split(/(?=^### Requirement: )/m)
+    .filter((candidate) =>
+      candidate.startsWith(`### Requirement: ${requirementName}\n`),
+    );
+  assert.equal(
+    matches.length,
+    1,
+    `expected one requirement: ${requirementName}`,
+  );
+  return matches[0];
+};
+const assertOrdered = (document, expectations) => {
+  let priorIndex = -1;
+  for (const [label, pattern] of expectations) {
+    const match = pattern.exec(document);
+    assert.ok(match, `missing ordered policy marker: ${label}`);
+    assert.ok(
+      match.index > priorIndex,
+      `policy marker out of order: ${label}`,
+    );
+    priorIndex = match.index;
+  }
 };
 
 test("explicit invocation authorizes proposal preparation without implementation", () => {
@@ -116,7 +150,10 @@ test("intent-routed CodeRabbit consent is completed at proposal GO", () => {
 });
 
 test("delegated items reuse recorded proposal GO", () => {
-  const queuePolicy = sectionContaining(allSkill, "Phase 2 — 由同一主代理逐項執行");
+  const queuePolicy = sectionContaining(
+    allSkill,
+    "Phase 2 — dependency-aware coordinator dispatch and bounded item ownership",
+  );
   const executionContract = normalize(oneSkill);
 
   assert.match(queuePolicy, /已記錄的明確 proposal GO.*沿用.*不得.*重複/s);
@@ -137,7 +174,11 @@ test("delegated items reuse recorded proposal GO", () => {
 });
 
 test("delegated item keeps a mismatched GO local and requires an exact current integration permit", () => {
-  const executionContract = sectionContaining(oneSkill, "Queue execution contract");
+  const rawExecutionContract = rawSectionContaining(
+    oneSkill,
+    "Queue execution contract",
+  );
+  const executionContract = normalize(rawExecutionContract);
 
   assert.match(
     executionContract,
@@ -146,15 +187,14 @@ test("delegated item keeps a mismatched GO local and requires an exact current i
   assert.match(executionContract, /proposal GO.*目前 item.*相符/is);
   assert.match(executionContract, /任一欄不符.*`AWAITING_GO`/is);
   assert.match(executionContract, /unrelated `READY`.*continue/i);
-  assert.match(executionContract, /clean.*main.*isolated feature worktree/is);
-  assert.match(
-    executionContract,
-    /clean main source checkout.*fetch remote main.*resolve.*record.*exact remote-main SHA\/ref/is,
-  );
-  assert.match(
-    executionContract,
-    /create.*isolated feature worktree.*directly from.*exact remote-main SHA\/ref/is,
-  );
+  assertOrdered(rawExecutionContract, [
+    ["exact GO identity comparison", /compare durable proposal GO/i],
+    ["item-local AWAITING_GO before mutation", /AWAITING_GO[^A-Za-z]+before any\s+delegated fetch or feature-worktree mutation/i],
+    ["READY transition", /only after that comparison makes the item `READY`/i],
+    ["fetch remote main", /fetch remote main/i],
+    ["record remote-main SHA", /resolve and record\s+the exact remote-main SHA\/ref/i],
+    ["create isolated worktree", /create (?:and own )?(?:its|the) isolated feature\s+worktree/i],
+  ]);
   assert.match(executionContract, /`INTEGRATION_READY`/);
   assert.match(
     executionContract,
@@ -166,6 +206,38 @@ test("delegated item keeps a mismatched GO local and requires an exact current i
   );
   assert.match(executionContract, /item HEAD.*main SHA.*(?:changes|drifts).*fresh permit/is);
   assert.match(executionContract, /SHA 漂移.*不需要.*新的 proposal GO/is);
+});
+
+test("CodeRabbit queue consent successor is exact and consistent across delivery surfaces", () => {
+  const requirementName = "Queue delegation preserves CodeRabbit consent";
+  const livingConsent = normalize(rawRequirement(livingQueueSpec, requirementName));
+  const allConsent = sectionContaining(allSkill, "CodeRabbit authorization handoff");
+  const oneConsent = sectionContaining(oneSkill, "Queue execution contract");
+  const readmeConsent = sectionContaining(readme, "Dependencies");
+
+  if (activeQueueDelta !== null) {
+    const deltaConsent = normalize(
+      rawRequirement(activeQueueDelta, requirementName),
+    );
+    assert.match(livingConsent, /authorizationSource=explicit-jt-flow-all/);
+    assert.doesNotMatch(
+      livingConsent,
+      /authorizationSource=explicit-coderabbit-consent/,
+    );
+    assert.match(deltaConsent, /invoking or routing to `jt-flow-all`.*not itself prove CodeRabbit consent/i);
+    assert.match(deltaConsent, /authorizationSource=explicit-coderabbit-consent/);
+    assert.doesNotMatch(deltaConsent, /authorizationSource=explicit-jt-flow-all/);
+  } else {
+    assert.match(livingConsent, /authorizationSource=explicit-coderabbit-consent/);
+    assert.doesNotMatch(livingConsent, /authorizationSource=explicit-jt-flow-all/);
+  }
+
+  for (const policy of [allConsent, oneConsent, readmeConsent]) {
+    assert.match(policy, /(?:invok|呼叫|點名)[\s\S]{0,180}(?:does not|不構成|不代表)[\s\S]{0,100}(?:consent|授權)/i);
+    assert.match(policy, /durable[\s\S]{0,220}(?:saw|看過)[\s\S]{0,160}(?:explicit|明確)[\s\S]{0,80}(?:consent|接受|同意)/i);
+    assert.match(policy, /codeRabbitAuthorization=preauthorized[\s\S]{0,180}authorizationSource=explicit-coderabbit-consent/i);
+    assert.match(policy, /codeRabbitAuthorization=requires-disclosure/);
+  }
 });
 
 test("published guidance describes one normal checkpoint", () => {

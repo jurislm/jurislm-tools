@@ -120,6 +120,12 @@ intent-routed runs without CodeRabbit consent, include the App and CLI
 disclosure in the proposal summary and let the same proposal GO record consent;
 do not defer this predictable consent into a second normal checkpoint.
 
+Invoking or routing to `jt-flow-all` alone never proves CodeRabbit consent. Only
+durable evidence that the user saw the complete disclosure and explicitly
+consented may use `codeRabbitAuthorization=preauthorized` with
+`authorizationSource=explicit-coderabbit-consent`; otherwise pass
+`codeRabbitAuthorization=requires-disclosure` to `jt-flow-one`.
+
 For `jt-flow-all`, resolve the actual remote, fetch and prune it, then derive
 the queue from a clean detached snapshot of refreshed remote `main`, never a
 dirty or stale caller worktree. Every new or updated proposal must declare
@@ -132,6 +138,13 @@ cyclic, or unverifiable data blocks only its item and descendants with a
 correction owner and resume condition; valid unresolved dependencies wait only
 at their item gate, while unrelated `READY` changes continue.
 
+Reread remote main before every subsequent dispatch or integration-permit
+decision. Any SHA drift invalidates the dependency snapshot and requires a new
+clean snapshot plus refreshed active changes, Delivery Relations, reverse
+edges, descendants, and eligibility; an `ACTIVE` or `INTEGRATION_READY` item may
+be reclassified. Acceptance-only and mixed hard/acceptance cycles are invalid
+and block their members and descendants rather than deadlocking integration.
+
 The primary agent is the coordinator and reserves one agent slot; each
 remaining slot may own one whole `READY` change through `jt-flow-one`, which
 alone owns its isolated worktree and delivery. Do not dispatch partial change
@@ -139,8 +152,13 @@ tasks. An item reaches `INTEGRATION_READY` only after its implementation,
 required tests, `jt-flow-one` quality review, PR checks, review disposition,
 and current HEAD readback. Keep merge and all production mutation in one
 integration lane: issue at most one permit whose repository, change, item HEAD
-SHA, and verified remote-main SHA exactly match the owner. SHA drift invalidates
-the permit and needs refreshed integration evidence, not a new proposal GO by
+SHA, verified remote-main SHA, required-check set and terminal-success results,
+current mergeability result, and readback time exactly match the owner. Fail
+closed and reread all fields at grant and immediately before merge or production
+mutation. Revoke only after proving no merge, production mutation, or derived
+pipeline began; after merge, hold the lane until downstream CI/deployment is
+healthy or the system reaches a known rollback state. SHA drift invalidates the
+permit and needs refreshed integration evidence, not a new proposal GO by
 itself. Proposal-scope overdesign review is independent and bounded;
 `jt-flow-one` remains the sole implementation-quality reviewer. Preserve
 existing quota-exhausted skip rules rather than permanently blocking the queue.

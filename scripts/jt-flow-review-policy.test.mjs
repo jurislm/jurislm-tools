@@ -8,6 +8,10 @@ const skill = readFileSync(
 );
 const readme = readFileSync("plugins/jt-flow/README.md", "utf8");
 const guidance = readFileSync("CLAUDE.md", "utf8");
+const allSkill = readFileSync(
+  "plugins/jt-flow/skills/jt-flow-all/SKILL.md",
+  "utf8",
+);
 const codeRabbitConfig = readFileSync(".coderabbit.yaml", "utf8");
 const currentPolicy = `${skill}\n${readme}\n${guidance}`;
 const containsRetiredCodeReviewCommand = (policy) => /\/code-review/.test(policy);
@@ -17,6 +21,13 @@ const paragraphContaining = (document, phrase) => {
     .find((candidate) => candidate.includes(phrase));
   assert.ok(paragraph, `missing policy paragraph containing: ${phrase}`);
   return paragraph.replaceAll("\n", " ");
+};
+const sectionContaining = (document, heading) => {
+  const matches = document
+    .split(/(?=^## )/m)
+    .filter((candidate) => candidate.startsWith(`## ${heading}\n`));
+  assert.equal(matches.length, 1, `expected one policy section: ${heading}`);
+  return matches[0];
 };
 
 test("uses portable Superpowers review without slash command dependency", () => {
@@ -110,9 +121,15 @@ test("exhausts the CodeRabbit CLI fallback after its first invocation", () => {
 });
 
 test("delegated review separates one proposal overdesign review from jt-flow-one quality review", () => {
-  const queueContract = skill
-    .split("## Queue execution contract\n", 2)[1]
-    .split("\n## ", 2)[0];
+  const queueContract = sectionContaining(skill, "Queue execution contract");
+  const queueInventory = sectionContaining(
+    allSkill,
+    "Phase 1 — refreshed remote dependency snapshot",
+  );
+  const queueDispatch = sectionContaining(
+    allSkill,
+    "Phase 2 — dependency-aware coordinator dispatch and bounded item ownership",
+  );
 
   assert.match(
     queueContract,
@@ -126,12 +143,12 @@ test("delegated review separates one proposal overdesign review from jt-flow-one
     queueContract,
     /jt-flow-all.*appoint.*one independent proposal overdesign reviewer.*current material proposal revision.*record.*disposition.*evidence/is,
   );
+  assert.match(queueInventory, /one independent proposal-scope overdesign reviewer/is);
+  assert.match(queueDispatch, /never initiates a second\s+implementation code review/is);
 });
 
 test("Copilot quota exhaustion records a skip without blocking a delegated item or queue", () => {
-  const queueContract = skill
-    .split("## Queue execution contract\n", 2)[1]
-    .split("\n## ", 2)[0];
+  const queueContract = sectionContaining(skill, "Queue execution contract");
 
   assert.match(queueContract, /quota\s+exhausted.*record.*skip.*continue.*item.*queue/is);
 });

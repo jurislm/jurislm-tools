@@ -1,10 +1,10 @@
-# Release readiness
+# Release readiness pre-final snapshot
 
 - Captured: `2026-07-31T19:01:36+0800`
 - Branch: `codex/make-jt-flow-all-dependency-aware`
 - Base: `origin/main` at `fa4df7b97ab0d337642b8298984f1746a79b54f1`
 
-## Required local validation
+## Pre-final required local validation snapshot
 
 | Check | Result |
 | --- | --- |
@@ -15,7 +15,7 @@
 | `openspec validate make-jt-flow-all-dependency-aware --strict` | PASS |
 | `git diff --check` | PASS |
 
-## Local secret preflight
+## Pre-final local secret preflight snapshot
 
 No repository-specific secret scanner is installed. The fallback enumerated every
 commit in `origin/main..HEAD`, every file version introduced or modified by each
@@ -28,6 +28,16 @@ or common GitHub, OpenAI, AWS, Stripe, and Slack credential prefixes.
 
 The changed-file inventory contains only Markdown, YAML, and JavaScript text;
 `git diff --numstat origin/main...HEAD` reported no binary entries.
+
+This 10-commit result is pre-final evidence only. It predates the final
+whole-branch review-fix commit, does not scan that immutable final HEAD, and does
+not by itself complete Task 5.1. A commit cannot contain a truthful scan of its
+own not-yet-created object.
+
+After the final fix commit establishes the immutable final HEAD, the controller
+will scan the exact `origin/main..final-HEAD` commit, tree, and blob set without
+printing contents. It will record the final HEAD SHA, scanned counts, scanner
+method, and exact result externally in Issue #175 and the PR body before merge.
 
 ## Review boundary
 

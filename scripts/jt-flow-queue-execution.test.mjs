@@ -6,10 +6,31 @@ const allSkill = readFileSync(
   "plugins/jt-flow/skills/jt-flow-all/SKILL.md",
   "utf8",
 );
-const oneSkill = readFileSync(
-  "plugins/jt-flow/skills/jt-flow-one/SKILL.md",
-  "utf8",
-);
+const sectionByHeading = (document, heading) => {
+  const matches = document
+    .split(/(?=^## )/m)
+    .filter((candidate) => candidate.startsWith(`## ${heading}\n`));
+  assert.equal(matches.length, 1, `expected one policy section: ${heading}`);
+  return matches[0];
+};
+
+const parseTwoColumnDecisionTable = (section, firstHeader) => {
+  const lines = section.split("\n");
+  const headerIndex = lines.findIndex((line) =>
+    line.startsWith(`| ${firstHeader} |`),
+  );
+  assert.notEqual(headerIndex, -1, `missing decision table: ${firstHeader}`);
+  assert.match(lines[headerIndex + 1] ?? "", /^\| --- \| --- \|$/);
+
+  const rows = [];
+  for (const line of lines.slice(headerIndex + 2)) {
+    if (!line.startsWith("| ")) break;
+    const cells = line.split("|").slice(1, -1).map((cell) => cell.trim());
+    assert.equal(cells.length, 2, `expected two decision cells: ${line}`);
+    rows.push({ input: cells[0], expected: cells[1] });
+  }
+  return rows;
+};
 
 const stateCases = [
   {
@@ -30,6 +51,14 @@ const stateCases = [
   },
   {
     input: "Required relationship absent, contradictory, invalid, or cyclic",
+    expectedState: "BLOCKED",
+  },
+  {
+    input: "Acceptance-only dependency cycle",
+    expectedState: "BLOCKED",
+  },
+  {
+    input: "Mixed hard/acceptance dependency cycle",
     expectedState: "BLOCKED",
   },
   {
@@ -62,20 +91,25 @@ const stateCases = [
   },
 ];
 
-const fixedStateTable = allSkill
-  .split("## Fixed state decisions\n", 2)[1]
-  .split("\n## Phase 2", 2)[0]
-  .split("\n")
-  .filter(
-    (line) =>
-      line.startsWith("| ") &&
-      !line.startsWith("| Fixed input ") &&
-      !line.startsWith("| ---"),
-  )
-  .map((line) => {
-    const [, input, expected] = line.split("|");
-    return { input: input.trim(), expected: expected.trim() };
-  });
+const fixedStateSection = sectionByHeading(allSkill, "Fixed state decisions");
+const snapshotSection = sectionByHeading(
+  allSkill,
+  "Phase 1 — refreshed remote dependency snapshot",
+);
+const getDispatchSection = () =>
+  sectionByHeading(
+    allSkill,
+    "Phase 2 — dependency-aware coordinator dispatch and bounded item ownership",
+  );
+const integrationSection = sectionByHeading(
+  allSkill,
+  "Phase 3 — one exact-SHA integration lane",
+);
+const scopeSection = sectionByHeading(allSkill, "Scope and non-goals");
+const fixedStateTable = parseTwoColumnDecisionTable(
+  fixedStateSection,
+  "Fixed input",
+);
 
 test("dependency-aware queue contract records fixed state decisions without claiming a runtime scheduler", () => {
   assert.deepEqual(
@@ -86,77 +120,135 @@ test("dependency-aware queue contract records fixed state decisions without clai
     fixedStateTable.map(({ expected }) => expected.match(/^`(\w+)`/)[1]),
     stateCases.map(({ expectedState }) => expectedState),
   );
-  assert.match(allSkill, /`AWAITING_GO`[\s\S]*`READY`[\s\S]*`ACTIVE`[\s\S]*`WAITING`[\s\S]*`BLOCKED`[\s\S]*`PAUSED`[\s\S]*`INTEGRATION_READY`[\s\S]*`SUCCESS`[\s\S]*`FAILED`[\s\S]*`CANCELLED`/);
-  assert.match(allSkill, /valid unresolved[\s\S]*`WAITING`|`WAITING`[\s\S]*valid unresolved/i);
-  assert.match(allSkill, /required relationship[\s\S]*`BLOCKED`|`BLOCKED`[\s\S]*delivery metadata/i);
-  assert.match(allSkill, /`deferred`[\s\S]*`PAUSED`|`PAUSED`[\s\S]*deferred/);
-  assert.match(allSkill, /assigned to an item owner[\s\S]*`ACTIVE`/);
-  assert.match(allSkill, /irrecoverable delivery failure[\s\S]*`FAILED`/);
-  assert.match(allSkill, /explicitly cancels an item[\s\S]*`CANCELLED`/);
-  assert.match(allSkill, /Markdown policy contract, not a runtime scheduler/);
+  assert.match(fixedStateSection, /valid unresolved[\s\S]*`WAITING`|`WAITING`[\s\S]*valid unresolved/i);
+  assert.match(fixedStateSection, /required relationship[\s\S]*`BLOCKED`|`BLOCKED`[\s\S]*delivery metadata/i);
+  assert.match(fixedStateSection, /`deferred`[\s\S]*`PAUSED`|`PAUSED`[\s\S]*deferred/);
+  assert.match(fixedStateSection, /assigned to an item owner[\s\S]*`ACTIVE`/);
+  assert.match(fixedStateSection, /irrecoverable delivery failure[\s\S]*`FAILED`/);
+  assert.match(fixedStateSection, /explicitly cancels an item[\s\S]*`CANCELLED`/);
+  assert.match(scopeSection, /Markdown policy contract, not a runtime scheduler/);
 });
 
 test("production target metadata fails closed without confusing it with an unknown post-mutation target", () => {
-  assert.match(allSkill, /`Production targets` absent, `unknown`, or unverifiable[\s\S]*`BLOCKED`/);
-  assert.match(allSkill, /`Production targets` absent, `unknown`, or unverifiable[\s\S]*no integration permit may issue/);
-  assert.match(allSkill, /Explicit `Production targets: none` with otherwise complete valid relations[\s\S]*`READY`/);
-  assert.match(allSkill, /After a production mutation begins[\s\S]*unknown production state[\s\S]*integration lane\s+is `WAITING`/);
+  assert.match(fixedStateSection, /`Production targets` absent, `unknown`, or unverifiable[\s\S]*`BLOCKED`/);
+  assert.match(fixedStateSection, /`Production targets` absent, `unknown`, or unverifiable[\s\S]*no integration permit may issue/);
+  assert.match(fixedStateSection, /Explicit `Production targets: none` with otherwise complete valid relations[\s\S]*`READY`/);
+  assert.match(integrationSection, /unknown (?:merge, pipeline, or production|downstream) state[\s\S]*integration lane\s+is `WAITING`/i);
 });
 
 test("queue inventory is built from a clean refreshed remote main snapshot", () => {
-  assert.match(allSkill, /resolve.*GitHub remote|解析.*GitHub remote/i);
-  assert.match(allSkill, /fetch.*prune|fetch.*--prune/i);
-  assert.match(allSkill, /clean detached snapshot.*<remote>\/main|乾淨.*detached.*<remote>\/main/is);
-  assert.match(allSkill, /never from a dirty or stale\s+caller worktree/);
-  assert.match(allSkill, /paginate all open Issues/);
-  assert.match(allSkill, /all active\s+OpenSpec changes/);
+  assert.match(snapshotSection, /resolve.*GitHub remote|解析.*GitHub remote/i);
+  assert.match(snapshotSection, /fetch.*prune|fetch.*--prune/i);
+  assert.match(snapshotSection, /clean detached snapshot.*<remote>\/main|乾淨.*detached.*<remote>\/main/is);
+  assert.match(snapshotSection, /never from a dirty or stale\s+caller worktree/);
+  assert.match(snapshotSection, /paginate all open Issues/);
+  assert.match(snapshotSection, /all active\s+OpenSpec changes/);
+});
+
+test("remote-main drift rebuilds the entire dependency snapshot before dispatch or permit", () => {
+  assert.match(
+    snapshotSection,
+    /before (?:each|every) (?:subsequent )?dispatch or integration-permit decision[\s\S]*reread\s+remote main/is,
+  );
+  assert.match(
+    snapshotSection,
+    /SHA drift[\s\S]*invalidates the (?:whole )?dependency snapshot[\s\S]*clean snapshot[\s\S]*active changes[\s\S]*Delivery Relations[\s\S]*reverse edges[\s\S]*descendants[\s\S]*eligibility/is,
+  );
+  assert.match(snapshotSection, /reclassif(?:y|ies)[\s\S]*`ACTIVE`[\s\S]*`INTEGRATION_READY`/i);
 });
 
 test("proposal relations gate whole-change dispatch and derive descendant-only impact", () => {
-  assert.match(allSkill, /Priority[\s\S]*Hard dependencies[\s\S]*Acceptance dependencies[\s\S]*External blockers[\s\S]*Affected areas[\s\S]*Production targets/);
-  assert.match(allSkill, /primary\/related Issue mapping/);
-  assert.match(allSkill, /whole active change is one execution unit/);
-  assert.match(allSkill, /dispatch only a subset of a change's tasks/);
-  assert.match(allSkill, /Hard dependencies prevent dispatch[\s\S]*`SUCCESS`/);
-  assert.match(allSkill, /Acceptance dependencies permit work through[\s\S]*`INTEGRATION_READY`[\s\S]*integration permit/);
-  assert.match(allSkill, /external\s+blocker[\s\S]*`dispatch` or `integration` gate/);
-  assert.match(allSkill, /Derive reverse\s+`Blocks` edges/);
-  assert.match(allSkill, /affected descendants/);
+  assert.match(snapshotSection, /Priority[\s\S]*Hard dependencies[\s\S]*Acceptance dependencies[\s\S]*External blockers[\s\S]*Affected areas[\s\S]*Production targets/);
+  assert.match(snapshotSection, /primary\/related Issue mapping/);
+  assert.match(snapshotSection, /whole active change is one execution unit/);
+  assert.match(scopeSection, /dispatch only a subset of a change's tasks/);
+  assert.match(fixedStateSection, /Hard dependencies prevent dispatch[\s\S]*`SUCCESS`/);
+  assert.match(fixedStateSection, /Acceptance dependencies permit work through[\s\S]*`INTEGRATION_READY`[\s\S]*integration permit/);
+  assert.match(snapshotSection, /external\s+blocker[\s\S]*`dispatch` or `integration` gate/);
+  assert.match(snapshotSection, /Derive reverse\s+`Blocks` edges/);
+  assert.match(snapshotSection, /affected descendants/);
 });
 
 test("waiting, blocking, pausing, failure, and cancellation isolate unrelated ready changes", () => {
-  assert.match(allSkill, /`AWAITING_GO`, `WAITING`, `BLOCKED`, `PAUSED`, `FAILED`, or `CANCELLED` affects[\s\S]*item and its dependency descendants/);
-  assert.match(allSkill, /dispatch unrelated `READY` changes/);
-  assert.match(allSkill, /`PAUSED`; it consumes no item-owner capacity/);
-  assert.match(allSkill, /cycles block cycle members and their descendants/);
-  assert.match(allSkill, /unmapped Issues without creating work or\s+blocking unrelated items/);
+  assert.match(fixedStateSection, /`AWAITING_GO`, `WAITING`, `BLOCKED`, `PAUSED`, `FAILED`, or `CANCELLED` affects[\s\S]*item and its dependency descendants/);
+  assert.match(fixedStateSection, /dispatch unrelated `READY` changes/);
+  assert.match(fixedStateSection, /`PAUSED`; it consumes no item-owner capacity/);
+  assert.match(snapshotSection, /acceptance-only and mixed hard\/acceptance cycles[\s\S]*block cycle members and their descendants/i);
+  assert.match(snapshotSection, /unmapped Issues without creating work or\s+blocking unrelated items/);
 });
 
 test("coordinator reserves one slot and hands each ready item to jt-flow-one", () => {
-  assert.match(allSkill, /primary agent is the coordinator and reserves one available agent slot/);
-  assert.match(allSkill, /Each remaining available slot may own one `READY` change/);
-  assert.match(allSkill, /clean main checkout/);
-  assert.match(allSkill, /`jt-flow-one` creates and\s+owns the item's isolated feature worktree/);
-  assert.match(allSkill, /change identifier,\s+proposal[\s\S]*Issue mapping, target repository, approved scope,\s+durable[\s\S]*proposal GO evidence, dependency snapshot revision, integration policy,\s+and CodeRabbit authorization context/);
-  assert.match(allSkill, /primary agent performs coordinator dispatch, not each item's delivery/);
+  const dispatchSection = getDispatchSection();
+  assert.match(dispatchSection, /primary agent is the coordinator and reserves one available agent slot/);
+  assert.match(dispatchSection, /Each remaining available slot may own one `READY` change/);
+  assert.match(dispatchSection, /clean main checkout/);
+  assert.match(dispatchSection, /`jt-flow-one` to create and own the item's\s+isolated feature worktree/);
+  assert.match(dispatchSection, /change identifier,\s+proposal[\s\S]*Issue mapping, target repository, approved scope,\s+durable[\s\S]*proposal GO evidence, dependency snapshot revision, integration policy,\s+and CodeRabbit authorization context/);
+  assert.match(dispatchSection, /primary agent performs coordinator dispatch, not each item's delivery/);
 });
 
-test("integration uses one exact-SHA lane and releases it safely after failure", () => {
-  assert.match(allSkill, /at most one integration permit/);
-  assert.match(allSkill, /repository, change identifier, item HEAD SHA, and verified main SHA/);
-  assert.match(allSkill, /fetches remote main[\s\S]*rebases[\s\S]*reruns required checks[\s\S]*mergeability/);
-  assert.match(allSkill, /changed item\s+HEAD invalidates the permit/);
-  assert.match(allSkill, /changed main SHA[\s\S]*new permit/);
-  assert.match(allSkill, /revoke the permit only after proving no production mutation\s+began/);
-  assert.match(allSkill, /After a production mutation begins, an\s+unknown production state issues no new permit/);
-  assert.match(allSkill, /unrelated.*development.*tests.*continue/is);
-});
-
-test("explicit queue invocation does not imply CodeRabbit consent", () => {
-  assert.doesNotMatch(allSkill, /明確點名／呼叫本 Skill 即代表接受/);
-  assert.match(
-    allSkill,
-    /CodeRabbit consent evidence[\s\S]*preauthorized[\s\S]*requires-disclosure/,
+test("integration permit decision rows fail closed on every stale or incomplete fixture", () => {
+  const permitDecisions = parseTwoColumnDecisionTable(
+    integrationSection,
+    "Permit evidence fixture",
   );
-  assert.match(oneSkill, /CodeRabbit/);
+  assert.deepEqual(permitDecisions, [
+    {
+      input: "Exact current repository, change, item HEAD, refreshed main, required-check set and terminal-success results, mergeable result, and fresh readback time",
+      expected: "`GRANT`",
+    },
+    {
+      input: "Current required-check set differs from the recorded set",
+      expected: "`WITHHOLD_OR_INVALIDATE`",
+    },
+    {
+      input: "Any required check is pending, failed, unknown, non-terminal, missing, or bound to another item HEAD",
+      expected: "`WITHHOLD_OR_INVALIDATE`",
+    },
+    {
+      input: "Item HEAD differs from permit evidence",
+      expected: "`INVALIDATE`",
+    },
+    {
+      input: "Remote-main SHA differs from permit or dependency snapshot",
+      expected: "`INVALIDATE_AND_REBUILD`",
+    },
+    {
+      input: "Mergeability is unknown or non-mergeable",
+      expected: "`WITHHOLD_OR_INVALIDATE`",
+    },
+    {
+      input: "Permit evidence readback time is missing or stale",
+      expected: "`WITHHOLD_OR_INVALIDATE`",
+    },
+  ]);
+  assert.match(
+    integrationSection,
+    /reread every bound field at permit grant and again immediately before merge or\s+any production mutation/is,
+  );
+});
+
+test("integration lane decision rows require no merge, mutation, or downstream pipeline before revocation", () => {
+  const laneDecisions = parseTwoColumnDecisionTable(
+    integrationSection,
+    "Lane evidence fixture",
+  );
+  assert.deepEqual(laneDecisions, [
+    {
+      input: "No merge, no production mutation, and no derived downstream pipeline began",
+      expected: "`REVOKE`",
+    },
+    { input: "A merge occurred", expected: "`HOLD`" },
+    { input: "A production mutation occurred", expected: "`HOLD`" },
+    { input: "A derived downstream pipeline began", expected: "`HOLD`" },
+    {
+      input: "All downstream CI and deployment are verified healthy",
+      expected: "`RELEASE_AFTER_VERIFICATION`",
+    },
+    {
+      input: "The system is restored to a known rollback state",
+      expected: "`RELEASE_AFTER_ROLLBACK`",
+    },
+  ]);
+  assert.match(integrationSection, /unrelated.*development.*tests.*continue/is);
 });
