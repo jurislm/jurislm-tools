@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.33.2](https://github.com/jurislm/jurislm-tools/compare/v1.33.1...v1.33.2) (2026-08-05)
+
+
+### 🎨 Styles
+
+* **jt-flow:** 統一 model: sonnet 前端 metadata 不加引號 ([25e6bc2](https://github.com/jurislm/jurislm-tools/commit/25e6bc23fdd2fefa8ee30ccb1ccc371b3e9ec978))
+
 ## [1.33.1](https://github.com/jurislm/jurislm-tools/compare/v1.33.0...v1.33.1) (2026-07-31)
 
 
