@@ -89,6 +89,12 @@ Commit types:
 - `fix:` for incorrect behavior or information.
 - `docs:` or `chore:` for non-behavioral maintenance.
 
+`scripts/commit-types.mjs` parses this exact list to keep it in sync with
+`release-please-config.json`; `npm test` fails if they drift. Keep it a flat
+bullet list with each type wrapped in backticks, and keep the heading above
+unique in this file — a second occurrence makes the parse target ambiguous
+and the parser now rejects that outright.
+
 Repository quality and Release Please run on the self-hosted Drone instance
 through `.drone.yml`. The `validate` pipeline covers pull requests and pushes
 to `main`; the `release` pipeline runs only after pushes to `main`, reads
