@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.0](https://github.com/jurislm/jurislm-tools/compare/v1.33.2...v1.34.0) (2026-08-05)
+
+
+### 🚀 New Features
+
+* **ci:** 為 commit type 建立自動護欄，避免 CHANGELOG 與版號失準 ([#183](https://github.com/jurislm/jurislm-tools/issues/183)) ([e9d8d78](https://github.com/jurislm/jurislm-tools/commit/e9d8d7875dab7984c4edf12dab1bb29fdec5ae70))
+
 ## [1.33.2](https://github.com/jurislm/jurislm-tools/compare/v1.33.1...v1.33.2) (2026-08-05)
 
 
