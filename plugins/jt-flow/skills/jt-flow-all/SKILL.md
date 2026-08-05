@@ -33,6 +33,26 @@ include the disclosure in its proposal summary and receive consent in that same
 proposal GO. This adds no checkpoint and must not defer consent until after GO.
 Skill names or internal handoffs never prove consent.
 
+## 遇到阻塞時的封閉迴圈
+
+與 `jt-flow-one` 同一條規則，coordinator 層一樣適用：**阻塞不是停下回報的理由**。
+走 `查資料 → 分析根因 → 修正 → 繼續` 的迴圈，終止條件是**目標達成**，不是「問題已釐清」。
+
+外部系統行為不確定時，**Context7／Exa／Firecrawl 各派一個 `model: sonnet` agent
+平行查再交叉比對**——不是查不到才換下一個，三者強項不同（官方文件／搜尋摘要／整頁全文）。
+明確區分「官方明說」與「社群推測」，查不到就說查不到。
+
+⚠️ **「環境問題」是最容易被用來合理化停止追查的標籤**。判定之前先問「這一步的目的是什麼、
+真的需要那個壞掉的東西嗎」——多數時候有繞過壞掉部分的路徑。環境類修正優先用
+env var／臨時設定檔／單次指令參數，不動使用者的全域設定（尤其安全性相關者）。
+
+完整說明見 `jt-flow-one` 的同名段落。
+
+**coordinator 專屬的界線**：這條規則作用於**單一 item 內部**的阻塞。
+若阻塞來自 dependency snapshot 失效、integration permit 條件不成立、或 remote main
+drift，那些有各自明確的處置（重建 snapshot、重新取得 permit、rebase 後重跑
+required checks），依既有規則執行，不適用本段的自由裁量。
+
 ## Phase 1 — refreshed remote dependency snapshot
 
 1. Resolve the actual GitHub remote, fetch --prune it, and record the refreshed
