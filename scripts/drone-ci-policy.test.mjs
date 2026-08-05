@@ -73,6 +73,128 @@ steps:
   }
 });
 
+test("the validator rejects the commit-type checkers running after npm ci (Copilot finding: incomplete ordering assertion)", () => {
+  // Both checkers were still before `npm run validate` here, which the
+  // pre-fix assertion accepted — but they ran after `npm ci` already paid
+  // for a dependency install, defeating the fail-fast-before-install intent
+  // that is the entire reason `.drone.yml` puts them first.
+  const temporaryDirectory = mkdtempSync(join(tmpdir(), "drone-ci-policy-"));
+  const fixturePath = join(temporaryDirectory, ".drone.yml");
+
+  writeFileSync(
+    fixturePath,
+    `kind: pipeline
+type: docker
+name: validate
+trigger:
+  event: [push, pull_request]
+  ref: [refs/heads/main, refs/pull/*/head]
+steps:
+  - name: validate
+    image: node:22.22.2-bookworm-slim
+    commands:
+      - npm ci
+      - node scripts/validate-pr-title.mjs
+      - node scripts/validate-squash-subject.mjs
+      - npm run validate
+---
+kind: pipeline
+type: docker
+name: release
+trigger:
+  event: [push]
+  ref: [refs/heads/main]
+steps:
+  - name: github-release
+    image: node:22.22.2-bookworm-slim
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands:
+      - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+  - name: release-pr
+    image: node:22.22.2-bookworm-slim
+    depends_on: [github-release]
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands:
+      - npx --yes release-please@17.10.4 release-pr --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+`,
+  );
+
+  try {
+    const result = validate(fixturePath);
+
+    assert.notEqual(result.status, 0);
+    assert.match(
+      `${result.stdout}\n${result.stderr}`,
+      /checkers must run before npm ci/i,
+    );
+  } finally {
+    rmSync(temporaryDirectory, { recursive: true, force: true });
+  }
+});
+
+test("the validator rejects npm ci running after npm run validate", () => {
+  const temporaryDirectory = mkdtempSync(join(tmpdir(), "drone-ci-policy-"));
+  const fixturePath = join(temporaryDirectory, ".drone.yml");
+
+  writeFileSync(
+    fixturePath,
+    `kind: pipeline
+type: docker
+name: validate
+trigger:
+  event: [push, pull_request]
+  ref: [refs/heads/main, refs/pull/*/head]
+steps:
+  - name: validate
+    image: node:22.22.2-bookworm-slim
+    commands:
+      - node scripts/validate-pr-title.mjs
+      - node scripts/validate-squash-subject.mjs
+      - npm run validate
+      - npm ci
+---
+kind: pipeline
+type: docker
+name: release
+trigger:
+  event: [push]
+  ref: [refs/heads/main]
+steps:
+  - name: github-release
+    image: node:22.22.2-bookworm-slim
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands:
+      - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+  - name: release-pr
+    image: node:22.22.2-bookworm-slim
+    depends_on: [github-release]
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands:
+      - npx --yes release-please@17.10.4 release-pr --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+`,
+  );
+
+  try {
+    const result = validate(fixturePath);
+
+    assert.notEqual(result.status, 0);
+    assert.match(
+      `${result.stdout}\n${result.stderr}`,
+      /npm ci must run before npm run validate/i,
+    );
+  } finally {
+    rmSync(temporaryDirectory, { recursive: true, force: true });
+  }
+});
+
 test("the validator rejects a second validate step that can escape isolation", () => {
   const temporaryDirectory = mkdtempSync(join(tmpdir(), "drone-ci-policy-"));
   const fixturePath = join(temporaryDirectory, ".drone.yml");

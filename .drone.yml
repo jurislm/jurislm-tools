@@ -18,6 +18,8 @@ steps:
   - name: validate
     image: node:22.22.2-bookworm-slim
     commands:
+      - node scripts/validate-pr-title.mjs
+      - node scripts/validate-squash-subject.mjs
       - npm ci
       - npm run validate
 
