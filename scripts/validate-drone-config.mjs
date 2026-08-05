@@ -63,6 +63,29 @@ requireValue(
   "validate must not receive the release token",
 );
 
+// Commit-type guardrails (design D3/D4): a pull-request build with an
+// out-of-policy title, or a push to main whose squash subject was
+// overridden past the title check, must fail before npm run validate does
+// its slower, dependency-installing work.
+const validateCommands = list(validateStep?.commands);
+const prTitleCommand = "node scripts/validate-pr-title.mjs";
+const squashSubjectCommand = "node scripts/validate-squash-subject.mjs";
+const npmRunValidateIndex = validateCommands.indexOf("npm run validate");
+const prTitleIndex = validateCommands.indexOf(prTitleCommand);
+const squashSubjectIndex = validateCommands.indexOf(squashSubjectCommand);
+requireValue(
+  prTitleIndex !== -1 && squashSubjectIndex !== -1,
+  "validate must run both the pull-request title and squash-subject commit-type checkers",
+);
+requireValue(
+  npmRunValidateIndex !== -1 &&
+    prTitleIndex !== -1 &&
+    squashSubjectIndex !== -1 &&
+    prTitleIndex < npmRunValidateIndex &&
+    squashSubjectIndex < npmRunValidateIndex,
+  "the commit-type checkers must run before npm run validate so a bad title fails fast",
+);
+
 const release = byName.get("release");
 const releaseEvents = list(release?.trigger?.event);
 const releaseRefs = list(release?.trigger?.ref);
