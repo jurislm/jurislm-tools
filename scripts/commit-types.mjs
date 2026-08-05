@@ -53,12 +53,24 @@ export function parseClaudeMdCommitTypes(claudeMdPath = "CLAUDE.md", root = proc
   const absolutePath = resolvePath(claudeMdPath, root);
   const text = readFileSync(absolutePath, "utf8");
   const marker = "Commit types:";
-  const markerIndex = text.indexOf(marker);
+  const occurrences = text.split(marker).length - 1;
 
-  if (markerIndex === -1) {
+  if (occurrences === 0) {
     throw new Error(`Missing "${marker}" section in ${claudeMdPath}`);
   }
 
+  if (occurrences > 1) {
+    // A second heading means indexOf would silently pick the first one and
+    // ignore the rest — worse than a missing section, because nothing here
+    // would ever notice the parse target became ambiguous. Fail loudly
+    // instead of guessing which occurrence is authoritative.
+    throw new Error(
+      `"${marker}" appears ${occurrences} times in ${claudeMdPath}; the parse target is ` +
+        "ambiguous. Keep exactly one such heading in this file.",
+    );
+  }
+
+  const markerIndex = text.indexOf(marker);
   const lines = text.slice(markerIndex + marker.length).split("\n");
   const types = [];
   let inList = false;
