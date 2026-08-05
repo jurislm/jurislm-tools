@@ -126,8 +126,14 @@
       **Done, commit `a403de2`.** Confirmed by reading the current `CHANGELOG.md`: the `[1.33.2]`
       entry is now `### 🚀 New Features` / "阻塞時走封閉迴圈，不停在問題回報", with the version
       heading, `(2026-08-05)` date, and `25e6bc2` commit link unchanged.
-- [ ] 7.2 After merge, update the Release notes for tag `v1.33.2` with `gh release edit` to match
+- [x] 7.2 After merge, update the Release notes for tag `v1.33.2` with `gh release edit` to match
       the corrected section, then read back with `gh release view v1.33.2 --json body`.
+      **Done 2026-08-05, after PR #183 merged.** The notes now read
+      `### 🚀 New Features` / `* **jt-flow:** 阻塞時走封閉迴圈，不停在問題回報 ([25e6bc2](...))`,
+      matching the corrected `CHANGELOG.md` section verbatim. Read back with
+      `gh release view v1.33.2 --json body` to confirm.
+      ⚠️ Verified the tag itself was **not** moved: `v1.33.2` still points at `c11b5e9`, per the
+      proposal's Non-goal of not re-cutting the published release.
 
 ## 8. Verification
 
