@@ -66,10 +66,17 @@ requireValue(
 // Commit-type guardrails (design D3/D4): a pull-request build with an
 // out-of-policy title, or a push to main whose squash subject was
 // overridden past the title check, must fail before npm run validate does
-// its slower, dependency-installing work.
+// its slower, dependency-installing work. The full ordering invariant this
+// pipeline exists to enforce is a three-link chain — checkers, then
+// npm ci, then npm run validate — not just "checkers somewhere before
+// npm run validate": a checker placed after npm ci still runs before
+// npm run validate but has already paid for the dependency install a bad
+// title was supposed to let CI skip (Copilot review finding on an earlier
+// version of this file, which only asserted the weaker two-point check).
 const validateCommands = list(validateStep?.commands);
 const prTitleCommand = "node scripts/validate-pr-title.mjs";
 const squashSubjectCommand = "node scripts/validate-squash-subject.mjs";
+const npmCiIndex = validateCommands.indexOf("npm ci");
 const npmRunValidateIndex = validateCommands.indexOf("npm run validate");
 const prTitleIndex = validateCommands.indexOf(prTitleCommand);
 const squashSubjectIndex = validateCommands.indexOf(squashSubjectCommand);
@@ -84,6 +91,19 @@ requireValue(
     prTitleIndex < npmRunValidateIndex &&
     squashSubjectIndex < npmRunValidateIndex,
   "the commit-type checkers must run before npm run validate so a bad title fails fast",
+);
+requireValue(
+  npmCiIndex !== -1 &&
+    prTitleIndex !== -1 &&
+    squashSubjectIndex !== -1 &&
+    prTitleIndex < npmCiIndex &&
+    squashSubjectIndex < npmCiIndex,
+  "the commit-type checkers must run before npm ci, not merely before npm run validate — " +
+    "otherwise a bad title still pays for the dependency install it was supposed to skip",
+);
+requireValue(
+  npmCiIndex !== -1 && npmRunValidateIndex !== -1 && npmCiIndex < npmRunValidateIndex,
+  "npm ci must run before npm run validate",
 );
 
 const release = byName.get("release");
