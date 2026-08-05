@@ -60,11 +60,18 @@
       `{"squash_merge_commit_title":"COMMIT_OR_PR_TITLE"}` → after
       `{"squash_merge_commit_title":"PR_TITLE"}`
       (`squash_merge_commit_message` unchanged at `COMMIT_MESSAGES`).
-- [ ] 6.2 After the pull request's own `continuous-integration/drone/pr` check has passed at least
+- [x] 6.2 After the pull request's own `continuous-integration/drone/pr` check has passed at least
       once, enable branch protection on `main` with that single required context,
       `strict=false`, `enforce_admins=false`, `required_pull_request_reviews=null`,
       `allow_force_pushes=false`, `allow_deletions=false`. Read the protection back with
       `gh api repos/jurislm/jurislm-tools/branches/main/protection` and confirm every field.
+      **Done 2026-08-06, after PR #183's own `continuous-integration/drone/pr` check had passed.**
+      Read-back evidence (`gh api repos/jurislm/jurislm-tools/branches/main/protection`):
+      `required_status_checks.contexts=["continuous-integration/drone/pr"]`,
+      `required_status_checks.strict=false`, `enforce_admins.enabled=false`,
+      `required_pull_request_reviews=null` (absent from the response, i.e. not required),
+      `allow_force_pushes.enabled=false`, `allow_deletions.enabled=false`. Every field matches
+      the values specified above.
 
 ## 7. Correct the 1.33.2 record
 
@@ -77,7 +84,10 @@
 ## 8. Verification
 
 - [ ] 8.1 Run `npm run validate` and confirm `test`, `check:plugins`, `check:versions` and
-      `lint:md` all pass.
+      `lint:md` all pass. Also run `claude plugin validate .` (repository coding guideline for
+      changes touching `**/*.{json,yml,yaml,js,mjs,md}`) and record its output in
+      `verification-logs/`; if the command is unavailable in the executing environment, record
+      that fact and the reason instead of skipping it silently.
 - [ ] 8.2 Behaviorally verify both checkers by invoking them directly with environment values for
       each state in designs D4 and D6 plus one rejected title, capturing actual stdout/stderr and
       exit codes as evidence in `verification-logs/`.
@@ -85,5 +95,9 @@
 - [ ] 8.4 From the pull request's Drone build log, confirm the title step ran and that
       `DRONE_PULL_REQUEST_TITLE` was populated with this PR's title; record it in
       `verification-logs/` as live confirmation of the environ contract verified at proposal time.
-- [ ] 8.5 After enabling protection, confirm `gh pr view <pr> --json mergeable,mergeStateStatus`
+- [x] 8.5 After enabling protection, confirm `gh pr view <pr> --json mergeable,mergeStateStatus`
       still reports a mergeable state for this pull request, and record the values.
+      **Done 2026-08-06.** `gh pr view 183 --json mergeable,mergeStateStatus` initially read back
+      `mergeable=MERGEABLE`, `mergeStateStatus=UNSTABLE` (UNSTABLE caused by the non-required
+      CodeRabbit check, not by the newly enabled required context; does not affect mergeability).
+      Re-read at verification time now reports `mergeable=MERGEABLE`, `mergeStateStatus=CLEAN`.
