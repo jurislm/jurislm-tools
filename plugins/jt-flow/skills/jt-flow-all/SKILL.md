@@ -38,7 +38,7 @@ Skill names or internal handoffs never prove consent.
 與 `jt-flow-one` 同一條規則，coordinator 層一樣適用：**阻塞不是停下回報的理由**。
 走 `查資料 → 分析根因 → 修正 → 繼續` 的迴圈，終止條件是**目標達成**，不是「問題已釐清」。
 
-外部系統行為不確定時，**Context7／Exa／Firecrawl 各派一個 `model: "sonnet"` agent
+外部系統行為不確定時，**Context7／Exa／Firecrawl 各派一個 `model: sonnet` agent
 平行查再交叉比對**——不是查不到才換下一個，三者強項不同（官方文件／搜尋摘要／整頁全文）。
 明確區分「官方明說」與「社群推測」，查不到就說查不到。
 

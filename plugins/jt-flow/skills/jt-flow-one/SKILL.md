@@ -68,7 +68,7 @@ gate。
 
 ### 外部系統行為不確定時，一定查文件——三個工具都要用
 
-Context7、Exa、Firecrawl **各派一個 agent 平行查**（`model: "sonnet"`，2 個以上平行
+Context7、Exa、Firecrawl **各派一個 agent 平行查**（`model: sonnet`，2 個以上平行
 角度時用 Workflow 而非手動散派），再交叉比對。**不是查不到才換下一個**，因為三者
 強項不同：
 
