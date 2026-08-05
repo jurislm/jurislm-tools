@@ -64,7 +64,11 @@ export function validateTitle(title, permittedTypes = PERMITTED_COMMIT_TYPES) {
     };
   }
 
-  if (!/^\s/.test(rest)) {
+  // The declared format is "type: description" — the required separator is
+  // literal U+0020, not `\s` in general. `\s` also matches tab, newline,
+  // and full-width (U+3000) space, none of which satisfy the declared
+  // format even though they are technically whitespace (CodeRabbit finding).
+  if (!rest.startsWith(" ")) {
     return {
       valid: false,
       reason:

@@ -79,6 +79,38 @@ test("an unpermitted type with no space after the colon still reports the type-n
   assert.match(result.reason, /not permitted/);
 });
 
+test("a tab after the colon is rejected as missing space, not accepted as the required separator (CodeRabbit finding A)", () => {
+  // The declared format is "type: description" — only literal U+0020 counts
+  // as the required separator. \s (which the previous implementation used)
+  // also matches tab, newline, and full-width space, which is wrong: they
+  // are not what "type: description" specifies.
+  const result = validateTitle("feat:\tdescription");
+
+  assert.equal(result.valid, false);
+  assert.match(result.reason, /space/i);
+  assert.doesNotMatch(result.reason, /has no Conventional Commits type/);
+});
+
+test("a newline after the colon is rejected as missing space, not accepted as the required separator", () => {
+  const result = validateTitle("feat:\ndescription");
+
+  assert.equal(result.valid, false);
+  assert.match(result.reason, /space/i);
+});
+
+test("a full-width (CJK) space after the colon is rejected as missing space, not accepted as the required separator", () => {
+  const result = validateTitle("feat:　description");
+
+  assert.equal(result.valid, false);
+  assert.match(result.reason, /space/i);
+});
+
+test("a single literal space after the colon still passes", () => {
+  const result = validateTitle("feat: description");
+
+  assert.equal(result.valid, true);
+});
+
 test("a non-string title does not print the literal word \"undefined\"", () => {
   const result = validateTitle(undefined);
 

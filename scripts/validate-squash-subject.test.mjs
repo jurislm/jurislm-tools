@@ -49,3 +49,13 @@ test("a pull-request build (DRONE_PULL_REQUEST set) is skipped", () => {
   assert.equal(result.exitCode, 0);
   assert.match(result.message, /skip/i);
 });
+
+test("a tab after the colon in the squash subject is rejected — checkSquashSubject shares the fix via the imported validateTitle, confirmed here rather than assumed (CodeRabbit finding A)", () => {
+  const result = checkSquashSubject({
+    DRONE_PULL_REQUEST: "",
+    DRONE_COMMIT_MESSAGE: "feat:\tdescription",
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.match(result.message, /space/i);
+});
