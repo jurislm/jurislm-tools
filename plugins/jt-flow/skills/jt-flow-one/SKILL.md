@@ -396,8 +396,8 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
    `gh pr view <pr-num> --repo <owner>/<repo> --json labels,assignees`
    驗證回傳結果確實含預期的 label／assignee，不符 → 停下重試或回報，
    不可假設呼叫成功就繼續
-   - 掛 Monitor 盯 CI/CD 到終態，同時主動抓 bot 留言（CodeRabbit/Copilot），
-     不等提醒
+   - 掛 Monitor 盯 CI/CD 到終態，同時主動抓 bot 留言（CodeRabbit/Copilot/
+     Codex），不等提醒
    - **Copilot 每個 PR／變更最多一次 review**：review 產出後即用完該外部審查
      預算；修正 finding 或後續 push 不得要求或等待另一次 Copilot review。
      確認 Copilot 因額度／配額耗盡而未產出（非權限或設定錯誤）時，可略過

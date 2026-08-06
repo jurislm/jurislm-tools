@@ -100,10 +100,10 @@ assert the live setting value.
 
 ## Migration Plan
 
-Documentation-only change (SKILL.md, README.md, root CLAUDE.md, and test
-assertions in `scripts/jt-flow-review-policy.test.mjs`); no runtime code,
-data, or release-managed version changes. No rollback complexity beyond
-reverting the merged commit.
+Non-runtime policy, documentation, and test change (SKILL.md, README.md, root
+CLAUDE.md, and test assertions in `scripts/jt-flow-review-policy.test.mjs`);
+no production runtime code, data, or release-managed version changes. No
+rollback complexity beyond reverting the merged commit.
 
 Per this repository's own OpenSpec convention (confirmed against
 `openspec/specs/jt-flow-review-orchestration/spec.md`'s git history, which

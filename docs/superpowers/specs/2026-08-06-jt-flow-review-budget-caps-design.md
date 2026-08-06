@@ -112,12 +112,18 @@ Consequences for the policy:
 - `plugins/jt-flow/README.md` — mirror the same paragraphs.
 - `CLAUDE.md` (repository root) — mirror the same paragraphs in the review
   checklist / policy guidance sections.
-- `openspec/specs/jt-flow-review-orchestration/spec.md` — rewrite the "Local
-  review is portable and change-batch scoped" requirement to state the 3-run
-  cap instead of unlimited batches; extend "External reviewers have one
-  effective review budget" to include Codex, with a scenario for the 審查
-  觸發條件 precondition check and a scenario for handling an extra review
-  that arrives despite that precondition.
+- `openspec/specs/jt-flow-review-orchestration/spec.md` (the living spec) is
+  NOT edited during implementation — per this repository's own OpenSpec
+  convention (the file's git history shows it was previously touched only at
+  the prior change's archive commit, never during that change's
+  implementation), it stays at deployed behavior until this change is
+  archived. The 3-run cap and the Codex requirement extension are carried
+  instead by the change's own delta spec at
+  `openspec/changes/<change-name>/specs/jt-flow-review-orchestration/spec.md`,
+  with a scenario for the 審查觸發條件 precondition check and a scenario for
+  handling an extra review that arrives despite that precondition; the delta
+  gets folded into the living spec when the change is archived
+  (`opsx:archive`/`opsx:sync`).
 - `scripts/jt-flow-review-policy.test.mjs` — replace the batch-based
   assertions with 3-run-cap assertions; add Codex assertions parallel to the
   existing Copilot ones, plus an assertion for the precondition-check wording.
