@@ -183,12 +183,21 @@ either channel produces a real review.
 
 Only `jt-flow-one` owns local code review and uses
 `superpowers:requesting-code-review`; `jt-flow-all` only orchestrates its issue
-queue and must not initiate or own an additional review. Each completed
-code-change batch permits at most one Superpowers review; an accepted finding
-that changes code creates a new batch eligible for one more review, while no
-intervening code change means no repeat review. Use
-`superpowers:receiving-code-review` to verify findings, not as another reviewer.
-Copilot permits at most one review per PR or change. Fixes and later pushes must
+queue and must not initiate or own an additional review. Local review permits
+at most 3 total runs per PR or change: an initial run once the implementation
+is ready, plus up to 2 further runs each triggered only by an accepted finding
+that changes code; after the 3rd run, no further local review occurs even if
+new findings appear, and no intervening code change means no repeat review
+regardless of runs remaining. Use `superpowers:receiving-code-review` to
+verify findings, not as another reviewer. Copilot permits at most one review
+per PR or change. Codex is treated as budgeted at one review per PR or change,
+contingent on the Codex account/organization review-trigger-condition setting
+being configured to review only on PR open — a manual precondition outside
+this repository, not something the workflow verifies programmatically; Codex
+receives no active trigger and no CodeRabbit-style pre-authorization or
+disclosure gate, since the workflow never causes it to read repository data,
+and any review it posts (expected or an unexpected extra one) is still
+evaluated via `superpowers:receiving-code-review`. Fixes and later pushes must
 not restart CodeRabbit or Copilot; final `HEAD` is covered by tests, behavioral
 acceptance, CI, mergeability, and resolved review threads. Skip Copilot when its
 quota is exhausted, move from the CodeRabbit App to the CLI when the App cannot

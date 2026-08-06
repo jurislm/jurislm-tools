@@ -34,10 +34,10 @@ test("uses portable Superpowers review without slash command dependency", () => 
   assert.equal(containsRetiredCodeReviewCommand(currentPolicy), false);
   assert.equal(containsRetiredCodeReviewCommand("/code-review"), true);
   assert.match(skill, /superpowers:requesting-code-review/);
-  assert.match(skill, /每批程式碼變更.*最多.*一次.*Superpowers review/s);
+  assert.match(skill, /本地 Superpowers review.*全程最多.*3\s*次/s);
 });
 
-test("allows a new local review only after another code change batch", () => {
+test("caps local review at 3 total runs per PR or change", () => {
   const skillPolicy = paragraphContaining(
     skill,
     "`superpowers:requesting-code-review` 進行本地 code review",
@@ -48,11 +48,14 @@ test("allows a new local review only after another code change batch", () => {
     "Only `jt-flow-one` owns local code review",
   );
 
-  assert.match(skillPolicy, /變更程式碼.*新一批.*再次.*一次/);
-  assert.match(skillPolicy, /沒有程式碼變更.*不得重跑/);
-  assert.match(readmePolicy, /新一批程式碼變更.*可再 review 一次/);
-  assert.match(readmePolicy, /沒有程式碼變更不得重跑/);
-  assert.match(guidancePolicy, /new batch eligible for one more review/i);
+  assert.match(skillPolicy, /全程最多\s*進行\s*3\s*次/);
+  assert.match(skillPolicy, /第 3 次跑完後.*不再重跑\s*本地\s*review/s);
+  assert.match(skillPolicy, /沒有程式碼變更就不得重跑本地\s*review/);
+  assert.match(readmePolicy, /全程.*最多\s*3\s*次/);
+  assert.match(readmePolicy, /第 3 次跑完後即使仍有新 finding 也不再重跑/);
+  assert.match(readmePolicy, /沒有程式碼變更也不得\s*重跑/);
+  assert.match(guidancePolicy, /at most 3 total runs per PR or change/i);
+  assert.match(guidancePolicy, /after the 3rd run, no further local review occurs/i);
   assert.match(guidancePolicy, /no intervening code change means no repeat/i);
   assert.match(guidancePolicy, /jt-flow-all.*must not initiate or own/i);
 });
@@ -100,6 +103,29 @@ test("limits each external reviewer to one effective review", () => {
     guidancePolicy,
     /wait for that sole request to reach a terminal outcome.*CLI/i,
   );
+});
+
+test("adds Codex as a one-review external reviewer contingent on a manual precondition", () => {
+  const skillPolicy = paragraphContaining(skill, "Codex 每個 PR／變更最多一次");
+  const readmePolicy = paragraphContaining(readme, "本地 review 使用");
+  const guidancePolicy = paragraphContaining(
+    guidance,
+    "Only `jt-flow-one` owns local code review",
+  );
+
+  assert.match(skillPolicy, /Codex 每個 PR／變更最多一次 review/);
+  assert.match(skillPolicy, /不主動送出\s*`@codex review`/);
+  assert.match(skillPolicy, /不套用\s*CodeRabbit 的預先授權/);
+  assert.match(skillPolicy, /審查觸發條件.*開啟 PR/);
+  assert.match(skillPolicy, /非 repo\s*內可提交.*人工一次性確認/);
+  assert.match(skillPolicy, /superpowers:receiving-code-review.*規則核實/);
+  assert.match(readmePolicy, /Codex 每個 PR／變更最多一次 review/);
+  assert.match(readmePolicy, /審查觸發條件＝\s*開啟 PR/);
+  assert.match(readmePolicy, /非 repo\s*內可驗證的人工前置確認/);
+  assert.match(guidancePolicy, /Codex is treated as budgeted at one review per PR or change/i);
+  assert.match(guidancePolicy, /review-trigger-condition setting/i);
+  assert.match(guidancePolicy, /no CodeRabbit-style pre-authorization or\s*disclosure gate/i);
+  assert.match(guidancePolicy, /evaluated via `superpowers:receiving-code-review`/i);
 });
 
 test("does not restart CodeRabbit when a real review lacks current SHA proof", () => {
