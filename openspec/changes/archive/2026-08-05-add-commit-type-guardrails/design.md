@@ -14,8 +14,14 @@ the allowlist a third time inside a CI checker would repeat the same mistake wit
 | `release-please-config.json` | A test asserts its `changelog-sections` types equal the constant |
 | `CLAUDE.md` | A test parses the `Commit types:` list and asserts it equals the constant |
 
-Drift in any of the three fails `npm test`. Adding a type becomes a single edit plus two tests
-that go green; today it is three independent edits nobody verifies.
+Drift in any of the three fails `npm test`.
+
+Adding a type still requires three coordinated edits — `scripts/commit-types.mjs`,
+`release-please-config.json`, and `CLAUDE.md`. What changes is not the number of edits but whether
+anything checks them: today they are three independent edits nobody verifies, and afterwards one
+of them is authoritative while the other two are held to it by tests that fail on any divergence.
+Claiming a single edit would suffice would overstate this design — generating the consumer configs
+from the single source is a further step this change does not take.
 
 The `CLAUDE.md` assertion parses the existing prose list rather than demanding a new machine
 -readable block, so the document stays written for humans.

@@ -150,6 +150,26 @@ $ openspec validate add-commit-type-guardrails --strict
 Change 'add-commit-type-guardrails' is valid
 ```
 
+### Runtime version for the runs above
+
+```
+$ node --version
+v22.23.1
+```
+
+Satisfies `package.json` `engines.node` (`^22.22.2 || ^24.15.0 || >=26.0.0`).
+
+⚠️ This reading was captured later, when a CodeRabbit finding asked for it — not at the moment the
+commands above ran. The working tree and toolchain were unchanged in between, so it is the version
+those runs used, but it is recorded as a later observation rather than presented as part of the
+original capture.
+
+**Deliberately not re-run.** The same finding also asked that every verification be executed again
+after confirming the version. Declined: Drone build 31 ran this identical set on
+`node:22.22.2-bookworm-slim` and passed, so a local re-run yields nothing the CI evidence lacks —
+only a second set of timestamps with identical conclusions. Recorded so the omission reads as a
+decision rather than an oversight.
+
 ## Not pushed
 
 Per instruction, no `git push` was performed; the coordinator controls push
