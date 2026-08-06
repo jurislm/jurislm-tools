@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.35.0](https://github.com/jurislm/jurislm-tools/compare/v1.34.1...v1.35.0) (2026-08-06)
+
+
+### 🚀 New Features
+
+* **jt-flow:** cap review budgets — local review 3 runs, add Codex reviewer ([#188](https://github.com/jurislm/jurislm-tools/issues/188)) ([63b4790](https://github.com/jurislm/jurislm-tools/commit/63b479074ff9a0a1d5515c18d43b6a8373b0f36e)), refs [#187](https://github.com/jurislm/jurislm-tools/issues/187)
+
 ## [1.34.1](https://github.com/jurislm/jurislm-tools/compare/v1.34.0...v1.34.1) (2026-08-06)
 
 
