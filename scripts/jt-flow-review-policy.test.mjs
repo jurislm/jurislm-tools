@@ -117,16 +117,18 @@ test("adds Codex as a one-review external reviewer contingent on a manual precon
   );
 
   assert.match(skillPolicy, /Codex 每個 PR／變更最多一次 review/);
-  assert.match(skillPolicy, /不主動送出\s*`@codex review`/);
+  assert.match(skillPolicy, /不主動送出\s*`@codex review`.*不等待 Codex/);
   assert.match(skillPolicy, /不套用\s*CodeRabbit 的預先授權/);
   assert.match(skillPolicy, /審查觸發條件.*開啟 PR/);
   assert.match(skillPolicy, /非 repo\s*內可提交.*人工一次性確認/);
   assert.match(skillPolicy, /superpowers:receiving-code-review.*規則核實/);
   assert.match(readmePolicy, /Codex 每個 PR／變更最多一次 review/);
+  assert.match(readmePolicy, /不主動\s*要求也不等待 Codex/);
   assert.match(readmePolicy, /審查觸發條件＝\s*開啟 PR/);
   assert.match(readmePolicy, /非 repo\s*內可驗證的人工前置確認/);
   assert.match(guidancePolicy, /Codex is treated as budgeted at one review per PR or change/i);
   assert.match(guidancePolicy, /review-trigger-condition setting/i);
+  assert.match(guidancePolicy, /does not request or wait for a\s*Codex review/i);
   assert.match(guidancePolicy, /no CodeRabbit-style pre-authorization or\s*disclosure gate/i);
   assert.match(guidancePolicy, /evaluated via `superpowers:receiving-code-review`/i);
 });

@@ -194,7 +194,8 @@ per PR or change. Codex is treated as budgeted at one review per PR or change,
 contingent on the Codex account/organization review-trigger-condition setting
 being configured to review only on PR open — a manual precondition outside
 this repository, not something the workflow verifies programmatically; Codex
-receives no active trigger and no CodeRabbit-style pre-authorization or
+receives no active trigger and the workflow does not request or wait for a
+Codex review; it also receives no CodeRabbit-style pre-authorization or
 disclosure gate, since the workflow never causes it to read repository data,
 and any review it posts (expected or an unexpected extra one) is still
 evaluated via `superpowers:receiving-code-review`. Fixes and later pushes must

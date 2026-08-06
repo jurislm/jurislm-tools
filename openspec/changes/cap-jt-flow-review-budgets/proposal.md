@@ -17,10 +17,15 @@ already reviewing PRs automatically in this repository.
 - Add Codex as a third external reviewer, capped at one review per PR/change,
   contingent on the account-level "審查觸發條件" setting reading 開啟 PR (a
   manual, one-time environment precondition, not a repo-committed file).
-  Codex gets no active trigger action and no CodeRabbit-style
-  pre-authorization/disclosure gate, since `jt-flow-one` never causes it to
-  read repository data. Any review it posts — expected or an unexpected extra
-  one — is still evaluated via the existing `receiving-code-review` rule.
+  Codex gets no active trigger action, no waiting for its result, and no
+  CodeRabbit-style pre-authorization/disclosure gate, since `jt-flow-one`
+  never causes it to read repository data. This deliberately departs from
+  #187's original wording ("apply CodeRabbit's authorization rule to Codex
+  too") after research showed the rule doesn't fit an automatic, never-
+  actively-triggered reviewer; see design.md's Decisions section for the
+  full rejected-alternatives trail. Any review it posts — expected or an
+  unexpected extra one — is still evaluated via the existing
+  `receiving-code-review` rule.
 - CodeRabbit's and Copilot's existing one-review-per-PR rules, triggers, and
   authorization text are unchanged.
 

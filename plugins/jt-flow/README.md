@@ -106,9 +106,10 @@ finding 的修正與後續 push 都不得重新啟動外部 review。
 review。GitHub Copilot 額度用完即略過；CodeRabbit GitHub App／PR bot 的唯一
 要求進入終態且無法產出時轉 CodeRabbit CLI，CLI 無法產出時記錄限制並結束
 CodeRabbit 管道。Codex 每個 PR／變更最多一次 review，純自動觸發、不主動
-要求也不套用 CodeRabbit 的授權規則，但依賴 Codex 帳號設定「審查觸發條件＝
-開啟 PR」這個非 repo 內可驗證的人工前置確認；貼出來的 finding 一律照
-`superpowers:receiving-code-review` 核實，不因多跑一次就忽略內容。
+要求也不等待 Codex，也不套用 CodeRabbit 的授權規則，但依賴 Codex 帳號設定
+「審查觸發條件＝開啟 PR」這個非 repo 內可驗證的人工前置確認；貼出來的
+finding 一律照 `superpowers:receiving-code-review` 核實，不因多跑一次就
+忽略內容。
 
 ## Version
 
