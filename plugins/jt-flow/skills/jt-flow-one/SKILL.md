@@ -67,18 +67,20 @@ gate。
    "$CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"` 回傳 `1`；且 `SendMessage`、
    `TaskCreate`、`TaskList` 三個 tool 的 schema 可透過 ToolSearch 正常載入。
 
-判定為可用時，本 Skill 現有兩處因「2 個以上平行角度」而規定用 Workflow tool
-派工的地方——三工具研究（Context7/Exa/Firecrawl，見下方「遇到阻塞時的封閉
-迴圈」）與 Step 5 code review——一律改為：在這兩處各自派一個具名的 wrapper
-agent（`model: sonnet`，tool allowlist 需包含 `Workflow`，如
-`general-purpose`），由該 wrapper 內部照原規則呼叫 Workflow tool；
-`jt-flow-one` 本身不再直接呼叫 Workflow tool。**不得**拆解成手動散派多個
-具名 agent 取代這次 Workflow tool 呼叫。派出後可隨時用 SendMessage 對該
-wrapper 追加指示、問進度或喊停。
+本 Skill 現有兩處因「2 個以上平行角度」而規定用 Workflow tool 派工的地方——
+三工具研究（Context7/Exa/Firecrawl，見下方「遇到阻塞時的封閉迴圈」）與
+Step 5 code review——不論上面判定結果為何，行為都不變：一律由目前執行
+`jt-flow-one` 的 session 直接呼叫 Workflow tool。原因是 `Workflow` tool 只有
+主 session（未被其他 agent 派下來的那一層）才能呼叫，spawn 出去的 agent
+拿不到這個 tool（已實測驗證：spawn 一個 agent 檢查其工具清單，`Workflow`
+不在其中，無論 top-level 或 deferred 清單皆無）；而團隊模式判定為可用的
+前提就是「非 nested」，也就是這時 `jt-flow-one` 本身必然正是那個主
+session——本來就已經是可被直接發訊息插話的狀態，沒有需要、也沒有安全的
+方式再包一層 wrapper agent。
 
-判定為不可用時（Codex、未開旗標的 Claude Code、或上述第 1 點的 nested 執行），
-這兩處派工完全不變：`jt-flow-one` 直接呼叫 Workflow tool，不經過任何具名
-wrapper。
+上面的偵測邏輯目前對這兩處派工沒有實際影響，保留是為了未來若本 Skill 新增
+不需要呼叫 Workflow tool 的單純單次派工點時，可以直接套用（單次派工不受
+「只有主 session 能呼叫 Workflow」這個限制）。
 
 ## 遇到阻塞時的封閉迴圈
 

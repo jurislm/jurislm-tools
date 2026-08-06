@@ -61,59 +61,40 @@ unavailable.
   successfully
 - **THEN** `jt-flow-one` records team mode as available for the run
 
-### Requirement: The Workflow-tool-mandated pattern is wrapped, not replaced, when team mode is available
+### Requirement: The Workflow-tool-mandated dispatch points are unaffected by team-mode detection
 
 `jt-flow-one` has exactly two existing dispatch points governed by the
 global multi-agent policy's 2+ parallel-angle rule: the three-tool research
-trio (Context7/Exa/Firecrawl) and the Step 5 code-review dispatch. When
-team mode is recorded as available, each of the two SHALL independently
-spawn its own named wrapper agent (`model: sonnet`, tool allowlist
-including the `Workflow` tool), and instruct that wrapper to carry out the
-dispatch by calling the `Workflow` tool per the existing rule. `jt-flow-one`
-MUST NOT replace either `Workflow` tool call with multiple manually-spawned
-named agents. This requirement is expressed once, in a shared section,
-rather than by editing each call site's own existing paragraph.
+trio (Context7/Exa/Firecrawl) and the Step 5 code-review dispatch. Because
+the `Workflow` tool is only callable from the top-level session, and team
+mode is only ever recorded as available when `jt-flow-one` is not a nested,
+delegated run (in which case it already is the top-level session), neither
+dispatch point's behavior SHALL depend on the recorded team-mode outcome:
+both SHALL call the `Workflow` tool directly, from the current session,
+regardless of whether team mode is recorded as available or unavailable.
+`jt-flow-one` MUST NOT spawn a wrapper agent to call `Workflow` on its
+behalf, and MUST NOT replace either `Workflow` tool call with multiple
+manually-spawned named agents.
 
-#### Scenario: Three-tool research dispatch wraps the Workflow tool call
+#### Scenario: Three-tool research dispatch is identical whether team mode is available or not
 
-- **WHEN** team mode is available and `jt-flow-one` reaches the three-tool
-  research dispatch point
-- **THEN** `jt-flow-one` spawns one named wrapper agent with `Workflow` tool
-  access, and that wrapper — not `jt-flow-one` itself — issues the
-  `Workflow` tool call for the research fan-out
+- **WHEN** `jt-flow-one` reaches the three-tool research dispatch point,
+  regardless of the recorded team-mode outcome
+- **THEN** `jt-flow-one` calls the `Workflow` tool directly, from the
+  current session
 
-#### Scenario: Code review dispatch wraps the Workflow tool call
+#### Scenario: Code review dispatch is identical whether team mode is available or not
 
-- **WHEN** team mode is available and `jt-flow-one` reaches the Step 5
-  code-review dispatch point
-- **THEN** `jt-flow-one` spawns one named wrapper agent with `Workflow` tool
-  access, and that wrapper — not `jt-flow-one` itself — issues the
-  `Workflow` tool call for the review
+- **WHEN** `jt-flow-one` reaches the Step 5 code-review dispatch point,
+  regardless of the recorded team-mode outcome
+- **THEN** `jt-flow-one` calls the `Workflow` tool directly, from the
+  current session
 
-#### Scenario: Manual multi-agent replacement is prohibited
+#### Scenario: Wrapper-agent and manual multi-agent replacement are both prohibited
 
-- **WHEN** team mode is available and `jt-flow-one` reaches either the
-  three-tool research or the Step 5 code-review dispatch point
-- **THEN** `jt-flow-one` does not spawn multiple manually-named agents, one
+- **WHEN** `jt-flow-one` reaches either the three-tool research or the
+  Step 5 code-review dispatch point, regardless of the recorded team-mode
+  outcome
+- **THEN** `jt-flow-one` does not spawn a wrapper agent to call `Workflow`
+  on its behalf, and does not spawn multiple manually-named agents, one
   per angle, in place of the `Workflow` tool call
-
-### Requirement: Dispatch is unchanged when team mode is unavailable
-
-When team mode is recorded as unavailable, `jt-flow-one` SHALL call the
-`Workflow` tool directly, from the current session, for both the
-three-tool research dispatch and the Step 5 code-review dispatch — exactly
-as it did before this capability existed.
-
-#### Scenario: Codex host
-
-- **WHEN** `jt-flow-one` runs on a host without `SendMessage`/`TaskCreate`/`TaskList`
-  tool support
-- **THEN** both dispatch points call the `Workflow` tool directly, unchanged
-  from prior behavior
-
-#### Scenario: Unflagged Claude Code
-
-- **WHEN** `jt-flow-one` runs on Claude Code without
-  `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
-- **THEN** both dispatch points call the `Workflow` tool directly, unchanged
-  from prior behavior

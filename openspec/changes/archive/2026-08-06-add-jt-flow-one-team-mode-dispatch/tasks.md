@@ -51,3 +51,23 @@
   wording is consistent and non-contradictory.
 - [x] 4.5 Run `claude plugin validate .` and confirm it passes, per this
   repository's own review checklist.
+
+## 5. Post-merge correction (found via PR #194's second CodeRabbit CLI round)
+
+- [x] 5.1 Verify empirically whether a spawned agent can call the `Workflow`
+  tool: dispatch a probe agent, have it check its own tool list (top-level
+  and `ToolSearch`-deferred) for `Workflow`. Confirmed: not present in
+  either list — spawned agents cannot call `Workflow`.
+- [x] 5.2 Rewrite `scripts/jt-flow-team-mode-dispatch.test.mjs`'s wrapper-
+  related assertions to instead assert both dispatch points always call
+  `Workflow` directly regardless of team-mode outcome, plus the rationale
+  wording. Run red (fails against the still-wrapper-based `SKILL.md`).
+- [x] 5.3 Remove the wrapper-agent instruction from `SKILL.md`'s `## 團隊
+  模式` section; replace with "no behavior change, here's why" wording.
+  Mirror the same correction in `README.md` and root `CLAUDE.md`. Run green.
+- [x] 5.4 Sync the correction into `openspec/specs/jt-flow-one-team-mode-
+  dispatch/spec.md` (the living spec) and this change's own archived
+  `proposal.md`/`design.md`/`specs/.../spec.md`, so the archived record
+  doesn't describe a mechanism that never actually took effect.
+- [x] 5.5 Run `npm test`, `npm run validate`, `openspec validate --all
+  --strict` and confirm all green after the correction.

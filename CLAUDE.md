@@ -208,15 +208,14 @@ produce a review, and close the CodeRabbit channel when the CLI is limited.
 unavailable if delegated by `jt-flow-all` as a nested run (Agent Teams has
 no nested teams), otherwise available only if
 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and the
-`SendMessage`/`TaskCreate`/`TaskList` tool schemas resolve. When available,
-its two existing 2+-angle dispatch points — the three-tool research trio
-and code review — each independently spawn their own named wrapper agent
-(`model: sonnet`, tool allowlist including `Workflow`, e.g.
-`general-purpose`) that itself calls the `Workflow` tool per the existing
-rule, rather than replacing that call with several manually-spawned named
-agents; the wrapper remains addressable via `SendMessage`. When unavailable
-(Codex, unflagged Claude Code, or nested),
-both dispatch points call `Workflow` directly, unchanged.
+`SendMessage`/`TaskCreate`/`TaskList` tool schemas resolve. Its two existing
+2+-angle dispatch points — the three-tool research trio and code review —
+are unaffected by this detection today: `Workflow` tool calls are only
+possible from the top-level session (verified — a spawned agent has no
+access to it), so both continue to call `Workflow` directly from the
+current session regardless of team-mode availability. The detection logic
+is retained for a future single-purpose dispatch point that would not need
+`Workflow` access.
 
 ## GitHub Flow and worktrees
 
