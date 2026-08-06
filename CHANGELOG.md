@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.36.1](https://github.com/jurislm/jurislm-tools/compare/v1.36.0...v1.36.1) (2026-08-06)
+
+
+### 📚 Documentation
+
+* **openspec:** archive add-jt-flow-one-team-mode-dispatch ([#194](https://github.com/jurislm/jurislm-tools/issues/194)) ([a1f0306](https://github.com/jurislm/jurislm-tools/commit/a1f03062a28324549cefc18c0101e0902b81ba6f))
+
 ## [1.36.0](https://github.com/jurislm/jurislm-tools/compare/v1.35.0...v1.36.0) (2026-08-06)
 
 
