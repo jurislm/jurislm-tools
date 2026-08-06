@@ -38,6 +38,9 @@
 
 ## 4. Validation
 
+- [x] 4.0 Confirm the active Node.js version satisfies
+  `^22.22.2 || ^24.15.0 || >=26.0.0` before installing dependencies, per
+  this repository's `CLAUDE.md` "Required validation" section.
 - [x] 4.1 Run `npm test` and confirm the new test plus all existing tests
   pass.
 - [x] 4.2 Run `npm run validate` and confirm it is fully green.
@@ -46,3 +49,5 @@
 - [x] 4.4 Read the four updated/created files together (SKILL.md, README.md,
   CLAUDE.md, `specs/jt-flow-one-team-mode-dispatch/spec.md`) and confirm the
   wording is consistent and non-contradictory.
+- [x] 4.5 Run `claude plugin validate .` and confirm it passes, per this
+  repository's own review checklist.
