@@ -1,9 +1,15 @@
 ## Context
 
-`jt-flow-one`'s internal agent dispatch (the three-tool research trio,
-`systematic-debugging` escalation, the read-only Opus consult, and the
-Workflow-tool-mandated 2+ parallel-angle + adversarial-verify pattern used
-for code review) is always anonymous today. Claude Code ships an
+`jt-flow-one`'s internal agent dispatch is always anonymous today. Its two
+existing multi-agent dispatch points both already fall under the same
+2+-parallel-angle rule: the three-tool research trio's own text says to use
+the `Workflow` tool "而非手動散派" once 2+ angles are involved (Context7 +
+Exa + Firecrawl = 3), and the Step 5 code-review dispatch is routed to the
+`Workflow` tool by the same global judgment criteria applied elsewhere.
+There is no separate single-purpose, non-parallel dispatch call site in the
+current text (checked via `grep` for `opus`, `諾詢`, `諮詢`, `求援`,
+`systematic-debugging` — the only matches are in-session skill invocations,
+not agent dispatch). Claude Code ships an
 experimental Agent Teams feature (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`):
 named, addressable agents plus `SendMessage` for direct mid-run messaging.
 `jt-flow-one` must also keep running unmodified on Codex and on Claude Code
@@ -86,15 +92,27 @@ available. Simpler, but rejected per explicit confirmation during
 brainstorming that every dispatch point should gain the addressable wrapper
 when available, provided the `Workflow` tool call inside it stays intact.
 
+**Correction found during implementation**: brainstorming had assumed a
+second, separate behavior for "single-purpose" one-off dispatch (naming the
+agent directly, no wrapper needed, since there's no `Workflow` call to
+preserve). Re-reading `jt-flow-one/SKILL.md` while writing the task list
+found no call site matching that description — both existing dispatch
+points are 2+-angle and already Workflow-tool-governed. The single "wrap,
+don't replace" rule is therefore this change's only behavior, applied at
+its two existing call sites (the three-tool research trio, and Step 5 code
+review) via one shared new section rather than editing each call site's own
+paragraph — this avoids touching either paragraph's existing, already
+carefully-worded text.
+
 ## Risks / Trade-offs
 
 - [Risk] The wrapper agent could be spawned with a restricted-tool subagent
   type that lacks `Workflow` tool access, silently collapsing back into
-  unstructured manual dispatch. → [Mitigation] SKILL.md wording explicitly
-  requires an unrestricted tool allowlist (e.g. `general-purpose`) for this
-  specific wrapper; the new spec's scenario for this decision names the
-  requirement directly so the validation test can assert the wording is
-  present.
+  unstructured manual dispatch — for either the three-tool research trio or
+  Step 5 code review. → [Mitigation] SKILL.md wording explicitly requires an
+  unrestricted tool allowlist (e.g. `general-purpose`) for this specific
+  wrapper; the new spec's scenario for this decision names the requirement
+  directly so the validation test can assert the wording is present.
 - [Risk] The `SendMessage`/`TaskCreate`/`TaskList` detection has only been
   exercised on one Claude Code session with the flag enabled; it has not
   been observed on Codex or on a flag-off Claude Code session. →

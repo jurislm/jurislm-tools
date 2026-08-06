@@ -61,63 +61,59 @@ unavailable.
   successfully
 - **THEN** `jt-flow-one` records team mode as available for the run
 
-### Requirement: Single-purpose dispatch is named and addressable when team mode is available
-
-When team mode is recorded as available, `jt-flow-one` SHALL spawn each
-single-purpose dispatch (the three-tool research trio, `systematic-debugging`
-escalation, the read-only Opus consult) with an explicit name, and MAY send
-it follow-up instructions via `SendMessage` before it completes. Existing
-model-tier rules (sonnet by default, the read-only Opus-consult exception)
-remain unchanged by this requirement.
-
-#### Scenario: Named research dispatch
-
-- **WHEN** team mode is available and `jt-flow-one` dispatches the
-  three-tool research trio
-- **THEN** each research agent is spawned with an explicit name and remains
-  addressable via `SendMessage` until it completes
-
 ### Requirement: The Workflow-tool-mandated pattern is wrapped, not replaced, when team mode is available
 
-When team mode is recorded as available and a dispatch point is governed by
-the global multi-agent policy's 2+ parallel-angle + adversarial-verify rule
-(e.g. code review), `jt-flow-one` SHALL spawn exactly one named wrapper
-agent with a tool allowlist that includes the `Workflow` tool, and instruct
-that wrapper to carry out the review by calling the `Workflow` tool per the
-existing rule. `jt-flow-one` MUST NOT replace that `Workflow` tool call with
-multiple manually-spawned named agents.
+`jt-flow-one` has exactly two existing dispatch points governed by the
+global multi-agent policy's 2+ parallel-angle rule: the three-tool research
+trio (Context7/Exa/Firecrawl) and the Step 5 code-review dispatch. When
+team mode is recorded as available, both SHALL spawn exactly one named
+wrapper agent with a tool allowlist that includes the `Workflow` tool, and
+instruct that wrapper to carry out the dispatch by calling the `Workflow`
+tool per the existing rule. `jt-flow-one` MUST NOT replace either
+`Workflow` tool call with multiple manually-spawned named agents. This
+requirement is expressed once, in a shared section, rather than by editing
+each call site's own existing paragraph.
+
+#### Scenario: Three-tool research dispatch wraps the Workflow tool call
+
+- **WHEN** team mode is available and `jt-flow-one` reaches the three-tool
+  research dispatch point
+- **THEN** `jt-flow-one` spawns one named wrapper agent with `Workflow` tool
+  access, and that wrapper — not `jt-flow-one` itself — issues the
+  `Workflow` tool call for the research fan-out
 
 #### Scenario: Code review dispatch wraps the Workflow tool call
 
-- **WHEN** team mode is available and `jt-flow-one` reaches a dispatch point
-  governed by the 2+ parallel-angle + adversarial-verify rule
+- **WHEN** team mode is available and `jt-flow-one` reaches the Step 5
+  code-review dispatch point
 - **THEN** `jt-flow-one` spawns one named wrapper agent with `Workflow` tool
   access, and that wrapper — not `jt-flow-one` itself — issues the
-  `Workflow` tool call
+  `Workflow` tool call for the review
 
 #### Scenario: Manual multi-agent replacement is prohibited
 
-- **WHEN** team mode is available and `jt-flow-one` reaches a dispatch point
-  governed by the 2+ parallel-angle + adversarial-verify rule
+- **WHEN** team mode is available and `jt-flow-one` reaches either the
+  three-tool research or the Step 5 code-review dispatch point
 - **THEN** `jt-flow-one` does not spawn multiple manually-named agents, one
   per angle, in place of the `Workflow` tool call
 
 ### Requirement: Dispatch is unchanged when team mode is unavailable
 
-When team mode is recorded as unavailable, `jt-flow-one` SHALL dispatch
-every single-purpose task anonymously and SHALL call the `Workflow` tool
-directly for the 2+ parallel-angle + adversarial-verify pattern, exactly as
-it did before this capability existed.
+When team mode is recorded as unavailable, `jt-flow-one` SHALL call the
+`Workflow` tool directly, from the current session, for both the
+three-tool research dispatch and the Step 5 code-review dispatch — exactly
+as it did before this capability existed.
 
 #### Scenario: Codex host
 
 - **WHEN** `jt-flow-one` runs on a host without `SendMessage`/`TaskCreate`/`TaskList`
   tool support
-- **THEN** all dispatch — single-purpose and the Workflow-tool-mandated
-  pattern — proceeds anonymously, unchanged from prior behavior
+- **THEN** both dispatch points call the `Workflow` tool directly, unchanged
+  from prior behavior
 
 #### Scenario: Unflagged Claude Code
 
 - **WHEN** `jt-flow-one` runs on Claude Code without
   `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
-- **THEN** all dispatch proceeds anonymously, unchanged from prior behavior
+- **THEN** both dispatch points call the `Workflow` tool directly, unchanged
+  from prior behavior

@@ -17,15 +17,23 @@ Closes #192.
   nested teams); otherwise available only if
   `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` **and** the
   `SendMessage`/`TaskCreate`/`TaskList` tool schemas load successfully.
-- When available: single-purpose dispatches (the three-tool research trio,
-  `systematic-debugging` escalation, the read-only Opus consult) spawn with
-  an explicit name, addressable via `SendMessage` mid-run.
-- When available: the existing Workflow-tool-mandated 2+ parallel-angle +
-  adversarial-verify pattern (e.g. code review) spawns **one** named wrapper
-  agent that itself calls the `Workflow` tool per the existing rule — not
-  several manually-spawned named agents replacing it.
+- When available: both of `jt-flow-one`'s existing 2+ parallel-angle
+  dispatch points — the three-tool research trio (already instructed to use
+  the `Workflow` tool "而非手動散派" once 2+ angles are involved) and the
+  Step 5 code-review dispatch (routed to the `Workflow` tool by the global
+  policy's own judgment criteria) — spawn **one** named wrapper agent that
+  itself calls the `Workflow` tool per the existing rule, instead of the
+  current session calling `Workflow` directly. Not several
+  manually-spawned named agents replacing the `Workflow` call.
 - When unavailable (Codex, unflagged Claude Code, or a nested run):
   dispatch is unchanged.
+
+Note: brainstorming assumed a second dispatch category — single-purpose
+one-off agents (e.g. a debugging escalation, a read-only consult) that
+would be named directly rather than wrapped. Implementation found no such
+call site in `jt-flow-one/SKILL.md`: every existing multi-agent dispatch
+point already falls under the 2+-angle → `Workflow` tool rule, so there is
+only one behavior to add, applied at two existing call sites.
 
 ## Capabilities
 
