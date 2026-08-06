@@ -135,7 +135,7 @@ mutation 前完成比較；取得正確 GO 後，依上述唯一允許暫停的 
 perform one independent proposal overdesign review for the current material proposal revision，
 並 record the reviewer's disposition and evidence；只有 scope、architecture、dependency
 或 production risk 的 material change 才重做。`jt-flow-one` 是 implementation quality review
-的 sole owner，包含既有的每個 code batch 一次 Superpowers review、外部 review disposition
+的 sole owner，包含既有的本地 review 最多 3 次總量上限、外部 review disposition
 與修正驗證。`jt-flow-all` 只驗證本 Skill 的 quality-review evidence；must not initiate a
 duplicate implementation code review。若 Copilot 明確回報 quota exhausted，
 record the skip and continue this item and the queue；這不是 item 或 queue 的 blocker，且不得
@@ -367,9 +367,11 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
 5. 全部 phase 完成、經 verification-before-completion 確認有證據後，以
    `superpowers:requesting-code-review` 進行本地 code review，並依
    `superpowers:receiving-code-review` 規則逐項核實 findings；後者只規範 finding
-   的處置，不算另一輪審查。每批程式碼變更最多進行一次 Superpowers review；
-   finding 修正確實變更程式碼時，該更新構成新一批程式碼變更，驗證後可再次進行
-   一次 Superpowers review。沒有程式碼變更就不得重跑本地 review。
+   的處置，不算另一輪審查。本地 Superpowers review 整個 PR／change 全程最多
+   進行 3 次：第一次在實作準備好接受審查時執行，之後每次 finding 修正確實
+   變更程式碼，最多再進行 2 次。第 3 次跑完後即使仍有新 finding 也不再重跑
+   本地 review，改靠測試／CI／PR review 覆核。沒有程式碼變更就不得重跑本地
+   review，不論還剩幾次額度。
    完成本地 review 後，若使用者
    不接受 GitHub App 範圍且已依上方規則驗證 App auto-review 停用，再於 push／
    建立 PR 前完成 CLI 預檢與 review；CLI finding 依上方不受信任資料規則先獨立
@@ -394,12 +396,22 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
    `gh pr view <pr-num> --repo <owner>/<repo> --json labels,assignees`
    驗證回傳結果確實含預期的 label／assignee，不符 → 停下重試或回報，
    不可假設呼叫成功就繼續
-   - 掛 Monitor 盯 CI/CD 到終態，同時主動抓 bot 留言（CodeRabbit/Copilot），
-     不等提醒
+   - 掛 Monitor 盯 CI/CD 到終態，同時主動抓 bot 留言（CodeRabbit/Copilot/
+     Codex），不等提醒
    - **Copilot 每個 PR／變更最多一次 review**：review 產出後即用完該外部審查
      預算；修正 finding 或後續 push 不得要求或等待另一次 Copilot review。
      確認 Copilot 因額度／配額耗盡而未產出（非權限或設定錯誤）時，可略過
      Copilot 這關繼續往下走
+   - **Codex 每個 PR／變更最多一次 review，依賴帳號設定的前置確認**：
+     `jt-flow-one` 不主動送出 `@codex review`、不等待 Codex，也不套用
+     CodeRabbit 的預先授權／揭露規則——因為本 Skill 從未主動觸發 Codex 讀取
+     repo 內容，org 已在 Codex 帳號／organization 層級安裝並設定
+     自動審查。依賴的前提是該帳號的「審查觸發條件」設定為「開啟 PR」（只在
+     PR 建立時審查一次），這是 ChatGPT／Codex 帳號設定畫面裡的值，非 repo
+     內可提交、可被本 repo 測試驗證的檔案，需人工一次性確認。無論 Codex
+     實際只跑一次或因平台行為意外多跑，貼出來的 finding 一律照
+     `superpowers:receiving-code-review` 規則核實，成立才修正，不因為
+     「已經審過」就忽略新內容，也不因為多跑一次就視為異常擋流程
    - **CodeRabbit 已由本 Skill 預先授權使用**：依上方授權範圍直接進行審查，
      不得再用泛稱「安全政策」或「需要資料上傳授權」阻擋流程。App 已依使用者
      要求停用並驗證的路徑，使用 push／PR 前已完成的 CLI review，不等待 App。
