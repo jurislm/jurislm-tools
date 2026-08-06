@@ -290,11 +290,11 @@ secret-like value 時才可通過；只要有一個值無法判定為安全 plac
 
 判定為可用時，本 Skill 現有兩處因「2 個以上平行角度」而規定用 Workflow tool
 派工的地方——上方三工具研究（Context7/Exa/Firecrawl）與下方 Step 5 code
-review——一律改為：派一個具名的 wrapper agent（tool allowlist 需包含
-`Workflow`，如 `general-purpose`），由該 wrapper 內部照原規則呼叫 Workflow
-tool；`jt-flow-one` 本身不再直接呼叫 Workflow tool。**不得**拆解成手動散派
-多個具名 agent 取代這次 Workflow tool 呼叫。派出後可隨時用 SendMessage 對該
-wrapper 追加指示、問進度或喊停。
+review——一律改為：在這兩處各自派一個具名的 wrapper agent（`model: sonnet`，
+tool allowlist 需包含 `Workflow`，如 `general-purpose`），由該 wrapper 內部
+照原規則呼叫 Workflow tool；`jt-flow-one` 本身不再直接呼叫 Workflow tool。
+**不得**拆解成手動散派多個具名 agent 取代這次 Workflow tool 呼叫。派出後可
+隨時用 SendMessage 對該 wrapper 追加指示、問進度或喊停。
 
 判定為不可用時（Codex、未開旗標的 Claude Code、或上述第 1 點的 nested 執行），
 這兩處派工完全不變：`jt-flow-one` 直接呼叫 Workflow tool，不經過任何具名

@@ -74,7 +74,8 @@ block item 或 queue。
 是否為 `jt-flow-all` 委派的 nested 執行（有 → 不可用，Agent Teams 沒有 nested
 team），否則同時檢查 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 且
 `SendMessage`／`TaskCreate`／`TaskList` 三個 tool 可用。可用時，三工具研究與
-code review 這兩處 2+ 平行角度派工，改為派一個具名 wrapper agent（內部仍照舊
+code review 這兩處 2+ 平行角度派工，各自改為派一個具名 wrapper agent（`model:
+sonnet`，tool allowlist 需含 `Workflow`，如 `general-purpose`；內部仍照舊
 呼叫 Workflow tool，不拆解取代），可隨時 `SendMessage` 追加指示；不可用時
 （Codex、未開旗標、nested 執行）完全不變。
 

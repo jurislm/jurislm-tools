@@ -210,10 +210,12 @@ no nested teams), otherwise available only if
 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and the
 `SendMessage`/`TaskCreate`/`TaskList` tool schemas resolve. When available,
 its two existing 2+-angle dispatch points — the three-tool research trio
-and code review — spawn one named wrapper agent that itself calls the
-`Workflow` tool per the existing rule, rather than replacing that call with
-several manually-spawned named agents; the wrapper remains addressable via
-`SendMessage`. When unavailable (Codex, unflagged Claude Code, or nested),
+and code review — each independently spawn their own named wrapper agent
+(`model: sonnet`, tool allowlist including `Workflow`, e.g.
+`general-purpose`) that itself calls the `Workflow` tool per the existing
+rule, rather than replacing that call with several manually-spawned named
+agents; the wrapper remains addressable via `SendMessage`. When unavailable
+(Codex, unflagged Claude Code, or nested),
 both dispatch points call `Workflow` directly, unchanged.
 
 ## GitHub Flow and worktrees

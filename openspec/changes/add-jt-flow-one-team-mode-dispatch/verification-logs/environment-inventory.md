@@ -17,9 +17,12 @@ Date: 2026-08-06
 
 ## Existing implementation
 
-- `plugins/jt-flow/skills/jt-flow-one/SKILL.md` — all internal agent
-  dispatch (three-tool research, `systematic-debugging` escalation, Opus
-  consult, code-review dispatch) is currently anonymous.
+- `plugins/jt-flow/skills/jt-flow-one/SKILL.md` — its two existing
+  multi-agent dispatch points (three-tool research, code-review dispatch)
+  are currently anonymous. `systematic-debugging` and an Opus consult are
+  only ever invoked in-session, not dispatched as a separate agent — an
+  initial assumption otherwise was corrected while writing `tasks.md` (see
+  commit `094c671`).
 - `plugins/jt-flow/skills/jt-flow-all/SKILL.md` — its own coordinator/owner
   dispatch is out of scope for this change and is not touched.
 - `scripts/jt-flow-authorization-policy.test.mjs`,

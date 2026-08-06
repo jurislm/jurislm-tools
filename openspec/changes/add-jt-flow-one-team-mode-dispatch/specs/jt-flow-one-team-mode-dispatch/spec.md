@@ -6,11 +6,11 @@
 first dispatch point in a run, and SHALL reuse that recorded outcome for
 every subsequent dispatch point in the same run without re-checking.
 
-#### Scenario: Detection happens before Step 0's research dispatch
+#### Scenario: Detection happens before the three-tool research dispatch
 
 - **WHEN** `jt-flow-one` begins a run and reaches the pre-flight checks
 - **THEN** it records a team-mode availability outcome before spawning any
-  Step 0 research agent, and every later dispatch point in the same run
+  three-tool research agent, and every later dispatch point in the same run
   reads that recorded outcome instead of re-evaluating it
 
 ### Requirement: A jt-flow-all-delegated run never attempts team-mode dispatch
@@ -66,13 +66,13 @@ unavailable.
 `jt-flow-one` has exactly two existing dispatch points governed by the
 global multi-agent policy's 2+ parallel-angle rule: the three-tool research
 trio (Context7/Exa/Firecrawl) and the Step 5 code-review dispatch. When
-team mode is recorded as available, both SHALL spawn exactly one named
-wrapper agent with a tool allowlist that includes the `Workflow` tool, and
-instruct that wrapper to carry out the dispatch by calling the `Workflow`
-tool per the existing rule. `jt-flow-one` MUST NOT replace either
-`Workflow` tool call with multiple manually-spawned named agents. This
-requirement is expressed once, in a shared section, rather than by editing
-each call site's own existing paragraph.
+team mode is recorded as available, each of the two SHALL independently
+spawn its own named wrapper agent (`model: sonnet`, tool allowlist
+including the `Workflow` tool), and instruct that wrapper to carry out the
+dispatch by calling the `Workflow` tool per the existing rule. `jt-flow-one`
+MUST NOT replace either `Workflow` tool call with multiple manually-spawned
+named agents. This requirement is expressed once, in a shared section,
+rather than by editing each call site's own existing paragraph.
 
 #### Scenario: Three-tool research dispatch wraps the Workflow tool call
 

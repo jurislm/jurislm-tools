@@ -8,6 +8,9 @@ const skill = readFileSync(
 );
 const readme = readFileSync("plugins/jt-flow/README.md", "utf8");
 const guidance = readFileSync("CLAUDE.md", "utf8");
+const skillFlat = skill.replaceAll("\n", " ");
+const readmeFlat = readme.replaceAll("\n", " ");
+const guidanceFlat = guidance.replaceAll("\n", " ");
 
 const sectionContaining = (document, heading) => {
   const matches = document
@@ -60,12 +63,13 @@ test("wraps the Workflow-tool call for both existing 2+-angle dispatch points in
 
   assert.match(section, /三工具研究.*Context7\/Exa\/Firecrawl/);
   assert.match(section, /Step 5 code\s*review/);
-  assert.match(section, /派一個具名的 wrapper agent/);
+  assert.match(section, /在這兩處各自派一個具名的 wrapper agent/);
+  assert.match(section, /`model: sonnet`/);
   assert.match(section, /tool allowlist 需包含\s*`Workflow`.*`general-purpose`/);
-  assert.match(section, /由該 wrapper 內部照原規則呼叫 Workflow tool/);
+  assert.match(section, /由該 wrapper 內部\s*照原規則呼叫 Workflow tool/);
   assert.match(section, /`jt-flow-one` 本身不再直接呼叫 Workflow tool/);
   assert.match(section, /\*\*不得\*\*拆解成手動散派\s*多個具名 agent 取代這次 Workflow tool 呼叫/);
-  assert.match(section, /可隨時用 SendMessage 對該\s*wrapper 追加指示/);
+  assert.match(section, /可\s*隨時用 SendMessage 對該\s*wrapper 追加指示/);
 });
 
 test("leaves both dispatch points calling Workflow directly when team mode is unavailable", () => {
@@ -80,21 +84,26 @@ test("leaves both dispatch points calling Workflow directly when team mode is un
 
 test("does not edit the existing three-tool research or code-review paragraphs themselves", () => {
   assert.match(
-    skill,
-    /Context7、Exa、Firecrawl \*\*各派一個 agent 平行查\*\*（`model: sonnet`，2 個以上平行\n角度時用 Workflow 而非手動散派）/,
+    skillFlat,
+    /Context7、Exa、Firecrawl \*\*各派一個 agent 平行查\*\*（`model: sonnet`，2 個以上平行\s*角度時用 Workflow 而非手動散派）/,
   );
   assert.match(
-    paragraphContaining(skill, "以\n   `superpowers:requesting-code-review` 進行本地 code review"),
+    paragraphContaining(skill, "`superpowers:requesting-code-review` 進行本地 code review"),
     /superpowers:receiving-code-review/,
   );
 });
 
 test("mirrors the detection-and-wrap rule in README.md and root CLAUDE.md", () => {
-  assert.match(readme, /團隊模式|Agent Teams/);
-  assert.match(readme, /CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS/);
-  assert.match(readme, /no nested teams|nested.*team/i);
+  assert.match(readmeFlat, /團隊模式|Agent Teams/);
+  assert.match(readmeFlat, /CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`\s*且/);
+  assert.match(readmeFlat, /no nested teams|nested.*team/i);
+  assert.match(readmeFlat, /不拆解取代/);
+  assert.match(readmeFlat, /`model: sonnet`/);
+  assert.match(readmeFlat, /`general-purpose`/);
 
-  assert.match(guidance, /jt-flow-one/);
-  assert.match(guidance, /CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS/);
-  assert.match(guidance, /Workflow/);
+  assert.match(guidanceFlat, /jt-flow-one/);
+  assert.match(guidanceFlat, /CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`\s*and the/);
+  assert.match(guidanceFlat, /rather than replacing that call with/i);
+  assert.match(guidanceFlat, /`model: sonnet`/);
+  assert.match(guidanceFlat, /`general-purpose`/);
 });

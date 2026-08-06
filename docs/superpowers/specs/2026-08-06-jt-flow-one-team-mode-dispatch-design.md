@@ -1,5 +1,17 @@
 # JT Flow One Team-Mode Dispatch Design
 
+> **Superseded detail**: this document predates implementation. Every
+> mention below of a "single-purpose dispatch" category (`systematic-
+> debugging` escalation, a read-only Opus consult) was found, while writing
+> `tasks.md`, to have no corresponding call site in
+> `plugins/jt-flow/skills/jt-flow-one/SKILL.md` — those are only invoked
+> in-session, never dispatched as a separate agent. The shipped design has
+> exactly one behavior (wrap the `Workflow` tool call, don't replace it),
+> applied at the two dispatch points that actually exist: the three-tool
+> research trio and Step 5 code review. See
+> `openspec/changes/add-jt-flow-one-team-mode-dispatch/design.md` for the
+> corrected, authoritative version.
+
 ## Goal
 
 Give `jt-flow-one` a portable way to make its own internal agent dispatch
@@ -58,46 +70,46 @@ run.
 
 ### When team mode is available
 
-Every internal dispatch point gives the spawned agent an explicit name and
-treats it as addressable for the rest of the run:
+`jt-flow-one` has exactly two existing dispatch points governed by the
+global `~/.claude/CLAUDE.md` 2+ parallel-angle rule: the Context7/Exa/
+Firecrawl research trio, and the Step 5 code-review dispatch (routed to the
+`Workflow` tool via that same global rule, even though `SKILL.md` doesn't
+spell "Workflow" out at that specific call site). There is no separate
+single-purpose, non-parallel dispatch call site — `systematic-debugging`
+and an Opus consult are only ever invoked in-session, never as a separate
+spawned agent.
 
-- **Single-purpose dispatch** (the Context7/Exa/Firecrawl research trio,
-  `systematic-debugging` escalation, the read-only Opus consult) — spawn as
-  a named agent instead of an anonymous one. Model-tier rules are unaffected:
-  `sonnet` is still required, and the existing read-only Opus-consult
-  exception is unchanged.
-- **The existing Workflow-tool-mandated 2+ parallel-angle +
-  adversarial-verify pattern** (e.g. code review) — do **not** replace the
-  `Workflow` tool call with several manually-spawned named agents; that
-  would reproduce the exact anti-pattern the global `~/.claude/CLAUDE.md`
-  rule was written to stop. Instead, spawn **one** named agent whose
-  instructions are to carry out that review using the existing
-  Workflow-tool-mandated process; the `Workflow` tool call happens inside
-  that named agent, unchanged. The wrapper adds an addressable handle; it
-  does not touch what runs inside it. The wrapper must be spawned with a
-  tool allowlist that includes the `Workflow` tool (e.g. `general-purpose`
-  or an equivalent unrestricted type) — a wrapper that cannot call
-  `Workflow` itself would collapse back into the anti-pattern this design
-  exists to avoid.
+For both of the two real call sites: do **not** replace the `Workflow` tool
+call with several manually-spawned named agents; that would reproduce the
+exact anti-pattern the global rule was written to stop. Instead, each
+independently spawns **one** named agent (`model: sonnet`) whose
+instructions are to carry out that dispatch using the existing
+Workflow-tool-mandated process; the `Workflow` tool call happens inside
+that named agent, unchanged. The wrapper adds an addressable handle; it
+does not touch what runs inside it. The wrapper must be spawned with a
+tool allowlist that includes the `Workflow` tool (e.g. `general-purpose`
+or an equivalent unrestricted type) — a wrapper that cannot call
+`Workflow` itself would collapse back into the anti-pattern this design
+exists to avoid.
 
 No change to the global `~/.claude/CLAUDE.md` multi-agent dispatch policy is
-needed — it continues to govern what happens inside the named wrapper
+needed — it continues to govern what happens inside each named wrapper
 exactly as it does today.
 
 ### When team mode is unavailable
 
-Dispatch is unchanged: anonymous `Agent` tool calls for single-purpose work,
-direct `Workflow` tool calls for the 2+ parallel-angle + verify pattern. This
-is the path Codex always takes, and the path Claude Code takes without the
-experimental flag or when nested under `jt-flow-all`.
+Dispatch is unchanged: both dispatch points call the `Workflow` tool
+directly, from the current session, exactly as before this capability
+existed. This is the path Codex always takes, and the path Claude Code
+takes without the experimental flag or when nested under `jt-flow-all`.
 
 ## File Impact
 
-- `plugins/jt-flow/skills/jt-flow-one/SKILL.md` — add a detection subsection
-  near "前置環境檢查"; update each existing dispatch point (Step 0's
-  three-tool research, `systematic-debugging` escalation, the Opus consult,
-  Step 5's code-review dispatch) to branch on the recorded detection outcome
-  per the rules above.
+- `plugins/jt-flow/skills/jt-flow-one/SKILL.md` — add one new shared
+  section near "前置環境檢查" covering detection and naming both existing
+  dispatch points (the three-tool research trio, Step 5's code-review
+  dispatch) by reference, per the rules above, without editing either call
+  site's own existing paragraph.
 - `plugins/jt-flow/README.md` — mirror a short paragraph describing the
   detection rule and the two branches, matching the existing mirroring
   convention used for other `jt-flow-one` policy sections.
