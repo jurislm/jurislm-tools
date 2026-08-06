@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.34.1](https://github.com/jurislm/jurislm-tools/compare/v1.34.0...v1.34.1) (2026-08-06)
+
+
+### 📚 Documentation
+
+* **openspec:** 歸檔 add-commit-type-guardrails ([#185](https://github.com/jurislm/jurislm-tools/issues/185)) ([26144c3](https://github.com/jurislm/jurislm-tools/commit/26144c36c303d09fec6875c18271e0d2ef69ef76))
+
 ## [1.34.0](https://github.com/jurislm/jurislm-tools/compare/v1.33.2...v1.34.0) (2026-08-05)
 
 
