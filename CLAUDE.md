@@ -204,6 +204,18 @@ acceptance, CI, mergeability, and resolved review threads. Skip Copilot when its
 quota is exhausted, move from the CodeRabbit App to the CLI when the App cannot
 produce a review, and close the CodeRabbit channel when the CLI is limited.
 
+`jt-flow-one` detects team-mode (Agent Teams) availability once per run:
+unavailable if delegated by `jt-flow-all` as a nested run (Agent Teams has
+no nested teams), otherwise available only if
+`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and the
+`SendMessage`/`TaskCreate`/`TaskList` tool schemas resolve. When available,
+its two existing 2+-angle dispatch points — the three-tool research trio
+and code review — spawn one named wrapper agent that itself calls the
+`Workflow` tool per the existing rule, rather than replacing that call with
+several manually-spawned named agents; the wrapper remains addressable via
+`SendMessage`. When unavailable (Codex, unflagged Claude Code, or nested),
+both dispatch points call `Workflow` directly, unchanged.
+
 ## GitHub Flow and worktrees
 
 The active workflow is feature branch → pull request → `main`. The repository does not maintain a `develop` branch.

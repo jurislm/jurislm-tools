@@ -274,6 +274,32 @@ secret-like value 時才可通過；只要有一個值無法判定為安全 plac
    對應雲端開發環境（若走 Coolify：停止 dev app ＋ 關閉 auto-deploy，
    設定保留可復活）；未取得授權前不得自行變更分支模型或部署設定
 
+## 團隊模式（Agent Teams）偵測與派工
+
+本 Skill 執行一開始（跟上方前置環境檢查一起）判斷一次「團隊模式」是否可用，
+之後整個執行過程沿用同一個結果，不重複判斷：
+
+1. 先判斷本次執行是否為 `jt-flow-all` 依【Queue execution contract】委派下來
+   的 nested 執行（帶有 change identifier、proposal 路徑、issue identifier、
+   目標 repository、已核准範圍、durable proposal GO evidence 這組欄位）——
+   有 → 直接判定團隊模式不可用，不再檢查下面兩個條件（Agent Teams 官方文件
+   明文「no nested teams」，teammate 不能自己再開一層 team）。
+2. 否則同時檢查兩個條件，兩者都成立才判定可用：`echo
+   "$CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"` 回傳 `1`；且 `SendMessage`、
+   `TaskCreate`、`TaskList` 三個 tool 的 schema 可透過 ToolSearch 正常載入。
+
+判定為可用時，本 Skill 現有兩處因「2 個以上平行角度」而規定用 Workflow tool
+派工的地方——上方三工具研究（Context7/Exa/Firecrawl）與下方 Step 5 code
+review——一律改為：派一個具名的 wrapper agent（tool allowlist 需包含
+`Workflow`，如 `general-purpose`），由該 wrapper 內部照原規則呼叫 Workflow
+tool；`jt-flow-one` 本身不再直接呼叫 Workflow tool。**不得**拆解成手動散派
+多個具名 agent 取代這次 Workflow tool 呼叫。派出後可隨時用 SendMessage 對該
+wrapper 追加指示、問進度或喊停。
+
+判定為不可用時（Codex、未開旗標的 Claude Code、或上述第 1 點的 nested 執行），
+這兩處派工完全不變：`jt-flow-one` 直接呼叫 Workflow tool，不經過任何具名
+wrapper。
+
 ## 流程
 
 完整落地一個新需求：需求分析 → 建立／沿用追蹤 issue → 建立／沿用 OpenSpec

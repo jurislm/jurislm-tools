@@ -70,6 +70,14 @@ Dispatch 前的獨立 proposal overdesign review 只檢查 scope 與 MVP 適切�
 複製程式碼審查。外部 reviewer quota exhausted 時記錄 bounded skip 後繼續，不會永久
 block item 或 queue。
 
+`jt-flow-one` 執行一開始會偵測一次「團隊模式」（Agent Teams）是否可用：先判斷
+是否為 `jt-flow-all` 委派的 nested 執行（有 → 不可用，Agent Teams 沒有 nested
+team），否則同時檢查 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 且
+`SendMessage`／`TaskCreate`／`TaskList` 三個 tool 可用。可用時，三工具研究與
+code review 這兩處 2+ 平行角度派工，改為派一個具名 wrapper agent（內部仍照舊
+呼叫 Workflow tool，不拆解取代），可隨時 `SendMessage` 追加指示；不可用時
+（Codex、未開旗標、nested 執行）完全不變。
+
 ## Dependencies
 
 完整流程需要 OpenSpec repo-local `opsx:*` Skills、另行安裝的 `superpowers:*` Skills，

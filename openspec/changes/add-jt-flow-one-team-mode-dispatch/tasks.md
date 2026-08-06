@@ -1,6 +1,6 @@
 ## 1. Test file (write first, red)
 
-- [ ] 1.1 Create `scripts/jt-flow-team-mode-dispatch.test.mjs`, following the
+- [x] 1.1 Create `scripts/jt-flow-team-mode-dispatch.test.mjs`, following the
   structure of `scripts/jt-flow-review-policy.test.mjs`: read
   `plugins/jt-flow/skills/jt-flow-one/SKILL.md` and assert that it contains
   (a) the nested-check-before-capability-check detection order, (b) the dual
@@ -13,7 +13,7 @@
 
 ## 2. SKILL.md changes (green)
 
-- [ ] 2.1 Add one new `## 團隊模式（Agent Teams）偵測與派工` section to
+- [x] 2.1 Add one new `## 團隊模式（Agent Teams）偵測與派工` section to
   `plugins/jt-flow/skills/jt-flow-one/SKILL.md`, placed near "前置環境檢查",
   covering: nested-check-first (checking for `jt-flow-all`'s Queue execution
   contract delegated fields), the dual env-var + tool-schema condition,
@@ -25,24 +25,24 @@
   Do not edit the three-tool research paragraph or the Step 5 code-review
   paragraph themselves; this section is additive and governs them by
   reference, avoiding changes to either paragraph's existing wording.
-- [ ] 2.2 Run `scripts/jt-flow-team-mode-dispatch.test.mjs` again and confirm
+- [x] 2.2 Run `scripts/jt-flow-team-mode-dispatch.test.mjs` again and confirm
   it now passes.
 
 ## 3. Mirror documentation
 
-- [ ] 3.1 Mirror a short paragraph describing the detection rule and the two
+- [x] 3.1 Mirror a short paragraph describing the detection rule and the two
   branches in `plugins/jt-flow/README.md`, matching the existing mirroring
   convention used for other `jt-flow-one` policy sections.
-- [ ] 3.2 Mirror the same short paragraph in the root `CLAUDE.md`'s
+- [x] 3.2 Mirror the same short paragraph in the root `CLAUDE.md`'s
   OpenSpec/jt-flow section.
 
 ## 4. Validation
 
-- [ ] 4.1 Run `npm test` and confirm the new test plus all existing tests
+- [x] 4.1 Run `npm test` and confirm the new test plus all existing tests
   pass.
-- [ ] 4.2 Run `npm run validate` and confirm it is fully green.
-- [ ] 4.3 Run `openspec validate add-jt-flow-one-team-mode-dispatch --strict`
+- [x] 4.2 Run `npm run validate` and confirm it is fully green.
+- [x] 4.3 Run `openspec validate add-jt-flow-one-team-mode-dispatch --strict`
   and confirm it passes.
-- [ ] 4.4 Read the four updated/created files together (SKILL.md, README.md,
+- [x] 4.4 Read the four updated/created files together (SKILL.md, README.md,
   CLAUDE.md, `specs/jt-flow-one-team-mode-dispatch/spec.md`) and confirm the
   wording is consistent and non-contradictory.
