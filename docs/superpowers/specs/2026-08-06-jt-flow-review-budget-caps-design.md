@@ -4,9 +4,10 @@ Closes #187
 
 ## Goal
 
-Bound every reviewer `jt-flow-one` uses — local and external — with an explicit
-numeric budget, and add Codex as a third external reviewer channel alongside
-CodeRabbit and Copilot. The prior policy (established by
+Give the local Superpowers review an explicit numeric ceiling instead of an
+unbounded batch model, and add Codex as a third external reviewer channel
+alongside CodeRabbit and Copilot — bounded where a budget is meaningful and
+enforceable, unbounded where it is not. The prior policy (established by
 `2026-07-25-jt-flow-review-orchestration`) left the local Superpowers review
 uncapped: any accepted finding that changed code started a new batch eligible
 for another review, with no ceiling on how many batches could occur.
@@ -42,60 +43,74 @@ manual re-request, quota exhaustion may be skipped.
 
 ### Codex review (new)
 
-Codex — the ChatGPT/OpenAI GitHub code-review App (`@codex review` mentions,
-or an "automatic reviews" setting; distinct from the self-hosted
-`openai/codex-action` GitHub Action, which is out of scope) — is added as a
-third external reviewer, capped at one review per PR or change. It follows
-the Copilot trigger pattern: purely automatic, no manual `@codex review`
-request, and no verification that "automatic reviews" is enabled or disabled
-— research found no repository-committed config file that controls this
-setting for the App integration (unlike `.coderabbit.yaml` for CodeRabbit),
-only an account/organization-level toggle in Codex settings.
+Codex — the ChatGPT/OpenAI GitHub code-review App (`chatgpt-codex-connector`,
+triggered by `@codex review` mentions or an "automatic reviews" setting;
+distinct from the self-hosted `openai/codex-action` GitHub Action, which is
+out of scope) — is added as a third external reviewer with **no numeric
+budget**. This is deliberately unlike CodeRabbit and Copilot.
 
-Codex reuses CodeRabbit's pre-authorization contract: explicitly invoking or
-naming `jt-flow-one` counts as pre-authorization to use Codex for PR review;
-routing from general intent alone requires disclosing Codex's data scope in
-the proposal summary and obtaining consent at the same proposal GO.
+Evidence gathered before finalizing this section:
 
-**Known limitation**: whether Codex's automatic review re-triggers on every
-push (like the `synchronize` trigger in the unrelated `openai/codex-action`
-GitHub Actions example) or only once at PR creation (like Copilot) is not
-confirmed by official documentation. This is accepted as a known limitation
-rather than blocked on: the "at most one" budget governs whether the workflow
-actively requests or waits for another Codex review, not whether it evaluates
-content that arrives. If Codex fires again due to platform behavior outside
-the workflow's control, findings still go through the pre-existing rule that
-applies to all reviewer feedback — `superpowers:receiving-code-review`
-evaluates every finding, from any source, before it is accepted or rejected.
-No new rule is needed for this case; the workflow does not ignore uninvited
-findings, and it does not treat an uninvited review as license to actively
-request or wait for another one.
+- The `chatgpt-codex-connector` GitHub App is already installed org-wide on
+  `jurislm` (`repository_selection: all`), the same installation model as
+  `coderabbitai`. Authorization for Codex to read repository content already
+  exists at the platform level, independent of `jt-flow-one`.
+- This repository's own PR history shows Codex re-reviewing multiple times
+  within a single PR (5 reviews across one PR, each landing roughly 3 minutes
+  after a push), confirming automatic reviews re-trigger on every push rather
+  than firing once at PR creation like Copilot. Official docs only document
+  the "opened" trigger and do not mention this behavior.
+
+Consequences for the policy:
+
+- **No trigger action and no budget**: `jt-flow-one` never sends `@codex
+  review` and never checks or waits on Codex. Because the platform re-fires
+  automatically and unpredictably, an "at most N" ceiling cannot be enforced
+  or meaningfully claimed, so none is written.
+- **No pre-authorization or disclosure section**: unlike CodeRabbit, `jt-flow-
+  one` takes no action that causes Codex to read or receive repository data —
+  the org-level installation and its automatic-review setting made that
+  decision before this workflow runs. The CodeRabbit disclosure/consent gate
+  exists specifically because the workflow actively requests that review;
+  since Codex is never actively requested, that gate does not apply, the same
+  way it never applied to Copilot.
+- **Findings are still evaluated, never ignored**: whenever Codex posts a
+  review, its findings go through the existing rule that already covers all
+  reviewer feedback — `superpowers:receiving-code-review` evaluates every
+  finding, from any source, before it is accepted or rejected. No new rule is
+  needed for this; "no budget" means the workflow does not track or limit
+  occurrences, not that it disregards content that arrives.
 
 ## File Impact
 
 - `plugins/jt-flow/skills/jt-flow-one/SKILL.md` — replace the local-review
-  batch paragraph with the 3-run cap; extend the CodeRabbit pre-authorization
-  section (or add a parallel Codex subsection) to cover Codex; update the
-  Queue execution contract's "one Superpowers review per code batch" wording;
-  add Codex handling next to the Copilot paragraph in the PR/review step.
+  batch paragraph with the 3-run cap; update the Queue execution contract's
+  "one Superpowers review per code batch" wording; add a new Codex paragraph
+  next to the Copilot paragraph in the PR/review step, stating no trigger
+  action, no budget, and standard `receiving-code-review` handling of
+  whatever Codex posts. Do not extend the CodeRabbit pre-authorization
+  section to Codex.
 - `plugins/jt-flow/README.md` — mirror the same paragraphs.
 - `CLAUDE.md` (repository root) — mirror the same paragraphs in the review
   checklist / policy guidance sections.
 - `openspec/specs/jt-flow-review-orchestration/spec.md` — rewrite the "Local
   review is portable and change-batch scoped" requirement to state the 3-run
-  cap instead of unlimited batches; extend "External reviewers have one
-  effective review budget" to include Codex.
+  cap instead of unlimited batches; add a requirement (or scenario) stating
+  Codex has no review budget and is handled as ordinary reviewer feedback,
+  distinct from the "External reviewers have one effective review budget"
+  requirement that continues to govern only CodeRabbit and Copilot.
 - `scripts/jt-flow-review-policy.test.mjs` — replace the batch-based
-  assertions with 3-run-cap assertions; add Codex assertions parallel to the
-  existing Copilot assertions.
+  assertions with 3-run-cap assertions; add assertions that the Codex
+  paragraph states no budget/no trigger action, rather than mirroring the
+  Copilot "at most one" assertions.
 
 ## Non-goals
 
 - Changing CodeRabbit's or Copilot's existing trigger or authorization rules.
 - Integrating `openai/codex-action` (the self-hosted GitHub Actions variant).
-- Building any mechanism to verify or force Codex's "automatic reviews"
-  setting from within the repository — documented as a known limitation
-  instead.
+- Building any mechanism to count, cap, or force Codex's automatic-review
+  triggers from within the repository — confirmed unbounded by observed
+  behavior, so no such mechanism is attempted.
 
 ## Risk Accepted
 
