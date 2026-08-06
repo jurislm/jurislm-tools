@@ -48,5 +48,6 @@ None.
 
 Affected plugin: `jt-flow`, specifically `jt-flow-one`'s `SKILL.md`, its
 `README.md`, repository `CLAUDE.md` guidance, the `jt-flow-review-orchestration`
-living spec, and `scripts/jt-flow-review-policy.test.mjs`. No release-managed
-version, plugin identity, or `jt-flow-all` queue-contract changes.
+delta spec (folded into the living spec at archive), and
+`scripts/jt-flow-review-policy.test.mjs`. No release-managed version, plugin
+identity, or `jt-flow-all` queue-contract changes.

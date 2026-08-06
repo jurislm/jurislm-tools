@@ -93,9 +93,10 @@ assert the live setting value.
   what the workflow expects and documents, not what it can technically force.
 - **No enforcement mechanism for the Codex precondition** → a future session
   could rely on this policy without the account setting actually being
-  开启 PR. Mitigation: the precondition is called out explicitly in the
-  living spec and SKILL.md text so it is visible, even though it cannot be
-  automated.
+  开启 PR. Mitigation: the precondition is called out explicitly in the delta
+  spec and SKILL.md text so it is visible, even though it cannot be
+  automated; the delta spec's wording is folded into the living spec when
+  this change is archived.
 
 ## Migration Plan
 
