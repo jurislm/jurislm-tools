@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.36.0](https://github.com/jurislm/jurislm-tools/compare/v1.35.0...v1.36.0) (2026-08-06)
+
+
+### 🚀 New Features
+
+* **jt-flow:** jt-flow-one 派工支援 Agent Teams 團隊模式偵測 ([#193](https://github.com/jurislm/jurislm-tools/issues/193)) ([93a2de3](https://github.com/jurislm/jurislm-tools/commit/93a2de3ae669ad728b5495fcc28236eb8d7092a7))
+
+
+### 📚 Documentation
+
+* **openspec:** archive cap-jt-flow-review-budgets ([#190](https://github.com/jurislm/jurislm-tools/issues/190)) ([8390dd5](https://github.com/jurislm/jurislm-tools/commit/8390dd5feec12ec8fa42c9a0c46a668cc1a82aca))
+* **openspec:** 歸檔 cap-jt-flow-review-budgets ([8390dd5](https://github.com/jurislm/jurislm-tools/commit/8390dd5feec12ec8fa42c9a0c46a668cc1a82aca)), refs [#187](https://github.com/jurislm/jurislm-tools/issues/187)
+
 ## [1.35.0](https://github.com/jurislm/jurislm-tools/compare/v1.34.1...v1.35.0) (2026-08-06)
 
 
