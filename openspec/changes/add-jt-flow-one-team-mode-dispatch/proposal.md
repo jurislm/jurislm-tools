@@ -21,10 +21,11 @@ Closes #192.
   dispatch points — the three-tool research trio (already instructed to use
   the `Workflow` tool "而非手動散派" once 2+ angles are involved) and the
   Step 5 code-review dispatch (routed to the `Workflow` tool by the global
-  policy's own judgment criteria) — spawn **one** named wrapper agent that
-  itself calls the `Workflow` tool per the existing rule, instead of the
-  current session calling `Workflow` directly. Not several
-  manually-spawned named agents replacing the `Workflow` call.
+  policy's own judgment criteria) — each independently spawn their own named
+  wrapper agent (`model: sonnet`) that itself calls the `Workflow` tool per
+  the existing rule, instead of the current session calling `Workflow`
+  directly. Not several manually-spawned named agents replacing the
+  `Workflow` call.
 - When unavailable (Codex, unflagged Claude Code, or a nested run):
   dispatch is unchanged.
 

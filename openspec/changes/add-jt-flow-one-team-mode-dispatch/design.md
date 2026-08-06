@@ -72,12 +72,12 @@ research; relying on it alone, without the documented feature flag as a
 corroborating signal, is weaker evidence for a policy encoded into a
 widely-installed marketplace skill.
 
-### Wrap the Workflow-tool-mandated pattern in one named agent; don't replace it
+### Wrap the Workflow-tool-mandated pattern in one named agent per call site; don't replace it
 
-For the 2+ parallel-angle + adversarial-verify pattern, spawn one named agent
-whose own instructions are to call the `Workflow` tool exactly as the
-existing rule requires. The wrapper must use a tool allowlist that includes
-`Workflow` (e.g. `general-purpose`).
+For each of the two 2+-angle dispatch points, independently spawn one named
+agent (`model: sonnet`) whose own instructions are to call the `Workflow`
+tool exactly as the existing rule requires. The wrapper must use a tool
+allowlist that includes `Workflow` (e.g. `general-purpose`).
 
 **Alternative considered**: replace the `Workflow` tool call with several
 manually-spawned named agents, one per angle. Rejected — this is the exact
