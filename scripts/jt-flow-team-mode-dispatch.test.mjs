@@ -69,34 +69,33 @@ test("determines availability once per run and reuses it, not per dispatch point
   assertContains(section, "之後整個執行過程沿用同一個結果，不重複判斷");
 });
 
-test("wraps the Workflow-tool call for both existing 2+-angle dispatch points instead of replacing it", () => {
+test("both existing 2+-angle dispatch points always call Workflow directly, unaffected by detection", () => {
   const section = sectionContaining(skill, "團隊模式（Agent Teams）偵測與派工");
 
   assertContains(section, "三工具研究（Context7/Exa/Firecrawl");
   assertContains(section, "Step 5 code review");
-  assertContains(section, "在這兩處各自派一個具名的 wrapper agent");
-  assertContains(section, "`model: sonnet`");
-  assertContains(section, "tool allowlist 需包含 `Workflow`，如 `general-purpose`");
-  assertContains(section, "由該 wrapper 內部照原規則呼叫 Workflow tool");
-  assertContains(section, "`jt-flow-one` 本身不再直接呼叫 Workflow tool");
+  assertContains(section, "不論上面判定結果為何，行為都不變");
   assertContains(
     section,
-    "**不得**拆解成手動散派多個具名 agent 取代這次 Workflow tool 呼叫",
+    "一律由目前執行 `jt-flow-one` 的 session 直接呼叫 Workflow tool",
   );
-  assertContains(section, "可隨時用 SendMessage 對該 wrapper 追加指示");
 });
 
-test("leaves both dispatch points calling Workflow directly when team mode is unavailable", () => {
+test("documents why no wrapper is used: Workflow is only callable from the top-level session", () => {
   const section = sectionContaining(skill, "團隊模式（Agent Teams）偵測與派工");
 
-  assertContains(
-    section,
-    "判定為不可用時（Codex、未開旗標的 Claude Code、或上述第 1 點的 nested 執行），這兩處派工完全不變",
-  );
-  assertContains(
-    section,
-    "`jt-flow-one` 直接呼叫 Workflow tool，不經過任何具名 wrapper",
-  );
+  assertContains(section, "`Workflow` tool 只有主 session");
+  assertContains(section, "spawn 出去的 agent 拿不到這個 tool");
+  assertContains(section, "已實測驗證");
+  assertContains(section, "團隊模式判定為可用的前提就是「非 nested」");
+  assertContains(section, "本來就已經是可被直接發訊息插話的");
+});
+
+test("retains the detection logic as inert groundwork for a future non-Workflow dispatch point", () => {
+  const section = sectionContaining(skill, "團隊模式（Agent Teams）偵測與派工");
+
+  assertContains(section, "上面的偵測邏輯目前對這兩處派工沒有實際影響");
+  assertContains(section, "不需要呼叫 Workflow tool 的單純單次派工點");
 });
 
 test("does not edit the existing three-tool research or code-review paragraphs themselves", () => {
@@ -120,18 +119,16 @@ test("team-mode section precedes both dispatch points it governs in reading orde
   assert.ok(sectionIndex < codeReviewIndex, "team-mode section must precede the Step 5 code-review paragraph");
 });
 
-test("mirrors the detection-and-wrap rule in README.md and root CLAUDE.md", () => {
+test("mirrors the detection logic and the no-behavior-change rationale in README.md and root CLAUDE.md", () => {
   assertContains(readme, "團隊模式");
   assertContains(readme, "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 且");
   assertNotContains(readme, "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 或");
   assert.match(readme, /no nested teams|nested.*team/i);
-  assertContains(readme, "不拆解取代");
-  assertContains(readme, "`model: sonnet`");
-  assertContains(readme, "`general-purpose`");
+  assertContains(readme, "不受偵測結果影響");
+  assertContains(readme, "只有主 session 能呼叫");
 
   assertContains(guidance, "jt-flow-one");
   assertContains(guidance, "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and the");
-  assert.match(guidance, /rather than replacing that call with/i);
-  assertContains(guidance, "`model: sonnet`");
-  assertContains(guidance, "`general-purpose`");
+  assertContains(guidance, "unaffected by this detection today");
+  assertContains(guidance, "only possible from the top-level session");
 });

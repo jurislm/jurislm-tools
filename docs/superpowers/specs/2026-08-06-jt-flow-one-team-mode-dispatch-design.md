@@ -5,11 +5,24 @@
 > debugging` escalation, a read-only Opus consult) was found, while writing
 > `tasks.md`, to have no corresponding call site in
 > `plugins/jt-flow/skills/jt-flow-one/SKILL.md` — those are only invoked
-> in-session, never dispatched as a separate agent. The shipped design has
-> exactly one behavior (wrap the `Workflow` tool call, don't replace it),
-> applied at the two dispatch points that actually exist: the three-tool
-> research trio and Step 5 code review. See
-> `openspec/changes/add-jt-flow-one-team-mode-dispatch/design.md` for the
+> in-session, never dispatched as a separate agent.
+>
+> **Second superseded detail, found after merge**: this document's
+> "wrap the `Workflow` tool call in a named agent" mechanism (below and in
+> the first `design.md`) shipped, merged, and released as v1.36.0 before
+> verification proved it infeasible — a spawned agent has no access to the
+> `Workflow` tool at all (confirmed by dispatching a probe agent and
+> checking its tool list). Because team mode is only ever recorded as
+> available when `jt-flow-one` is *not* nested/delegated, availability
+> implies `jt-flow-one` already is the top-level session with direct
+> `Workflow` access and native addressability — the wrapper was both
+> infeasible and, even if it worked, unnecessary. The corrected design has
+> **no behavior change** for either of `jt-flow-one`'s two dispatch points;
+> detection is retained only as groundwork for a future dispatch point that
+> would not need `Workflow` access. See
+> `openspec/changes/archive/2026-08-06-add-jt-flow-one-team-mode-dispatch/design.md`
+> (or the synced living spec at
+> `openspec/specs/jt-flow-one-team-mode-dispatch/spec.md`) for the fully
 > corrected, authoritative version.
 
 ## Goal
