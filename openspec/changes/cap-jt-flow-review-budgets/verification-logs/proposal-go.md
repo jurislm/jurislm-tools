@@ -20,12 +20,16 @@
   rounds of explicit user confirmation before this point (local-review cap
   value, Codex trigger/budget/authorization model, each re-derived from
   verified evidence — see design.md's Decisions section).
-- **CodeRabbit consent status**: Not obtained for this proposal. This
-  conversation was not routed through an explicit invocation of the
-  `jt-flow-one` Skill, and the proposal summary presented for GO did not
-  include the CodeRabbit App/CLI data-scope disclosure text required by this
-  repository's authorization contract for general-intent-routed runs. Per
-  that contract, CodeRabbit use for this change's eventual PR review must be
-  treated as a missing-required-permission pause — disclosure and consent
-  must be obtained explicitly when the review step is reached, not assumed
-  from this GO.
+- **CodeRabbit consent status**: Not included in the original proposal GO (see
+  history below). Obtained separately, at the PR review step, after this log
+  was first written: the App/CLI data-scope disclosure (App reads per its
+  existing installation permissions, may exceed the PR diff; CLI fallback
+  scans an explicit local commit range but may use CodeRabbit's own
+  server-side guidelines/history) was presented in chat on PR #188, and the
+  user replied "同意，依上述範圍執行" (consent, per the disclosed scope). This
+  is a distinct missing-permission grant, not a reopening of the proposal GO
+  above.
+  - Original gap (kept for the record): this conversation was not routed
+    through an explicit invocation of the `jt-flow-one` Skill, and the
+    proposal summary presented for GO did not include the CodeRabbit
+    disclosure text, so consent could not be assumed from that GO alone.
