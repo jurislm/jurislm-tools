@@ -9,7 +9,9 @@
 > exactly one behavior (wrap the `Workflow` tool call, don't replace it),
 > applied at the two dispatch points that actually exist: the three-tool
 > research trio and Step 5 code review. See
-> `openspec/changes/add-jt-flow-one-team-mode-dispatch/design.md` for the
+> `openspec/changes/archive/2026-08-06-add-jt-flow-one-team-mode-dispatch/design.md`
+> (or the synced living spec at
+> `openspec/specs/jt-flow-one-team-mode-dispatch/spec.md`) for the
 > corrected, authoritative version.
 
 ## Goal
