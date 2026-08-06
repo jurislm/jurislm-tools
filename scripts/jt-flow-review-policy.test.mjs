@@ -34,7 +34,10 @@ test("uses portable Superpowers review without slash command dependency", () => 
   assert.equal(containsRetiredCodeReviewCommand(currentPolicy), false);
   assert.equal(containsRetiredCodeReviewCommand("/code-review"), true);
   assert.match(skill, /superpowers:requesting-code-review/);
-  assert.match(skill, /本地 Superpowers review.*全程最多.*3\s*次/s);
+  assert.match(
+    paragraphContaining(skill, "`superpowers:requesting-code-review` 進行本地 code review"),
+    /本地 Superpowers review.*全程最多.*3\s*次/s,
+  );
 });
 
 test("caps local review at 3 total runs per PR or change", () => {

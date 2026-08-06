@@ -99,10 +99,21 @@ assert the live setting value.
 
 ## Migration Plan
 
-Documentation-only change (SKILL.md, README.md, root CLAUDE.md, living spec,
-and test assertions in `scripts/jt-flow-review-policy.test.mjs`); no runtime
-code, data, or release-managed version changes. No rollback complexity beyond
+Documentation-only change (SKILL.md, README.md, root CLAUDE.md, and test
+assertions in `scripts/jt-flow-review-policy.test.mjs`); no runtime code,
+data, or release-managed version changes. No rollback complexity beyond
 reverting the merged commit.
+
+Per this repository's own OpenSpec convention (confirmed against
+`openspec/specs/jt-flow-review-orchestration/spec.md`'s git history, which
+was previously touched only at the prior change's archive commit, never
+during its implementation commit), the living spec itself is NOT edited
+during this change's implementation. Only the delta spec at
+`openspec/changes/cap-jt-flow-review-budgets/specs/jt-flow-review-orchestration/spec.md`
+carries the new requirement text; it gets folded into the living spec when
+this change is archived (`opsx:archive`/`opsx:sync`), matching CLAUDE.md's
+rule to "keep the living spec at deployed behavior until the successor
+change is archived."
 
 ## Open Questions
 

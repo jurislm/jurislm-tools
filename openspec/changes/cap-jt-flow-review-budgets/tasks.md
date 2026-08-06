@@ -1,16 +1,21 @@
-## 1. Living spec
+## 1. Delta spec (living spec stays at deployed behavior until archive)
 
-- [x] 1.1 In `openspec/specs/jt-flow-review-orchestration/spec.md`, rewrite
-      the "Local review is portable and change-batch scoped" requirement to
-      state the 3-run ceiling (initial run + at most 2 fix-driven reruns, no
-      4th run) and add the "Run limit reached with new findings still
-      present" scenario, matching the MODIFIED block in
-      `openspec/changes/cap-jt-flow-review-budgets/specs/jt-flow-review-orchestration/spec.md`.
-- [x] 1.2 In the same file, rewrite the "External reviewers have one
-      effective review budget" requirement to include Codex (one-review
-      budget contingent on the account-level 審查觸發條件 precondition, no
-      active trigger, no CodeRabbit-style authorization gate) and add the two
-      new Codex scenarios, matching the same delta file.
+- [x] 1.1 Confirm the delta spec at
+      `openspec/changes/cap-jt-flow-review-budgets/specs/jt-flow-review-orchestration/spec.md`
+      states the "Local review is portable and change-batch scoped"
+      requirement with the 3-run ceiling (initial run + at most 2 fix-driven
+      reruns, no 4th run) and the "Run limit reached with new findings still
+      present" scenario. Do NOT edit
+      `openspec/specs/jt-flow-review-orchestration/spec.md` (the living spec)
+      during this change's implementation — per this repo's CLAUDE.md, it
+      stays at deployed behavior until this change is archived
+      (`opsx:archive`/`opsx:sync` applies the delta then).
+- [x] 1.2 Confirm the same delta spec states the "External reviewers have one
+      effective review budget" requirement extended to include Codex
+      (one-review budget contingent on the account-level 審查觸發條件
+      precondition, no active trigger, no CodeRabbit-style authorization
+      gate) with the two new Codex scenarios. Same constraint: the living
+      spec is not touched now.
 
 ## 2. `plugins/jt-flow/skills/jt-flow-one/SKILL.md`
 
@@ -63,8 +68,10 @@
 - [x] 6.2 Run `openspec validate --strict` and confirm this change passes.
 - [x] 6.3 Manually re-read the four updated documents
       (`plugins/jt-flow/skills/jt-flow-one/SKILL.md`,
-      `plugins/jt-flow/README.md`, `CLAUDE.md`,
-      `openspec/specs/jt-flow-review-orchestration/spec.md`) side by side to
-      confirm the local 3-run cap and the Codex paragraph are worded
-      consistently across all four, since this is a documentation-only
-      change with no executable code path to exercise.
+      `plugins/jt-flow/README.md`, `CLAUDE.md`, and the delta spec at
+      `openspec/changes/cap-jt-flow-review-budgets/specs/jt-flow-review-orchestration/spec.md`)
+      side by side to confirm the local 3-run cap and the Codex paragraph are
+      worded consistently across all four, since this is a documentation-only
+      change with no executable code path to exercise. Confirm
+      `openspec/specs/jt-flow-review-orchestration/spec.md` (the living spec)
+      is unchanged from `origin/main`.
