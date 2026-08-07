@@ -80,10 +80,12 @@ git branch --show-current  # 根目錄必須顯示 main
 git fetch origin main
 git worktree add -b <change-name> .claude/worktrees/<change-name> origin/main
 # ⚠️ start point 是 origin/main（remote-tracking ref），git 會自動把新分支的
-# upstream 設成 origin/main，之後裸 push 會誤推去 origin/main，必須立即解除：
+# upstream 設成 origin/main。預設 push.default=simple 下裸 push 不會靜默誤推，
+# 會報錯要求選擇；但錯誤訊息建議的 `git push origin HEAD:main` 若照抄執行，
+# 會直接推去 main。必須立即解除 upstream：
 git config --unset branch.<change-name>.merge
 git config --unset branch.<change-name>.remote
-# 之後一律 git push -u origin <change-name> 明確指定，不要裸 push
+# 之後一律 git push -u origin <change-name> 明確指定，不要裸 push、也不要照抄錯誤訊息建議的指令
 ```
 
 ### 開發流程

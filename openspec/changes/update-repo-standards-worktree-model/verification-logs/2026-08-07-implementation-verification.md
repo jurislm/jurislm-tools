@@ -72,3 +72,29 @@ severity audit finding 與本次變更無關（`package.json`/`package-lock.json
 （`new-repo-checklist.md` item 25-41、`SKILL.md` CI 相關敘述、
 `references/ci-workflow-templates.md`）確認本次變更零觸碰，兩個 change 的
 `git diff origin/main` 修改行號區間互不重疊。
+
+## Code review follow-up（2026-08-07，第 1 輪，`superpowers:requesting-code-review`）
+
+Dispatch 一個 general-purpose subagent（`model: sonnet`）review `0d16869..8075576`。
+結論 Ready to merge: With fixes，2 個 Important finding，皆已獨立覆核並修正：
+
+1. **SKILL.md:82-83 誇大裸 push 的後果**：原文寫「裸 push 會誤推去 origin/main」。
+   自行在 scratch repo 重現同一情境（`git worktree add -b <name> <path>
+   origin/main` 後直接 `git push`）驗證：此機器 `push.default` 全域／系統／
+   本地皆未覆寫（預設 `simple`），實際行為是**報錯拒絕**（exit 128，
+   `fatal: The upstream branch...does not match`），不是靜默誤推；真正的
+   風險是使用者照抄錯誤訊息建議的 `git push origin HEAD:main` 才會真的推去
+   main。已改寫成準確描述（SKILL.md 82-86 行）。
+2. **new-repo-checklist.md item 5 缺少 upstream-unset 修正步驟**：SKILL.md
+   的建立指令已含 `git config --unset` 兩行，checklist 的對應 item 5 只複製
+   了會產生問題的 `git worktree add` 指令，沒有修正步驟，等於留下同一個坑。
+   已補上兩行 unset 指令＋回指 `SKILL.md`「Git Worktree 規則」的 cross-reference
+   （比照既有 item 25 的 `references/xxx.md` 引用慣例）。
+
+2 個 Minor finding（jurislm-tools 自己 `.prettierignore` 仍缺
+`.claude/worktrees/**`；checklist item 26/29/41 仍有 develop 相關敘述）
+review 本身已判定屬本次 proposal Non-goals 明確排除的範圍，非本次缺陷，不修正。
+
+修正後重跑 `npm run validate`、`openspec validate --strict`、
+`claude plugin validate .` 三項全綠，並重新 grep 確認 push.default 相關新增
+文字只出現在這兩處預期位置。
