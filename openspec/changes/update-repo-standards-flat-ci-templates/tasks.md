@@ -20,3 +20,12 @@
 - [x] 4.1 人工檢查：模板 A、模板 B 的 pipeline 清單、計數、範例 YAML 三者互相一致，且與 `entire/.drone.yml` 現況（12 條）對得上
 - [x] 4.2 人工檢查：`SKILL.md` 與 `ci-workflow-templates.md` 之間沒有互相矛盾的敘述（例如一處說「不需要 build job」另一處卻列出 build pipeline）——已確認模板 A 收尾註解的舊論點已移除
 - [x] 4.3 確認本次變更未觸碰模板 C（npm/MCP）、模板 D（Plugin）段落（Non-Goals）——已用 diff 核對
+
+## 5. 本地 code review（PR 開出前）
+
+- [x] 5.1 執行 `superpowers:requesting-code-review`（單一 general-purpose reviewer，非 fan-out）：涵蓋 plan alignment／內容正確性／scope discipline／validate 通過與否。結果：0 Critical（第一輪報告有 1 Critical，修正後確認為 Critical）、實際 1 Critical＋2 Important＋2 Minor，**Ready to merge: With fixes**
+- [x] 5.2 處理 Critical（「musicer 是 flat repo 落地這兩條 pipeline 的第一個參考實作」為錯誤宣稱）：已用 `git log`／直接讀 `lexvision/.drone.yml` 獨立查證，確認 `jurislm/lexvision` 早在 2026-07-27（`eda8e15`）就已有這兩條 pipeline，且累積了額外強化（拒絕過時部署等）。修正模板 A 開頭敘述與 `release-pr-auto-merge.ts` 移植來源說明，改為推薦優先參考 lexvision
+- [x] 5.3 處理 Important #1（prose「設定步驟」「部署收尾」章節與更新後的 YAML／checklist 產生新的內部矛盾）：`ci-workflow-templates.md` 的「設定步驟」步驟 3 補 `build`、新增步驟 6（`release-pr-auto-merge`）；「結果」與「部署收尾」段落補充 auto-merge 情境；`SKILL.md` 的濃縮版「部署（CD）」章節同步補 `build` 與選用的 `release-pr-auto-merge` 項目
+- [x] 5.4 處理 Minor #2（模板 B「`build` pipeline 直跑 `cd apps/web && bun run build`」已過時，entire 現在建置 5 個 app）：已用 `entire/scripts/ci/run-gate.sh` 查證現況（web／login／ops／console／docs），修正該 bullet
+- [x] 5.5 Minor #1（`release-please` vs `release` pipeline 命名跨 repo 不一致）：reviewer 確認屬既有落差、非本次引入，且是更大範圍的命名一致性決定——記錄但不在本次修正
+- [x] 5.6 `openspec validate --strict` 確認四項 artifacts 仍通過

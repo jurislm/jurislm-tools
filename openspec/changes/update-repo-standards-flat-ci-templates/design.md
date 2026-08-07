@@ -11,6 +11,8 @@
 | `build` | 2026-06-02 | `e6544614` |
 | `release-pr-auto-merge` | 2026-07-21 | `371c48a7` |
 
+**實作階段補充（code review 發現，2026-08-07）**：本次撰寫 proposal 時的環境盤點只查了 entire（模板 B 的鏡像來源），沒有檢查其他已宣稱屬於模板 A 類別的 sibling repo 是否已經自行超前模板 A 落地這兩條 pipeline。Code review 用 `git log` 查證發現 `jurislm/lexvision`（同屬 flat repo）早在 2026-07-27（`eda8e15`）就已有 `build`＋`release-pr-auto-merge`，比 musicer 的 `add-drone-ci` change 早了約 10 天，且累積了額外強化（拒絕過時部署、綁定 release 合併需完整檢查通過等後續 commit）。已修正 `ci-workflow-templates.md` 內「musicer 是第一個參考實作」的錯誤宣稱，改為推薦優先參考 lexvision。這也印證本節開頭的論點本身——環境盤點若只查了「理論上的鏡像來源」（entire），仍可能漏掉「其他已自行超前的同類 repo」，值得記入未來規範回填協議的檢查項。
+
 `ci-workflow-templates.md` 最後一次觸碰「模板 A」相關段落的 commit 早於這兩個時間點；2026-07-27 那次修改（`27dd346`）雖然是該檔案目前最新的一次改動，但只修正了 release-please 步驟順序與新增 Plugin 型 Drone 支援，並未回頭檢視模板 A 或模板 B 的 pipeline 清單——用實際 diff 核對過，這兩個段落完全沒被觸碰。這證實落差是「規範回填協議沒被執行」，不是「當時評估過、決定不採用」。
 
 ## Goals / Non-Goals
