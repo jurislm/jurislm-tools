@@ -21,7 +21,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     globals: true,
-    exclude: ['**/node_modules/**', '.worktrees/**'],
+    exclude: ['**/node_modules/**', '.claude/worktrees/**'],
     // zod v4 ESM interop bug（Linux amd64 / Drone CI 的 Bun runner）：未 inline 時
     // `import { z }` 會解析為 undefined。見 memory-dessert / entire vitest.config。
     server: { deps: { inline: ['zod'] } },

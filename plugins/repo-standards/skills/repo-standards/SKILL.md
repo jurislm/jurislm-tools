@@ -59,15 +59,14 @@ argument-hint: "[repo-name]"
 
 ## Git Worktree 規則
 
-**每個 repo 的 main worktree（根目錄）必須永遠保持在 `main` 分支，所有開發在 `.worktrees/develop` 進行。**
+**GitHub Flow 單段式：main worktree（根目錄）永遠保持在 `main` 分支，不做 feature commits；每個需求／功能直接從 `main` 建立獨立 feature worktree，沒有 `develop` 分支這一段。**
 
 ### 分支結構
 
 ```
-<repo>/               ← main worktree，永遠在 main 分支，不做 feature commits
-<repo>/.worktrees/
-  develop/            ← develop worktree，日常開發在此
-  <feature-branch>/   ← feature worktree，需要時建立
+<repo>/                          ← main worktree，永遠在 main 分支，不做 feature commits
+<repo>/.claude/worktrees/
+  <change-name>/                 ← feature worktree，需要時建立，直接基於 main
 ```
 
 ### 建立規則
@@ -77,23 +76,24 @@ argument-hint: "[repo-name]"
 git worktree list
 git branch --show-current  # 根目錄必須顯示 main
 
-# 建立 develop worktree（每個 repo 必備）
-git fetch origin
-git worktree add .worktrees/develop develop
-# 若 develop 分支尚未存在：
-git worktree add -b develop .worktrees/develop main
-
-# feature branch worktree（開發特定功能時）
-# 注意：branch 名稱的 "/" 在目錄名稱中改為 "-"
-# 例：branch = feature/auth → 目錄 = .worktrees/feature-auth
-git worktree add -b feature/xxx .worktrees/feature-xxx develop
+# 建立 feature worktree（直接基於最新 main，不動主目錄）
+git fetch origin main
+git worktree add --no-track -b <change-name> .claude/worktrees/<change-name> origin/main
+# ⚠️ <change-name> 若含 "/"（如 feature/auth），-b 後面用原始名稱，
+# 但 .claude/worktrees/ 後面的目錄部分要換成 "-"（.claude/worktrees/feature-auth），
+# 兩處不是同一個字串，見下方「強制規則」的完整範例
+# ⚠️ start point 是 origin/main（remote-tracking ref），若省略 --no-track，
+# git 預設會把新分支的 upstream 設成 origin/main（是否真的觸發依
+# branch.autoSetupMerge 設定而定，不保證每個環境都一樣）；--no-track 從一開始
+# 就不建立這個 tracking，比事後用 git config --unset 解除更可靠——後者在
+# upstream 其實沒被設定的環境會直接報錯（exit 5，key 不存在），不是穩妥的做法
+git push -u origin <change-name>  # 明確指定 upstream，不要裸 push
 ```
 
 ### 開發流程
 
 ```
-.worktrees/develop → commit → push origin develop → PR develop→main → merge
-.worktrees/<feature> → commit → push origin <feature> → PR <feature>→develop → merge
+.claude/worktrees/<change-name> → commit → push origin <change-name> → PR <change-name>→main → merge
 ```
 
 ### 強制規則
@@ -101,8 +101,9 @@ git worktree add -b feature/xxx .worktrees/feature-xxx develop
 - main worktree 根目錄只能在 `main` 分支，不可切換到其他分支
 - 若發現根目錄不在 main：立即 `git checkout main && git pull origin main`
 - **嚴禁直接 push 到 main**（main 連接 Coolify 自動部署 + Release Please）
-- feature worktree 目錄名稱必須與 branch 名稱一致（`.worktrees/feature-xxx` ↔ `feature/xxx`）
-- `.gitignore` 必須包含 `.worktrees/`
+- 沒有 `develop` 分支：不建立、不維護、不預期存在——每個 feature worktree 直接從 `main` 分出，PR 一律直接 `<change-name> → main`
+- feature worktree 目錄名稱必須與 branch 名稱一致（`.claude/worktrees/<change-name>` ↔ `<change-name>`；branch 名稱含 `/` 時目錄以 `-` 替代，例：branch = `feature/auth` → 目錄 = `.claude/worktrees/feature-auth`）
+- `.claude/worktrees/` 由 Claude Code runtime 透過本地 `.git/info/exclude` 自動排除，**不要**額外加進 `.gitignore`；但 `.prettierignore`／ESLint ignores／`vitest.config.ts` 的 `exclude` 不會讀 git 的 exclude 規則，仍須各自手動加入 `.claude/worktrees/**`
 
 ---
 
@@ -209,7 +210,7 @@ export default defineConfig({
     environment: 'node',
     exclude: [
       '**/node_modules/**',
-      '.worktrees/**',
+      '.claude/worktrees/**',
     ],
   },
 })
@@ -377,7 +378,7 @@ Plugin 類型預設以 GitHub Actions `release.yml` 跑 Release Please，並以
 | `@typescript-eslint/no-explicit-any` | `error`（test 檔案豁免） | 禁用 `any` |
 | `@typescript-eslint/no-unused-vars` | `error`（`_` 前綴豁免） | 未使用變數 |
 | Prettier 整合 | `eslint-config-prettier` | 關閉與 Prettier 衝突的規則 |
-| `.worktrees/**` | ignores | 排除 git worktree build 產物 |
+| `.claude/worktrees/**` | ignores | 排除 feature worktree 內容 |
 | lint script | `eslint --max-warnings=0` | warning 視同 error |
 
 > 完整 config 模板見 `references/eslint-templates.md`。
@@ -396,10 +397,10 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ```
 # git worktrees
-.worktrees/
+.claude/worktrees/
 ```
 
-⚠️ 少了這行，`prettier --write .` 會掃 worktree build 產物，導致 pre-commit 失敗。
+⚠️ 少了這行，`prettier --write .` 會掃到 feature worktree 內容（各自完整的 checkout），導致 pre-commit 失敗。
 
 ---
 
@@ -495,10 +496,10 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 
 **快速概覽**（各類別必做項）：
 - **AGENTS.md**：若 repo 內存在 `AGENTS.md`，更新為讀取同層或 repo 根目錄 `CLAUDE.md`；不要複製 CLAUDE 全文
-- **Worktree**：`git worktree add .worktrees/develop develop`，`.gitignore` 加 `.worktrees/`
+- **Worktree**：feature worktree 直接從 main 建立於 `.claude/worktrees/<change-name>`，不建立 develop；`.claude/worktrees/` 不進 `.gitignore`（由 Claude Code runtime 本地排除）
 - **Bun**：`"packageManager": "bun@1.3.14"`，scripts 換成 `bun run vitest` 等
 - **Release**：Drone repo 使用 `main`-only release pipeline，依序執行 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`
-- **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.worktrees/`
+- **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.claude/worktrees/`
 - **CI**：Drone repo 的檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；plugin repo 若選 Drone，validation 與 release 一起遷移並移除重疊 GHA
 - **CD**（Coolify web app）：`.drone.yml` 加 `build`、`deploy`、`release-pr-auto-merge` 三個 pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
 - **Code Review**：人工 `/code-review` + bot（CodeRabbit / Copilot via `.github/copilot-instructions.md`）；**無**自動 Claude review（2026-06-02 移除）
