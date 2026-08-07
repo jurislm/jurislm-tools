@@ -29,7 +29,7 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
-    '.worktrees/**',
+    '.claude/worktrees/**',
   ]),
 ]);
 
@@ -67,7 +67,7 @@ export default defineConfig(
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', '.worktrees/'],
+    ignores: ['dist/', 'node_modules/', '.claude/worktrees/'],
   },
 );
 ```

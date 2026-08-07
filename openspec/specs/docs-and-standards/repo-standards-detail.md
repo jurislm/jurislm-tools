@@ -24,19 +24,19 @@
 
 ## Git Worktree 規則（JurisLM 統一標準）
 
-main worktree 根目錄必須永遠在 `main` 分支，所有開發在 `.worktrees/develop` 進行：
+GitHub Flow 單段式：main worktree 根目錄必須永遠在 `main` 分支，每個需求／功能直接從 `main` 建立獨立 feature worktree，沒有 `develop` 分支：
 
 ```
-<repo>/                  ← main worktree（只在 main 分支）
-<repo>/.worktrees/
-  develop/               ← 日常開發
-  <feature-branch>/      ← 功能開發（需要時建立）
+<repo>/                        ← main worktree（只在 main 分支）
+<repo>/.claude/worktrees/
+  <change-name>/               ← feature worktree（需要時建立，直接基於 main）
 ```
 
 **強制規則**：
 - 嚴禁直接 push 到 main（連接 Coolify 自動部署 + Release Please）
+- 沒有 `develop` 分支：不建立、不維護；PR 一律直接 `<change-name> → main`
 - feature worktree 目錄名稱必須與 branch 名稱一致
-- `.gitignore` 必須包含 `.worktrees/`
+- `.claude/worktrees/` 透過本地 `.git/info/exclude` 排除，不進 `.gitignore`；`.prettierignore`／ESLint／`vitest.config.ts` 仍需各自加入 `.claude/worktrees/**`
 
 ## Release Please 設定
 

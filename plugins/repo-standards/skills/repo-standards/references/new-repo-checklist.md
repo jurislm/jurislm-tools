@@ -9,9 +9,9 @@
 ## Git Worktree
 
 4. [ ] 確認 main worktree 在 `main` 分支：`git branch --show-current`
-5. [ ] 建立 develop worktree：`git worktree add .worktrees/develop develop`
-6. [ ] `.gitignore` 加入 `.worktrees/`
-7. [ ] `.prettierignore` 加入 `.worktrees/`
+5. [ ] 不建立 `develop` 分支／worktree（GitHub Flow 單段式）：`git fetch origin main && git worktree add -b <change-name> .claude/worktrees/<change-name> origin/main`
+6. [ ] 不將 `.claude/worktrees/` 加入 `.gitignore`（由 Claude Code runtime 透過本地 `.git/info/exclude` 自動排除）
+7. [ ] `.prettierignore` 加入 `.claude/worktrees/`
 
 ## Runtime（Bun）
 
@@ -24,7 +24,7 @@
 ## 測試（Vitest）
 
 13. [ ] 安裝 vitest：`bun add -d vitest`
-14. [ ] 建立 `vitest.config.ts`，`exclude` 加 `.worktrees/**`
+14. [ ] 建立 `vitest.config.ts`，`exclude` 加 `.claude/worktrees/**`
 15. [ ] `package.json` scripts：`"test": "bun run vitest"`
 16. [ ] 測試檔案使用 `import { describe, it, expect, vi } from 'vitest'`
 17. [ ] 執行 `bun run test` 確認全通過
