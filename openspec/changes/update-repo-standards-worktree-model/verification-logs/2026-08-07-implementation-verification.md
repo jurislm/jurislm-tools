@@ -159,8 +159,8 @@ v0.7.2）、`coderabbit auth status --agent`（已登入，`currentOrg: jurislm`
 與目標 repo owner 相符）、`coderabbit review --help`（確認實際 CLI 旗標為
 `--committed`，非 skill 文字所寫的 `--type committed`——採用當下 `--help`
 實際輸出，非照抄 skill 文件字面）。`git fetch origin main` 後確認 worktree
-clean，列出 `origin/main..HEAD` 全部 6 個 commit（含本次為整合 sibling PR
-#198 而做的 merge commit），逐一 `git show` 掃描 + 掃描完整 diff：僅命中
+clean，列出 `origin/main..HEAD` 全部 6 個 commit（含本次為整合 sibling
+PR #198 而做的 merge commit），逐一 `git show` 掃描 + 掃描完整 diff：僅命中
 `RELEASE_PLEASE_TOKEN`／`COOLIFY_DEPLOY_TOKEN` 等既有 secret 變數「名稱」
 （非數值），無實際 secret 外洩，通過預檢。
 
