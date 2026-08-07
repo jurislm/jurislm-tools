@@ -43,9 +43,9 @@ GitHub Actions 時代的雷是「`push: develop` 與 `pull_request` 重疊 → C
 
 ---
 
-## 標準模板 A：Coolify Web App（flat repo — memory-dessert / lawyer / stock）
+## 標準模板 A：Coolify Web App（flat repo — memory-dessert / lawyer / stock / musicer）
 
-4 個 pipeline：`lint-typecheck`、`test`、`release-please`、`deploy`。`deploy` 是取代 Coolify auto-deploy 的關鍵（見下方「CD 與避免重複部署」）。
+6 個 pipeline：`lint-typecheck`、`test`、`build`、`release-please`、`deploy`、`release-pr-auto-merge`。`deploy` 是取代 Coolify auto-deploy 的關鍵（見下方「CD 與避免重複部署」）；`build`、`release-pr-auto-merge` 補於 2026-08-07——這兩者不是 monorepo（模板 B）專屬，`jurislm/musicer` 是這兩條 pipeline 在 flat repo 落地的第一個參考實作（`add-drone-ci` change）。
 
 ```yaml
 ---
@@ -111,6 +111,44 @@ steps:
     resources: { limits: { cpu: 2000, memory: 3221225472 } }
 
 ---
+# build：抓 lint/typecheck 抓不到的 build-only 失敗（例如 RSC client/server 邊界違規、
+# 只有 next build 實際打包時才會浮現的問題）。與 monorepo 與否無關——任何 Next.js App
+# Router app 都可能踩到，且 CI build 失敗發生在 merge 前，比「合併後才被 Coolify 自己
+# build 失敗擋下來」的反饋週期快得多。
+kind: pipeline
+type: docker
+name: build
+platform: { os: linux, arch: amd64 }
+trigger:
+  event: [push, pull_request]
+  ref: [refs/heads/main, refs/pull/*/head]
+steps:
+  - name: install
+    image: oven/bun:1.3.14
+    commands:
+      - |
+        if echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'; then
+          echo "release-please version bump — skip"; exit 0
+        fi
+      - bun install --frozen-lockfile
+    resources: { limits: { cpu: 2000, memory: 3221225472 } }
+  - name: build
+    image: oven/bun:1.3.14
+    depends_on: [install]
+    environment:
+      # next build 的 page-data collection 階段會靜態匯入 route handler，連帶觸發任何
+      # 在 module 頂層讀取／驗證 env 的程式碼（例如 DB client 的 connection string 檢查）。
+      # 用 placeholder 滿足這類檢查即可，不需要真的能連上（build 不執行查詢）。
+      DATABASE_URL: postgresql://placeholder@localhost:5432/placeholder
+    commands:
+      - |
+        if echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'; then
+          echo "release-please version bump — skip"; exit 0
+        fi
+      - bun run build
+    resources: { limits: { cpu: 2000, memory: 3221225472 } }
+
+---
 # release-please：只在 push main 跑（含 release commit 本身）。RELEASE_PLEASE_TOKEN 為 Drone repo-scope secret。
 kind: pipeline
 type: docker
@@ -145,7 +183,7 @@ clone: { disable: true }   # 只讀 DRONE_COMMIT_MESSAGE env，不需 repo 檔�
 trigger:
   event: [push]
   ref: [refs/heads/main]
-depends_on: [lint-typecheck, test]   # 兩者綠燈才部署，不部署壞掉的程式碼
+depends_on: [lint-typecheck, test, build]   # 三者綠燈才部署，不部署壞掉的程式碼
 steps:
   - name: deploy
     image: curlimages/curl:8.11.0
@@ -160,22 +198,49 @@ steps:
         curl -fsS "https://coolify.jurislm.com/api/v1/deploy?uuid=<APP_UUID>&force=false" \
           -H "Authorization: Bearer $COOLIFY_DEPLOY_TOKEN"
     resources: { limits: { cpu: 1000, memory: 268435456 } }
+
+---
+# release-pr-auto-merge：release-please 開出的版本 PR，在自身檢查（lint-typecheck/test/
+# build）與 deploy 都成功後自動合併，不需要人工介入。concurrency limit 1 序列化重疊的
+# main build，避免併發合併判斷互相干擾（多個 push 短時間內連續合併時，release PR 的
+# base commit 會跟著變動，需要序列化才能正確判斷「這次該讓哪個 build 合併」）。
+kind: pipeline
+type: docker
+name: release-pr-auto-merge
+platform: { os: linux, arch: amd64 }
+concurrency: { limit: 1 }
+trigger:
+  branch: [main]
+  event: [push]
+depends_on: [release-please, deploy]
+steps:
+  - name: merge-release-pr
+    image: oven/bun:1.3.14
+    environment:
+      RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
+    commands:
+      - bun run scripts/ci/release-pr-auto-merge.ts
 ```
 
-> 取代 `<REPO>` / `<APP_UUID>` 為實際值（App UUID 見該 repo `CLAUDE.md` 的 Coolify 區）。Next.js / 純 Node app 模板相同；Next.js 的 build 在 Coolify 端的 Dockerfile 進行，CI 不需獨立 build job（typecheck 已涵蓋型別）。
+> 取代 `<REPO>` / `<APP_UUID>` 為實際值（App UUID 見該 repo `CLAUDE.md` 的 Coolify 區）。Next.js / 純 Node app 模板相同。
+>
+> `release-pr-auto-merge` 需要一個 `scripts/ci/release-pr-auto-merge.ts` 腳本——驗證候選 release PR 的 repo/branch/author/title/body allowlist、變更檔案是否恰好是 release-please 產生的三個檔案、mergeability，以及 base SHA ancestry（分辨「該讓位給更新的 build」與「真的異常」）。這份腳本原始碼在 `jurislm/entire` 的 `scripts/ci/release-pr-auto-merge.ts`，`jurislm/musicer` 的 `scripts/ci/release-pr-auto-merge.ts` 是 flat repo 的移植版本（只改常數，核心驗證邏輯不變）——新 repo 導入本 pipeline 時，從其中一份移植，不要重新設計這套邏輯（它處理的是併發 build 下的正確性保證，不是簡單的「找到 PR 就合併」）。
 
 ---
 
 ## 標準模板 B：Monorepo（entire — Turborepo）
 
-> **不是 copy-paste 模板**——以 `entire/.drone.yml` 為準鏡像（其結構因 monorepo 而高度客製）。下列為其實際結構與須注意的差異點（截至撰寫時為 7 個 pipeline）：
+> **不是 copy-paste 模板**——以 `entire/.drone.yml` 為準鏡像（其結構因 monorepo 而高度客製）。下列為其實際結構與須注意的差異點（2026-08-07 查證，共 12 個 pipeline——先前記載的「7 個」已過時，是模板未隨 entire 演進同步更新的落差，非刻意精簡）：
 
-- pipeline 按檢查項拆分：`lint-typecheck`、`cli`、`app`、`module`、`package`、`build`、`release`。觸發語意同模板 A（`trigger.event` + `trigger.ref`）。
+- **核心檢查**（5 個）：`lint-typecheck`、`cli`、`app`、`module`、`package`——拆分理由是 monorepo 依 workspace 分組測試，觸發語意同模板 A（`trigger.event` + `trigger.ref`）
 - **`services:` 只用於「真的會跑 DB query」的 pipeline**（如 `cli` 跑 `db migrate`）：pipeline-level 起 `postgres:16`，step 內 `DATABASE_URL` 指向該 service。其餘 pipeline（如 `package`）只需 placeholder env 滿足 `@<scope>/config` 的 import-time Zod 驗證（如 `ANTHROPIC_API_KEY: sk-ant-placeholder-for-ci`）→ **用 localhost placeholder URL，不需 `services:` 區塊**。
 - **`oven/bun` image 無 `psql`** → 只有需要的 pipeline（`cli`）才 `apt-get update -qq && apt-get install -y -qq postgresql-client` + `db migrate`。
 - 測試委派 Turborepo：各 pipeline 用不同 filter，如 `bun run turbo run test --filter=entire-cli` / `--filter="@modules/*"` / `--filter=!entire-cli --filter=!entire-ops …`（排除式）。
 - **`build` pipeline 直跑 `cd apps/web && bun run build`（非 turbo）**——對齊 GA build job、避免 turbo strict env stripping。
 - **`release` pipeline 與模板 A 不同**：用 `bunx`（非 `npx`）、`trigger.branch: [main]`（非 `trigger.ref`）。標準為兩步——先 `github-release`（從已合併的 release PR cut tag），再 `release-pr`（維護下一個版本 PR）；只有 `release-pr` 不會自動建立 tag/release。
+- **`deploy`**：`depends_on` 全部 5 個核心檢查 + `build`，迴圈觸發每個 prod app（monorepo 通常有多個部署目標，各自一個 Coolify UUID）的 Coolify deploy API。
+- **`release-pr-auto-merge`**：release PR 在自身檢查與 `deploy` 皆成功後自動合併，設定同模板 A（`concurrency: limit: 1`）。
+- **三條事故驅動 pipeline（`detect-missed-push-builds`、`audit-missed-builds`、`audit-shared-migration-drift`）**：entire 實際遭遇過特定事故後才新增的機制（GitHub 偶爾漏發 push webhook 導致 build 完全沒觸發；跨 repo 定期對帳同一問題；shared DB migration 合併後未被套用卻無告警）。**這是 entire 累積的事故應對結果，不是其他 monorepo 採用時的必要基準**——沒有對應事故歷史前不需要照抄，真的遇到同類問題再參考 entire 的實作。
 
 > Monorepo 多 app 部署較複雜（每個 app 一個 Coolify UUID），deploy-gating 須為每個 app 各設一個 deploy step / pipeline。
 

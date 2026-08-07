@@ -499,5 +499,5 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 - **Release**：Drone repo 使用 `main`-only release pipeline，依序執行 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.worktrees/`
 - **CI**：Drone repo 的檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；plugin repo 若選 Drone，validation 與 release 一起遷移並移除重疊 GHA
-- **CD**（Coolify web app）：`.drone.yml` 加 `deploy` pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
+- **CD**（Coolify web app）：`.drone.yml` 加 `build`、`deploy`、`release-pr-auto-merge` 三個 pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
 - **Code Review**：人工 `/code-review` + bot（CodeRabbit / Copilot via `.github/copilot-instructions.md`）；**無**自動 Claude review（2026-06-02 移除）

@@ -54,25 +54,26 @@
 
 > **只 gate PROD（push main）；DEV app 維持 Coolify auto-deploy**——重複部署是 prod-only（release PR / 純版號 chore 合併進 main 重觸發），dev 無此問題；且 `trigger.ref` 不含 develop，Drone 不在 develop push 建置故無法接管 dev 部署。
 
-30. [ ] `.drone.yml` 為每個 **prod** app 加 `deploy` pipeline/step（`push` main、`depends_on: [lint-typecheck, test]`、`clone: { disable: true }`）；dev app 不設
-31. [ ] `deploy` + `lint-typecheck` + `test` 各 step 加 release-commit 守衛：`echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'`（**grep 全訊息、勿加 `head -1`**——merge commit 合併時 release 行在 body，head -1 漏判 → 誤部署）
-32. [ ] Drone repo-scope secret 加 `COOLIFY_DEPLOY_TOKEN`（`pull_request: false`）
-33. [ ] 先驗證 Drone→Coolify deploy API 接線可用，再**只關閉 PROD app 的 Coolify `is_auto_deploy_enabled`**（dev app 不動；避免 prod 靜默停止部署）
-34. [ ] 行為驗證：feature 合併進 main → prod 部署 **1 次**；release PR 合併 → prod 部署 **0 次**；dev 不受影響；並確認合併後 push webhook 有觸發 Drone build
+30. [ ] `.drone.yml` 加 `build` pipeline（抓 lint/typecheck 抓不到的 build-only 失敗，flat repo／monorepo 皆需要，非 monorepo 專屬）
+31. [ ] `.drone.yml` 為每個 **prod** app 加 `deploy` pipeline/step（`push` main、`depends_on` 含 `lint-typecheck`／`test`／`build`、`clone: { disable: true }`）；dev app 不設
+32. [ ] `deploy` + `lint-typecheck` + `test` + `build` 各 step 加 release-commit 守衛：`echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'`（**grep 全訊息、勿加 `head -1`**——merge commit 合併時 release 行在 body，head -1 漏判 → 誤部署）
+33. [ ] Drone repo-scope secret 加 `COOLIFY_DEPLOY_TOKEN`（`pull_request: false`）
+34. [ ] 先驗證 Drone→Coolify deploy API 接線可用，再**只關閉 PROD app 的 Coolify `is_auto_deploy_enabled`**（dev app 不動；避免 prod 靜默停止部署）
+35. [ ] `.drone.yml` 加 `release-pr-auto-merge` pipeline（`depends_on: [release-please, deploy]`、`concurrency: { limit: 1 }`）；腳本從 `entire`／`musicer` 的 `scripts/ci/release-pr-auto-merge.ts` 移植，只改常數，不重新設計驗證邏輯
+36. [ ] 行為驗證：feature 合併進 main → prod 部署 **1 次**；release PR 合併 → prod 部署 **0 次**、且其自身檢查綠燈後由 `release-pr-auto-merge` 自動合併；dev 不受影響；並確認合併後 push webhook 有觸發 Drone build
 
 ## Code Review（人工 + bot；無自動 Claude review）
 
 > 2026-06-02：自動 Claude PR 審查（`claude-code-review.yml` / `claude.yml` / Drone `claude-review`）已從標準移除。
 
-35. [ ] **人工 `/code-review`**：發 PR 前必跑多角度 review（見全域 CLAUDE.md PR 流程）
-36. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）；CodeRabbit 為 PR 自動回審，獨立運作無需設定
-37. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
+37. [ ] **人工 `/code-review`**：發 PR 前必跑多角度 review（見全域 CLAUDE.md PR 流程）
+38. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）；CodeRabbit 為 PR 自動回審，獨立運作無需設定
+39. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
 
-## 發版收尾（每次合併 develop→main 後必做）
+## 發版收尾（每次合併進 main 後必做）
 
-> 對應全域 CLAUDE.md「合併 develop → main 後」+ 模式 95。詳見 `references/ci-workflow-templates.md`「部署收尾」。
+> 詳見 `references/ci-workflow-templates.md`「部署收尾」。
 
-38. [ ] **確認 CI 真的被觸發**：合併後查 `gh api repos/jurislm/<repo>/hooks/<id>/deliveries`（push 事件是否送達）+ Drone builds list 有對應 commit 的 push build（GitHub 偶爾漏發 push webhook）
-39. [ ] **合併 release-please 自動開的 release PR**（`chore(main): release X.Y.Z`），否則 tag / 版本永遠不 cut
-40. [ ] release PR 合併後再次確認其 push build 觸發 + `github-release` 有跑（tag 已建）；漏發則手動 `release-please github-release`（冪等）
-41. [ ] 依模式 95 把 `develop` 重新同步至 `main`（避免 squash/merge 後分歧）
+40. [ ] **確認 CI 真的被觸發**：合併後查 `gh api repos/jurislm/<repo>/hooks/<id>/deliveries`（push 事件是否送達）+ Drone builds list 有對應 commit 的 push build（GitHub 偶爾漏發 push webhook）
+41. [ ] **合併 release-please 自動開的 release PR**（`chore(main): release X.Y.Z`）——若 repo 已設 `release-pr-auto-merge` pipeline，其自身檢查綠燈後應自動合併，此項僅為確認；未設此 pipeline 的 repo 才需要人工合併，否則 tag / 版本永遠不 cut
+42. [ ] release PR 合併後再次確認其 push build 觸發 + `github-release` 有跑（tag 已建）；漏發則手動 `release-please github-release`（冪等）

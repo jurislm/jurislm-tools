@@ -22,6 +22,14 @@
 | Plugin | jurislm-tools, jurislm-plugins | `simple` | — | 無 TS 原始碼，不需要 ESLint |
 | Monorepo | entire | `node` | Bun | `@entire/eslint-config` |
 
+## CI/CD 模板同步
+
+`references/ci-workflow-templates.md` 的「標準模板 A」（flat repo）獨立成立，不鏡像任何特定 repo；「標準模板 B」（monorepo）明確以 `jurislm/entire` 的 `.drone.yml` 為準鏡像。兩者都必須與各自的參考事實保持同步，而非只在初次撰寫時對過一次：
+
+- 模板 A 列出的每個 pipeline 都要有獨立成立的理由（不依賴「因為 entire 有」），且範例 YAML 與該理由所需的 pipeline 名稱一致——例如若文件主張「build-only 失敗需要獨立 pipeline 攔截」，範例就必須包含 `build` pipeline，不能只在文字論述，YAML 卻沒有
+- 模板 B 的 pipeline 清單／計數必須與 `entire/.drone.yml` 目前實際內容一致；若 entire 新增或移除 pipeline，模板 B 需要同步更新，或至少明確標註「已知落後、待更新」而非讓讀者誤以為清單是最新的
+- 2026-08-07 教訓：entire 於 2026-06-02（`build` pipeline）與 2026-07-21（`release-pr-auto-merge` pipeline）兩次演進都沒有回填進模板 A／B，落差直到 `jurislm/musicer` 設定 CI 時才被發現——這正是 skill 自己文件內定義的「規範回填協議」要防止的情況，本次修正後應作為未來審查這兩個模板時的檢查基準
+
 ## Git Worktree 規則（JurisLM 統一標準）
 
 main worktree 根目錄必須永遠在 `main` 分支，所有開發在 `.worktrees/develop` 進行：
