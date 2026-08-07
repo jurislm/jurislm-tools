@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.36.3](https://github.com/jurislm/jurislm-tools/compare/v1.36.2...v1.36.3) (2026-08-07)
+
+
+### 📚 Documentation
+
+* **openspec:** archive update-repo-standards-worktree-model ([#201](https://github.com/jurislm/jurislm-tools/issues/201)) ([4e8498a](https://github.com/jurislm/jurislm-tools/commit/4e8498a914b4e6da65794b8913864b17548222ea))
+
 ## [1.36.2](https://github.com/jurislm/jurislm-tools/compare/v1.36.1...v1.36.2) (2026-08-07)
 
 
