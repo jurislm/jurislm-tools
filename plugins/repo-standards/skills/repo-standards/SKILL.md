@@ -458,15 +458,16 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 
 **Coolify auto-deploy 對每個 push main 都部署，包含 release-please 的純版號 commit** → 同一份程式碼被部署兩次（feature 合併一次、release PR 合併再一次）。解法是把部署觸發移到 Drone 並關閉 auto-deploy：
 
-1. **`.drone.yml` 加 `deploy` pipeline**（`push` main、`depends_on: [lint-typecheck, test]`、`clone: { disable: true }`）：curl Coolify deploy API，**守衛跳過 release commit**。
+1. **`.drone.yml` 加 `build` pipeline**（`push` main + PR，一般 clone，跑 `bun run build`）與 **`deploy` pipeline**（`push` main、`depends_on` 涵蓋 `lint-typecheck`／`test`／`build`；**只有 `deploy` 用 `clone: { disable: true }`**——它只 curl Coolify API 不需要 repo 內容，`build` 需要完整 clone 才能執行建置）：curl Coolify deploy API，**守衛跳過 release commit**。
 2. **守衛**：`echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'`
    - **grep 全訊息（勿加 `head -1`）**：merge commit 合併 release PR 時 HEAD subject 為 `Merge pull request #N from …release-please…`、`chore(main): release X.Y.Z` 落在 body；加 `head -1` 只看 subject 會漏判 → release commit 誤觸發部署（2026-06-02 entire #383 實證）。全訊息 grep 同時涵蓋 merge（body 命中）與 squash（subject 命中）。`release [0-9]` 要求版號數字（排除 `chore: release notes …` 誤判）。
 3. **Drone repo-scope secret `COOLIFY_DEPLOY_TOKEN`**（`pull_request: false`）。
 4. **只關閉 PROD app 的 Coolify auto-deploy**（`is_auto_deploy_enabled`；先驗證 Drone→Coolify 接線可用再關，避免 prod 靜默停止部署）。
+5. **加 `release-pr-auto-merge` pipeline**，讓 release PR 自動合併，不需要每次手動合併（模板 A 標準 6 pipeline 之一，非選用）。
 
 **⚠️ deploy-gating 只針對 PROD（push main），不要碰 DEV**：重複部署問題只發生在 prod——release PR / 純版號 `chore` commit 合併進 main 會重觸發 prod 部署；dev（push develop）無 release PR、無此問題。且本標準 `trigger.ref` 慣例**不含 develop** → Drone 根本不在 develop push 建置 → 無法接管 dev 部署。故 **dev app 一律維持 Coolify auto-deploy 不動**；只為 prod app 設 Drone deploy pipeline + 關 prod auto-deploy。
 
-**結果**：feature 合併進 main = prod 部署 1 次；release PR 合併進 main = prod 部署 0 次（守衛跳過，僅 release-please 建 tag）；dev 不受影響（仍由 Coolify auto-deploy on develop push）。
+**結果**：feature 合併進 main = prod 部署 1 次；release PR 合併進 main = prod 部署 0 次（守衛跳過，僅 release-please 建 tag，並在設有 `release-pr-auto-merge` 時自動合併）；dev 不受影響（仍由 Coolify auto-deploy on develop push）。
 
 **僅適用 Coolify-deployed repo**（web app）。**npm 套件 / MCP repo 不需要**——它們 publish 到 npm，只在 release commit 發布一次，無重複問題。Monorepo（多 app）須為每個 **prod** app 各設一個 deploy step（dev app 不設，維持 auto-deploy）。
 
@@ -497,5 +498,5 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 - **Release**：Drone repo 使用 `main`-only release pipeline，依序執行 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.claude/worktrees/`
 - **CI**：Drone repo 的檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；plugin repo 若選 Drone，validation 與 release 一起遷移並移除重疊 GHA
-- **CD**（Coolify web app）：`.drone.yml` 加 `deploy` pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
+- **CD**（Coolify web app）：`.drone.yml` 加 `build`、`deploy`、`release-pr-auto-merge` 三個 pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
 - **Code Review**：人工 `/code-review` + bot（CodeRabbit / Copilot via `.github/copilot-instructions.md`）；**無**自動 Claude review（2026-06-02 移除）
