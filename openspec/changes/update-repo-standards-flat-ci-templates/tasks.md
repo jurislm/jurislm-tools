@@ -37,4 +37,4 @@
   - `ci-workflow-templates.md:333` — 模板 A 開頭宣告 6 個 pipeline，但「設定步驟」第 6 步（`release-pr-auto-merge`）卻標「選用」，前後矛盾。已移除「選用」，`SKILL.md` 對應段落同步修正
   - `new-repo-checklist.md:62` — `release-pr-auto-merge.ts` 移植來源提及 `entire`／`musicer`，未同步模板 A 已改的「lexvision 優先」推薦。已補上並標註優先順序
 - [x] 6.2 `openspec validate --strict` 確認四項 artifacts 仍通過
-- [ ] 6.3 回覆並 resolve PR #198 上全部 3 則 Copilot review thread
+- [x] 6.3 回覆並 resolve PR #198 上全部 3 則 Copilot review thread（GraphQL `resolveReviewThread` 確認 `isResolved: true`）
