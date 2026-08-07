@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.36.2](https://github.com/jurislm/jurislm-tools/compare/v1.36.1...v1.36.2) (2026-08-07)
+
+
+### 🐛 Bug Fixes
+
+* address code review findings (lexvision prior art, stale prose sections) ([e0af1b3](https://github.com/jurislm/jurislm-tools/commit/e0af1b31cf1b6f11e2a1acdf7e5d1bf450755a42))
+* address Copilot review findings ([4e6154b](https://github.com/jurislm/jurislm-tools/commit/4e6154b8b282a19805e7c46e1e993b37c8a6641f))
+* **repo-standards:** sync flat-repo CI templates with entire's current .drone.yml ([17e4623](https://github.com/jurislm/jurislm-tools/commit/17e4623b3f88414fe50927d195c0c4ddcabcd5b6))
+* **repo-standards:** sync flat-repo CI templates with entire's current .drone.yml ([4a3579a](https://github.com/jurislm/jurislm-tools/commit/4a3579afc7c02f447cb04d122bdd6bd73eb59dab)), refs [#196](https://github.com/jurislm/jurislm-tools/issues/196)
+* **repo-standards:** sync worktree rules with single-stage GitHub Flow ([#200](https://github.com/jurislm/jurislm-tools/issues/200)) ([e1dbbaf](https://github.com/jurislm/jurislm-tools/commit/e1dbbaf6fffb735443551fb8312e39d8ec5759d8))
+
+
+### 📚 Documentation
+
+* add OpenSpec proposal for flat-repo CI template sync ([c1f9545](https://github.com/jurislm/jurislm-tools/commit/c1f9545e080c5c68217cb6b54945f8e5ed5b6624)), refs [#196](https://github.com/jurislm/jurislm-tools/issues/196)
+* record Copilot review thread resolution ([9b2022d](https://github.com/jurislm/jurislm-tools/commit/9b2022d161d96ce98b1d7cb203f8a4ef69ca5274))
+
 ## [1.36.1](https://github.com/jurislm/jurislm-tools/compare/v1.36.0...v1.36.1) (2026-08-06)
 
 
