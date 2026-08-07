@@ -9,7 +9,7 @@
 ## Git Worktree
 
 4. [ ] 確認 main worktree 在 `main` 分支：`git branch --show-current`
-5. [ ] 不建立 `develop` 分支／worktree（GitHub Flow 單段式）：`git fetch origin main && git worktree add -b <change-name> .claude/worktrees/<change-name> origin/main && git config --unset branch.<change-name>.merge && git config --unset branch.<change-name>.remote`（upstream 誤設坑與後續 push 方式見 `SKILL.md`「Git Worktree 規則」）
+5. [ ] 不建立 `develop` 分支／worktree（GitHub Flow 單段式）：`git fetch origin main && git worktree add --no-track -b <change-name> .claude/worktrees/<change-name> origin/main`（`--no-track` 避免 upstream 誤設成 origin/main，之後一律 `git push -u origin <change-name>`；見 `SKILL.md`「Git Worktree 規則」）
 6. [ ] 不將 `.claude/worktrees/` 加入 `.gitignore`（由 Claude Code runtime 透過本地 `.git/info/exclude` 自動排除）
 7. [ ] `.prettierignore` 加入 `.claude/worktrees/`
 

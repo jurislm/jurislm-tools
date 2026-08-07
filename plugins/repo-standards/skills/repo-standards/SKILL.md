@@ -78,14 +78,13 @@ git branch --show-current  # 根目錄必須顯示 main
 
 # 建立 feature worktree（直接基於最新 main，不動主目錄）
 git fetch origin main
-git worktree add -b <change-name> .claude/worktrees/<change-name> origin/main
-# ⚠️ start point 是 origin/main（remote-tracking ref），git 會自動把新分支的
-# upstream 設成 origin/main。預設 push.default=simple 下裸 push 不會靜默誤推，
-# 會報錯要求選擇；但錯誤訊息建議的 `git push origin HEAD:main` 若照抄執行，
-# 會直接推去 main。必須立即解除 upstream：
-git config --unset branch.<change-name>.merge
-git config --unset branch.<change-name>.remote
-# 之後一律 git push -u origin <change-name> 明確指定，不要裸 push、也不要照抄錯誤訊息建議的指令
+git worktree add --no-track -b <change-name> .claude/worktrees/<change-name> origin/main
+# ⚠️ start point 是 origin/main（remote-tracking ref），若省略 --no-track，
+# git 預設會把新分支的 upstream 設成 origin/main（是否真的觸發依
+# branch.autoSetupMerge 設定而定，不保證每個環境都一樣）；--no-track 從一開始
+# 就不建立這個 tracking，比事後用 git config --unset 解除更可靠——後者在
+# upstream 其實沒被設定的環境會直接報錯（exit 5，key 不存在），不是穩妥的做法
+git push -u origin <change-name>  # 明確指定 upstream，不要裸 push
 ```
 
 ### 開發流程

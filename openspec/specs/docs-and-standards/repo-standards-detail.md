@@ -35,7 +35,7 @@ GitHub Flow 單段式：main worktree 根目錄必須永遠在 `main` 分支，�
 **強制規則**：
 - 嚴禁直接 push 到 main（連接 Coolify 自動部署 + Release Please）
 - 沒有 `develop` 分支：不建立、不維護；PR 一律直接 `<change-name> → main`
-- feature worktree 目錄名稱必須與 branch 名稱一致
+- feature worktree 目錄名稱必須與 branch 名稱一致（branch 名稱含 `/` 時目錄以 `-` 替代，例：`feature/auth` → `.claude/worktrees/feature-auth`）
 - `.claude/worktrees/` 透過本地 `.git/info/exclude` 排除，不進 `.gitignore`；`.prettierignore`／ESLint／`vitest.config.ts` 仍需各自加入 `.claude/worktrees/**`
 
 ## Release Please 設定

@@ -13,7 +13,7 @@
 3. Systematic grep 全 `plugins/repo-standards/` 目錄比對 `.worktrees`（排除 `.claude/worktrees`）：命中 5 個檔案（`SKILL.md`、`references/new-repo-checklist.md`、`references/eslint-templates.md`、`references/testing-config-templates.md`），外加 `openspec/specs/docs-and-standards/repo-standards-detail.md`；`references/ci-workflow-templates.md`、`references/code-review-setup.md` 零命中。
 4. `.gitignore` vs `.git/info/exclude` 的實際慣例：查證 jurislm-tools 自己 + `entire`／`lawyer`／`stock`／`memory-dessert` 四個 repo 的 `.git/info/exclude`，全部在 `# claude-code-runtime` 註解區塊下有 `**/.claude/worktrees/`（同一段內容逐字重複，明顯是 Claude Code 工具自動維護，非人工個別新增）；反過來查這四個 repo committed 的 `.gitignore`，全部只有舊路徑 `.worktrees/`，**沒有一個**把 `.claude/worktrees/` 加進 committed `.gitignore`。這確認：`.claude/worktrees/` 排除是靠本地 `.git/info/exclude`，不需要（也不該）進 `.gitignore`。
 5. 但 `.prettierignore`／ESLint ignores／`vitest.config.ts` 的 `exclude` 不讀 git 的 exclude 規則，會直接掃磁碟——查證這四個 repo 的實際設定：`lawyer`（近期維護過的）三個都同時列了 `.worktrees/` 與 `.claude/worktrees/`；`stock`／`memory-dessert` 只有舊路徑、缺 `.claude/worktrees/`（是真實存在的殘留 gap，但修這兩個 repo 不在本次範圍——本次只確保「以後照 skill 設定新 repo」拿到正確版本）。
-6. memory `feedback_worktree_discipline`：`git worktree add -b <name> <path> origin/main`（以 remote-tracking ref 為 start point）會自動把新分支 upstream 設成 `origin/main`；jurislm-tools 自己的 session 已踩過兩次（`cap-jt-flow-review-budgets`、`archive-cap-jt-flow-review-budgets`）。`git help worktree` 的 `--track`／`--no-track` 說明佐證這是通用 git 行為，非 jurislm-tools 特有。**Code review 第 1 輪修正後重新查證**：此機器實際 `push.default`（全域／系統／本地皆未覆寫，預設 `simple`）下，裸 push 並非靜默誤推，而是報錯拒絕；真正風險是照抄錯誤訊息建議的 `git push origin HEAD:main` 才會真的推去 main（已在 scratch repo 重現兩次，SKILL.md／checklist 措辭已同步修正，見下方 D2 與 verification-logs）。
+6. memory `feedback_worktree_discipline`：`git worktree add -b <name> <path> origin/main`（以 remote-tracking ref 為 start point）依 `branch.autoSetupMerge` 預設值會自動把新分支 upstream 設成 `origin/main`；jurislm-tools 自己的 session 已踩過兩次（`cap-jt-flow-review-budgets`、`archive-cap-jt-flow-review-budgets`）。`git help worktree` 的 `--track`／`--no-track` 說明佐證這是通用 git 行為，非 jurislm-tools 特有。**Code review 第 1 輪修正後重新查證**：此機器實際 `push.default`（全域／系統／本地皆未覆寫，預設 `simple`）下，裸 push 並非靜默誤推，而是報錯拒絕；真正風險是照抄錯誤訊息建議的 `git push origin HEAD:main` 才會真的推去 main。**PR review（Copilot，round 3）再修正**：原本用 `git config --unset branch.<name>.merge`／`.remote` 事後解除的做法，在 upstream 其實沒被設定的環境（`branch.autoSetupMerge` 非預設值）會直接以 exit 5 報錯（已在 scratch repo 驗證：`git config --unset` 對不存在的 key 一定回傳 exit 5），破壞 checklist 用 `&&` 串接的單行指令。改用 `git worktree add --no-track`，從一開始就不建立 tracking，不需要事後修正、也沒有這個 brittle 問題（已在 scratch repo 驗證 `--no-track` 後 `branch -vv` 確實不顯示 upstream，裸 push 正確報「no upstream branch」而非誤導性的 `HEAD:main` 建議）。SKILL.md／checklist 措辭已同步修正，見下方 D2 與 verification-logs。
 
 ## Goals / Non-Goals
 
@@ -33,9 +33,11 @@
 
 這不是隨意選邊站，是四個真實 repo 一致的實證結果（見 Context 4/5）。`.gitignore` 只影響 `git status`／`git add` 這類 git 操作，`.claude/worktrees/` 已經靠 `.git/info/exclude`（Claude Code runtime 自動維護）排除，重複寫進 `.gitignore` 沒有額外效果；但 `prettier --write .`／`eslint .`／`vitest` 都是直接掃磁碟的獨立工具，不讀 `.git/info/exclude`，沒有明確 exclude 規則的話會真的遞迴進每個 feature worktree（裡面往往有自己完整的 `node_modules`），拖慢或搞壞這些指令。checklist item 6 因此改成「**不要**加進 `.gitignore`」而非只是換路徑，item 7 維持「要加」但路徑修正。
 
-### D2. 補上 `origin/main` start point 的 upstream-tracking 坑，不只是換路徑字串
+### D2. 補上 `origin/main` start point 的 upstream-tracking 坑，用 `--no-track` 而非事後 unset
 
-原本三處內容的問題不只是路徑寫錯（`.worktrees/develop` → `.claude/worktrees/<change-name>`），建立指令本身如果照抄 `git worktree add -b <name> <path> origin/main` 會留下一個新坑（見 Context 6）。既然要重寫建立指令，順手把這個已經被記錄兩次的真實踩坑與修正步驟一起寫進去，避免文件教了「正確路徑」但留下「不完整的指令」。這不是新加功能或推測性內容，是讓被修正的指令本身可以直接照抄執行、不留下已知會炸的步驟。
+原本三處內容的問題不只是路徑寫錯（`.worktrees/develop` → `.claude/worktrees/<change-name>`），建立指令本身如果照抄 `git worktree add -b <name> <path> origin/main` 會留下一個新坑（見 Context 6）。既然要重寫建立指令，順手把這個已經被記錄兩次的真實踩坑與修正步驟一起寫進去，避免文件教了「正確路徑」但留下「不完整的指令」。
+
+最終寫法用 `git worktree add --no-track -b <name> <path> origin/main`，不是「先讓 git 設 tracking、再用 `git config --unset` 解除」。後者在 round 1 review 時的初版寫法看似可行，但 PR review（Copilot）指出：`branch.autoSetupMerge` 非預設值的環境下 upstream 可能根本沒被設定，此時 `git config --unset` 對不存在的 key 會直接 exit 5，讓照抄 checklist 單行指令（`&&` 串接）的人以為整個流程失敗。`--no-track` 從源頭避免建立 tracking，指令更短、不依賴環境差異、也不需要任何事後修正步驟——是同一個目標下更簡單的做法，不是換句話說而已。
 
 ### D3. 額外納入 `eslint-templates.md`／`testing-config-templates.md`，但不擴大到 CI 相關檔案
 

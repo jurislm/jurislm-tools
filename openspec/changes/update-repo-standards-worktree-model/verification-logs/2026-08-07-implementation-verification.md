@@ -118,3 +118,32 @@ commit 範圍確認只觸及預期的 3 個檔案。
 
 本次 change 累計本地 review 2 輪（初始 1 次 + finding 修正觸發 1 次），未達
 3 次上限，且無待處理 finding，不再觸發後續本地 review。
+
+## PR review follow-up（2026-08-07，Copilot，PR #200）
+
+`gh pr create` 後明確要求一次 Copilot review（`requested_reviewers` API），
+收到 3 個 inline finding，依 `superpowers:receiving-code-review` 逐項核實
+（此為外部 PR review，不計入本地 Superpowers review 3 次上限）：
+
+1. **SKILL.md:88（`git config --unset` 在 upstream 未設定的環境會報錯）**：
+   已獨立驗證——`git config --unset` 對不存在的 key 固定 exit 5；`--no-track`
+   從源頭避免 tracking，端到端重新測試（`git worktree add --no-track` →
+   `git push -u`）exit 0。採納，改寫 SKILL.md 建立指令，移除兩行
+   `--unset`。
+2. **new-repo-checklist.md:12（同一問題，checklist 版本更脆弱因為 `&&`
+   串接）**：採納，同步改用 `--no-track`，checklist 單行指令不再有中途
+   報錯風險。
+3. **repo-standards-detail.md:39（worktree 目錄命名規則與 SKILL.md 不一致，
+   缺少 branch 含 `/` 時的替代規則）**：獨立核對兩份文件現行內容確認屬實。
+   採納，repo-standards-detail.md 補上與 SKILL.md 一致的例外說明。
+
+3 項全部採納並修正，design.md Context #6／D2 同步更新反映最終
+`--no-track` 做法（取代先前 round 1/2 review 驗證過但現已被更簡單方案取代
+的 unset 做法）。修正後重跑 `npm run validate`、
+`openspec validate --strict`、`claude plugin validate .` 三項全綠。
+
+CodeRabbit GitHub App 依使用者明確同意的資料範圍要求一次 review，回報
+「Review limit reached...Next review available in: 28 minutes」（帳號層級
+fair-usage 限制，非本次變更觸發），依政策不得重新要求 App；記錄後續改用
+CLI fallback 的處置見下一則 log。Codex 回報 usage limit（額度用盡），依既
+有規則略過。
