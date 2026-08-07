@@ -330,7 +330,7 @@ steps:
 3. **`.drone.yml` 加 `build` 與 `deploy` pipeline**（模板 A）+ 在 `lint-typecheck` / `test` / `build` 各步加同樣守衛；`deploy` 的 `depends_on` 涵蓋這三者。
 4. **驗證 Drone → Coolify 接線可用**（保留 auto-deploy 當安全網，合併一次觀察 Drone deploy pipeline 成功觸發 Coolify）。
 5. **確認 OK 後只關閉 PROD app 的 Coolify auto-deploy**（`is_auto_deploy_enabled = false`；**dev app 不動**）。⚠️ Coolify GET application API **不回傳**此欄位，無法讀取驗證 → 用「合併後是否只有一次部署」行為驗證。
-6. **選用：`.drone.yml` 加 `release-pr-auto-merge` pipeline**（`depends_on: [release-please, deploy]`、`concurrency: { limit: 1 }`），讓 release PR 自動合併，不需要每次手動合併（見下方「部署收尾」）。
+6. **`.drone.yml` 加 `release-pr-auto-merge` pipeline**（`depends_on: [release-please, deploy]`、`concurrency: { limit: 1 }`），讓 release PR 自動合併，不需要每次手動合併（模板 A 標準 6 pipeline 之一，非選用；見下方「部署收尾」）。
 
 ### 守衛邏輯（為何這樣寫）
 

@@ -59,7 +59,7 @@
 32. [ ] `deploy` + `lint-typecheck` + `test` + `build` 各 step 加 release-commit 守衛：`echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'`（**grep 全訊息、勿加 `head -1`**——merge commit 合併時 release 行在 body，head -1 漏判 → 誤部署）
 33. [ ] Drone repo-scope secret 加 `COOLIFY_DEPLOY_TOKEN`（`pull_request: false`）
 34. [ ] 先驗證 Drone→Coolify deploy API 接線可用，再**只關閉 PROD app 的 Coolify `is_auto_deploy_enabled`**（dev app 不動；避免 prod 靜默停止部署）
-35. [ ] `.drone.yml` 加 `release-pr-auto-merge` pipeline（`depends_on: [release-please, deploy]`、`concurrency: { limit: 1 }`）；腳本從 `entire`／`musicer` 的 `scripts/ci/release-pr-auto-merge.ts` 移植，只改常數，不重新設計驗證邏輯
+35. [ ] `.drone.yml` 加 `release-pr-auto-merge` pipeline（`depends_on: [release-please, deploy]`、`concurrency: { limit: 1 }`）；腳本優先從 `lexvision`（flat repo、最成熟）移植，`entire`／`musicer` 為次要參考，只改常數，不重新設計驗證邏輯
 36. [ ] 行為驗證：feature 合併進 main → prod 部署 **1 次**；release PR 合併 → prod 部署 **0 次**、且其自身檢查綠燈後由 `release-pr-auto-merge` 自動合併；dev 不受影響；並確認合併後 push webhook 有觸發 Drone build
 
 ## Code Review（人工 + bot；無自動 Claude review）

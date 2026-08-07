@@ -29,3 +29,12 @@
 - [x] 5.4 處理 Minor #2（模板 B「`build` pipeline 直跑 `cd apps/web && bun run build`」已過時，entire 現在建置 5 個 app）：已用 `entire/scripts/ci/run-gate.sh` 查證現況（web／login／ops／console／docs），修正該 bullet
 - [x] 5.5 Minor #1（`release-please` vs `release` pipeline 命名跨 repo 不一致）：reviewer 確認屬既有落差、非本次引入，且是更大範圍的命名一致性決定——記錄但不在本次修正
 - [x] 5.6 `openspec validate --strict` 確認四項 artifacts 仍通過
+
+## 6. GitHub Copilot review（PR #198 開出後）
+
+- [x] 6.1 Copilot 自動 review 完成（`COMMENTED`，3 則 inline comment），皆為合理發現：
+  - `SKILL.md:463` — 「`build` 與 `deploy` pipeline」與其後的 `clone: { disable: true }` 放同一句，容易誤讀成 build 也要 disable clone（但 build 需要完整 clone 才能執行建置）。已拆開明確標註只有 `deploy` 用 `clone: { disable: true }`
+  - `ci-workflow-templates.md:333` — 模板 A 開頭宣告 6 個 pipeline，但「設定步驟」第 6 步（`release-pr-auto-merge`）卻標「選用」，前後矛盾。已移除「選用」，`SKILL.md` 對應段落同步修正
+  - `new-repo-checklist.md:62` — `release-pr-auto-merge.ts` 移植來源提及 `entire`／`musicer`，未同步模板 A 已改的「lexvision 優先」推薦。已補上並標註優先順序
+- [x] 6.2 `openspec validate --strict` 確認四項 artifacts 仍通過
+- [ ] 6.3 回覆並 resolve PR #198 上全部 3 則 Copilot review thread
