@@ -147,3 +147,44 @@ CodeRabbit GitHub App 依使用者明確同意的資料範圍要求一次 review
 fair-usage 限制，非本次變更觸發），依政策不得重新要求 App；記錄後續改用
 CLI fallback 的處置見下一則 log。Codex 回報 usage limit（額度用盡），依既
 有規則略過。
+
+## CodeRabbit CLI review（2026-08-07，fallback，App rate-limited 後使用）
+
+App 依上方記錄回報 rate limit（非 quota exhausted，屬「明確回報 rate-limited」
+的政策情境），依規則停止等待 App、改用 CLI fallback（此為 CodeRabbit 管道
+唯一一次使用，用後即耗盡，不再重試）。
+
+Preflight：`command -v coderabbit`（`/Users/terrychen/.local/bin/coderabbit`，
+v0.7.2）、`coderabbit auth status --agent`（已登入，`currentOrg: jurislm`，
+與目標 repo owner 相符）、`coderabbit review --help`（確認實際 CLI 旗標為
+`--committed`，非 skill 文字所寫的 `--type committed`——採用當下 `--help`
+實際輸出，非照抄 skill 文件字面）。`git fetch origin main` 後確認 worktree
+clean，列出 `origin/main..HEAD` 全部 6 個 commit（含本次為整合 sibling PR
+#198 而做的 merge commit），逐一 `git show` 掃描 + 掃描完整 diff：僅命中
+`RELEASE_PLEASE_TOKEN`／`COOLIFY_DEPLOY_TOKEN` 等既有 secret 變數「名稱」
+（非數值），無實際 secret 外洩，通過預檢。
+
+執行 `coderabbit review --agent --committed --base origin/main`，回報 2 個
+finding，依 `superpowers:receiving-code-review` 逐項核實：
+
+1. **Major，SKILL.md 79-87（`<change-name>` 在建立指令中同時代表 branch
+   名稱與目錄名稱，未區分兩者在含 `/` 時的不同處理方式）**：核實成立——
+   指令本身沒有點出這個潛在混淆，只有下方「強制規則」bullet 有说明，容易
+   被漏看。**採納**，在指令區塊內就近補一行註解，直接指出兩處替換規則不同、
+   並指向下方完整範例；未採用 CLI 建議的「引入 `<branch-name>`／
+   `<worktree-name>` 兩套獨立 placeholder」全面改寫（涉及同步改 3 個檔案
+   的用語體系，對這個相對少見的邊界情況是不成比例的範圍擴張，就近註解已
+   解決核心疑慮）。
+2. **Minor，new-repo-checklist.md 12-14／27（MD029 ordered-list-prefix lint
+   錯誤）**：獨立執行 `npx markdownlint-cli` 對整份檔案驗證，確認 MD029
+   在檔案**每一個** `##` 段落的編號項目（約 40 行，item 1 到 42 全部）均會
+   觸發，不只是這次改到的行——證實這是全檔案既有的跨段落連續編號慣例
+   （用於 `references/ci-workflow-templates.md` 等其他文件的「見項 28」
+   之類交叉引用），非本次變更引入或惡化；且此檔案本來就不在
+   `package.json` 的 `lint:md` glob 範圍內（`npm run validate` 從未檢查過
+   這份檔案）。**不採納**：修正需要重構全檔案編號機制或另加 markdownlint
+   例外設定，屬於與「worktree／分支模型內容修正」無關的範圍擴張，且會
+   牽動其他文件對特定項目編號的交叉引用，風險與本次變更不成比例。
+
+修正 finding 1 後重跑 `npm run validate`、`openspec validate --strict`、
+`claude plugin validate .` 三項全綠。

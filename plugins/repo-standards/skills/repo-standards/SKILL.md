@@ -79,6 +79,9 @@ git branch --show-current  # 根目錄必須顯示 main
 # 建立 feature worktree（直接基於最新 main，不動主目錄）
 git fetch origin main
 git worktree add --no-track -b <change-name> .claude/worktrees/<change-name> origin/main
+# ⚠️ <change-name> 若含 "/"（如 feature/auth），-b 後面用原始名稱，
+# 但 .claude/worktrees/ 後面的目錄部分要換成 "-"（.claude/worktrees/feature-auth），
+# 兩處不是同一個字串，見下方「強制規則」的完整範例
 # ⚠️ start point 是 origin/main（remote-tracking ref），若省略 --no-track，
 # git 預設會把新分支的 upstream 設成 origin/main（是否真的觸發依
 # branch.autoSetupMerge 設定而定，不保證每個環境都一樣）；--no-track 從一開始
