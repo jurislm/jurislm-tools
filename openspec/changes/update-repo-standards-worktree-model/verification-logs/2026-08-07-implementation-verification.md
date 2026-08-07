@@ -98,3 +98,23 @@ review 本身已判定屬本次 proposal Non-goals 明確排除的範圍，非�
 修正後重跑 `npm run validate`、`openspec validate --strict`、
 `claude plugin validate .` 三項全綠，並重新 grep 確認 push.default 相關新增
 文字只出現在這兩處預期位置。
+
+## Code review follow-up（2026-08-07，第 2 輪，驗證第 1 輪修正）
+
+Dispatch 第二個 general-purpose subagent（`model: sonnet`）只 review 修正
+commit `681366f` 本身。結論 **Ready to merge: Yes**——兩項 Important finding
+均獨立重新在 scratch repo 驗證為已修正（含實際執行 checklist item 5 的完整
+指令鏈，確認 unset 後裸 push 正確變成「無 upstream」錯誤而非誤推 main）；
+commit 範圍確認只觸及預期的 3 個檔案。
+
+發現 1 個 LOW、非本次修正引入的殘留：`design.md` Context #6 仍保留修正前
+「導致裸 push 誤推 origin/main」的舊措辭，與 SKILL.md 已修正的敘述不一致。
+判斷為單純文字同步（把已經兩輪 review 各自獨立驗證過的事實，複製到第二個
+文件位置），不需要為此再開第 3 輪 review，直接修正：Context #6 補充
+「Code review 第 1 輪修正後重新查證」段落，改為準確描述（報錯拒絕，非靜默
+誤推；風險在照抄錯誤訊息建議指令）。修正後重跑 `openspec validate --strict`
+與 `npm run validate`，並 grep 全 change 目錄與 `plugins/repo-standards/`
+確認無殘留「誤推」相關的不準確敘述（僅剩已修正／記錄性質的正確用法）。
+
+本次 change 累計本地 review 2 輪（初始 1 次 + finding 修正觸發 1 次），未達
+3 次上限，且無待處理 finding，不再觸發後續本地 review。
