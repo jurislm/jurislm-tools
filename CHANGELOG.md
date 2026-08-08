@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.37.0](https://github.com/jurislm/jurislm-tools/compare/v1.36.3...v1.37.0) (2026-08-08)
+
+
+### 🚀 New Features
+
+* **jt-flow-one:** 明訂「修的過程中發現新問題」的處置 ([#204](https://github.com/jurislm/jurislm-tools/issues/204)) ([7bf2f95](https://github.com/jurislm/jurislm-tools/commit/7bf2f9551ce131a90a44341f27a83698cd463e39))
+
 ## [1.36.3](https://github.com/jurislm/jurislm-tools/compare/v1.36.2...v1.36.3) (2026-08-07)
 
 
