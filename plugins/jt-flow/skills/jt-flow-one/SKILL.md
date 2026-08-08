@@ -318,6 +318,32 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
 繼續；只有重大範圍擴張、重大架構變更、新外部依賴或新 production 風險才依【端到端
 授權契約】停下等使用者 GO。
 
+【發現新問題的處置｜一次只有一個交付在飛】修的過程中發現新問題時，預設是
+**更新當下這顆 issue 與這份提案**（把它補進 tasks 與 proposal 的範圍，
+依上方提案同步鐵則同步 artifact），**不建新 issue、不建新 worktree**。
+
+理由：修一個問題常會連帶發現多個。每個都另開追蹤與 worktree，範圍會不斷擴大
+——發現 10 個就變成 10 個 issue 加 10 個 worktree，維護成本遠大於問題本身，
+而且同時操作多個 worktree 本身就會出事（堆疊分支互相合併導致 diff 歸零）。
+
+只有同時滿足下列三者才另記 issue：與當前提案的交付目標無關（不同 capability）、
+不阻塞當前交付、且不修也不會讓當前交付變成半成品。即使如此也**只記 issue，
+不當場建 worktree**——等當前這顆合併回 main 之後，再依優先序決定要不要開。
+
+⚠️ **delegated 執行（由 `jt-flow-all` 委派）時的例外**：若新問題屬於不同
+capability **且會阻塞交付**，不得自行吸收進提案。那會改變 coordinator 已比對過的
+核准範圍與 affected areas，而分支本地的提案編輯**不會觸發它的 remote-main drift
+重建**——其他重疊的 item 會繼續停留在過期的 dependency snapshot 上被判為 `READY`。
+這種情況一律回報 coordinator 重新做 scope／relationship 驗證，必要時取得新的
+exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegated）時無此限制。
+
+**一次 `jt-flow-one` 執行只擁有一個 feature worktree**，從建立到合併回 main 為止
+都不另開第二個。（`jt-flow-all` 會把彼此獨立的 change 指派到不同 slot，那是它的
+排程決定，每個 slot 仍各自遵守本條——不構成本條的例外。）
+
+需要查看其他分支的內容時用 `git show <branch>:<path>`，不要 `cd` 進別的 worktree
+——那是「修 A 卻動到 B」的起點，也是堆疊分支互相污染的來源。
+
 0. 需求分析（不建檔案）
    - superpowers:using-superpowers 確認適用技能 → superpowers:brainstorming
      釐清意圖／範圍／非目標（只問影響架構或長期路徑的問題，其餘自行拍板）
@@ -384,6 +410,8 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
      superpowers:systematic-debugging 查根因，不直接改
    - 發現需要重構／整合既有模組、或有更好做法 → 依【提案同步鐵則】處理，
      再繼續寫 code
+   - 發現**新問題**（既有 bug、涵蓋缺口、過時內容）→ 依【發現新問題的處置】：
+     預設補進當下這顆 issue 與提案的範圍，不建新 issue、不建新 worktree
    - phase 完成 → 驗收方式依變更類型分流：涉及可執行程式碼（含測試）→
      本地行為性驗收（真的呼叫程式碼，非只跑測試）；純 Markdown／
      JSON／YAML／設定類變更（無執行期程式碼）→ 人工檢查內容結構與
