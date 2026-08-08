@@ -330,6 +330,13 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
 不阻塞當前交付、且不修也不會讓當前交付變成半成品。即使如此也**只記 issue，
 不當場建 worktree**——等當前這顆合併回 main 之後，再依優先序決定要不要開。
 
+⚠️ **delegated 執行（由 `jt-flow-all` 委派）時的例外**：若新問題屬於不同
+capability **且會阻塞交付**，不得自行吸收進提案。那會改變 coordinator 已比對過的
+核准範圍與 affected areas，而分支本地的提案編輯**不會觸發它的 remote-main drift
+重建**——其他重疊的 item 會繼續停留在過期的 dependency snapshot 上被判為 `READY`。
+這種情況一律回報 coordinator 重新做 scope／relationship 驗證，必要時取得新的
+exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegated）時無此限制。
+
 **一次 `jt-flow-one` 執行只擁有一個 feature worktree**，從建立到合併回 main 為止
 都不另開第二個。（`jt-flow-all` 會把彼此獨立的 change 指派到不同 slot，那是它的
 排程決定，每個 slot 仍各自遵守本條——不構成本條的例外。）
