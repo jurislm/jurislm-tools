@@ -38,7 +38,7 @@ const stateCases = [
     expectedState: "READY",
   },
   {
-    input: "Proposal GO missing or mismatched to change, proposal path, Issue, repository, or approved scope",
+    input: "Proposal GO missing or mismatched to change, proposal path, repository, or approved scope",
     expectedState: "AWAITING_GO",
   },
   {
@@ -141,8 +141,16 @@ test("queue inventory is built from a clean refreshed remote main snapshot", () 
   assert.match(snapshotSection, /fetch.*prune|fetch.*--prune/i);
   assert.match(snapshotSection, /clean detached snapshot.*<remote>\/main|乾淨.*detached.*<remote>\/main/is);
   assert.match(snapshotSection, /never from a dirty or stale\s+caller worktree/);
-  assert.match(snapshotSection, /paginate all open Issues/);
   assert.match(snapshotSection, /all active\s+OpenSpec changes/);
+});
+
+test("queue derives execution units from OpenSpec without requiring Issue inventory", () => {
+  const dispatchSection = getDispatchSection();
+
+  assert.match(snapshotSection, /read all active\s+OpenSpec changes/);
+  assert.doesNotMatch(snapshotSection, /paginate all open Issues/);
+  assert.doesNotMatch(snapshotSection, /primary Issue|Issue mapping/);
+  assert.doesNotMatch(dispatchSection, /Issue mapping|primary Issue/);
 });
 
 test("remote-main drift rebuilds the entire dependency snapshot before dispatch or permit", () => {
@@ -159,12 +167,12 @@ test("remote-main drift rebuilds the entire dependency snapshot before dispatch 
 
 test("proposal relations gate whole-change dispatch and derive descendant-only impact", () => {
   assert.match(snapshotSection, /Priority[\s\S]*Hard dependencies[\s\S]*Acceptance dependencies[\s\S]*External blockers[\s\S]*Affected areas[\s\S]*Production targets/);
-  assert.match(snapshotSection, /primary\/related Issue mapping/);
-  assert.match(snapshotSection, /whole active change is one execution unit/);
+  assert.doesNotMatch(snapshotSection, /Issue mapping|primary Issue/);
+  assert.match(snapshotSection, /Each whole active\s+change is one execution unit/);
   assert.match(scopeSection, /dispatch only a subset of a change's tasks/);
   assert.match(fixedStateSection, /Hard dependencies prevent dispatch[\s\S]*`SUCCESS`/);
   assert.match(fixedStateSection, /Acceptance dependencies permit work through[\s\S]*`INTEGRATION_READY`[\s\S]*integration permit/);
-  assert.match(snapshotSection, /external\s+blocker[\s\S]*`dispatch` or `integration` gate/);
+  assert.match(snapshotSection, /external\s+blocker[\s\S]*`dispatch`\s+or\s+`integration`\s+gate/);
   assert.match(snapshotSection, /Derive reverse\s+`Blocks` edges/);
   assert.match(snapshotSection, /affected descendants/);
 });
@@ -174,7 +182,7 @@ test("waiting, blocking, pausing, failure, and cancellation isolate unrelated re
   assert.match(fixedStateSection, /dispatch unrelated `READY` changes/);
   assert.match(fixedStateSection, /`PAUSED`; it consumes no item-owner capacity/);
   assert.match(snapshotSection, /acceptance-only and mixed hard\/acceptance cycles[\s\S]*block cycle members and their descendants/i);
-  assert.match(snapshotSection, /unmapped Issues without creating work or\s+blocking unrelated items/);
+  assert.match(snapshotSection, /unrelated Issues remain outside the execution graph|unrelated `READY` changes/);
 });
 
 test("coordinator reserves one slot and hands each ready item to jt-flow-one", () => {
@@ -183,7 +191,7 @@ test("coordinator reserves one slot and hands each ready item to jt-flow-one", (
   assert.match(dispatchSection, /Each remaining available slot may own one `READY` change/);
   assert.match(dispatchSection, /clean main checkout/);
   assert.match(dispatchSection, /`jt-flow-one` to create and own the item's\s+isolated feature worktree/);
-  assert.match(dispatchSection, /change identifier,\s+proposal[\s\S]*Issue mapping, target repository, approved scope,\s+durable[\s\S]*proposal GO evidence, dependency snapshot revision, integration policy,\s+and CodeRabbit authorization context/);
+  assert.match(dispatchSection, /change identifier,\s+proposal[\s\S]*target repository, approved scope,\s+durable[\s\S]*proposal GO evidence, dependency snapshot revision, integration policy,\s+and CodeRabbit authorization context/);
   assert.match(dispatchSection, /primary agent performs coordinator dispatch, not each item's delivery/);
 });
 

@@ -111,10 +111,18 @@ Some legacy detail specs remain historical. For current marketplace membership, 
 
 `jt-flow` depends on externally installed `superpowers:*` Skills. Preserve that dependency unless a proposal explicitly replaces it.
 
+For this repository's `jt-flow-one`, OpenSpec's `proposal`／`design`／`specs`／`tasks` are the sole
+current requirement, design, and implementation-plan record. Do not create a parallel planning document.
+`jt-flow-one` MUST NOT invoke `superpowers:using-superpowers`,
+`superpowers:brainstorming`, or `superpowers:writing-plans`: those planning
+pipelines would create the prohibited parallel record. It retains the scoped
+Superpowers execution and verification skills required by its approved workflow.
+
 For `jt-flow-one`, proposal GO is the sole normal-path checkpoint. Explicit
-invocation authorizes issue and OpenSpec preparation; proposal GO authorizes
+invocation authorizes OpenSpec preparation; an existing Issue may be recorded
+as optional external context but is never required. Proposal GO authorizes
 implementation, commits, push, PR, disclosed reviews, finding disposition,
-merge, deployment verification, issue closure, and archive. Do not add another
+merge, deployment verification, and archive. Do not add another
 normal authorization prompt for those actions. After GO, pause only for
 evidence-unresolved target or behavior ambiguity, material scope or architecture
 change or new external dependency or production risk, secrets or sensitive
@@ -136,8 +144,8 @@ For `jt-flow-all`, resolve the actual remote, fetch and prune it, then derive
 the queue from a clean detached snapshot of refreshed remote `main`, never a
 dirty or stale caller worktree. Every new or updated proposal must declare
 Delivery Relations: priority, hard dependencies, acceptance dependencies,
-external blockers with a `dispatch` or `integration` gate, affected areas,
-production targets, and primary/related Issue mapping. Derive reverse blockers
+external blockers with a `dispatch` or `integration` gate, affected areas, and
+production targets. Optional external links are descriptive only. Derive reverse blockers
 and parallel candidates from those relations; do not infer missing data as
 safe or require authors to duplicate derived edges. Missing, contradictory,
 cyclic, or unverifiable data blocks only its item and descendants with a
@@ -182,8 +190,8 @@ only when the App cannot produce a review, and stop the fallback as soon as
 either channel produces a real review.
 
 Only `jt-flow-one` owns local code review and uses
-`superpowers:requesting-code-review`; `jt-flow-all` only orchestrates its issue
-queue and must not initiate or own an additional review. Local review permits
+`superpowers:requesting-code-review`; `jt-flow-all` only orchestrates its active
+OpenSpec change queue and must not initiate or own an additional review. Local review permits
 at most 3 total runs per PR or change: an initial run once the implementation
 is ready, plus up to 2 further runs each triggered only by an accepted finding
 that changes code; after the 3rd run, no further local review occurs even if

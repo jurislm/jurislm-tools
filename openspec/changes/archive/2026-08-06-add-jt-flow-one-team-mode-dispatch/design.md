@@ -13,8 +13,7 @@ not agent dispatch). Claude Code ships an
 experimental Agent Teams feature (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`):
 named, addressable agents plus `SendMessage` for direct mid-run messaging.
 `jt-flow-one` must also keep running unmodified on Codex and on Claude Code
-sessions without the flag. Research (full evidence trail in
-`docs/superpowers/specs/2026-08-06-jt-flow-one-team-mode-dispatch-design.md`)
+sessions without the flag. Research recorded in this archived OpenSpec change
 confirmed Codex's native multi-agent mechanism is hub-and-spoke ("Subagent
 workflow") with no peer-to-peer messaging or shared task list, and that
 community claims of a shipped Codex "team mode" do not hold up: an unmerged

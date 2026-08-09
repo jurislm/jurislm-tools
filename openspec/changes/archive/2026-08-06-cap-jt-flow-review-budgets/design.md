@@ -11,9 +11,8 @@ already capped at one effective review per PR/change. Codex
 and already reviews PRs in this repository automatically, but `jt-flow-one`
 has no policy for it at all.
 
-Full research and rationale for every decision below is recorded in
-`docs/superpowers/specs/2026-08-06-jt-flow-review-budget-caps-design.md`,
-produced during brainstorming with the user before this proposal existed.
+Full research and rationale for every decision below is recorded in this
+archived change's `design.md` and verification logs.
 
 ## Goals / Non-Goals
 

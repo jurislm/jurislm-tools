@@ -15,8 +15,8 @@ or host-specific invocation API. `jt-flow-one` remains the single owner of an
 item's implementation, isolated worktree, proposal gates, quality review, PR,
 CI, external-review disposition, merge, production verification, and archive.
 
-Never infer a missing relationship as safe, create an Issue/change for an
-unmapped record, dispatch only a subset of a change's tasks, bypass an exact
+Never infer a missing relationship as safe, create work for an unmapped
+record, dispatch only a subset of a change's tasks, bypass an exact
 proposal GO, or duplicate `jt-flow-one` implementation quality review.
 
 ## CodeRabbit authorization handoff
@@ -61,15 +61,14 @@ required checks），依既有規則執行，不適用本段的自由裁量。
    caller worktree. Prefer native workspace isolation; otherwise create a
    validated temporary detached git worktree, use it read-only, record the map,
    then remove it.
-2. From that same snapshot, paginate all open Issues and read all active
-   OpenSpec changes. Each whole active change is one execution unit and names
-   one primary Issue. Classify every other open Issue as related, deferred, or
-   unmapped. Report deferred or unmapped Issues without creating work or
-   blocking unrelated items.
+2. From that same snapshot, read all active OpenSpec changes. Each whole active
+   change is one execution unit. An existing GitHub Issue MAY be recorded as
+   optional external context, but open-Issue inventory is not part of queue
+   eligibility; unrelated Issues remain outside the execution graph.
 3. Inventory every current proposal's `Priority`, `Hard dependencies`,
    `Acceptance dependencies`, `External blockers`, `Affected areas`,
-   `Production targets`, and primary/related Issue mapping. Each external
-   blocker must declare a `dispatch` or `integration` gate. Derive reverse
+   `Production targets`. Each external blocker must declare a `dispatch` or
+   `integration` gate. Derive reverse
    `Blocks` edges and candidate parallelism from those records; authors do not
    duplicate them. `mvp-critical` ranks before `supporting`; `deferred` stays
    paused. Existing recorded order is only a tie-breaker.
@@ -106,7 +105,7 @@ Record each execution unit using exactly one of `AWAITING_GO`, `READY`,
 | Fixed input | Expected state and policy |
 | --- | --- |
 | Complete, consistent relations; exact proposal GO; every hard predecessor is `SUCCESS` | `READY` |
-| Proposal GO missing or mismatched to change, proposal path, Issue, repository, or approved scope | `AWAITING_GO`; descendants wait |
+| Proposal GO missing or mismatched to change, proposal path, repository, or approved scope | `AWAITING_GO`; descendants wait |
 | A `READY` change is assigned to an item owner | `ACTIVE`; it consumes that owner's one capacity slot |
 | Valid but unresolved hard dependency or dispatch-gated external blocker | `WAITING`; record what, why, owner, resume condition, and affected descendants |
 | Required relationship absent, contradictory, invalid, or cyclic | `BLOCKED`; record correction owner, reason, resume condition, and affected descendants |
@@ -138,7 +137,7 @@ approved successor change has its own exact GO.
 The primary agent is the coordinator and reserves one available agent slot.
 Each remaining available slot may own one `READY` change. Before any delegated
 fetch or feature-worktree mutation, compare durable proposal GO with the exact
-change identifier, proposal path, primary Issue, target repository, and approved
+change identifier, proposal path, target repository, and approved
 scope. A missing, mismatched, or unverifiable field returns item-local
 `AWAITING_GO` before any worktree creation; descendants wait while unrelated
 `READY` changes continue.
@@ -153,7 +152,7 @@ without waiting for active independent work to finish.
 
 The same primary agent performs coordinator dispatch, not each item's delivery.
 For the current item, invoke `jt-flow-one` with the exact change identifier,
-proposal path, primary/related Issue mapping, target repository, approved scope,
+proposal path, target repository, approved scope,
 durable proposal GO evidence, dependency snapshot revision, integration policy,
 and CodeRabbit authorization context. In the durable record this is the exact
 `change identifier`、`proposal 路徑`、`<owner>/<repo>`、`核准範圍` of the 目前 item;
