@@ -1,7 +1,9 @@
 # jt-flow-queue-delegation Specification
 
 ## Purpose
-TBD - created by archiving change delegate-jt-flow-all-to-one. Update Purpose after archive.
+Define dependency-aware queue inventory, whole-change delegation, bounded
+parallel delivery, serialized integration, and durable handoff rules for
+`jt-flow-all` delegating work to `jt-flow-one`.
 ## Requirements
 ### Requirement: Ordered queue delivery delegates to the single-request Skill
 After the coordinator confirms a dependency snapshot, `jt-flow-all` SHALL invoke `jt-flow-one` once for each whole `READY` active change within available item-owner capacity, passing the exact change identifier, proposal path, Issue mapping, target repository, approved scope, durable proposal GO evidence, dependency snapshot revision, integration policy, and CodeRabbit authorization context. It MUST NOT dispatch a subset of a change's tasks. An item result other than `SUCCESS` SHALL affect only that item and its dependency descendants; unrelated `READY` items SHALL continue.

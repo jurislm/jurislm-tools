@@ -2,14 +2,14 @@ schema: spec-driven
 
 context: |
   Tech stack: Claude Code Plugin Marketplace (YAML/Markdown only, no compilation step)
-  Domain: jurislm-tools — 12-plugin marketplace for JurisLM development workflows
+  Domain: jurislm-tools — 9-plugin marketplace for JurisLM development workflows
 
   Plugin types:
-    - Base: hooks + rules only (hooks-and-rules)
-    - Hybrid: MCP Server (.mcp.json via npx @jurislm/<name>-mcp@latest) + skill + command
-    - Skill: SKILL.md with optional command (auto-activate or manual)
-    - Cmd+Agent: command delegates to agent (plan → planner, tdd → tdd-guide)
-    - Command: command only, no skill or agent (learn-eval)
+    - Credential-bearing local MCP: exact-version .mcp.json launcher + skill (coolify, hetzner, langfuse)
+    - OAuth remote MCP: remote server configuration + skills (higgsfield)
+    - Skill: SKILL.md with optional compatibility command (repo-standards, podcast-to-blog, codebase-sync, learn-eval)
+    - jt-flow: jt-flow-one and jt-flow-all skills for single-request and queue delivery
+    - Commands are optional entry points; they are not separate plugin categories or sources of truth
 
   Version management: Release Please automation
     feat: → minor bump, fix: → patch bump
@@ -21,13 +21,20 @@ context: |
 
   Spec structure (openspec/specs/):
     _overview/  — marketplace-architecture, openspec-system
-    infra/      — infra-overview, coolify-detail, hetzner-detail
-    observability/ — langfuse-detail
-    dev-workflow/  — dev-workflow-overview, plan-detail, tdd-detail, pr-review-detail
-    docs-and-standards/ — repo-standards-detail, codebase-sync-detail
+    ci-platform/ — Drone validation, release, and merge policy
     content/    — podcast-to-blog-detail
+    development-dependency-security/ — npm development dependency policy
+    docs-and-standards/ — repo-standards-detail, codebase-sync-detail, standards requirements
+    github-flow-entry-documentation/ — entry-document branch-model requirements
+    infra/      — infra-overview, coolify-detail, hetzner-detail
+    jt-flow-authorization/ — jt-flow authorization
+    jt-flow-one-team-mode-dispatch/ — jt-flow team-mode dispatch
+    jt-flow-queue-delegation/ — jt-flow queue delegation
+    jt-flow-review-orchestration/ — jt-flow review orchestration
+    jt-flow-single-skill-naming/ — jt-flow single-request Skill naming
     learning/   — learn-eval-detail
-    discipline/ — hooks-and-rules-detail
+    observability/ — langfuse-detail
+    plugin-packaging-integrity/ — marketplace and launcher invariants
 
 rules:
   proposal:

@@ -73,13 +73,14 @@ exact range in contributor-facing README and CLAUDE validation guidance.
 
 ### Requirement: Dependency changes remain narrowly scoped
 
-The committed package diff MUST contain only the direct lint dependency update
-and the transitive lockfile changes required by that update. It MUST NOT alter
-release-managed versions or unrelated dependencies.
+The committed package diff MUST contain only the intended direct development
+dependency update and the transitive lockfile changes required by that update.
+It MUST NOT alter production or plugin runtime dependencies, release-managed
+versions, or unrelated packages.
 
 #### Scenario: Package diff is reviewed
 
 - **WHEN** the dependency update is ready to commit
 - **THEN** reviewers can verify from `package.json` and `package-lock.json` that
-  no unrelated package, lockfile root metadata, or release-managed version
-  changed
+  no production/runtime dependency, unrelated package, or release-managed
+  version changed

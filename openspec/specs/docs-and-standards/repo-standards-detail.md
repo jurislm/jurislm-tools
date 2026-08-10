@@ -8,16 +8,17 @@
 
 | 產物 | 路徑 | 說明 |
 |------|------|------|
-| `repo-standards` skill | `plugins/repo-standards/skills/repo-standards/SKILL.md` | 規範主體（473 行，最大 skill） |
+| `repo-standards` skill | `plugins/repo-standards/skills/repo-standards/SKILL.md` | 規範主體 |
 | `/repo-standards` command | `plugins/repo-standards/commands/repo-standards.md` | 入口 command |
 | code-review-setup reference | `plugins/repo-standards/skills/repo-standards/references/code-review-setup.md` | Copilot 自訂指示設定（自動 Claude review 已移除，2026-06-02）|
 | eslint-templates reference | `plugins/repo-standards/skills/repo-standards/references/eslint-templates.md` | ESLint 設定模板 |
+| ci-workflow-templates reference | `plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md` | Flat-repo 與 monorepo Drone CI 模板 |
 
 ## Repo 分類
 
 | 類型 | 適用 Repo | release-type | Runtime | ESLint 基礎 |
 |------|---------|-------------|---------|------------|
-| Next.js | lawyer, lexvision, stock | `node` | Bun | `eslint-config-next` |
+| Next.js | lawyer, stock | `node` | Bun | `eslint-config-next` |
 | Node/TS | coolify-mcp, hetzner-mcp, langfuse-mcp, judicial-mcp | `node` | Bun | `@eslint/js` + `typescript-eslint` |
 | Plugin | jurislm-tools, jurislm-plugins | `simple` | — | 無 TS 原始碼，不需要 ESLint |
 | Monorepo | entire | `node` | Bun | `@entire/eslint-config` |
@@ -60,7 +61,7 @@ Plugin repo（`release-type: simple`）特別規則：
 
 ## 觸發條件
 
-使用者詢問「如何設定新 repo」、「release workflow 怎麼寫」、「worktree 怎麼設定」、「ESLint config 怎麼寫」或需要設定 JurisLM 系列 repo 的標準化時啟動。
+使用者詢問「如何設定新 repo」、「release workflow 怎麼寫」、「worktree 怎麼設定」、「ESLint config 怎麼寫」、AGENTS.md 與 CLAUDE.md 同步、Drone/deploy gating、Bun/Vitest、code review workflow，或需要設定 JurisLM 系列 repo 的標準化時啟動。
 
 ## 與其他 plugin 的關係
 

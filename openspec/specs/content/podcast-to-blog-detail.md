@@ -2,33 +2,34 @@
 
 ## Purpose
 
-描述 `podcast-to-blog` plugin 的設計內容，將 Apple Podcasts 連結轉換為逐字稿並生成繁體中文部落格文章。
+描述 `podcast-to-blog` plugin 的設計內容，將 Apple Podcasts 連結、音檔路徑或 RSS feed 轉換為逐字稿並生成繁體中文部落格文章。
 
 ## 產物
 
 | 產物 | 路徑 | 說明 |
 |------|------|------|
-| `podcast-to-blog` skill | `plugins/podcast-to-blog/skills/podcast-to-blog/SKILL.md` | 執行邏輯（155 行） |
+| `podcast-to-blog` skill | `plugins/podcast-to-blog/skills/podcast-to-blog/SKILL.md` | 執行邏輯 |
 | `/podcast-to-blog` command | `plugins/podcast-to-blog/commands/podcast-to-blog.md` | 入口 command |
-| `fetch_podcast_audio.py` | `plugins/podcast-to-blog/skills/podcast-to-blog/scripts/fetch_podcast_audio.py` | 音檔下載腳本（229 行） |
-| `transcribe.py` | `plugins/podcast-to-blog/skills/podcast-to-blog/scripts/transcribe.py` | Whisper 轉錄腳本（122 行） |
+| `fetch_podcast_audio.py` | `plugins/podcast-to-blog/skills/podcast-to-blog/scripts/fetch_podcast_audio.py` | 音檔下載腳本 |
+| `transcribe.py` | `plugins/podcast-to-blog/skills/podcast-to-blog/scripts/transcribe.py` | Whisper 轉錄腳本 |
 | blog-style-guide reference | `plugins/podcast-to-blog/skills/podcast-to-blog/references/blog-style-guide.md` | 文章撰寫風格指引 |
 
 ## 執行流程
 
 ```
-Apple Podcasts URL
+Apple Podcasts URL / audio file path / RSS feed URL
   ↓ fetch_podcast_audio.py
     → 從 URL 提取 podcast ID / episode ID
     → 呼叫 Apple iTunes Lookup API 取得 RSS Feed URL
     → 解析 RSS Feed 找 audio enclosure URL
     → 下載音檔到 /tmp/podcast_audio.mp3
   ↓ transcribe.py（Whisper 本地轉錄）
-    → 輸出 /tmp/transcript.txt（逐字稿）
+    → 輸出 /tmp/podcast_transcript.txt（逐字稿）
   ↓ Claude 生成部落格文章
     → 繁體中文，台灣用語
-    → 500-1500 字（依集數長度調整）
-    → 格式：標題 + 前言 + H2 段落（3-5 個）+ 結語
+    → 提取 3-7 個最有啟發性的觀點
+    → 輸出 Markdown 至 /tmp/podcast-blog-YYYYMMDD.md
+  ↓ （可選）詢問後存入 Notion
 ```
 
 ## 外部依賴（Python 套件）
@@ -61,4 +62,4 @@ SCRIPT_DIR=$(find ~/.claude/plugins -path "*/podcast-to-blog/scripts" -type d 2>
 
 ## 觸發條件
 
-使用者提供 Apple Podcasts URL 並說「podcast 轉文章」、「podcast 逐字稿」、「podcast to blog」或類似詞語時啟動。
+使用者提供 Apple Podcasts URL、音檔路徑或 RSS feed URL，並說「podcast 轉文章」、「podcast 逐字稿」、「podcast to blog」或類似詞語時啟動。

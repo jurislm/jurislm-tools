@@ -9,25 +9,27 @@
 | 產物 | 路徑 | 說明 |
 |------|------|------|
 | MCP Server | `plugins/langfuse/.mcp.json` | `@jurislm/langfuse-mcp@1.3.2` |
-| `langfuse` skill | `plugins/langfuse/skills/langfuse/SKILL.md` | 使用指南（124 行） |
+| `langfuse` skill | `plugins/langfuse/skills/langfuse/SKILL.md` | 使用指南 |
 | api-reference | `plugins/langfuse/skills/langfuse/references/api-reference.md` | 工具完整參數說明 |
 
 ## 外部依賴
 
 ```json
 {
-  "command": "npx",
-  "args": ["-y", "@jurislm/langfuse-mcp@1.3.2"],
-  "env": {
-    "LANGFUSE_PUBLIC_KEY": "${LANGFUSE_PUBLIC_KEY}",
-    "LANGFUSE_SECRET_KEY": "${LANGFUSE_SECRET_KEY}",
-    "LANGFUSE_HOST": "${LANGFUSE_HOST}"
-  }
+  "command": "zsh",
+  "args": [
+    "-lc",
+    "exec env -i HOME=\"$HOME\" PATH=\"$PATH\" USER=\"$USER\" SHELL=\"$SHELL\" TERM=\"$TERM\" LOGNAME=\"$LOGNAME\" LANGFUSE_PUBLIC_KEY=\"$LANGFUSE_PUBLIC_KEY\" LANGFUSE_SECRET_KEY=\"$LANGFUSE_SECRET_KEY\" LANGFUSE_HOST=\"$LANGFUSE_HOST\" npx -y @jurislm/langfuse-mcp@1.3.2"
+  ]
 }
 ```
 
 npm 套件：`@jurislm/langfuse-mcp@1.3.2`（jurislm/langfuse-mcp repo）
 JurisLM 使用 `LANGFUSE_HOST=https://us.cloud.langfuse.com`
+
+MCP launcher 使用 login shell 與 `env -i` allowlist。三個 Langfuse 變數
+必須放在 `~/.zshenv`，不可只放在 `~/.zshrc`；`~/.zshenv`、`~/.zprofile`、
+`~/.zlogin` 不得向 stdout 輸出內容，以免污染 stdio JSON-RPC handshake。
 
 ## MCP 工具分類
 

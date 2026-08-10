@@ -8,7 +8,7 @@
 
 | 產物 | 路徑 | 說明 |
 |------|------|------|
-| `codebase-sync` skill | `plugins/codebase-sync/skills/codebase-sync/SKILL.md` | 執行邏輯（191 行） |
+| `codebase-sync` skill | `plugins/codebase-sync/skills/codebase-sync/SKILL.md` | 自動偵測、文件審計、最小差異更新與驗證 |
 | `/codebase-sync` command | `plugins/codebase-sync/commands/codebase-sync.md` | 入口 command（無需參數） |
 | templates reference | `plugins/codebase-sync/skills/codebase-sync/references/templates.md` | README/CLAUDE.md 章節模板 |
 
@@ -18,14 +18,19 @@
 
 ## 執行流程
 
-### Step 1：探索 codebase 現況
+### Step 0：自動化偵測
 
-收集以下資訊：
-- 整體目錄結構（`find . -maxdepth 3 -type d`，排除 `.git`、`node_modules`、`.next`、`dist`、`.worktrees`）
-- `package.json` 的 name / version / scripts / dependencies
-- 現有 README.md 與 CLAUDE.md 全文
+先記錄 repository 結構、`package.json`、plugin manifests、README/CLAUDE.md 中的 scripts 與路徑差異、版本現況、近期 Git history，以及新增／刪除檔案。若存在 `.env.example`，也比對文件與範例中的環境變數。
 
-### Step 2：識別過時內容
+### Step 1：深度讀取 codebase 現況
+
+讀取現有 README.md、CLAUDE.md、marketplace/plugin manifests、package metadata，以及需要核對的子目錄文件。
+
+### Step 2：輸出完整 Audit Report
+
+根據偵測與讀取結果，必須輸出完整報告，涵蓋目錄、scripts、已刪除引用、未記載的新增項目、描述準確性、plugin/skill 清單、版本、Git 變動與環境變數比對。每個待修項目都要有可重複的 evidence。
+
+### Step 3：識別過時內容
 
 | 檢查項目 | README.md | CLAUDE.md |
 |---------|-----------|-----------|
@@ -46,7 +51,7 @@
 - 版本號落後於 `package.json` / `plugin.json`
 - 描述已移除的功能
 
-### Step 3：更新文件
+### Step 4：更新文件
 
 對 README.md 與 CLAUDE.md 進行最小差異更新（不重寫整份文件）：
 - 移除已不存在的功能描述
@@ -55,9 +60,9 @@
 
 **不修改**：設計原則、架構決策說明、使用者手動維護的段落（如 gotchas 或歷史紀錄）。
 
-### Step 4：回報變更摘要
+### Step 5：驗證與回報
 
-列出所有修改，讓使用者確認。
+重新確認新增的路徑與指令存在、JSON 可解析，並依 repository 的可用驗證命令執行檢查；最後列出所有修改與對應 finding。
 
 ## 與其他 plugin 的關係
 

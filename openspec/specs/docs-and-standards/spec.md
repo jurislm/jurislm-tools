@@ -2,7 +2,10 @@
 
 ## Purpose
 
-Define the standards and guidance that the `repo-standards` and `codebase-sync` plugins teach and apply across JurisLM repositories, and require that guidance to stay aligned with each repo's actual, currently supported conventions.
+Define the standards and guidance that the `repo-standards` plugin teaches and
+applies across JurisLM repositories, and require that guidance to stay aligned
+with each repo's actual, currently supported conventions. The `codebase-sync`
+workflow is documented separately in its detail spec.
 
 ## Requirements
 
@@ -26,3 +29,32 @@ Define the standards and guidance that the `repo-standards` and `codebase-sync` 
 - **WHEN** a repo follows repo-standards' `.gitignore`/`.prettierignore`/ESLint/`vitest.config.ts` guidance for excluding worktree directories
 - **THEN** `.claude/worktrees/` is not added to the repo's committed `.gitignore`
 - **AND** `.claude/worktrees/**` (or the equivalent pattern for that tool) is added to `.prettierignore`, ESLint ignores, and `vitest.config.ts` exclude
+
+### Requirement: Flat-repo CI template stays synchronized with its reference repo
+
+`repo-standards`'s Coolify web app CI template (Template A) SHALL list every
+Drone pipeline that its stated rationale requires, and that list SHALL be
+checked against `jurislm/entire`'s actual `.drone.yml` whenever either is known
+to have changed. The monorepo template (Template B) SHALL state the current
+pipeline count and names for `jurislm/entire`, since it explicitly mirrors that
+repo rather than defining independent rationale.
+
+#### Scenario: Template A pipeline list matches its own stated rationale
+
+- **WHEN** Template A documents a rationale for a pipeline category, such as
+  build-only failures not being caught by lint or typecheck
+- **THEN** the corresponding pipeline appears in Template A's pipeline list and
+  example YAML
+
+#### Scenario: Template B pipeline count matches entire's actual `.drone.yml`
+
+- **WHEN** someone compares Template B's stated pipeline list and count against
+  `jurislm/entire`'s current `.drone.yml`
+- **THEN** the names and count match, or any intentional omission is explicitly
+  called out rather than silently missing
+
+#### Scenario: A repo adopting Template A gets deploy-gating and build verification
+
+- **WHEN** a new flat-repo Coolify web app is set up following Template A
+- **THEN** its `.drone.yml` includes a `build` pipeline catching build-only
+  failures and a `release-pr-auto-merge` pipeline automating release PR merges

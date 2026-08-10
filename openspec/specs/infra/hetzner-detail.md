@@ -17,15 +17,19 @@
 
 ```json
 {
-  "command": "npx",
-  "args": ["-y", "@jurislm/hetzner-mcp@1.5.0"],
-  "env": {
-    "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}"
-  }
+  "command": "zsh",
+  "args": [
+    "-lc",
+    "exec env -i HOME=\"$HOME\" PATH=\"$PATH\" USER=\"$USER\" SHELL=\"$SHELL\" TERM=\"$TERM\" LOGNAME=\"$LOGNAME\" HETZNER_API_TOKEN=\"$HETZNER_API_TOKEN\" npx -y @jurislm/hetzner-mcp@1.5.0"
+  ]
 }
 ```
 
 npm 套件：`@jurislm/hetzner-mcp@1.5.0`（jurislm/hetzner-mcp repo）
+
+MCP launcher 使用 login shell 與 `env -i` allowlist。`~/.zshenv`、
+`~/.zprofile`、`~/.zlogin` 不得向 stdout 輸出內容，以免污染 stdio
+JSON-RPC handshake；token 應只放在 `~/.zshenv`。
 
 ## MCP 工具分類
 
@@ -124,3 +128,16 @@ mount -a
 ## 環境變數
 
 - `HETZNER_API_TOKEN`：Hetzner Cloud API token，寫入 `~/.zshenv`（**不是** `HCLOUD_TOKEN`）
+
+## Storage Box 邊界
+
+Storage Box 的容量、快照、子帳號與保護設定使用 MCP；實際檔案傳輸
+（SFTP、SCP、rsync、borg）不由 MCP 執行，必須直接使用 SSH/SFTP。
+備份傳輸使用 port 23；port 22 是一般 shell 存取，不能用來取代 port 23
+的傳輸流程。備份 pipeline 在傳檔前應先以
+`hetzner_assert_storage_box_space` 檢查可用空間。
+
+## 不支援的功能
+
+此 MCP 不管理 Firewalls、Projects、Load Balancers、Floating IPs、Private
+Networks 或帳單；這些操作改用 Hetzner Console、hcloud CLI 或 SSH/SFTP。
