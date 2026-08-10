@@ -6,43 +6,50 @@ parallel delivery, serialized integration, and durable handoff rules for
 `jt-flow-all` delegating work to `jt-flow-one`.
 ## Requirements
 ### Requirement: Ordered queue delivery delegates to the single-request Skill
-After the coordinator confirms a dependency snapshot, `jt-flow-all` SHALL invoke `jt-flow-one` once for each whole `READY` active change within available item-owner capacity, passing the exact change identifier, proposal path, Issue mapping, target repository, approved scope, durable proposal GO evidence, dependency snapshot revision, integration policy, and CodeRabbit authorization context. It MUST NOT dispatch a subset of a change's tasks. An item result other than `SUCCESS` SHALL affect only that item and its dependency descendants; unrelated `READY` items SHALL continue.
+After the coordinator confirms a dependency snapshot, `jt-flow-all` SHALL
+invoke `jt-flow-one` once for each whole `READY` active OpenSpec change within
+available item-owner capacity, passing the exact change identifier, proposal
+path, target repository, approved scope, durable proposal GO evidence,
+dependency snapshot revision, integration policy, and CodeRabbit authorization
+context. An optional external link MAY be passed as descriptive metadata. It
+MUST NOT dispatch a subset of a change's tasks. An item result other than
+`SUCCESS` SHALL affect only that item and its dependency descendants;
+unrelated `READY` items SHALL continue.
 
-#### Scenario: Independent changes are dispatched together
+#### Scenario: Active change is delegated without an Issue
 
-- **WHEN** two approved active changes have no hard dependency, external blocker, or overlapping integration target and item-owner capacity is available
-- **THEN** the coordinator dispatches both changes without waiting for either to complete first
+- **WHEN** an active OpenSpec change is `READY` and has no external Issue link
+- **THEN** the coordinator passes the OpenSpec identity and durable proposal GO
+  evidence to `jt-flow-one` and dispatches the whole change
 
-#### Scenario: A blocked item does not stop independent work
+### Requirement: Active changes use OpenSpec delivery records before queueing
 
-- **WHEN** one active item becomes `BLOCKED` and another item has no dependency path from it
-- **THEN** the blocked item records its blocker and descendants while the independent item remains eligible for dispatch
+`jt-flow-all` SHALL read all active OpenSpec changes from the same clean
+dependency snapshot and SHALL derive the queue from those changes and their
+Delivery Relations. Each whole active change SHALL remain one execution unit.
+Open Issue inventory, primary Issue mapping, and Issue creation MUST NOT be
+required for queue eligibility. An existing Issue MAY be reported or linked as
+external context, but an unrelated or missing Issue MUST NOT create, block, or
+pause an otherwise valid active change.
 
-#### Scenario: Confirmed queue advances in order
+#### Scenario: Active change has no Issue
 
-- **WHEN** a legacy ranked queue is confirmed for multiple active changes
-- **THEN** rank is used only as priority and a deterministic tie-breaker among otherwise equivalent items; every relation-complete `READY` change remains eligible for bounded parallel dispatch, and a non-success result affects only that item and its dependency descendants
-
-### Requirement: Active changes have tracking issues before queueing
-`jt-flow-all` SHALL paginate all open Issues and read all active OpenSpec changes from the same clean dependency snapshot. Each whole active change SHALL remain one execution unit and identify one primary tracking Issue; other open Issues SHALL be classified as related, deferred, or unmapped. The workflow MUST NOT automatically create an Issue or change merely because an unmapped record exists.
+- **WHEN** an active OpenSpec change has complete valid relation metadata and no
+  linked GitHub Issue
+- **THEN** it remains eligible for `READY` or the applicable dependency state
+- **AND** the coordinator does not create an Issue or mark the item `BLOCKED`
 
 #### Scenario: Open Issue has no active change
 
-- **WHEN** inventory finds an open Issue that is not primary or related to an active change
-- **THEN** the coordinator reports it as deferred or unmapped without creating work and without blocking unrelated active changes
-
-#### Scenario: Only part of an oversized change is ready
-
-- **WHEN** some tasks in one active change are ready but other tasks have unsatisfied dependencies
-- **THEN** the coordinator does not partially dispatch it and requires an approved reduced proposal or separately approved successor change
-
-#### Scenario: Active change lacks an issue
-
-- **WHEN** an active change lacks a valid primary tracking Issue mapping
-- **THEN** only that item is `BLOCKED` with a correction owner and resume condition; the workflow does not automatically create an Issue or change, and unrelated ready items continue
+- **WHEN** an open Issue is not linked to an active OpenSpec change
+- **THEN** it remains outside the execution graph and does not block unrelated
+  active changes
 
 ### Requirement: Single-request delivery workflow has one owner
-The `jt-flow-all` Skill MUST NOT duplicate the single-request issue confirmation, proposal, worktree, implementation, review, merge, deployment, archive, or proposal-synchronization procedures. `jt-flow-one` SHALL remain the owner of those procedures for every delegated item.
+The `jt-flow-all` Skill MUST NOT duplicate the single-request OpenSpec
+preparation, proposal, worktree, implementation, review, merge, deployment,
+archive, or proposal-synchronization procedures. `jt-flow-one` SHALL remain
+the owner of those procedures for every delegated item.
 
 #### Scenario: Queue Skill is inspected
 
@@ -50,17 +57,22 @@ The `jt-flow-all` Skill MUST NOT duplicate the single-request issue confirmation
 - **THEN** it contains delegation and ordered-progress rules rather than a duplicate end-to-end delivery procedure
 
 ### Requirement: Per-item gates remain effective
-Queue orchestration SHALL NOT bypass any proposal, consent, or approval gate owned by `jt-flow-one`. Before any delegated fetch or feature-worktree mutation, the coordinator and owner SHALL match durable proposal GO evidence to the exact change identifier, proposal path, Issue, repository, and approved scope. A missing or mismatched proposal GO SHALL place only that item in `AWAITING_GO`; only a `READY` item MAY then fetch remote main, resolve and record its exact SHA/ref, and create its isolated feature worktree. Approval, waiting, failure, or cancellation of one item SHALL NOT pause unrelated items.
+Queue orchestration SHALL NOT bypass any proposal, consent, or approval gate
+owned by `jt-flow-one`. Before any delegated fetch or feature-worktree
+mutation, the coordinator and owner SHALL match durable proposal GO evidence to
+the exact change identifier, proposal path, repository, and approved scope. A
+missing or mismatched proposal GO SHALL place only that item in `AWAITING_GO`;
+only a `READY` item MAY then fetch remote main, resolve and record its exact
+SHA/ref, and create its isolated feature worktree. Approval, waiting, failure,
+or cancellation of one item SHALL NOT pause unrelated items.
 
-#### Scenario: Delegated item requires approval
+#### Scenario: Delegated item has no external Issue
 
-- **WHEN** an item owner cannot prove an exact proposal GO for its current change, proposal path, Issue, repository, and approved scope
-- **THEN** that item enters `AWAITING_GO` before any fetch or worktree mutation, its descendants wait, and unrelated ready items continue
+- **WHEN** durable proposal GO matches the current change, proposal path,
+  repository, and approved scope but no Issue link exists
+- **THEN** the item becomes `READY` before its owner fetches remote main and
+  creates the isolated worktree
 
-#### Scenario: Delegated item has exact approval
-
-- **WHEN** durable proposal GO matches the current change, proposal path, Issue, repository, and approved scope
-- **THEN** the item becomes `READY` before its owner fetches remote main, records the exact remote-main SHA/ref, and creates the isolated worktree
 
 ### Requirement: Queue delegation preserves CodeRabbit consent
 Invoking or routing to `jt-flow-all` SHALL NOT itself prove CodeRabbit consent. The coordinator SHALL pass `codeRabbitAuthorization=preauthorized` with `authorizationSource=explicit-coderabbit-consent` only when durable evidence proves the user saw the complete CodeRabbit disclosure and explicitly consented. For every other invocation it SHALL pass `codeRabbitAuthorization=requires-disclosure`, and the delegated `jt-flow-one` run SHALL include its disclosure in the proposal summary and record any consent through the same proposal GO.
@@ -81,12 +93,22 @@ Invoking or routing to `jt-flow-all` SHALL NOT itself prove CodeRabbit consent. 
 - **THEN** the delegated item may receive `preauthorized` with `authorizationSource=explicit-coderabbit-consent`
 
 ### Requirement: Queue inventory uses refreshed remote truth
-`jt-flow-all` SHALL resolve the actual GitHub remote, fetch and prune it, and build Issue and OpenSpec inventory from a clean detached snapshot of the refreshed remote `main`. It MUST NOT derive the queue from a dirty or stale caller worktree. Before every subsequent dispatch or integration-permit decision, it SHALL reread remote main; any SHA drift SHALL invalidate the dependency snapshot and require a new clean snapshot plus refreshed active changes, Delivery Relations, reverse edges, descendants, and item eligibility. The refreshed graph MAY reclassify an `ACTIVE` or `INTEGRATION_READY` item.
+`jt-flow-all` SHALL resolve the actual GitHub remote, fetch and prune it, and
+build active OpenSpec inventory from a clean detached snapshot of the refreshed
+remote `main`. It MUST NOT derive the queue from a dirty or stale caller
+worktree or from an open Issue inventory. Before every subsequent dispatch or
+integration-permit decision, it SHALL reread remote main; any SHA drift SHALL
+invalidate the dependency snapshot and require a new clean snapshot plus
+refreshed active changes, Delivery Relations, reverse edges, descendants, and
+item eligibility. The refreshed graph MAY reclassify an `ACTIVE` or
+`INTEGRATION_READY` item.
 
-#### Scenario: Caller worktree is stale and dirty
+#### Scenario: Queue snapshot contains no Issue inventory
 
-- **WHEN** the caller worktree differs from refreshed remote `main`
-- **THEN** the coordinator inventories the clean remote snapshot and records that revision as the dependency snapshot source
+- **WHEN** the refreshed remote snapshot contains active OpenSpec changes but
+  no Issue inventory is read
+- **THEN** the coordinator still derives active changes, relations, and
+  eligibility and does not block valid items
 
 #### Scenario: Remote main changes after inventory
 
@@ -94,12 +116,24 @@ Invoking or routing to `jt-flow-all` SHALL NOT itself prove CodeRabbit consent. 
 - **THEN** the coordinator invalidates the snapshot and rebuilds all active-change relations and eligibility before proceeding
 
 ### Requirement: Proposals declare delivery relations
-Every new or updated proposal SHALL declare priority, hard dependencies, acceptance dependencies, external blockers, affected areas, production targets, and primary/related Issue mapping. Each external blocker SHALL identify whether it gates dispatch or integration. Hard dependencies SHALL prevent dispatch until predecessors are `SUCCESS`; acceptance dependencies SHALL allow work through `INTEGRATION_READY` but prevent integration and `SUCCESS`. `jt-flow-all` SHALL derive reverse blockers and safe-parallel candidates; it MUST NOT require authors to duplicate `Blocks` or `Can parallel with` lists. Any directed cycle formed by only hard dependencies, only acceptance dependencies, or a mixture of hard and acceptance dependencies SHALL be invalid and `BLOCKED` rather than left to deadlock at dispatch or integration.
+Every new or updated proposal SHALL declare priority, hard dependencies,
+acceptance dependencies, external blockers, affected areas, and production
+targets. Each external blocker SHALL identify whether it gates dispatch or
+integration. Hard dependencies SHALL prevent dispatch until predecessors are
+`SUCCESS`; acceptance dependencies SHALL allow work through
+`INTEGRATION_READY` but prevent integration and `SUCCESS`. `jt-flow-all` SHALL
+derive reverse blockers and safe-parallel candidates; it MUST NOT require
+authors to duplicate `Blocks`, `Can parallel with`, or Issue mapping lists. Any
+directed cycle formed by only hard dependencies, only acceptance dependencies,
+or a mixture of hard and acceptance dependencies SHALL be invalid and
+`BLOCKED` rather than left to deadlock at dispatch or integration.
 
-#### Scenario: Relation metadata is missing or contradictory
+#### Scenario: Relations are complete without Issue mapping
 
-- **WHEN** an active proposal lacks required relation fields or contradicts another current artifact
-- **THEN** only that item enters `BLOCKED` with the responsible owner, reason, downstream items, and explicit resume condition
+- **WHEN** a proposal declares all required dependency, blocker, area, and
+  production-target fields without an Issue mapping
+- **THEN** the proposal remains relation-complete and can enter the applicable
+  queue state
 
 #### Scenario: Hard-dependency cycle exists
 

@@ -5,7 +5,7 @@
 Define how `jt-flow-one` detects Claude Code's experimental Agent Teams
 capability exactly once per run. The detection is currently inert for
 `jt-flow-one`'s only two existing dispatch points (the three-tool research
-trio and the Step 5 code-review dispatch): both are governed by the global
+trio and the Phase 4 code-review dispatch): both are governed by the global
 2+ parallel-angle policy, which routes them through the `Workflow` tool, and
 `Workflow` is only callable from the top-level session — a spawned agent has
 no access to it (verified). Since team mode is only ever recorded as
@@ -34,9 +34,9 @@ every subsequent dispatch point in the same run without re-checking.
 ### Requirement: A jt-flow-all-delegated run never attempts team-mode dispatch
 
 `jt-flow-one` SHALL check whether the current invocation carries
-`jt-flow-all`'s Queue execution contract delegated fields (change
-identifier, proposal path, issue identifier, target repository, approved
-scope, durable proposal GO evidence) before evaluating any other condition.
+`jt-flow-all`'s Queue execution contract delegated fields (change identifier,
+proposal path, target repository, approved scope, durable proposal GO evidence)
+before evaluating any other condition.
 If those fields are present, `jt-flow-one` MUST record team mode as
 unavailable and MUST NOT evaluate the environment-variable or tool-schema
 condition.
@@ -83,7 +83,7 @@ unavailable.
 
 `jt-flow-one` has exactly two existing dispatch points governed by the
 global multi-agent policy's 2+ parallel-angle rule: the three-tool research
-trio (Context7/Exa/Firecrawl) and the Step 5 code-review dispatch. Because
+trio (Context7/Exa/Firecrawl) and the Phase 4 code-review dispatch. Because
 the `Workflow` tool is only callable from the top-level session, and team
 mode is only ever recorded as available when `jt-flow-one` is not a nested,
 delegated run (in which case it already is the top-level session), neither
@@ -103,7 +103,7 @@ manually-spawned named agents.
 
 #### Scenario: Code review dispatch is identical whether team mode is available or not
 
-- **WHEN** `jt-flow-one` reaches the Step 5 code-review dispatch point,
+- **WHEN** `jt-flow-one` reaches the Phase 4 code-review dispatch point,
   regardless of the recorded team-mode outcome
 - **THEN** `jt-flow-one` calls the `Workflow` tool directly, from the
   current session
@@ -111,7 +111,7 @@ manually-spawned named agents.
 #### Scenario: Wrapper-agent and manual multi-agent replacement are both prohibited
 
 - **WHEN** `jt-flow-one` reaches either the three-tool research or the
-  Step 5 code-review dispatch point, regardless of the recorded team-mode
+  Phase 4 code-review dispatch point, regardless of the recorded team-mode
   outcome
 - **THEN** `jt-flow-one` does not spawn a wrapper agent to call `Workflow`
   on its behalf, and does not spawn multiple manually-named agents, one

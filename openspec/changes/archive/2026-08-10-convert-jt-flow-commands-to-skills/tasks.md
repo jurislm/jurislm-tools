@@ -13,4 +13,4 @@
 
 - [x] 3.1 Run `jq . .claude-plugin/marketplace.json`, `jq . plugins/jt-flow/.claude-plugin/plugin.json`, and `node scripts/check-version-sync.mjs`.
 - [x] 3.2 Verify the two Skill files exist, `plugins/jt-flow/commands/` does not exist, and current entry-point documentation has no `/jt-flow` references.
-- [ ] 3.3 After the merged marketplace is reloaded, verify that Codex lists `jt-flow-one` and `jt-flow-all` and no longer offers the removed slash commands.
+- [x] 3.3 After the merged marketplace is reloaded, verify that Codex lists `jt-flow-one` and `jt-flow-all` and no longer offers the removed slash commands.

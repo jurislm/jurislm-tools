@@ -401,7 +401,7 @@ test("canonical archive gate verifies the team-mode Purpose migration", () => {
   );
   assert.match(
     canonicalTasks,
-    /- \[ \] 4\.1[\s\S]*Purpose[\s\S]*Step 5[\s\S]*Phase 4[\s\S]*rg -n[\s\S]*openspec validate --all --strict/i,
+    /- \[x\] 4\.1[\s\S]*Purpose[\s\S]*Step 5[\s\S]*Phase 4[\s\S]*rg -n[\s\S]*openspec validate --all --strict/i,
   );
 
   if (!existsSync(canonicalActiveChangeRoot)) {

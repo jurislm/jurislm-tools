@@ -26,11 +26,10 @@ validated OpenSpec change. The intended flow is now `需求 → OpenSpec → GO 
 - Priority: `mvp-critical`
 - Hard dependencies: none
 - Acceptance dependencies: none
-- External blockers: `integration` — reconcile or archive
-  `convert-jt-flow-commands-to-skills` before this change is integrated; its
-  active Issue-queue requirement must not reintroduce a mandatory Issue queue.
-  Owner: the conversion-change owner. Resume condition: that active delta is
-  archived or made compatible with OpenSpec-only queue identity.
+- External blockers: `integration` — resolved on 2026-08-10 by archiving
+  `convert-jt-flow-commands-to-skills` after its Skill catalog reload was
+  verified and its delta was synchronized; its active Issue-queue wording no
+  longer reintroduces a mandatory Issue queue.
 - Affected areas: `plugins/jt-flow/**`, root `CLAUDE.md`, jt-flow policy tests,
   jt-flow OpenSpec deltas, and obsolete jt-flow planning records.
 - Production targets: none

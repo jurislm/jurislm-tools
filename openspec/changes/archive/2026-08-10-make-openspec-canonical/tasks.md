@@ -30,7 +30,7 @@
 
 ## 4. Archive acceptance gate
 
-- [ ] 4.1 After `convert-jt-flow-commands-to-skills` is reconciled or archived,
+- [x] 4.1 After `convert-jt-flow-commands-to-skills` is reconciled or archived,
   sync this change's deltas, manually update
   `openspec/specs/jt-flow-one-team-mode-dispatch/spec.md`'s Purpose from
   `Step 5` to `Phase 4`, and before archiving verify that
