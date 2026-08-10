@@ -5,7 +5,7 @@ description: >
   提案（含提案同步鐵則）→ 依提案 TDD 實作 → PR → code review → merge →
   部署驗收 → 歸檔。統一採 GitHub Flow 單段式（無 develop 分支，feature
   直接對 main 開 PR）；適用任何裝有 OpenSpec 的 GitHub repo，但依賴外部
-  `superpowers:*` skill 集與 repo-local `opsx:*` skill 才能完整運作，
+  `superpowers:*` skill 集與 repo-local `/spectra-*` Skills 才能完整運作，
   執行前會先做前置環境檢查（remote／OpenSpec／GitHub repo／分支模型）。
   明確點名或從 Skill picker 呼叫本 Skill，表示使用者已知悉並授權在該次流程
   對目標 repository 使用 CodeRabbit GitHub App 與 CodeRabbit CLI 進行 PR review；
@@ -362,7 +362,7 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
      `openspec/changes/archive/`，grep 各 proposal.md 比對需求關鍵詞
    - 若需求來自既有 GitHub Issue，只記 optional external context link；不得搜尋、
      建立、更新或關閉 Issue 才能建立 proposal 或繼續流程
-   - 只命中 1 個 active 提案且範圍明確相符 → 沿用，用 opsx:continue 或
+   - 只命中 1 個 active 提案且範圍明確相符 → 沿用，用 `/spectra-apply` 或
      直接編輯既有 4 artifacts（依提案同步鐵則）；只命中 1 個 active 提案但用
      proposal、specs、tasks、code 與使用者需求仍無法明確證實範圍相符 → 視為
      真實歧義，列出該候選請使用者確認，不得沿用或另建重複 change；命中多個時
@@ -372,7 +372,7 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
      不可猜測；命中 archive → 汲取前作教訓，仍建新
      change，proposal.md 註明「延續／取代 archive/<date>-<name>」；
      都沒有 → 依命名格式取名（先核對現有最大處理順序尾綴），用
-     opsx:ff（或 opsx:new → opsx:continue）產出全新 4 artifacts
+     `/spectra-propose` 產出全新 4 artifacts
    - proposal.md 撰寫前完成環境盤點（涵蓋 codebase 現況、部署環境、外部依賴、
      CI/CD、測試覆蓋、並行提案、archive 教訓、既有 feedback 等維度，視專案規模
      取捨深度），寫進
@@ -396,7 +396,7 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
    <remote>/main`），基於最新的 `<remote>/main` 建立，避免本地 main
    落後漏掉已合併變更；worktree／分支／提案名稱三者一致（不含尾綴）
 
-3. 逐 phase 執行 tasks.md：opsx:apply 讀 task →
+3. 逐 phase 執行 tasks.md：`/spectra-apply` 讀 task →
    superpowers:test-driven-development 驅動（Red 含 edge case → Green →
    Refactor）
    - Red 未如預期失敗／測試莫名紅／非預期行為 → 先
@@ -409,7 +409,7 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
      本地行為性驗收（真的呼叫程式碼，非只跑測試）；純 Markdown／
      JSON／YAML／設定類變更（無執行期程式碼）→ 人工檢查內容結構與
      邏輯自洽（如格式驗證指令、schema 檢查），不強求「呼叫程式碼」→
-     opsx:verify 對照 spec/tasks →
+     `/spectra-verify` 對照 spec/tasks →
      superpowers:verification-before-completion 看到實際輸出才宣稱完成
      → 小步 commit
    - 不在此階段歸檔
@@ -512,7 +512,7 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
    部署平台手動重新部署；宣稱 prod 驗收通過前用
    verification-before-completion 跑實際請求／截圖／log 佐證
 
-6. main 驗收無誤後，opsx:archive 歸檔整個 <change-name>；若有 optional
+6. main 驗收無誤後，`/spectra-archive` 歸檔整個 <change-name>；若有 optional
    Issue link，是否關閉不構成流程 gate。
 
 ## 例外／不適用情境

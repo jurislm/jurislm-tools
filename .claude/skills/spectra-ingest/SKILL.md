@@ -26,8 +26,13 @@ Update an existing Spectra change — from a plan file or conversation context.
 
 1. **Locate the requirement source**
 
-   a. **Argument provided** → treat as plan file reference (prepend `~/.claude/plans/` and append `.md` if needed)
-   - If the file exists → use it as the plan file source, proceed to Step 2
+   a. **Argument provided**:
+   - If the input is an absolute path, starts with `~`, or contains a directory
+     separator, use it as-is (expanding `~` when needed); append `.md` only if
+     the explicit path has no extension and the resulting file exists.
+   - If the input is a plain name, resolve it under `~/.claude/plans/` and
+     append `.md` if needed.
+   - If the resolved file exists → use it as the plan file source, proceed to Step 2
    - If the file does NOT exist → report the error and **stop**
 
    b. **No argument, plan file detectable**:

@@ -133,23 +133,32 @@ This is a **utility skill** (not a workflow step). It reads source file tracking
     - If **no delta specs exist** (directory is empty or absent): skip to 6a-iii.
     - If **delta specs exist**:
       - Use the **AskUserQuestion tool** to ask: "Delta specs found. Sync to main specs before archiving?"
-        - **Yes**: run `spectra sync <name>` before proceeding
-        - **No**: proceed without syncing
+      - **Yes**: invoke the repository's `openspec-sync-specs` Skill for
+        `<name>`, wait for successful synchronization, then archive with
+        `--skip-specs`
+        - **No**: archive with `--skip-specs` without syncing
+        - **Cancel**: stop the workflow immediately; do not archive
 
       If **AskUserQuestion tool** is not available, ask the same question as plain text and wait for the user's response.
 
-    **6a-iii. Archive execution and file collection**
+    **6a-iii. Capture commit metadata before archive**
+
+    Before moving the change, read the proposal's Why/Problem/Summary sentence
+    and count completed and total tasks. Retain those values for step 7; the
+    active proposal path will no longer exist after a successful archive.
+
+    **6a-iv. Archive execution and file collection**
 
     Execute the archive:
 
     ```bash
-    spectra archive <name>          # without --mark-tasks-complete
-    spectra archive <name> --mark-tasks-complete  # if user chose to mark tasks complete in 6a-i
+    spectra archive <name> --skip-specs          # without --mark-tasks-complete
+    spectra archive <name> --skip-specs --mark-tasks-complete  # if user chose to mark tasks complete in 6a-i
     ```
 
     After archive completes successfully:
 
-    1. Re-run `git status --porcelain` to capture all file changes produced by the archive (deletions from `openspec/changes/<name>/`, additions in `openspec/archived/`)
+    1. Re-run `git status --porcelain` to capture all file changes produced by the archive (deletions from `openspec/changes/<name>/`, additions in `openspec/changes/archive/YYYY-MM-DD-<name>/`)
     2. Add these archive-related file changes to the commit set
     3. Display an **updated commit plan** showing all sections:
 
@@ -157,28 +166,32 @@ This is a **utility skill** (not a workflow step). It reads source file tracking
     ## Updated Commit Plan: <change-name> (with archive)
 
     ### Change Artifacts (archived)
-    - D  docs/specs/changes/<name>/proposal.md
-    - D  docs/specs/changes/<name>/tasks.md
+    - D  openspec/changes/<name>/proposal.md
+    - D  openspec/changes/<name>/tasks.md
     - ...
 
     ### Archived Files
-    - A  docs/specs/archived/<name>/proposal.md
-    - A  docs/specs/archived/<name>/tasks.md
+    - A  openspec/changes/archive/YYYY-MM-DD-<name>/proposal.md
+    - A  openspec/changes/archive/YYYY-MM-DD-<name>/tasks.md
     - ...
 
     ### Source Files
     (same as before)
 
     ### Spec Sync Changes (if sync was performed)
-    - M  docs/specs/specs/<spec-name>/spec.md
+    - M  openspec/specs/<capability>/spec.md
     - ...
     ```
+
+    4. After archive succeeds, remove `.spectra/touched/<change-name>.json` if it exists.
+       Preserve it when archive fails so the tracking data remains available.
 
     Then continue to step 7.
 
 7. **Generate commit message**
 
-   Read the proposal file at `openspec/changes/<name>/proposal.md`. Extract the first sentence from the Why section (or Problem/Summary section if Why is absent).
+   Use the proposal summary and task counts captured before archive. Do not read
+   `openspec/changes/<name>/proposal.md` after archiving; it has been moved.
 
    Generate a message in this format:
 
