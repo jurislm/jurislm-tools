@@ -1,4 +1,33 @@
-# CLAUDE.md
+<!-- SPECTRA:START v1.0.2 -->
+
+# Spectra Instructions
+
+This project uses Spectra for Spec-Driven Development(SDD). Specs live in `openspec/specs/`, change proposals in `openspec/changes/`.
+
+## Use `/spectra-*` skills when:
+
+- A discussion needs structure before coding → `/spectra-discuss`
+- User wants to plan, propose, or design a change → `/spectra-propose`
+- Tasks are ready to implement → `/spectra-apply`
+- There's an in-progress change to continue → `/spectra-ingest`
+- User asks about specs or how something works → `/spectra-ask`
+- Implementation is done → `/spectra-archive`
+- Commit only files related to a specific change → `/spectra-commit`
+
+## Workflow
+
+discuss? → propose → apply ⇄ ingest → archive
+
+- `discuss` is optional — skip if requirements are clear
+- Requirements change mid-work? Plan mode → `ingest` → resume `apply`
+
+## Parked Changes
+
+Changes can be parked（暫存）— temporarily moved out of `openspec/changes/`. Parked changes won't appear in `spectra list` but can be found with `spectra list --parked`. To restore: `spectra unpark <name>`. The `/spectra-apply` and `/spectra-ingest` skills handle parked changes automatically.
+
+<!-- SPECTRA:END -->
+
+## CLAUDE.md
 
 This file provides project-specific guidance for `jurislm-tools`. Also follow the contributor's local `~/.claude/CLAUDE.md`, when present.
 
@@ -105,7 +134,11 @@ Actions validation or release workflows.
 
 ## OpenSpec
 
-`openspec/` and repo-local `opsx:*` Skills provide the specification workflow; they are not marketplace plugins. Artifact order is `proposal → design → specs → tasks`.
+`openspec/` is the specification store, and the generated repo-local `/spectra-*`
+Skills are the canonical workflow for every proposal. Use Spectra to propose,
+apply, ingest, verify, archive, and commit changes; the remaining `opsx:*`
+files are legacy compatibility surfaces and must not be used for new proposal
+work. Artifact order is `proposal → design → specs → tasks`.
 
 Some legacy detail specs remain historical. For current marketplace membership, prefer `.claude-plugin/marketplace.json`, plugin manifests, and the repository integrity checker. When changing an owned area, update its living OpenSpec documentation in the same proposal. For an active OpenSpec delta that changes a deployed requirement, keep the living spec at deployed behavior until the successor change is archived; the delta must modify the existing requirement by its exact name rather than silently pre-applying the successor to the living spec.
 
