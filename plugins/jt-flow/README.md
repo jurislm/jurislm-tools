@@ -17,22 +17,28 @@ claude plugin install jt-flow@jurislm-tools
 
 本 plugin 不提供 `/jt-flow` 或 `/jt-flow-all` slash commands；請以自然語言觸發對應 Skill。
 
-`jt-flow-one` 以 proposal GO 作為唯一正常停頓點：明確呼叫先授權 issue 與 OpenSpec
-準備；GO 後即授權實作、push、PR、review finding 處置、merge、部署驗收、issue
-關閉與歸檔，不再逐項確認。只有證據無法排除的目標歧義、重大範圍／架構／依賴／
+`jt-flow-one` 以 proposal GO 作為唯一正常停頓點：明確呼叫先授權 OpenSpec 準備；
+GO 後即授權實作、push、PR、review finding 處置、merge、部署驗收與歸檔，不再逐項
+確認。既有 GitHub Issue 只作 optional external context，不是建立、GO、queue 或歸檔
+前置條件。只有證據無法排除的目標歧義、重大範圍／架構／依賴／
 production 風險變更、secret 或敏感 payload、缺少權限或平台強制 approval、未揭露
 的破壞性 production mutation，以及高風險 rollback 才暫停。`jt-flow-all` 沿用可
 證實且已記錄的 proposal GO，不因 queue context 重複詢問。
 一般意圖自動路由尚未取得 CodeRabbit consent 時，資料範圍揭露會併入 proposal
 摘要並由同一次 GO 確認，不延後成 PR 前的第二個正常停頓點。
 
+OpenSpec 的 `proposal`／`design`／`specs`／`tasks` 是本流程唯一的需求、設計與實作計畫記錄，
+不另建立平行規劃文件。
+`jt-flow-one` 不啟動會建立平行規劃文件的 Superpowers planning pipeline；原有的
+TDD、debug、review 與 verification execution skills 仍照既有 workflow 使用。
+
 ## Dependency-aware queue policy
 
 `jt-flow-all` 不使用 caller 的 dirty 或 stale worktree：它以乾淨、已 fetch/prune
-的 remote `main` snapshot 盤點 active changes 與 open Issues。每個 active change 都
-是完整的 delivery unit，並由 proposal 的 Delivery Relations 記錄 `Priority`、hard
-與 acceptance dependencies、external blockers（`dispatch` 或 `integration` gate）、
-affected areas、production targets、以及 primary/related Issue mapping；coordinator
+的 remote `main` snapshot 盤點 active OpenSpec changes。每個 active change 都是完整的
+delivery unit，並由 proposal 的 Delivery Relations 記錄 `Priority`、hard 與 acceptance
+dependencies、external blockers（`dispatch` 或 `integration` gate）、affected areas、
+production targets；coordinator
 從這些資料推導 reverse blockers 與可安全並行的候選項目。
 
 每次後續 dispatch 或 integration-permit decision 前都重讀 remote main；SHA drift
@@ -45,8 +51,8 @@ resume condition 與 descendants；有效但未解的條件是 `WAITING`。無�
 仍可繼續；hard、acceptance-only 與 mixed hard/acceptance cycle 都是 invalid／
 `BLOCKED`，且不會只派送同一 change 的部分 tasks。primary agent 是 coordinator 並
 保留一個 agent slot；每個其餘可用 slot 只能交給一個 `READY` change 的
-`jt-flow-one` owner。coordinator／owner 必須先比對 exact change、proposal、Issue、
-repository、scope 與 durable GO；mismatch 在任何 fetch 或 worktree mutation 前回傳
+`jt-flow-one` owner。coordinator／owner 必須先比對 exact change、proposal、repository、
+scope 與 durable GO；mismatch 在任何 fetch 或 worktree mutation 前回傳
 `AWAITING_GO`。只有 `READY` item 才能 fetch／record remote-main SHA 並建立 isolated
 worktree；無 delegation capacity 時套用相同規則循序執行。
 

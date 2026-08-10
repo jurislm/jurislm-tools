@@ -2,7 +2,7 @@
 
 - **Approval status**: GO
 - **Change identifier**: `cap-jt-flow-review-budgets`
-- **Proposal path**: `openspec/changes/cap-jt-flow-review-budgets/proposal.md`
+- **Proposal path**: `openspec/changes/archive/2026-08-06-cap-jt-flow-review-budgets/proposal.md`
 - **Issue identifier**: [jurislm/jurislm-tools#187](https://github.com/jurislm/jurislm-tools/issues/187)
 - **Target repository**: `jurislm/jurislm-tools`
 - **Approved scope**: Cap local `superpowers:requesting-code-review` at 3 total
@@ -11,8 +11,7 @@
   contingent on the account-level 審查觸發條件 = 開啟 PR precondition, with no
   active trigger action and no CodeRabbit-style pre-authorization/disclosure
   gate; CodeRabbit's and Copilot's existing rules unchanged. Full detail in
-  `docs/superpowers/specs/2026-08-06-jt-flow-review-budget-caps-design.md`
-  and this change's `proposal.md`/`design.md`/`specs/`/`tasks.md`.
+  the archived change's `proposal.md`/`design.md`/`specs/`/`tasks.md`.
 - **Proposal GO evidence**: User message "go" in this session, immediately
   following an assistant message that presented the proposal/design/specs/
   tasks summary and explicitly asked "review 一下...沒問題就請 GO". The

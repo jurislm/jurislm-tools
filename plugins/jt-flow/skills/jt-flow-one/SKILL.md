@@ -1,11 +1,11 @@
 ---
 name: jt-flow-one
 description: >
-  完整落地一個新需求：需求分析 → 建立/沿用追蹤 issue → 建立/沿用 OpenSpec
+  完整落地一個新需求：需求分析 → 建立/沿用 OpenSpec
   提案（含提案同步鐵則）→ 依提案 TDD 實作 → PR → code review → merge →
   部署驗收 → 歸檔。統一採 GitHub Flow 單段式（無 develop 分支，feature
   直接對 main 開 PR）；適用任何裝有 OpenSpec 的 GitHub repo，但依賴外部
-  `superpowers:*` skill 集與 repo-local `opsx:*` skill 才能完整運作，
+  `superpowers:*` skill 集與 repo-local `/spectra-*` Skills 才能完整運作，
   執行前會先做前置環境檢查（remote／OpenSpec／GitHub repo／分支模型）。
   明確點名或從 Skill picker 呼叫本 Skill，表示使用者已知悉並授權在該次流程
   對目標 repository 使用 CodeRabbit GitHub App 與 CodeRabbit CLI 進行 PR review；
@@ -23,13 +23,14 @@ description: >
 ## 端到端授權契約
 
 使用者明確點名／呼叫 `jt-flow-one`，即授權本 Skill 在目標 repository 內完成
-現況盤點、建立或更新 tracking issue，以及建立或更新 OpenSpec artifacts，不需
-為這些 proposal 準備動作逐項確認；proposal GO 之前仍不得建立 feature worktree
-或進入實作。
+現況盤點與建立或更新 OpenSpec artifacts，不需為這些 proposal 準備動作逐項確認；
+若需求來自既有 GitHub Issue，可將其記為 optional external context，但不得要求、
+建立或更新 Issue 才能繼續；proposal GO 之前仍不得建立 feature worktree 或進入實作。
 
 使用者對 proposal 明確給出 GO，即授權本 Skill 在已核准範圍內連續完成實作、
 commit、push、建立 PR、已揭露的 review request、finding 處置、merge、部署驗收、
-issue 關閉與 OpenSpec 歸檔。正常交付鏈不得重複詢問授權，也不得把驗證 gate
+OpenSpec 歸檔。Issue 的建立、更新與關閉均為 optional，不是 approval 或 completion gate。
+正常交付鏈不得重複詢問授權，也不得把驗證 gate
 誤當成使用者 approval gate；不再尋求額外授權或重複確認。
 
 若本 Skill 只是由一般意圖自動路由、尚未取得 CodeRabbit consent，必須把下方
@@ -39,7 +40,7 @@ CodeRabbit consent。不得把這個可預見的 consent 延後成 GO 後的另�
 
 proposal GO 後唯一允許暫停並要求使用者 input／approval 的情況是：
 
-- 依 repository、issue、proposal、code 與使用者需求證據仍無法排除目標或預期行為
+- 依 repository、proposal、code 與使用者需求證據仍無法排除目標或預期行為
   的真實歧義；
 - 需要超出已核准 proposal 的重大範圍擴張、重大架構變更、新外部依賴或新
   production 風險；
@@ -49,7 +50,7 @@ proposal GO 後唯一允許暫停並要求使用者 input／approval 的情況�
 - rollback／回退涉及 DB、schema、資料遺失風險，或無法明確辨識安全回復目標。
 
 同一核准範圍內的實作細節、測試修正、review finding 修正、commit、push、PR、
-merge、部署觀察與驗收、issue 關閉及歸檔都不是上述例外，不得因此暫停。遇到外部
+merge、部署觀察與驗收及 OpenSpec 歸檔都不是上述例外，不得因此暫停。遇到外部
 服務 rate limit／quota 等已有明確降級規則時，依該規則記錄後繼續，不新增 approval
 gate。
 
@@ -59,8 +60,8 @@ gate。
 之後整個執行過程沿用同一個結果，不重複判斷：
 
 1. 先判斷本次執行是否為 `jt-flow-all` 依【Queue execution contract】委派下來
-   的 nested 執行（帶有 change identifier、proposal 路徑、issue identifier、
-   目標 repository、已核准範圍、durable proposal GO evidence 這組欄位）——
+   的 nested 執行（帶有 change identifier、proposal 路徑、目標 repository、
+   已核准範圍、durable proposal GO evidence 這組欄位）——
    有 → 直接判定團隊模式不可用，不再檢查下面兩個條件（Agent Teams 官方文件
    明文「no nested teams」，teammate 不能自己再開一層 team）。
 2. 否則同時檢查兩個條件，兩者都成立才判定可用：`echo
@@ -69,7 +70,7 @@ gate。
 
 本 Skill 現有兩處因「2 個以上平行角度」而規定用 Workflow tool 派工的地方——
 三工具研究（Context7/Exa/Firecrawl，見下方「遇到阻塞時的封閉迴圈」）與
-Step 5 code review——不論上面判定結果為何，行為都不變：一律由目前執行
+Phase 4 code-review dispatch——不論上面判定結果為何，行為都不變：一律由目前執行
 `jt-flow-one` 的 session 直接呼叫 Workflow tool。原因是 `Workflow` tool 只有
 主 session（未被其他 agent 派下來的那一層）才能呼叫，spawn 出去的 agent
 拿不到這個 tool（已實測驗證：spawn 一個 agent 檢查其工具清單，`Workflow`
@@ -137,11 +138,11 @@ image、根本不需要認證**——helper 在該路徑純屬多餘。用只作
 ## Queue execution contract
 
 當 `jt-flow-all` 委派目前 item 給本 Skill 時，輸入必須包含 change identifier、
-proposal 路徑、issue identifier、目標 `<owner>/<repo>`、已核准範圍、durable
-proposal GO evidence、dependency snapshot revision、integration policy 與
+proposal 路徑、目標 `<owner>/<repo>`、已核准範圍、durable proposal GO evidence、
+dependency snapshot revision、integration policy 與
 `codeRabbitAuthorization`／`authorizationSource`。在任何 delegated fetch 或
 feature-worktree mutation 前，compare durable proposal GO 的 change identifier、
-proposal 路徑、issue identifier、目標 `<owner>/<repo>` 與已核准範圍是否和目前 item
+proposal 路徑、目標 `<owner>/<repo>` 與已核准範圍是否和目前 item
 完全相符。任一欄不符或無法證實時，只有目前 item 進入 `AWAITING_GO` before any
 delegated fetch or feature-worktree mutation；其 descendants 等待，但 unrelated
 `READY` items continue。delegated run 必須先完成本段比對；下方一般單項流程的
@@ -274,8 +275,8 @@ secret-like value 時才可通過；只要有一個值無法判定為安全 plac
    只有唯一一個候選 remote 且 fetch／push 目標一致才繼續，出現多個
    候選或 fetch／push 不一致 → 停下向使用者確認要用哪一個；確認後
    `git fetch`／`git push`／worktree base 一律用這個 `<remote>`，同時
-   從其 URL 解析出明確的 `<owner>/<repo>`，所有 `gh repo`／`gh issue`／
-   `gh pr` 指令一律加 `--repo <owner>/<repo>`（或等效明寫），不依賴
+   從其 URL 解析出明確的 `<owner>/<repo>`，所有 `gh repo`／`gh pr` 指令一律
+   加 `--repo <owner>/<repo>`（或等效明寫），不依賴
    `gh` 指令預設 repository（避免多 remote／多預設 config 時操作到錯
    的 repo）
 3. 確認目標 repo 有對應的 GitHub repo：`gh repo view <owner>/<repo>`；
@@ -305,9 +306,13 @@ secret-like value 時才可通過；只要有一個值無法判定為安全 plac
 
 ## 流程
 
-完整落地一個新需求：需求分析 → 建立／沿用追蹤 issue → 建立／沿用 OpenSpec
-提案 → 依提案實作（發現更好做法即同步提案）直到驗收通過並上線 main
+完整落地一個新需求：需求分析 → 建立／沿用 OpenSpec 提案 → proposal GO →
+建立 worktree → 依提案實作（發現更好做法即同步提案）→ PR → merge →
+部署驗收 → 歸檔
 （GitHub Flow：無 develop 分支，feature 直接對 main 開 PR）。
+
+OpenSpec 的 `proposal`／`design`／`specs`／`tasks` 是本流程唯一的需求、設計與實作計畫記錄；
+不另建立平行規劃文件。
 
 【提案同步鐵則｜貫穿全流程】方案／範圍／任務拆分需要變更時（沿用既有提案
 發現差異、開發中找到更好做法），一律：① 同步對應 artifact（proposal／
@@ -319,16 +324,17 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
 授權契約】停下等使用者 GO。
 
 【發現新問題的處置｜一次只有一個交付在飛】修的過程中發現新問題時，預設是
-**更新當下這顆 issue 與這份提案**（把它補進 tasks 與 proposal 的範圍，
-依上方提案同步鐵則同步 artifact），**不建新 issue、不建新 worktree**。
+**更新當下這份 OpenSpec change**（把它補進 tasks 與 proposal 的範圍，
+依上方提案同步鐵則同步 artifact），**不另建新 change、不建新 worktree**。
 
 理由：修一個問題常會連帶發現多個。每個都另開追蹤與 worktree，範圍會不斷擴大
-——發現 10 個就變成 10 個 issue 加 10 個 worktree，維護成本遠大於問題本身，
+——發現 10 個就變成 10 個 change 加 10 個 worktree，維護成本遠大於問題本身，
 而且同時操作多個 worktree 本身就會出事（堆疊分支互相合併導致 diff 歸零）。
 
-只有同時滿足下列三者才另記 issue：與當前提案的交付目標無關（不同 capability）、
-不阻塞當前交付、且不修也不會讓當前交付變成半成品。即使如此也**只記 issue，
-不當場建 worktree**——等當前這顆合併回 main 之後，再依優先序決定要不要開。
+只有同時滿足下列三者才另立 OpenSpec change：與當前提案的交付目標無關（不同
+capability）、不阻塞當前交付、且不修也不會讓當前交付變成半成品。即使如此也**只
+建立 change 記錄，不當場建 worktree**——等當前這顆合併回 main 之後，再依優先序
+決定要不要開。既有 GitHub Issue 只作 optional external context，不改變上述判斷。
 
 ⚠️ **delegated 執行（由 `jt-flow-all` 委派）時的例外**：若新問題屬於不同
 capability **且會阻塞交付**，不得自行吸收進提案。那會改變 coordinator 已比對過的
@@ -344,33 +350,19 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
 需要查看其他分支的內容時用 `git show <branch>:<path>`，不要 `cd` 進別的 worktree
 ——那是「修 A 卻動到 B」的起點，也是堆疊分支互相污染的來源。
 
-0. 需求分析（不建檔案）
-   - superpowers:using-superpowers 確認適用技能 → superpowers:brainstorming
-     釐清意圖／範圍／非目標（只問影響架構或長期路徑的問題，其餘自行拍板）
+0. 需求分析（不建立平行檔案）
+   - 依 repo-local OpenSpec workflow 確認適用的執行與驗證技能；需求澄清、方案與
+     任務拆解直接併入 OpenSpec artifacts（只問影響架構或長期路徑的問題，其餘自行拍板）
    - 盤點現況（不可憑假設斷言）：grep/Read 相關 codebase、
      openspec/changes/（含 archive）有無相關提案、memory 相關 feedback
    - 產出需求摘要：目標／範圍／不做什麼／驗收標準草案
 
-1. 建立／沿用追蹤用 GitHub issue（`<owner>/<repo>` 為前置檢查步驟 2
-   解析出的目標，以下所有 `gh issue` 指令皆同）
-   - 先查有無相關既有 issue：`gh issue list --repo <owner>/<repo>
-     --state all --search "<關鍵詞>"`（含已關閉）
-   - 只命中 1 筆且範圍明確相符 → 沿用該 issue：`gh issue comment
-     <issue-num> --repo <owner>/<repo> --body "<本次範圍補充>"`，需要時
-     `gh issue edit <issue-num> --repo <owner>/<repo>` 同步標題／
-     labels；只命中 1 筆但用 issue body、code、既有 proposal 與使用者需求仍
-     無法明確證實範圍相符 → 視為真實歧義，列出該候選請使用者確認，不得沿用或
-     另建重複 issue；命中多筆時先用上述證據交叉
-     驗證，只有一筆可明確證實相符就沿用；證據仍無法排除真實歧義 → 列出候選
-     （標題＋連結）請使用者選定，不可猜測；都沒有 → `gh issue
-     create --repo <owner>/<repo>` 新建（含背景／範圍／驗收標準），補
-     labels + assignee
-   - 記下 issue number，後續 proposal／PR／commit 皆引用 `Closes #<n>`
-
-2. 建立／沿用 OpenSpec 提案
+1. 建立／沿用 OpenSpec 提案
    - 先查有無相關既有提案：`ls openspec/changes/`（active）+
      `openspec/changes/archive/`，grep 各 proposal.md 比對需求關鍵詞
-   - 只命中 1 個 active 提案且範圍明確相符 → 沿用，用 opsx:continue 或
+   - 若需求來自既有 GitHub Issue，只記 optional external context link；不得搜尋、
+     建立、更新或關閉 Issue 才能建立 proposal 或繼續流程
+   - 只命中 1 個 active 提案且範圍明確相符 → 沿用，用 `/spectra-apply` 或
      直接編輯既有 4 artifacts（依提案同步鐵則）；只命中 1 個 active 提案但用
      proposal、specs、tasks、code 與使用者需求仍無法明確證實範圍相符 → 視為
      真實歧義，列出該候選請使用者確認，不得沿用或另建重複 change；命中多個時
@@ -380,30 +372,31 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
      不可猜測；命中 archive → 汲取前作教訓，仍建新
      change，proposal.md 註明「延續／取代 archive/<date>-<name>」；
      都沒有 → 依命名格式取名（先核對現有最大處理順序尾綴），用
-     opsx:ff（或 opsx:new → opsx:continue）產出全新 4 artifacts
-   - proposal.md 含 `Closes #<issue-num>`；撰寫前完成環境盤點（涵蓋
-     codebase 現況、部署環境、外部依賴、CI/CD、測試覆蓋、並行提案、
-     archive 教訓、既有 feedback 等維度，視專案規模取捨深度），寫進
+     `/spectra-propose` 產出全新 4 artifacts
+   - proposal.md 撰寫前完成環境盤點（涵蓋 codebase 現況、部署環境、外部依賴、
+     CI/CD、測試覆蓋、並行提案、archive 教訓、既有 feedback 等維度，視專案規模
+     取捨深度），寫進
      verification-logs/；跑 `openspec validate --strict`
    - **停下，展示 proposal／design／tasks 摘要，等使用者 GO——未經
      確認不得進入 worktree 與實作**
    - 收到 GO 後、建立 worktree 前，立即建立或更新
      `openspec/changes/<change>/verification-logs/proposal-go.md`，至少記錄
-     approval status、change identifier、proposal 路徑、issue identifier、
-     目標 `<owner>/<repo>`、已核准範圍、可回溯的 proposal GO evidence
+     approval status、change identifier、proposal 路徑、目標 `<owner>/<repo>`、
+     已核准範圍、可回溯的 proposal GO evidence
      （例如該 task context 的明確 `GO` 訊息與時間）及 CodeRabbit consent
-     狀態。不得記錄 secret 或敏感 payload。此檔是後續 resume／queue reuse
+     狀態；若有 optional external context 可一併記錄，但不得把 Issue 當成必要欄位。
+     不得記錄 secret 或敏感 payload。此檔是後續 resume／queue reuse
      的 durable evidence；只憑「應該曾經核准」或無法對應目前 proposal 的
      對話摘要不得沿用。
 
-3. 建立 feature worktree（拿到 GO 後）
+2. 建立 feature worktree（拿到 GO 後）
    先 `git fetch <remote> main` 同步最新（`<remote>` 為前置檢查步驟 2
    確認的實際 remote 名稱），再用 superpowers:using-git-worktrees（或
    `git worktree add -b <change-name> .claude/worktrees/<change-name>
    <remote>/main`），基於最新的 `<remote>/main` 建立，避免本地 main
    落後漏掉已合併變更；worktree／分支／提案名稱三者一致（不含尾綴）
 
-4. 逐 phase 執行 tasks.md：opsx:apply 讀 task →
+3. 逐 phase 執行 tasks.md：`/spectra-apply` 讀 task →
    superpowers:test-driven-development 驅動（Red 含 edge case → Green →
    Refactor）
    - Red 未如預期失敗／測試莫名紅／非預期行為 → 先
@@ -411,17 +404,17 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
    - 發現需要重構／整合既有模組、或有更好做法 → 依【提案同步鐵則】處理，
      再繼續寫 code
    - 發現**新問題**（既有 bug、涵蓋缺口、過時內容）→ 依【發現新問題的處置】：
-     預設補進當下這顆 issue 與提案的範圍，不建新 issue、不建新 worktree
+     預設補進當下 OpenSpec change 與提案的範圍，不建新 change、不建新 worktree
    - phase 完成 → 驗收方式依變更類型分流：涉及可執行程式碼（含測試）→
      本地行為性驗收（真的呼叫程式碼，非只跑測試）；純 Markdown／
      JSON／YAML／設定類變更（無執行期程式碼）→ 人工檢查內容結構與
      邏輯自洽（如格式驗證指令、schema 檢查），不強求「呼叫程式碼」→
-     opsx:verify 對照 spec/tasks →
+     `/spectra-verify` 對照 spec/tasks →
      superpowers:verification-before-completion 看到實際輸出才宣稱完成
      → 小步 commit
    - 不在此階段歸檔
 
-5. 全部 phase 完成、經 verification-before-completion 確認有證據後，以
+4. 全部 phase 完成、經 verification-before-completion 確認有證據後，以
    `superpowers:requesting-code-review` 進行本地 code review，並依
    `superpowers:receiving-code-review` 規則逐項核實 findings；後者只規範 finding
    的處置，不算另一輪審查。本地 Superpowers review 整個 PR／change 全程最多
@@ -442,7 +435,7 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
    下列 push／PR 鏈；其他情況直接進行：
    `git push -u <remote> <change-name>` → `gh pr create --repo
    <owner>/<repo> --base main --head <change-name> ...` 開 PR：
-   <change-name> → main（PR body 含 `Closes #<issue-num>`）→ 記下
+   <change-name> → main（PR body 可選附上既有 Issue link）→ 記下
    PR number；PR labels 與 assignee 是兩個獨立 API 呼叫，依「PR 必做」
    分別補（`<owner>/<repo>` 皆為前置檢查步驟 2 解析出的同一目標）：
    labels 用 `gh api repos/<owner>/<repo>/issues/<pr-num>/labels -f
@@ -510,7 +503,7 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
      required-review blocker，全部成立才可合併。proposal GO 已包含 merge 授權；
      gates 全部成立後直接合併，不得再次詢問。
 
-6. Merge 後：Monitor 盯部署到終態，確認 health check 通過（含 commit
+5. Merge 後：Monitor 盯部署到終態，確認 health check 通過（含 commit
    比對）；失敗先 systematic-debugging 找根因，需要回退時先確認：要退回
    的 commit 是明確可辨識的（如上一個 health check 通過的 tag／commit
    sha，不可憑印象猜）、有無涉及 DB schema／migration（本次改動若含
@@ -519,9 +512,8 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
    部署平台手動重新部署；宣稱 prod 驗收通過前用
    verification-before-completion 跑實際請求／截圖／log 佐證
 
-7. main 驗收無誤後，opsx:archive 歸檔整個 <change-name>；確認關聯 issue
-   已隨 PR 自動關閉（未關閉則 `gh issue close <issue-num> --repo
-   <owner>/<repo>`）
+6. main 驗收無誤後，`/spectra-archive` 歸檔整個 <change-name>；若有 optional
+   Issue link，是否關閉不構成流程 gate。
 
 ## 例外／不適用情境
 

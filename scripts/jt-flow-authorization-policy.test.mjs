@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 
 const oneSkill = readFileSync(
@@ -16,11 +16,50 @@ const livingQueueSpec = readFileSync(
   "openspec/specs/jt-flow-queue-delegation/spec.md",
   "utf8",
 );
+const livingTeamModeSpec = readFileSync(
+  "openspec/specs/jt-flow-one-team-mode-dispatch/spec.md",
+  "utf8",
+);
 const activeQueueDeltaPath =
   "openspec/changes/make-jt-flow-all-dependency-aware/specs/jt-flow-queue-delegation/spec.md";
 const activeQueueDelta = existsSync(activeQueueDeltaPath)
   ? readFileSync(activeQueueDeltaPath, "utf8")
   : null;
+const canonicalChangeName = "make-openspec-canonical";
+const canonicalActiveChangeRoot = `openspec/changes/${canonicalChangeName}`;
+const canonicalChangeRoot = (() => {
+  if (existsSync(canonicalActiveChangeRoot)) {
+    return canonicalActiveChangeRoot;
+  }
+
+  const archiveRoot = "openspec/changes/archive";
+  if (!existsSync(archiveRoot)) {
+    return null;
+  }
+
+  const archivedChange = readdirSync(archiveRoot)
+    .filter((entry) => entry.endsWith(`-${canonicalChangeName}`))
+    .sort()
+    .at(-1);
+  return archivedChange ? `${archiveRoot}/${archivedChange}` : null;
+})();
+const readCanonicalArtifact = (relativePath) => {
+  if (!canonicalChangeRoot) {
+    return null;
+  }
+
+  const artifactPath = `${canonicalChangeRoot}/${relativePath}`;
+  return existsSync(artifactPath) ? readFileSync(artifactPath, "utf8") : null;
+};
+const canonicalQueueDelta = readCanonicalArtifact(
+  "specs/jt-flow-queue-delegation/spec.md",
+);
+const canonicalTeamModeDelta = readCanonicalArtifact(
+  "specs/jt-flow-one-team-mode-dispatch/spec.md",
+);
+const canonicalProposal = readCanonicalArtifact("proposal.md");
+const canonicalDesign = readCanonicalArtifact("design.md");
+const canonicalTasks = readCanonicalArtifact("tasks.md");
 
 const rawSectionContaining = (document, heading) => {
   const section = document
@@ -62,7 +101,8 @@ const assertOrdered = (document, expectations) => {
 test("explicit invocation authorizes proposal preparation without implementation", () => {
   const contract = sectionContaining(oneSkill, "端到端授權契約");
 
-  assert.match(contract, /明確.*呼叫.*issue.*OpenSpec.*不需.*確認/i);
+  assert.match(contract, /明確.*呼叫.*OpenSpec.*不需.*確認/i);
+  assert.doesNotMatch(contract, /tracking issue/i);
   assert.match(contract, /proposal GO.*之前.*不得.*實作/i);
 });
 
@@ -73,7 +113,7 @@ test("proposal GO authorizes the complete normal delivery chain", () => {
 
   assert.match(
     contract,
-    /實作.*commit.*push.*PR.*review.*merge.*部署驗收.*issue.*歸檔/i,
+    /實作.*commit.*push.*PR.*review.*merge.*部署驗收.*(?:OpenSpec|歸檔)/i,
   );
   assert.match(contract, /不再.*授權|不得.*重複.*確認/);
   assert.doesNotMatch(
@@ -117,17 +157,13 @@ test("post-GO pauses are limited to observable safety exceptions", () => {
   assert.match(exceptions, /rollback|回退/i);
   assert.match(
     exceptions,
-    /實作細節.*測試修正.*review.*push.*PR.*merge.*部署.*issue.*歸檔.*不得.*暫停/s,
+    /實作細節.*測試修正.*review.*push.*PR.*merge.*部署.*歸檔.*不得.*暫停/s,
   );
 });
 
-test("a single unclear issue or proposal is treated as genuine ambiguity", () => {
+test("a single unclear proposal is treated as genuine ambiguity", () => {
   const flow = sectionContaining(oneSkill, "流程");
 
-  assert.match(
-    flow,
-    /只命中 1 筆.*無法明確證實.*真實歧義.*請使用者/s,
-  );
   assert.match(
     flow,
     /只命中 1 個 active 提案.*無法明確證實.*真實歧義.*請使用者/s,
@@ -182,7 +218,7 @@ test("delegated item keeps a mismatched GO local and requires an exact current i
 
   assert.match(
     executionContract,
-    /change identifier.*proposal 路徑.*issue identifier.*<owner>\/<repo>.*已核准範圍/is,
+    /change identifier.*proposal 路徑.*<owner>\/<repo>.*已核准範圍/is,
   );
   assert.match(executionContract, /proposal GO.*目前 item.*相符/is);
   assert.match(executionContract, /任一欄不符.*`AWAITING_GO`/is);
@@ -261,5 +297,115 @@ test("published guidance describes one normal checkpoint", () => {
       policy,
       /proposal GO 後.*CodeRabbit.*(?:consent|確認).*(?:第二|再次|另一)/i,
     );
+  }
+});
+
+test("jt-flow-one uses OpenSpec as the sole current planning record", () => {
+  const normalizedSkill = normalize(oneSkill);
+  const normalizedReadme = normalize(readme);
+  const normalizedGuidance = normalize(guidance);
+
+  assert.doesNotMatch(oneSkill, /superpowers:(?:brainstorming|writing-plans)/i);
+  for (const policy of [normalizedSkill, normalizedReadme, normalizedGuidance]) {
+    assert.match(
+      policy,
+      /OpenSpec.*(?:唯一|sole).*(?:需求|計畫|planning|交付)/i,
+    );
+    assert.match(
+      policy,
+      /(?:不另|不得|must not|do not).*(?:平行.*(?:規劃|planning)|parallel.*planning)/i,
+    );
+  }
+});
+
+test("OpenSpec-only delivery does not require a tracking issue", () => {
+  const flow = sectionContaining(oneSkill, "流程");
+  const contract = sectionContaining(oneSkill, "端到端授權契約");
+  const executionContract = normalize(
+    rawSectionContaining(oneSkill, "Queue execution contract"),
+  );
+
+  assert.match(flow, /需求.*OpenSpec.*proposal GO.*實作.*PR/s);
+  assert.match(flow, /Issue.*(?:可選|選用|optional)/i);
+  assert.doesNotMatch(flow, /建立／沿用追蹤 issue/);
+  assert.doesNotMatch(contract, /tracking issue/i);
+  assert.doesNotMatch(executionContract, /issue identifier/i);
+});
+
+test("OpenSpec-only queue delta replaces the tracking-Issue prerequisite", () => {
+  assert.ok(canonicalQueueDelta, "missing make-openspec-canonical queue delta");
+  const modifiedSection = canonicalQueueDelta.split(/^## REMOVED Requirements/m)[0];
+
+  assert.match(
+    canonicalQueueDelta,
+    /## REMOVED Requirements\s+### Requirement: Active changes have tracking issues before queueing\s+\*\*Reason\*\*:[\s\S]+?\*\*Migration\*\*:/,
+  );
+  assert.match(
+    canonicalQueueDelta,
+    /## ADDED Requirements\s+### Requirement: Active changes use OpenSpec delivery records before queueing/s,
+  );
+  assert.doesNotMatch(
+    modifiedSection,
+    /^### Requirement: Active changes have tracking issues before queueing/m,
+  );
+});
+
+test("OpenSpec-only planning excludes the Superpowers plan pipeline", () => {
+  assert.doesNotMatch(
+    oneSkill,
+    /superpowers:(?:using-superpowers|brainstorming|writing-plans)/i,
+  );
+  assert.match(
+    guidance,
+    /MUST NOT invoke[\s\S]*superpowers:using-superpowers[\s\S]*superpowers:brainstorming[\s\S]*superpowers:writing-plans/i,
+  );
+});
+
+test("make-openspec-canonical declares complete delivery relations", () => {
+  assert.ok(canonicalProposal, "missing make-openspec-canonical proposal");
+  for (const field of [
+    "Priority",
+    "Hard dependencies",
+    "Acceptance dependencies",
+    "External blockers",
+    "Affected areas",
+    "Production targets",
+  ]) {
+    assert.match(canonicalProposal, new RegExp(`^- ${field}:`, "m"));
+  }
+  assert.match(
+    canonicalProposal,
+    /External blockers:[\s\S]*integration[\s\S]*convert-jt-flow-commands-to-skills/i,
+  );
+});
+
+test("OpenSpec deltas replace retired queue and phase references", () => {
+  assert.ok(canonicalQueueDelta, "missing make-openspec-canonical queue delta");
+  assert.ok(canonicalTeamModeDelta, "missing make-openspec-canonical team-mode delta");
+  assert.match(
+    canonicalQueueDelta,
+    /### Requirement: Single-request delivery workflow has one owner[\s\S]*OpenSpec\s+preparation/i,
+  );
+  assert.match(
+    canonicalTeamModeDelta,
+    /### Requirement: The Workflow-tool-mandated dispatch points are unaffected by team-mode detection[\s\S]*Phase 4 code-review dispatch/i,
+  );
+});
+
+test("canonical archive gate verifies the team-mode Purpose migration", () => {
+  assert.ok(canonicalDesign, "missing make-openspec-canonical design");
+  assert.ok(canonicalTasks, "missing make-openspec-canonical tasks");
+  assert.match(
+    canonicalDesign,
+    /manual.*Purpose.*Step 5.*Phase 4|Purpose.*Step 5.*Phase 4.*manual/is,
+  );
+  assert.match(
+    canonicalTasks,
+    /- \[x\] 4\.1[\s\S]*Purpose[\s\S]*Step 5[\s\S]*Phase 4[\s\S]*rg -n[\s\S]*openspec validate --all --strict/i,
+  );
+
+  if (!existsSync(canonicalActiveChangeRoot)) {
+    assert.match(livingTeamModeSpec, /Phase 4 code-review dispatch/i);
+    assert.doesNotMatch(livingTeamModeSpec, /Step 5 code-review dispatch/i);
   }
 });
