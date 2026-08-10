@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.37.1](https://github.com/jurislm/jurislm-tools/compare/v1.37.0...v1.37.1) (2026-08-10)
+
+
+### 📚 Documentation
+
+* **openspec:** reconcile living specifications ([#207](https://github.com/jurislm/jurislm-tools/issues/207)) ([d3cd5c5](https://github.com/jurislm/jurislm-tools/commit/d3cd5c5691271fc2b08441e6e6cb7161586b85bf))
+
 ## [1.37.0](https://github.com/jurislm/jurislm-tools/compare/v1.36.3...v1.37.0) (2026-08-08)
 
 
