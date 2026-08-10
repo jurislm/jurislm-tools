@@ -17,7 +17,7 @@ Audit changed code for security sharp edges in a Claude Code fork. This generate
 
 ## Claude fork context
 
-Run `git diff HEAD` to gather the current changes. If there are no changes, report that no security sharp edges were found and stop.
+Read `git status --porcelain=v1` first. For uncommitted work, collect staged changes with `git diff --cached`, unstaged changes with `git diff`, and bounded reads of the untracked files listed by status. For committed branch or PR review, require an explicit base or merge-base (for example, refreshed `origin/main`) and inspect `git diff --no-ext-diff <base>...HEAD`; do not rely on `git diff HEAD`, which omits committed changes and untracked files. If the collected set is empty, report that no security sharp edges were found and stop.
 
 Analyze the diff through the Scoundrel, Lazy Developer, and Confused Developer lenses. Return a consolidated report with findings grouped by severity, affected files, and recommended fixes. The main thread decides whether to apply any fixes.
 

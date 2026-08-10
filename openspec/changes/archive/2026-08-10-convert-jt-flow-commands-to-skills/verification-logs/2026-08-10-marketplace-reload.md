@@ -1,7 +1,10 @@
 # Marketplace reload verification
 
 Verified 2026-08-10 21:08 CST（台灣時間） in the current Codex desktop session
-after the merged marketplace was loaded:
+after loading the marketplace from repository revision
+`9c1876395f8593a80a76b483b6a188edab33d4cb` (the branch revision used for this
+check, not a claim that it had already merged) with marketplace/plugin revision
+`1.37.0`:
 
 - The Skill catalog lists `jt-flow:jt-flow-one`.
 - The Skill catalog lists `jt-flow:jt-flow-all`.

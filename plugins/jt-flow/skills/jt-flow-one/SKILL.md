@@ -70,7 +70,7 @@ gate。
 
 本 Skill 現有兩處因「2 個以上平行角度」而規定用 Workflow tool 派工的地方——
 三工具研究（Context7/Exa/Firecrawl，見下方「遇到阻塞時的封閉迴圈」）與
-code-review dispatch——不論上面判定結果為何，行為都不變：一律由目前執行
+Phase 4 code-review dispatch——不論上面判定結果為何，行為都不變：一律由目前執行
 `jt-flow-one` 的 session 直接呼叫 Workflow tool。原因是 `Workflow` tool 只有
 主 session（未被其他 agent 派下來的那一層）才能呼叫，spawn 出去的 agent
 拿不到這個 tool（已實測驗證：spawn 一個 agent 檢查其工具清單，`Workflow`

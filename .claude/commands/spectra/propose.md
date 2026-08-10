@@ -96,11 +96,7 @@ If no argument is provided, the workflow will extract requirements from conversa
 
    Generate the proposal content based on change type (see formats below), then write it via CLI:
 
-   ```bash
-   spectra new artifact proposal --change "<name>" --stdin <<'ARTIFACT_EOF'
-   <proposal content>
-   ARTIFACT_EOF
-   ```
+   Invoke `spectra new artifact proposal --change "<name>" --stdin` through a process API, passing the generated proposal content via stdin as one input stream. Do not place requirement, user, or conversation content in a fixed shell heredoc, command substitution, or interpolated script.
 
    If the command fails with a validation error, fix the content and retry.
 
@@ -236,21 +232,7 @@ If no argument is provided, the workflow will extract requirements from conversa
    - Apply `context` and `rules` as constraints - but do NOT copy them into the file
    - Write the artifact via CLI (the CLI handles directory creation and format validation):
 
-     For **design** or **tasks**:
-
-     ```bash
-     spectra new artifact <artifact-id> --change "<name>" --stdin <<'ARTIFACT_EOF'
-     <content>
-     ARTIFACT_EOF
-     ```
-
-     For **specs** (one command per capability):
-
-     ```bash
-     spectra new artifact spec <capability-name> --change "<name>" --stdin <<'ARTIFACT_EOF'
-     <delta spec content>
-     ARTIFACT_EOF
-     ```
+     For **design** or **tasks**, invoke `spectra new artifact <artifact-id> --change "<name>" --stdin` through a process API and pass the generated content via stdin. For **specs** (one command per capability), invoke `spectra new artifact spec <capability-name> --change "<name>" --stdin` the same way. Do not place generated content in a fixed shell heredoc, command substitution, or interpolated script.
 
      If the command fails with a validation error, fix the content and retry.
 
@@ -331,7 +313,8 @@ If no argument is provided, the workflow will extract requirements from conversa
       d. Repeat up to 2 total iterations
    5. After 2 attempts, if findings remain:
       - Show remaining findings as a summary
-      - Proceed normally (do NOT block)
+      - If any Critical finding remains, stop the workflow; do not continue to validation, parking, apply, or downstream steps
+      - If only Warning findings remain, continue the normal proposal flow after reporting them
 
 10. **Validation**
 
@@ -371,7 +354,7 @@ If no argument is provided, the workflow will extract requirements from conversa
 - **IMPORTANT**: `context` and `rules` are constraints for YOU, not content for the file
   - Do NOT copy `<context>`, `<rules>`, `<project_context>` blocks into the artifact
   - These guide what you write, but should never appear in the output
-- **Parallel task markers (`[P]`)**: When creating the **tasks** artifact, first read `.spectra.yaml`. If `parallel_tasks: true` is set, add `[P]` markers to tasks that can be executed in parallel. Format: `- [ ] [P] Task description`. A task qualifies for `[P]` if it targets different files from other pending tasks AND has no dependency on incomplete tasks in the same group. When `parallel_tasks` is not enabled, do NOT add `[P]` markers.
+- **Parallel task markers (`[P]`)**: When creating the **tasks** artifact, first read `.spectra.yaml`. If `parallel_tasks: true` is set, add `[P]` markers to tasks that can be executed in parallel. Format: `- [ ] [P] Task description`. A task qualifies when it has no data dependency on another incomplete task and its modification region does not overlap another pending task, including when both tasks target different regions of the same file. When `parallel_tasks` is not enabled, do NOT add `[P]` markers.
 
 **Guardrails**
 

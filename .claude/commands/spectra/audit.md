@@ -30,7 +30,7 @@ When invoked directly as `/spectra:audit`:
 
 ### Phase 1: Gather Changes
 
-Run `git diff HEAD` to get the full diff of current modifications.
+Read `git status --porcelain=v1` first. For uncommitted work, collect staged changes with `git diff --cached`, unstaged changes with `git diff`, and bounded reads of the untracked files listed by status. For committed branch or PR review, require an explicit base or merge-base (for example, refreshed `origin/main`) and inspect `git diff --no-ext-diff <base>...HEAD`; do not rely on `git diff HEAD`, which omits committed changes and untracked files.
 
 If there are no changes, report "No changes to audit" and stop.
 

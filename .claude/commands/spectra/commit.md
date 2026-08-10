@@ -113,9 +113,11 @@ This is a **utility skill** (not a workflow step). It reads source file tracking
 
     **6a-i. Incomplete task handling**
 
-    Read the tasks file at `openspec/changes/<name>/tasks.md`. Count `- [x]` (complete) and `- [ ]` (incomplete) checkboxes.
+    If `openspec/changes/<name>/tasks.md` exists, read it and count `- [x]`
+    (complete) and `- [ ]` (incomplete) checkboxes. If it does not exist, set
+    the task count to `0/0` and skip to 6a-ii; do not fail the archive flow.
 
-    - If **all tasks are complete**: skip to 6a-ii.
+    - If **all tasks are complete or no tasks file exists**: skip to 6a-ii.
     - If **incomplete tasks exist**:
       - Display the list of incomplete tasks
       - Use the **AskUserQuestion tool** to ask: "These tasks are still incomplete. Mark all as complete before archiving?"
@@ -191,10 +193,16 @@ This is a **utility skill** (not a workflow step). It reads source file tracking
    Use the proposal summary and task counts captured before archive. Do not read
    `openspec/changes/<name>/proposal.md` after archiving; it has been moved.
 
+   Determine one allowed commit type from the change's scope:
+   `feat` for new or materially expanded behavior, `fix` for incorrect behavior
+   or information, `docs` for documentation/specification-only changes, and
+   `chore` for other maintenance. If the type is genuinely ambiguous, ask the
+   user to choose. Never use `spectra` as a commit type.
+
    Generate a message in this format:
 
    ```
-   spectra(<change-name>): <summary>
+   <type>: <summary>
 
    Change: <change-name>
    Tasks: <completed>/<total> complete
@@ -203,7 +211,7 @@ This is a **utility skill** (not a workflow step). It reads source file tracking
    If the archive sub-flow was executed (user selected "Archive first, then commit together"), add `Archived: yes` to the message body:
 
    ```
-   spectra(<change-name>): <summary>
+   <type>: <summary>
 
    Change: <change-name>
    Tasks: <completed>/<total> complete
@@ -226,13 +234,24 @@ This is a **utility skill** (not a workflow step). It reads source file tracking
 
    **NEVER use `git add .` or `git add -A`.** Each file must be staged explicitly.
 
-9. **Commit**
+9. **Secret preflight**
+
+   Before committing, run the repository-approved secret scanner described by
+   the `jt-flow-one` secret-scanning contract. It must inspect the staged tree
+   and every commit, tree, and blob that the branch will push relative to the
+   refreshed remote `main`; if the scanner lacks a history/range mode, enumerate
+   each commit patch and its added or modified text/binary content, plus the
+   complete committed diff and explicitly supplied instruction files. A scanner
+   failure, missing scanner, or finding stops the workflow before `git commit`.
+   Never print credential values.
+
+10. **Commit**
 
    ```bash
    git commit -m "<message>"
    ```
 
-10. **Show result**
+11. **Show result**
 
     ```bash
     git log --oneline -1
@@ -245,7 +264,7 @@ This is a **utility skill** (not a workflow step). It reads source file tracking
 ```
 ## Committed: <change-name>
 
-**Commit:** <short-hash> spectra(<change-name>): <summary>
+**Commit:** <short-hash> <type>: <summary>
 **Files:** <N> files committed (<A> artifacts, <S> source files)
 **Tasks:** <completed>/<total> complete
 ```

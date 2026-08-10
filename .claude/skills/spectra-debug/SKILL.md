@@ -84,10 +84,10 @@ Ask these questions:
 
 Now — and only now — fix the bug.
 
-1. **Write a failing test** that reproduces the bug. If `tdd: true` is set in `.spectra.yaml`, fetch TDD instructions via `spectra instructions --skill tdd` and follow the Red-Green-Refactor cycle
+1. **Classify the bug surface**. For executable code, write a failing test that reproduces the bug. For Markdown, JSON, YAML, or workflow configuration, reproduce it with the failing validator, policy assertion, or minimal fixture that matches the failure. If `tdd: true` is set in `.spectra.yaml`, fetch TDD instructions via `spectra instructions --skill tdd` and follow the Red-Green-Refactor cycle where applicable.
 2. **Make the minimum change** to fix the root cause — not the symptoms
-3. **Run the test** — confirm it passes
-4. **Run the full test suite** — ensure no regressions
+3. **Run the focused reproduction or validator** — confirm it passes
+4. **Run the applicable full test or validation suite** — ensure no regressions
 5. **Check related code** — if this pattern exists elsewhere, fix those too
 
 ---
@@ -110,7 +110,7 @@ Now — and only now — fix the bug.
 
 - **Don't guess** — Every change must be based on evidence
 - **Don't fix symptoms** — Find and fix the root cause
-- **Don't skip the test** — Phase 4 always starts with a failing test
+- **Don't skip reproduction** — Phase 4 always starts with a reproducible failing test or validation assertion appropriate to the bug surface
 - **Don't power through** — After 3 failed attempts, stop and reassess
 - **Do keep notes** — Document what you tried, what you found, what you ruled out
 - **Do check broadly** — A bug in one place often means the same bug exists elsewhere

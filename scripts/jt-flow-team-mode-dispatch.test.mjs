@@ -73,7 +73,7 @@ test("both existing 2+-angle dispatch points always call Workflow directly, unaf
   const section = sectionContaining(skill, "團隊模式（Agent Teams）偵測與派工");
 
   assertContains(section, "三工具研究（Context7/Exa/Firecrawl");
-  assertContains(section, "code-review dispatch");
+  assertContains(section, "Phase 4 code-review dispatch");
   assertContains(section, "不論上面判定結果為何，行為都不變");
   assertContains(
     section,
@@ -116,7 +116,7 @@ test("team-mode section precedes both dispatch points it governs in reading orde
 
   assert.ok(sectionIndex >= 0, "team-mode section not found");
   assert.ok(sectionIndex < researchIndex, "team-mode section must precede the three-tool research paragraph");
-  assert.ok(sectionIndex < codeReviewIndex, "team-mode section must precede the code-review dispatch paragraph");
+  assert.ok(sectionIndex < codeReviewIndex, "team-mode section must precede the Phase 4 code-review dispatch paragraph");
 });
 
 test("mirrors the detection logic and the no-behavior-change rationale in README.md and root CLAUDE.md", () => {

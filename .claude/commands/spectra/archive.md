@@ -23,6 +23,12 @@ Archive a completed change.
    include the schema used for each change when available. Do not guess when
    multiple candidates remain.
 
+   Before reading status or constructing any path, run `spectra list --json` and
+   require the selected value to be an exact active change name returned by the
+   CLI. Reject names containing path separators, `..`, or any value that does
+   not match `^[a-z0-9]+(?:-[a-z0-9]+)*$`; never use an unvalidated argument as a
+   filesystem path.
+
 2. **Check artifact completion status**
 
    Run `spectra status --change "<name>" --json` to check artifact completion.
@@ -81,16 +87,18 @@ Archive a completed change.
 
    **Optional flags:**
    - `--mark-tasks-complete` — mark all incomplete tasks as complete before archiving
-   - `--no-validate` — skip delta spec validation
 
    **If archive fails** for any reason, preserve `.spectra/touched/<change-name>.json`
    and report the error. If it fails with "already exists", suggest renaming the
    existing archive.
 
-   After archive succeeds, remove the tracking file if it exists:
+   After archive succeeds, remove the tracking file if it exists. Use only the
+   validated change name; resolve `.spectra/touched/<name>.json` and require its
+   canonical parent to equal the canonical `.spectra/touched` directory before
+   deleting it with `rm --`. Preserve the file when archive fails.
 
    ```bash
-   rm -f .spectra/touched/<change-name>.json
+   rm -- .spectra/touched/<validated-change-name>.json
    ```
 
 6. **Display summary**

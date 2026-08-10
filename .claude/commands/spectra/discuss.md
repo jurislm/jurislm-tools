@@ -42,14 +42,14 @@ Pull 2-5 keywords from the user's topic. For "search should support fuzzy matchi
 
 ### Step 2: Scout the codebase
 
-Use Grep and Glob to find related source files (not docs, not tests — source code). Spend no more than a few seconds on this. Read up to 5 of the most relevant files found.
+Use Grep and Glob to find relevant repository-native evidence: source files, Skills and commands, OpenSpec specs or change artifacts, JSON/YAML manifests and configuration, validation scripts, and focused tests. Exclude only unrelated files. Spend no more than a few seconds on this. Read up to 5 of the most relevant files found.
 
 ### Step 3: Pick a mode
 
-- **3+ related source files found** → **Assumptions mode**: you have enough context to form opinions. List your assumptions, let the user correct.
-- **Fewer than 3 related source files found** → **Interview mode**: not enough code to base assumptions on. Fall through to "How to Discuss" below and ask questions one at a time.
+- **3+ related evidence artifacts found** → **Assumptions mode**: you have enough context to form opinions. List your assumptions, let the user correct.
+- **Fewer than 3 related evidence artifacts found** → **Interview mode**: not enough repository context to base assumptions on. Fall through to "How to Discuss" below and ask questions one at a time.
 
-Announce which mode you picked and why: "Found `search.rs`, `SearchPanel.svelte`, `search-store.ts` — I have enough context to list my assumptions." or "Didn't find much related code — I'll ask questions instead."
+Announce which mode you picked and why, naming the evidence paths and types: "Found the relevant Skill, OpenSpec spec, and focused validation test — I have enough context to list my assumptions." or "Didn't find enough relevant repository evidence — I'll ask questions instead."
 
 ### Assumptions mode
 

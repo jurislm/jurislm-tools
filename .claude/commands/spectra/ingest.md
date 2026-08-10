@@ -23,7 +23,11 @@ Update an existing Spectra change — from a plan file or conversation context.
 
 1. **Locate the requirement source**
 
-   a. **Argument provided** → treat as plan file reference (prepend `~/.claude/plans/` and append `.md` if needed)
+   a. **Argument provided**:
+   - Resolve the canonical plan root from `~/.claude/plans/` first.
+   - If the input is a plain name (no `/` or `\\`, not absolute, and not prefixed with `~`), resolve it under the canonical plan root and append `.md` only if that candidate exists.
+   - If the input is an explicit path, accept only an absolute path or a path prefixed with `~`; expand `~`, reject `..` path components, canonicalize the existing file, and require the canonical result to remain under the canonical plan root. Reject missing files and symlink targets that escape the plan root.
+   - Use only the resolved canonical file as the plan source. Never prepend the plan root to an explicit path or read an uncanonicalized path.
    - If the file exists → use it as the plan file source, proceed to Step 2
    - If the file does NOT exist → report the error and **stop**
 
@@ -111,6 +115,8 @@ Update an existing Spectra change — from a plan file or conversation context.
 
    The instructions JSON includes `locale` — the language to write artifacts in. If present, you MUST write the artifact content in that language. Exception: spec files (specs/\*/\*.md) MUST always be written in English regardless of locale, because they use normative language (SHALL/MUST).
 
+   Read `outputPath` (or `resolvedOutputPath`) from the instructions and verify that it is inside the selected change directory. Generate the artifact in memory, then invoke the corresponding `spectra new artifact ... --stdin` command through a process API with the generated content passed via stdin. Use `spectra new artifact spec <capability-name> --change "<name>" --stdin` for specs and `spectra new artifact <artifact-id> --change "<name>" --stdin` for all other artifacts. Do not place plan, user, or conversation content in a shell heredoc, command substitution, or interpolated script. After every write, verify the output file exists at the instructed path and rerun `spectra status "<name>" --json` before continuing.
+
    **Plan-to-Artifact Mapping** (when using a plan file):
 
    | Plan Section       | Artifact         | How to Map                                        |
@@ -137,7 +143,7 @@ Update an existing Spectra change — from a plan file or conversation context.
    - **Preserve existing `[P]` markers** on tasks that still qualify
    - Do NOT remove existing content
 
-   **Parallel task markers (`[P]`)**: When creating or updating the **tasks** artifact, first read `.spectra.yaml`. If `parallel_tasks: true` is set, add `[P]` markers to new tasks that can be executed in parallel. Format: `- [ ] [P] Task description`. A task qualifies for `[P]` if it targets different files from other pending tasks AND has no dependency on incomplete tasks in the same group. When `parallel_tasks` is not enabled, do NOT add `[P]` markers — but still preserve any existing `[P]` markers already in the file.
+   **Parallel task markers (`[P]`)**: When creating or updating the **tasks** artifact, first read `.spectra.yaml`. If `parallel_tasks: true` is set, add `[P]` markers to new tasks that can be executed in parallel. Format: `- [ ] [P] Task description`. A task qualifies when it has no data dependency on another incomplete task and its modification region does not overlap another pending task, including when both tasks target different regions of the same file. When `parallel_tasks` is not enabled, do NOT add `[P]` markers — but still preserve any existing `[P]` markers already in the file.
 
    After creating each artifact, re-check status:
 
@@ -222,7 +228,8 @@ Update an existing Spectra change — from a plan file or conversation context.
       d. Repeat up to 2 total iterations
    4. After 2 attempts, if findings remain:
       - Show remaining findings as a summary
-      - Proceed normally (do NOT block)
+      - If any Critical finding remains, stop the workflow; do not continue to summary, apply, or downstream steps
+      - If only Warning findings remain, continue the normal ingest flow after reporting them
 
 8. **Validation**
 
