@@ -30,7 +30,9 @@ plugins/<name>/
 - Coolify：`@jurislm/coolify-mcp@3.6.0`
 - Hetzner：`@jurislm/hetzner-mcp@1.5.0`
 
-任何 `@latest`、range 或 unversioned package 都必須被 repository validation 拒絕。
+Credential-bearing local MCP launchers must use exact semantic versions; the
+repository validator enforces this policy for supported launcher/package
+runner configurations.
 
 ## Environment variables
 

@@ -18,16 +18,20 @@
 
 ```json
 {
-  "command": "npx",
-  "args": ["-y", "@jurislm/coolify-mcp@3.6.0"],
-  "env": {
-    "COOLIFY_ACCESS_TOKEN": "${COOLIFY_ACCESS_TOKEN}",
-    "COOLIFY_BASE_URL": "${COOLIFY_BASE_URL}"
-  }
+  "command": "zsh",
+  "args": [
+    "-lc",
+    "exec env -i HOME=\"$HOME\" PATH=\"$PATH\" USER=\"$USER\" SHELL=\"$SHELL\" TERM=\"$TERM\" LOGNAME=\"$LOGNAME\" COOLIFY_ACCESS_TOKEN=\"$COOLIFY_ACCESS_TOKEN\" COOLIFY_BASE_URL=\"$COOLIFY_BASE_URL\" npx -y @jurislm/coolify-mcp@3.6.0"
+  ]
 }
 ```
 
 npm 套件：`@jurislm/coolify-mcp@3.6.0`（jurislm/coolify-mcp repo）
+
+MCP launcher 使用 login shell 與 `env -i` allowlist，避免桌面啟動環境
+遺失 `~/.zshenv` 變數或把其他 shell secrets 傳給 MCP。`~/.zshenv`、
+`~/.zprofile`、`~/.zlogin` 不得向 stdout 輸出內容，以免污染 stdio
+JSON-RPC handshake。
 
 ## MCP 工具分類
 
@@ -53,10 +57,13 @@ npm 套件：`@jurislm/coolify-mcp@3.6.0`（jurislm/coolify-mcp repo）
 
 | 類型 | 說明 | FQDN 更新方式 |
 |------|------|-------------|
-| Application | 單一應用（Git / Dockerfile / Docker Image） | API 欄位 `domains`（非 `fqdn`） |
+| Application | 單一應用（Git / Dockerfile / Docker Image） | API 欄位 `fqdn` 或 `domains` |
+| Application（docker-compose build pack） | 使用 docker-compose 部署的 Application | API 欄位 `docker_compose_domains` |
 | Service | Docker Compose 組合（多容器） | 修改 `docker_compose_raw` 內的 Traefik labels |
 
-**重要**：設定域名時 API request body 欄位名稱是 `domains`（傳入 `fqdn` 觸發 422）。Service API 只接受 `name`, `description`, `docker_compose_raw`。
+**重要**：docker-compose Application 不可使用 `fqdn` 或 `domains`，應傳
+`docker_compose_domains`；Service API 以 `docker_compose_raw` 內的 Traefik
+labels 控制 FQDN。請依實際 Application build pack 選擇欄位。
 
 ## 環境變數
 

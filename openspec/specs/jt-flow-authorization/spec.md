@@ -1,7 +1,9 @@
 # jt-flow-authorization Specification
 
 ## Purpose
-TBD - created by archiving change streamline-jt-flow-one-authorization. Update Purpose after archive.
+Define the authorization checkpoints, bounded post-GO exceptions, review
+consent disclosure, and durable approval handoff shared by `jt-flow-one` and
+delegated `jt-flow-all` items.
 ## Requirements
 ### Requirement: Explicit invocation authorizes proposal preparation
 

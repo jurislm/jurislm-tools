@@ -6,7 +6,7 @@
 
 ## System context
 
-`.claude-plugin/marketplace.json` 是唯一 canonical marketplace。Claude Code 原生讀取此格式；Codex 透過已驗證的 Claude-marketplace compatibility path 發現同一份 entries，不維護第二套 `.codex-plugin` 或 `.agents` metadata。
+`.claude-plugin/marketplace.json` 是唯一 canonical marketplace。Claude Code 原生讀取此格式；Codex 透過支援的 Claude-marketplace compatibility path 發現同一份 entries，不維護第二套 `.codex-plugin` 或 `.agents` metadata。特定 runtime 的可發現性仍須以當次 runtime listing/readback 驗證，不由本文件單獨宣稱已完成行為驗收。
 
 ```text
 .claude-plugin/marketplace.json
@@ -77,12 +77,24 @@ claude plugin validate .
 
 The aggregate command checks tests, marketplace integrity, immutable dependencies, release-version synchronization, and entry-document Markdown.
 
-## Detail specs
+## Living specs
 
+- [CI platform](../ci-platform/spec.md)
+- [Podcast-to-blog detail](../content/podcast-to-blog-detail.md)
+- [Development dependency security](../development-dependency-security/spec.md)
+- [Documentation and standards](../docs-and-standards/spec.md)
 - [Infrastructure overview](../infra/infra-overview.md)
+- [Coolify detail](../infra/coolify-detail.md)
+- [Hetzner detail](../infra/hetzner-detail.md)
+- [GitHub Flow entry documentation](../github-flow-entry-documentation/spec.md)
+- [jt-flow authorization](../jt-flow-authorization/spec.md)
+- [jt-flow team-mode dispatch](../jt-flow-one-team-mode-dispatch/spec.md)
+- [jt-flow queue delegation](../jt-flow-queue-delegation/spec.md)
+- [jt-flow review orchestration](../jt-flow-review-orchestration/spec.md)
+- [jt-flow single-request Skill naming](../jt-flow-single-skill-naming/spec.md)
 - [Langfuse detail](../observability/langfuse-detail.md)
 - [Repository standards detail](../docs-and-standards/repo-standards-detail.md)
 - [Codebase sync detail](../docs-and-standards/codebase-sync-detail.md)
-- [Podcast-to-blog detail](../content/podcast-to-blog-detail.md)
 - [Learn-eval detail](../learning/learn-eval-detail.md)
+- [Plugin packaging integrity](../plugin-packaging-integrity/spec.md)
 - [OpenSpec system](./openspec-system.md)

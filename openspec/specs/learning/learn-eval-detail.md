@@ -8,7 +8,8 @@
 
 | 產物 | 路徑 | 說明 |
 |------|------|------|
-| `/learn-eval` command | `plugins/learn-eval/commands/learn-eval.md` | 唯一產物（118 行），無 skill 亦無 agent |
+| `learn-eval` skill | `plugins/learn-eval/skills/learn-eval/SKILL.md` | 萃取、品質閘與儲存路徑判斷的 canonical 邏輯 |
+| `/learn-eval` command | `plugins/learn-eval/commands/learn-eval.md` | 委派至 skill 的相容性入口 |
 
 ## 執行流程
 
@@ -33,7 +34,7 @@
 
 ### Checklist（必須全部執行）
 
-- [ ] Grep `~/.claude/skills/` 與相關 project `.claude/skills/` 確認無內容重疊
+- [ ] Grep `~/.claude/skills/`、`~/.claude/rules/` 與相關 project `.claude/skills/`、`.claude/rules/` 確認無內容重疊
 - [ ] 檢查 MEMORY.md（global + project）確認無重疊
 - [ ] 考慮是否 append 到現有 skill 即可（不需建新檔）
 - [ ] 確認這是可重複利用的 pattern，而非一次性修法
@@ -79,4 +80,6 @@ origin: auto-extracted
 
 ## 觸發條件
 
-使用者執行 `/learn-eval`（無需參數）時啟動。無 auto-activate。
+使用者以意圖要求萃取或保存 session pattern 時啟動 `learn-eval` skill；
+`/learn-eval` command 保留為相容性入口並委派至該 skill。Skill 不會在沒有
+相關意圖時自動執行。

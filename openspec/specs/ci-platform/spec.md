@@ -1,7 +1,7 @@
 # ci-platform Specification
 
 ## Purpose
-TBD - created by archiving change migrate-jurislm-tools-ci-to-drone. Update Purpose after archive.
+Define the current Drone validation and Release Please ownership, commit and pull-request title policy, squash semantics, and merge-protection contract for this plugin repository. Live Drone/GitHub status is operational evidence read back at delivery time; this spec does not replace that readback.
 ## Requirements
 ### Requirement: Drone enforces repository quality
 
@@ -55,20 +55,6 @@ plugin-repository variant.
 - **THEN** `.drone.yml` owns validation and release
 - **AND** no overlapping Repository Quality or Release Please GitHub Actions
   workflow remains
-
-### Requirement: Drone cutover has live evidence
-
-The migration SHALL NOT be considered complete until local structural
-validation and a live Drone pull-request build succeed, GitHub shows the
-corresponding Drone status, and the post-merge `main` validation and release
-pipeline results are read back.
-
-#### Scenario: Local configuration is valid but Drone cannot execute
-
-- **WHEN** static checks pass but the live Drone build or GitHub status does
-  not succeed
-- **THEN** the migration remains incomplete
-- **AND** the failure evidence is retained without claiming successful cutover
 
 ### Requirement: Permitted commit types have a single definition
 The repository SHALL define its permitted commit types in exactly one machine-readable location.
@@ -185,4 +171,3 @@ required context.
 - **WHEN** Drone cannot report a status and a merge is operationally necessary
 - **THEN** an administrator can still merge, because protection is not enforced against
   administrators
-

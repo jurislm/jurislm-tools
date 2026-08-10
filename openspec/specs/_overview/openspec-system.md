@@ -12,16 +12,23 @@ OpenSpec 是一個以 artifact 為中心的規格管理系統，強制開發者�
 
 ```
 openspec/
-├── config.yaml          ← schema 設定（目前為空骨架）
+├── config.yaml          ← schema、project context 與 workflow rules
 ├── specs/               ← 已完成並存活的 spec 文件（本文件所在位置）
 │   ├── _overview/
-│   ├── infra/
-│   ├── observability/
-│   ├── dev-workflow/
-│   ├── docs-and-standards/
+│   ├── ci-platform/
 │   ├── content/
+│   ├── development-dependency-security/
+│   ├── docs-and-standards/
+│   ├── github-flow-entry-documentation/
+│   ├── infra/
+│   ├── jt-flow-authorization/
+│   ├── jt-flow-one-team-mode-dispatch/
+│   ├── jt-flow-queue-delegation/
+│   ├── jt-flow-review-orchestration/
+│   ├── jt-flow-single-skill-naming/
 │   ├── learning/
-│   └── discipline/
+│   ├── observability/
+│   └── plugin-packaging-integrity/
 └── changes/             ← 進行中的 change artifacts
     └── archive/         ← 已完成並封存的 changes
 ```
@@ -77,17 +84,15 @@ proposal → design → specs → tasks
 
 ## config.yaml
 
-目前 `openspec/config.yaml` 僅包含空骨架（schema 宣告，無 context 或 rules 設定）。需要填入的內容：
+`openspec/config.yaml` 宣告 `spec-driven` schema，並提供目前 marketplace、版本管理、branch workflow、spec 結構與 proposal/tasks 規則的 project context。它是 artifact 產製時的工作上下文，不是 marketplace plugin manifest。
 
 ```yaml
 schema: spec-driven
 
 context: |
-  Tech stack: Claude Code Plugin Marketplace（YAML/Markdown）
-  All plugins are text-only; no compilation or build step.
-  Plugin types: Base, Hybrid (MCP), Skill, Cmd+Agent, Command.
-  Version management: Release Please (feat: → minor, fix: → patch).
-  Branch workflow: feature branch → PR → main.
+  Tech stack: Claude Code Plugin Marketplace (YAML/Markdown only, no compilation step)
+  Domain: jurislm-tools — 9-plugin marketplace for JurisLM development workflows
+  Branch workflow: feature worktree → PR → main.
 ```
 
 ## 與 Marketplace Plugins 的關係
@@ -100,5 +105,5 @@ OpenSpec system 不是 marketplace plugin，但它管理的 specs 描述所有 m
 ## 現況
 
 - `openspec/specs/` 目錄於 2026-05-02 完成初始填充（本批次 spec 寫入）
-- `openspec/changes/` 與 `openspec/changes/archive/` 目前為空（尚無進行中的 change）
-- `config.yaml` 的 `context` 欄位尚未填入（待補）
+- `openspec/changes/` 保存目前進行中的 change artifacts；完成並封存的 artifacts 位於 `openspec/changes/archive/`
+- `openspec list` 與 `openspec status` 是 active change 狀態的即時來源；本文件只描述目錄與流程語意，不固定 active change 數量
