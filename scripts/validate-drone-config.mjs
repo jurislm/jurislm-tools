@@ -134,6 +134,74 @@ requireValue(
   "release-pr must depend on github-release",
 );
 
+const releasePrCommands = list(releaseSteps[releasePrIndex]?.commands);
+const releasePrCommandText = releasePrCommands.join("\n");
+const eligibilityCommand = "node scripts/release-eligibility.mjs";
+const eligibilityIndex = releasePrCommandText.indexOf(eligibilityCommand);
+const releasePrCommandIndex = releasePrCommandText.indexOf(
+  "release-please@17.10.4 release-pr",
+);
+const releasePrCommandCount =
+  releasePrCommandText.match(/release-please@17\.10\.4 release-pr/g)?.length ?? 0;
+const statusAssignment = /([A-Za-z_][A-Za-z0-9_]*)\s*=\s*\$\?/u.exec(releasePrCommandText);
+const statusVariable = statusAssignment?.[1];
+const statusCasePattern = statusVariable
+  ? new RegExp(`case\\s+"?\\$${statusVariable}"?\\s+in`, "u")
+  : null;
+const eligibleBranchStart = statusVariable
+  ? releasePrCommandText.indexOf("0)")
+  : -1;
+const skipBranchStart = statusVariable
+  ? releasePrCommandText.indexOf("10)", eligibleBranchStart + 1)
+  : -1;
+const errorBranchStart = statusVariable
+  ? releasePrCommandText.indexOf("*)", skipBranchStart + 1)
+  : -1;
+
+requireValue(
+  eligibilityIndex !== -1,
+  "release-pr must run scripts/release-eligibility.mjs before Release Please",
+);
+requireValue(
+  releasePrCommandIndex > eligibilityIndex,
+  "release-pr must invoke Release Please only after the eligibility gate",
+);
+requireValue(
+  releasePrCommandCount === 1,
+  "release-pr must contain exactly one Release Please invocation",
+);
+requireValue(
+  eligibilityIndex !== -1 &&
+    releasePrCommandText.lastIndexOf("set +e", eligibilityIndex) !== -1 &&
+    statusAssignment !== null &&
+    releasePrCommandText.indexOf("set -e", statusAssignment.index) > statusAssignment.index,
+  "release-pr must capture the eligibility exit status before restoring errexit",
+);
+requireValue(
+  statusCasePattern?.test(releasePrCommandText) === true,
+  "release-pr must branch on the captured eligibility exit status",
+);
+requireValue(
+  eligibleBranchStart !== -1 &&
+    skipBranchStart > eligibleBranchStart &&
+    releasePrCommandIndex > eligibleBranchStart &&
+    releasePrCommandIndex < skipBranchStart,
+  "release-pr must call Release Please only in the exit-0 branch",
+);
+requireValue(
+  skipBranchStart !== -1 &&
+    errorBranchStart > skipBranchStart &&
+    /;;/u.test(releasePrCommandText.slice(skipBranchStart, errorBranchStart)),
+  "release-pr must handle exit 10 as a successful case branch",
+);
+requireValue(
+  errorBranchStart !== -1 &&
+    new RegExp(`exit\\s+"?\\$${statusVariable}"?`, "u").test(
+      releasePrCommandText.slice(errorBranchStart),
+    ),
+  "release-pr must propagate every non-zero status other than 10",
+);
+
 for (const step of releaseSteps) {
   requireValue(
     step.environment?.RELEASE_PLEASE_TOKEN?.from_secret ===

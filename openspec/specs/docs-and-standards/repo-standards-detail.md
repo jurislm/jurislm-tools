@@ -59,6 +59,21 @@ Plugin repo（`release-type: simple`）特別規則：
 - 修正錯誤資訊 → `fix:`
 - 純格式整理 → `docs:` 或 `chore:`（不觸發）
 
+### Drone release-pr 資格閘門
+
+使用 `release-type: simple` 且以 Drone 執行 Release Please 的 Plugin repo，必須將
+`scripts/release-eligibility.mjs` 與其測試一同納入 repo。`release-please` pipeline
+必須先無條件執行 `github-release`，再由 `release-pr` 讀取 `.release-please-manifest.json`、
+`DRONE_REPO` 與 `DRONE_BRANCH`，透過已驗證身分的 GitHub Compare API 取得從已發布 tag
+到目前分支的完整提交範圍。只有完整範圍含有有效的 `feat` 或 `fix` subject 時，才可呼叫
+Release Please 建立或更新 release PR。
+
+- 沒有提交，或只有有效的 `docs`／`chore` → exit `10`，成功跳過 `release-pr`。
+- 缺少 metadata、token、manifest 版本、Compare page、回應資料或有效 subject → 非 `10`
+  的錯誤，pipeline fail closed，不得呼叫 Release Please。
+- `RELEASE_PLEASE_TOKEN` 只能透過 Drone secret indirection 提供，任何輸出不得包含 token。
+- 範本必須使用 Drone 提供的 `DRONE_REPO`／`DRONE_BRANCH`，不得把 consumer repo 名稱寫死。
+
 ## 觸發條件
 
 使用者詢問「如何設定新 repo」、「release workflow 怎麼寫」、「worktree 怎麼設定」、「ESLint config 怎麼寫」、AGENTS.md 與 CLAUDE.md 同步、Drone/deploy gating、Bun/Vitest、code review workflow，或需要設定 JurisLM 系列 repo 的標準化時啟動。

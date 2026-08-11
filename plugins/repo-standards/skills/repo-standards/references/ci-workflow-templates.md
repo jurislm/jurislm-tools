@@ -150,6 +150,8 @@ steps:
 
 ---
 # release-please：只在 push main 跑（含 release commit 本身）。RELEASE_PLEASE_TOKEN 為 Drone repo-scope secret。
+# `scripts/release-eligibility.mjs` 必須與此模板一同放入 repo，使用 DRONE_REPO／DRONE_BRANCH
+# 比較已發布 manifest tag 到目前分支的完整範圍；只有 feat／fix 才建立 release PR。
 kind: pipeline
 type: docker
 name: release-please
@@ -170,7 +172,22 @@ steps:
     environment:
       RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
     commands:
-      - npx release-please release-pr --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+      - |
+        set +e
+        node scripts/release-eligibility.mjs
+        eligibility_status=$?
+        set -e
+        case "$eligibility_status" in
+          0)
+            npx release-please release-pr --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+            ;;
+          10)
+            echo "release-pr skipped: no feat/fix commit in the unreleased range"
+            ;;
+          *)
+            exit "$eligibility_status"
+            ;;
+        esac
     resources: { limits: { cpu: 2000, memory: 3221225472 } }
 
 ---

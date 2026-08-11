@@ -499,6 +499,7 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 - **Worktree**：feature worktree 直接從 main 建立於 `.claude/worktrees/<change-name>`，不建立 develop；`.claude/worktrees/` 不進 `.gitignore`（由 Claude Code runtime 本地排除）
 - **Bun**：`"packageManager": "bun@1.3.14"`，scripts 換成 `bun run vitest` 等
 - **Release**：Drone repo 使用 `main`-only release pipeline，依序執行 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`
+- **Release 資格閘門**：使用 `release-type: simple` 的 Drone Plugin repo 必須在 `release-pr` 前執行 `scripts/release-eligibility.mjs`；只有 exit `0` 才呼叫 Release Please，exit `10` 成功跳過，其他錯誤 fail closed；完整模板見 `references/ci-workflow-templates.md`
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.claude/worktrees/`
 - **CI**：Drone repo 的檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；plugin repo 若選 Drone，validation 與 release 一起遷移並移除重疊 GHA
 - **CD**（Coolify web app）：`.drone.yml` 加 `build`、`deploy`、`release-pr-auto-merge` 三個 pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
