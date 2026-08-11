@@ -13,4 +13,4 @@
 ## 3. 交付驗證
 
 - [x] 3.1 在乾淨 worktree 執行完整本地驗收：`node --test scripts/release-eligibility.test.mjs`、`npm run validate`、`claude plugin validate .`、`spectra validate prevent-docs-chore-release-bumps --strict`、`spectra analyze prevent-docs-chore-release-bumps` 與 `git diff --check`；確認所有命令 exit `0`，且測試證明 docs／chore 會跳過、feat／fix 會執行。
-- [ ] 3.2 修正 PR 合併後，讀回 Drone push build 與 GitHub release 狀態：確認只有文件或維護的範圍沒有建立或更新 release PR、`github-release` 仍能處理已合併的 release PR，且 Issue #210 與 P2 review thread 都保留明確處置；只有在記錄這些線上證據後，才歸檔 Spectra change。
+- [x] 3.2 修正 PR 合併後，讀回 Drone push build 與 GitHub release 狀態：確認只有文件或維護的範圍沒有建立或更新 release PR、`github-release` 仍能處理已合併的 release PR，且 Issue #210 與 P2 review thread 都保留明確處置；已記錄 Drone #99 的 docs-only skip、Drone #97 的 `v1.37.2` 發布、Issue #210 與 resolved P2 thread，現在可歸檔 Spectra change。
