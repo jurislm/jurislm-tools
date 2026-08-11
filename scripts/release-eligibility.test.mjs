@@ -164,6 +164,32 @@ test("every Compare page is evaluated before deciding", async () => {
   }
 });
 
+test("a pagination link outside the GitHub Compare endpoint is rejected before the token is forwarded", async () => {
+  const { directory, manifestPath } = makeManifest();
+  const calls = [];
+  const untrustedUrl = "https://example.com/repos/attacker/repo/compare?page=2";
+
+  try {
+    await assert.rejects(
+      evaluateReleaseEligibility({
+        env: makeEnvironment(),
+        manifestPath,
+        fetchImpl: async (url, options) => {
+          calls.push({ url, options });
+          if (calls.length > 1) throw new Error("token forwarded to an untrusted host");
+          return comparePage([commit("docs: update the guide")], 2, {
+            link: `<${untrustedUrl}>; rel="next"`,
+          });
+        },
+      }),
+      /pagination link must stay within the GitHub Compare endpoint/i,
+    );
+    assert.equal(calls.length, 1);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("a truncated Compare response fails closed", async () => {
   const { directory, manifestPath } = makeManifest();
 

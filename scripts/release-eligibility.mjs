@@ -68,6 +68,29 @@ function parseNextLink(linkHeader) {
   return null;
 }
 
+function validateNextUrl(nextUrl, firstUrl) {
+  let candidate;
+  let expected;
+
+  try {
+    candidate = new URL(nextUrl);
+    expected = new URL(firstUrl);
+  } catch {
+    throw new Error("GitHub Compare pagination link must stay within the GitHub Compare endpoint.");
+  }
+
+  if (
+    candidate.origin !== expected.origin ||
+    candidate.pathname !== expected.pathname ||
+    candidate.username.length > 0 ||
+    candidate.password.length > 0
+  ) {
+    throw new Error("GitHub Compare pagination link must stay within the GitHub Compare endpoint.");
+  }
+
+  return candidate.href;
+}
+
 function extractCommitSubject(commit, index) {
   const message = commit?.commit?.message;
   if (typeof message !== "string" || message.length === 0) {
@@ -171,7 +194,8 @@ export async function fetchCompareCommits({
       throw new Error("GitHub Compare response contains more commits than total_commits.");
     }
 
-    nextUrl = parseNextLink(responseLinkHeader(response));
+    const parsedNextUrl = parseNextLink(responseLinkHeader(response));
+    nextUrl = parsedNextUrl === null ? null : validateNextUrl(parsedNextUrl, firstUrl);
   }
 
   if (commits.length !== expectedTotal) {
