@@ -54,7 +54,8 @@ function buildCompareUrl({ repository, branch, version }) {
   const targetBranch = requireNonEmptyString(branch, "DRONE_BRANCH");
 
   return `${GITHUB_API_URL}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}` +
-    `/compare/${encodeURIComponent(`v${version}`)}...${encodeURIComponent(targetBranch)}`;
+    `/compare/${encodeURIComponent(`v${version}`)}...${encodeURIComponent(targetBranch)}` +
+    "?per_page=100&page=1";
 }
 
 function parseNextLink(linkHeader) {

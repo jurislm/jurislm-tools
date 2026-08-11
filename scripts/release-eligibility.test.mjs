@@ -135,7 +135,7 @@ test("every Compare page is evaluated before deciding", async () => {
   const { directory, manifestPath } = makeManifest();
   const calls = [];
   const nextUrl =
-    "https://api.github.com/repos/jurislm/jurislm-tools/compare/v1.37.1...main?page=2";
+    "https://api.github.com/repos/jurislm/jurislm-tools/compare/v1.37.1...main?per_page=100&page=2";
   const responses = [
     comparePage([commit("docs: update the guide")], 2, {
       link: `<${nextUrl}>; rel="next"`,
@@ -156,7 +156,10 @@ test("every Compare page is evaluated before deciding", async () => {
     assert.equal(result.eligible, true);
     assert.equal(result.exitCode, 0);
     assert.equal(calls.length, 2);
-    assert.equal(calls[0].url, "https://api.github.com/repos/jurislm/jurislm-tools/compare/v1.37.1...main");
+    assert.equal(
+      calls[0].url,
+      "https://api.github.com/repos/jurislm/jurislm-tools/compare/v1.37.1...main?per_page=100&page=1",
+    );
     assert.equal(calls[1].url, nextUrl);
     assert.equal(calls[0].options.headers.Authorization, "Bearer test-token-that-must-not-leak");
   } finally {
