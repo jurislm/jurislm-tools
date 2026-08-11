@@ -15,6 +15,12 @@
   隨後 `release-pr` 對已更新的發布基準得到空範圍，exit `10` 並輸出
   `release-pr skipped: no feat/fix commit in the unreleased range`，沒有再建立
   release PR。
+- PR #213 `docs(openspec): sync release eligibility specs` 已合併為
+  `be562b4e352246af3bac089ebaf500d9613af50f`；Drone PR build #98 成功。
+- Drone main push build #99 成功；這次合併後未發布範圍只有 `docs`，`release-pr`
+  helper 回傳 exit `10`，輸出 `Release eligibility: no feat/fix commit found;
+  skipping release-pr.` 與 `release-pr skipped: no feat/fix commit in the unreleased
+  range`，沒有建立或更新 Release Please PR，直接完成 `release` pipeline。
 
 ## 需求與審查處置
 
@@ -32,5 +38,8 @@
 - [Drone PR build #94](https://ci.jurislm.com/jurislm/jurislm-tools/94)
 - [Drone main build #95](https://ci.jurislm.com/jurislm/jurislm-tools/95)
 - [Drone main build #97](https://ci.jurislm.com/jurislm/jurislm-tools/97)
+- [PR #213](https://github.com/jurislm/jurislm-tools/pull/213)
+- [Drone PR build #98](https://ci.jurislm.com/jurislm-tools/98)
+- [Drone main build #99](https://ci.jurislm.com/jurislm-tools/99)
 - [GitHub Release v1.37.2](https://github.com/jurislm/jurislm-tools/releases/tag/v1.37.2)
 - [Issue #210](https://github.com/jurislm/jurislm-tools/issues/210)
