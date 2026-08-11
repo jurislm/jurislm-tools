@@ -42,6 +42,32 @@ Drone secret indirection. It MUST attempt `github-release` before
 - **THEN** no release step runs
 - **AND** the release token is unavailable to the validation pipeline
 
+### Requirement: release-pr 必須先通過發布資格閘門
+
+`release` pipeline 必須無條件且先執行 `github-release`，再執行
+`release-pr` 資格判定。資格閘門必須讀取 manifest 的已發布版本，透過
+`DRONE_REPO`、`DRONE_BRANCH` 與已驗證的 GitHub Compare API 取得完整未發布
+範圍；只有範圍內含有效 `feat` 或 `fix` subject 時，才可呼叫 Release
+Please。空範圍、只有有效 `docs`／`chore` 的範圍必須成功跳過；metadata、token、
+Compare 分頁、回應格式或 subject 無法安全驗證時，必須 fail closed，且不得
+暴露 release token。
+
+#### Scenario: 只有文件或維護提交尚未發布
+
+- **當** 已發布 tag 到 target branch 的完整 Compare 範圍只有有效的 `docs` 或
+  `chore` subject
+- **那麼** `release-pr` 成功結束而不呼叫 Release Please
+
+#### Scenario: 未發布範圍含有可發布提交
+
+- **當** 完整 Compare 範圍含有有效的 `feat` 或 `fix` subject
+- **那麼** `release-pr` 在 `github-release` 之後呼叫 Release Please
+
+#### Scenario: 無法安全判定未發布範圍
+
+- **當** Compare 範圍、metadata、分頁結果或任一 subject 無法驗證
+- **那麼** `release-pr` 在呼叫 Release Please 前失敗，且輸出不得包含 token
+
 ### Requirement: CI and release use one platform
 
 The target repository revision MUST NOT retain GitHub Actions workflows that

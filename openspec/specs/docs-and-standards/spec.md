@@ -58,3 +58,30 @@ repo rather than defining independent rationale.
 - **WHEN** a new flat-repo Coolify web app is set up following Template A
 - **THEN** its `.drone.yml` includes a `build` pipeline catching build-only
   failures and a `release-pr-auto-merge` pipeline automating release PR merges
+
+### Requirement: repo-standards 發布指引避免不可發布的版本升級
+
+對使用 Release Please 且設定 `release-type: simple` 的 plugin 儲存庫，
+`repo-standards` 必須提供 Drone `release-pr` 發布資格閘門的指引。閘門必須
+位於無條件執行的 `github-release` 之後、`release-pr` 之前，並透過 Compare
+API 比較已發布版本 tag 與 target branch；只有完整未發布範圍含有有效的
+`feat` 或 `fix` subject 時，才可呼叫 Release Please。只有 `docs`、只有
+`chore` 或空範圍必須成功跳過；範圍、metadata、token 或 subject 無法驗證時
+必須 fail closed。範本不得記錄發布憑證，也不得指示維護者手動修改由
+Release Please 管理的版本。
+
+#### Scenario: 採用範本的 plugin 儲存庫只有文件維護
+
+- **當** 已發布 manifest tag 之後只合併有效的 `docs` 與 `chore` 提交
+- **那麼** `release-pr` 完成而不呼叫 Release Please，版本檔案維持不變
+
+#### Scenario: 採用範本的 plugin 儲存庫有可發布變更
+
+- **當** 完整未發布範圍含有有效的 `feat` 或 `fix` subject
+- **那麼** `release-pr` 在 `github-release` 之後呼叫 Release Please，並使用
+  儲存庫的 manifest 與 extra-file 設定建立或更新 release PR
+
+#### Scenario: 範本無法建立安全的發布範圍
+
+- **當** Compare request、manifest metadata 或任一 commit subject 無法驗證
+- **那麼** `release-pr` 在任何版本升級命令前失敗，且失敗訊息不包含 token
