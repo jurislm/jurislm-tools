@@ -8,4 +8,3 @@
 - proposal GO evidence：本次對話中使用者對已展示的提案與後續交付流程連續回覆 `go ahead`。
 - CodeRabbit consent：已取得。使用者在完成 CodeRabbit App／CLI 的資料範圍揭露後回覆「授權」。授權僅適用於本次 `jurislm-tools` PR review。
 - external context：GitHub Issue #210 僅作為需求背景，不是授權或完成門檻。
-
