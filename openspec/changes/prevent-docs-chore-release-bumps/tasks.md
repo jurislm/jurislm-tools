@@ -8,7 +8,7 @@
 ## 2. 標準與規格同步
 
 - [x] [P] 2.1 為「repo-standards 發布指引避免不可發布的版本升級」需求實作「維持標準範本同步」：更新 `plugins/repo-standards/skills/repo-standards/SKILL.md`、`plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md` 與 `openspec/specs/docs-and-standards/repo-standards-detail.md`，記錄相同的 Compare 閘門、安全跳過、fail closed、憑證遮罩，以及 github-release 先於 release-pr 的行為；確認每份 artifact 都指向 helper，且 Markdown lint 通過。
-- [ ] 2.2 歸檔前，將 `openspec/changes/prevent-docs-chore-release-bumps/specs/ci-platform/spec.md` 與 `openspec/changes/prevent-docs-chore-release-bumps/specs/docs-and-standards/spec.md` 對照實際交付行為；只有在合併後的 Drone 證據確認新契約成立後，才將 delta 同步到 `openspec/specs/ci-platform/spec.md` 與 `openspec/specs/docs-and-standards/spec.md`；確認 `spectra validate prevent-docs-chore-release-bumps --strict` 與 `spectra validate --all --strict` 通過。
+- [x] 2.2 歸檔前，將 `openspec/changes/prevent-docs-chore-release-bumps/specs/ci-platform/spec.md` 與 `openspec/changes/prevent-docs-chore-release-bumps/specs/docs-and-standards/spec.md` 對照實際交付行為；在 PR #211、Release Please PR #212 合併及 Drone 95／97 證據確認新契約成立後，已將 delta 同步到 `openspec/specs/ci-platform/spec.md` 與 `openspec/specs/docs-and-standards/spec.md`；確認 `spectra validate prevent-docs-chore-release-bumps --strict` 與 `spectra validate --all --strict` 通過。
 
 ## 3. 交付驗證
 
