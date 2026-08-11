@@ -165,7 +165,7 @@ steps:
     environment:
       RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
     commands:
-      - npx release-please github-release --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+      - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/$DRONE_REPO --target-branch=$DRONE_BRANCH --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
   - name: release-pr
     image: node:20-alpine
     depends_on: [github-release]
@@ -179,7 +179,7 @@ steps:
         set -e
         case "$eligibility_status" in
           0)
-            npx release-please release-pr --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+            npx --yes release-please@17.10.4 release-pr --repo-url=https://github.com/$DRONE_REPO --target-branch=$DRONE_BRANCH --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
             ;;
           10)
             echo "release-pr skipped: no feat/fix commit in the unreleased range"
