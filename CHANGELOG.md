@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.37.2](https://github.com/jurislm/jurislm-tools/compare/v1.37.1...v1.37.2) (2026-08-11)
+
+
+### 🐛 Bug Fixes
+
+* **release:** prevent docs-only version bumps ([#211](https://github.com/jurislm/jurislm-tools/issues/211)) ([4978501](https://github.com/jurislm/jurislm-tools/commit/4978501b1c0d3a395d58463627270920d9b331ae)), refs [#210](https://github.com/jurislm/jurislm-tools/issues/210)
+
 ## [1.37.1](https://github.com/jurislm/jurislm-tools/compare/v1.37.0...v1.37.1) (2026-08-10)
 
 
