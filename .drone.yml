@@ -54,4 +54,19 @@ steps:
       RELEASE_PLEASE_TOKEN:
         from_secret: RELEASE_PLEASE_TOKEN
     commands:
-      - npx --yes release-please@17.10.4 release-pr --token=$RELEASE_PLEASE_TOKEN --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+      - |
+        set +e
+        node scripts/release-eligibility.mjs
+        eligibility_status=$?
+        set -e
+        case "$eligibility_status" in
+          0)
+            npx --yes release-please@17.10.4 release-pr --token=$RELEASE_PLEASE_TOKEN --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+            ;;
+          10)
+            echo "release-pr skipped: no feat/fix commit in the unreleased range"
+            ;;
+          *)
+            exit "$eligibility_status"
+            ;;
+        esac

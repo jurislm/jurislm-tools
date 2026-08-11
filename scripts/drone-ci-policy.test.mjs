@@ -252,3 +252,121 @@ steps:
     rmSync(temporaryDirectory, { recursive: true, force: true });
   }
 });
+
+test("the validator rejects a release-pr step without the release eligibility gate", () => {
+  const temporaryDirectory = mkdtempSync(join(tmpdir(), "drone-ci-policy-"));
+  const fixturePath = join(temporaryDirectory, ".drone.yml");
+
+  writeFileSync(
+    fixturePath,
+    `kind: pipeline
+type: docker
+name: validate
+trigger:
+  event: [push, pull_request]
+  ref: [refs/heads/main, refs/pull/*/head]
+steps:
+  - name: validate
+    image: node:22.22.2-bookworm-slim
+    commands:
+      - node scripts/validate-pr-title.mjs
+      - node scripts/validate-squash-subject.mjs
+      - npm ci
+      - npm run validate
+---
+kind: pipeline
+type: docker
+name: release
+trigger:
+  event: [push]
+  ref: [refs/heads/main]
+steps:
+  - name: github-release
+    image: node:22.22.2-bookworm-slim
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands:
+      - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+  - name: release-pr
+    image: node:22.22.2-bookworm-slim
+    depends_on: [github-release]
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands:
+      - npx --yes release-please@17.10.4 release-pr --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+`,
+  );
+
+  try {
+    const result = validate(fixturePath);
+
+    assert.notEqual(result.status, 0);
+    assert.match(`${result.stdout}\n${result.stderr}`, /release-pr.*eligibility|eligibility.*release-pr/i);
+  } finally {
+    rmSync(temporaryDirectory, { recursive: true, force: true });
+  }
+});
+
+test("the validator rejects a release-pr gate that turns unsafe errors into a successful skip", () => {
+  const temporaryDirectory = mkdtempSync(join(tmpdir(), "drone-ci-policy-"));
+  const fixturePath = join(temporaryDirectory, ".drone.yml");
+
+  writeFileSync(
+    fixturePath,
+    `kind: pipeline
+type: docker
+name: validate
+trigger:
+  event: [push, pull_request]
+  ref: [refs/heads/main, refs/pull/*/head]
+steps:
+  - name: validate
+    image: node:22.22.2-bookworm-slim
+    commands:
+      - node scripts/validate-pr-title.mjs
+      - node scripts/validate-squash-subject.mjs
+      - npm ci
+      - npm run validate
+---
+kind: pipeline
+type: docker
+name: release
+trigger:
+  event: [push]
+  ref: [refs/heads/main]
+steps:
+  - name: github-release
+    image: node:22.22.2-bookworm-slim
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands:
+      - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+  - name: release-pr
+    image: node:22.22.2-bookworm-slim
+    depends_on: [github-release]
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands:
+      - |
+        set +e
+        node scripts/release-eligibility.mjs
+        status=$?
+        set -e
+        if [ "$status" -eq 10 ]; then exit 0; fi
+        npx --yes release-please@17.10.4 release-pr --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+`,
+  );
+
+  try {
+    const result = validate(fixturePath);
+
+    assert.notEqual(result.status, 0);
+    assert.match(`${result.stdout}\n${result.stderr}`, /unsafe|non-10|fail closed|exit/i);
+  } finally {
+    rmSync(temporaryDirectory, { recursive: true, force: true });
+  }
+});
