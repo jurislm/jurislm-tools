@@ -4,10 +4,10 @@
 >
 > | repo 類型 | CI（lint/typecheck/test）| release-please | 部署 / 發布 |
 > |---|---|---|---|
-> | Coolify web app（如 memory-dessert）| Drone | Drone | Drone `deploy` pipeline（deploy-gating，模板 A）|
-> | Monorepo（如 entire）| Drone（per-package pipeline）| Drone | 每個 app 一個 deploy step |
-> | npm / MCP（如 coolify-mcp）| Drone | release-please + npm publish | npm（無 Coolify 部署）|
-> | Plugin（content-first）| GitHub Actions（預設）或 Drone aggregate validation（明確選擇，如 jurislm-tools）| 與 CI 使用同一平台 | — |
+> | Coolify web app | Drone | Drone | Drone `deploy` pipeline（deploy-gating，模板 A）|
+> | Monorepo（`entire` 是唯一已驗證 reference）| Drone（per-package pipeline）| Drone | 依目標 repo 的部署 targets 設定 |
+> | npm / MCP | Drone | release-please + npm publish | npm（無 Coolify 部署）|
+> | Plugin（content-first）| GitHub Actions（預設）或 Drone aggregate validation（須明確選擇）| 與 CI 使用同一平台 | — |
 >
 > Code review：人工 `/code-review` + bot（CodeRabbit / Copilot）。**自動 Claude PR 審查已從標準移除（2026-06-02）**，不再設 `claude-code-review.yml` / `claude.yml` 或 Drone `claude-review` pipeline。Copilot 自訂指示模板見 `references/code-review-setup.md`。
 
@@ -43,9 +43,9 @@ GitHub Actions 時代的雷是「`push: develop` 與 `pull_request` 重疊 → C
 
 ---
 
-## 標準模板 A：Coolify Web App（flat repo — memory-dessert / lawyer / stock / lexvision / musicer）
+## 標準模板 A：Coolify Web App（flat repo）
 
-6 個 pipeline：`lint-typecheck`、`test`、`build`、`release-please`、`deploy`、`release-pr-auto-merge`。`deploy` 是取代 Coolify auto-deploy 的關鍵（見下方「CD 與避免重複部署」）；`build`、`release-pr-auto-merge` 補於 2026-08-07——這兩者不是 monorepo（模板 B）專屬。`jurislm/lexvision` 早在 2026-07-27（`eda8e15`）就已在 flat repo 落地這兩條 pipeline，且後續累積了額外的強化（拒絕過時部署、綁定 release 合併需完整檢查通過等）；`jurislm/musicer` 是本次落差被發現的觸發點（`add-drone-ci` change），兩者皆可作為參考實作，**lexvision 因為更成熟、踩過更多坑，值得優先參考**。
+這是 repo-type topology template，不是 verified reference。Release delivery 的安全不變量只以 `jurislm/entire` 的可觀測實作為唯一 verified reference；每個採用 repo 都必須完成自己的 acceptance。`deploy` 是取代 Coolify auto-deploy 的關鍵（見下方「CD 與避免重複部署」）；`build` 與 `release-pr-auto-merge` 不限於 monorepo。
 
 ```yaml
 ---
@@ -154,7 +154,7 @@ steps:
 # 比較已發布 manifest tag 到目前分支的完整範圍；只有 feat／fix 才建立 release PR。
 kind: pipeline
 type: docker
-name: release-please
+name: release
 platform: { os: linux, arch: amd64 }
 trigger:
   event: [push]
@@ -165,7 +165,7 @@ steps:
     environment:
       RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
     commands:
-      - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/$DRONE_REPO --target-branch=$DRONE_BRANCH --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+      - npx --yes release-please@<EXACT-RELEASE-PLEASE-VERSION> github-release --repo-url=https://github.com/$DRONE_REPO --target-branch=$DRONE_BRANCH --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
   - name: release-pr
     image: node:20-alpine
     depends_on: [github-release]
@@ -179,7 +179,7 @@ steps:
         set -e
         case "$eligibility_status" in
           0)
-            npx --yes release-please@17.10.4 release-pr --repo-url=https://github.com/$DRONE_REPO --target-branch=$DRONE_BRANCH --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+            npx --yes release-please@<EXACT-RELEASE-PLEASE-VERSION> release-pr --repo-url=https://github.com/$DRONE_REPO --target-branch=$DRONE_BRANCH --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
             ;;
           10)
             echo "release-pr skipped: no feat/fix commit in the unreleased range"
@@ -217,10 +217,9 @@ steps:
     resources: { limits: { cpu: 1000, memory: 268435456 } }
 
 ---
-# release-pr-auto-merge：release-please 開出的版本 PR，在自身檢查（lint-typecheck/test/
-# build）與 deploy 都成功後自動合併，不需要人工介入。concurrency limit 1 序列化重疊的
-# main build，避免併發合併判斷互相干擾（多個 push 短時間內連續合併時，release PR 的
-# base commit 會跟著變動，需要序列化才能正確判斷「這次該讓哪個 build 合併」）。
+# release-pr-auto-merge：trusted main delivery 完成後自動處理 Release Please PR；不得以
+# 人工合併作 fallback。concurrency limit 1 序列化重疊的 main build，避免併發合併判斷互相
+# 干擾（多個 push 短時間內連續合併時，release PR 的 base commit 會跟著變動）。
 kind: pipeline
 type: docker
 name: release-pr-auto-merge
@@ -229,7 +228,7 @@ concurrency: { limit: 1 }
 trigger:
   branch: [main]
   event: [push]
-depends_on: [release-please, deploy]
+depends_on: [release, deploy]
 steps:
   - name: merge-release-pr
     image: oven/bun:1.3.14
@@ -241,25 +240,22 @@ steps:
 
 > 取代 `<REPO>` / `<APP_UUID>` 為實際值（App UUID 見該 repo `CLAUDE.md` 的 Coolify 區）。Next.js / 純 Node app 模板相同。
 >
-> `release-pr-auto-merge` 需要一個 `scripts/ci/release-pr-auto-merge.ts` 腳本——驗證候選 release PR 的 repo/branch/author/title/body allowlist、變更檔案是否恰好是 release-please 產生的三個檔案、mergeability，以及 base SHA ancestry（分辨「該讓位給更新的 build」與「真的異常」）。原始碼在 `jurislm/entire` 的 `scripts/ci/release-pr-auto-merge.ts`；`jurislm/lexvision`（2026-07-27 起，564 行，含拒絕過時部署等後續強化）與 `jurislm/musicer`（588 行，只改常數）都是 flat repo 的移植版本——新 repo 導入本 pipeline 時優先參考 lexvision（三者中最成熟），從其中一份移植即可，不要重新設計這套邏輯（它處理的是併發 build 下的正確性保證，不是簡單的「找到 PR 就合併」）。
+> `release-pr-auto-merge` 必須執行 target repo 自己 source-controlled 的 validator。validator 綁定同一個 trusted delivery commit `C`，並以該 repo 的 closed artifact contract 驗證精確檔案清單、版本內容、repository／base branch／head branch／官方作者、title／body marker、base／head SHA 與 mergeability；不可直接複製另一個 repo 的 allowlist 或部署拓撲。
+>
+> validator 在 merge 前重新讀取 `main` SHA，並以剛驗證的 head SHA 呼叫 merge API。無 candidate、candidate base 已由較新 delivery 接手，或 final `main` tip 已改變，都是成功 no-op；其他 identity、artifact、SHA、API 或 mergeability mismatch 一律 fail closed。它只能由 trusted main-delivery pipeline 執行；禁止 `pull_request_target`、candidate-head checkout／執行與 PR write token。
 
 ---
 
-## 標準模板 B：Monorepo（entire — Turborepo）
+## 標準模板 B：Monorepo（Turborepo）
 
-> **不是 copy-paste 模板**——以 `entire/.drone.yml` 為準鏡像（其結構因 monorepo 而高度客製）。下列為其實際結構與須注意的差異點（2026-08-07 查證，共 12 個 pipeline——先前記載的「7 個」已過時，是模板未隨 entire 演進同步更新的落差，非刻意精簡）：
+`jurislm/entire` 是唯一已驗證的 monorepo CI/CD reference；下列是必須遵守的契約，不是把 entire 的 `.drone.yml`、Runtime 或部署拓撲 copy-paste 到其他 repo。其他 monorepo 都是 adoption target，必須完成自己的 observable acceptance。
 
-- **核心檢查**（5 個）：`lint-typecheck`、`cli`、`app`、`module`、`package`——拆分理由是 monorepo 依 workspace 分組測試，觸發語意同模板 A（`trigger.event` + `trigger.ref`）
-- **`services:` 只用於「真的會跑 DB query」的 pipeline**（如 `cli` 跑 `db migrate`）：pipeline-level 起 `postgres:16`，step 內 `DATABASE_URL` 指向該 service。其餘 pipeline（如 `package`）只需 placeholder env 滿足 `@<scope>/config` 的 import-time Zod 驗證（如 `ANTHROPIC_API_KEY: sk-ant-placeholder-for-ci`）→ **用 localhost placeholder URL，不需 `services:` 區塊**。
-- **`oven/bun` image 無 `psql`** → 只有需要的 pipeline（`cli`）才 `apt-get update -qq && apt-get install -y -qq postgresql-client` + `db migrate`。
-- 測試委派 Turborepo：各 pipeline 用不同 filter，如 `bun run turbo run test --filter=entire-cli` / `--filter="@modules/*"` / `--filter=!entire-cli --filter=!entire-ops …`（排除式）。
-- **`build` pipeline 直跑各 app 的 `bun run build`（非 turbo）**——對齊 GA build job、避免 turbo strict env stripping；目前建置 `apps/web`／`apps/login`／`apps/ops`／`apps/console`／`apps/docs` 五個 app（2026-08-07 查證，非只有 `web`——此清單會隨 entire 新增 app 增長，以 `entire/scripts/ci/run-gate.sh` 的 `build` gate 為準）。
-- **`release` pipeline 與模板 A 不同**：用 `bunx`（非 `npx`）、`trigger.branch: [main]`（非 `trigger.ref`）。標準為兩步——先 `github-release`（從已合併的 release PR cut tag），再 `release-pr`（維護下一個版本 PR）；只有 `release-pr` 不會自動建立 tag/release。
-- **`deploy`**：`depends_on` 全部 5 個核心檢查 + `build`，迴圈觸發每個 prod app（monorepo 通常有多個部署目標，各自一個 Coolify UUID）的 Coolify deploy API。
-- **`release-pr-auto-merge`**：release PR 在自身檢查與 `deploy` 皆成功後自動合併，設定同模板 A（`concurrency: limit: 1`）。
-- **三條事故驅動 pipeline（`detect-missed-push-builds`、`audit-missed-builds`、`audit-shared-migration-drift`）**：entire 實際遭遇過特定事故後才新增的機制（GitHub 偶爾漏發 push webhook 導致 build 完全沒觸發；跨 repo 定期對帳同一問題；shared DB migration 合併後未被套用卻無告警）。**這是 entire 累積的事故應對結果，不是其他 monorepo 採用時的必要基準**——沒有對應事故歷史前不需要照抄，真的遇到同類問題再參考 entire 的實作。
-
-> Monorepo 多 app 部署較複雜（每個 app 一個 Coolify UUID），deploy-gating 須為每個 app 各設一個 deploy step / pipeline。
+- repo root 必須有 `turbo.json`，並以 Turborepo 定義 workspace task、依賴與 cache。
+- 已知且固定的 workspace gate 使用 `turbo run <task> --filter=<workspace>`；`--filter` 只表達已知範圍，不可用來掩蓋未知影響。
+- `--affected` 只可使用可信、可重現且涵蓋該 delivery 的 Git base／head。若 base／head 或 affected query 無法建立，執行完整 validation／deploy。
+- Turbo cache inputs 必須列出 task 實際讀取的全部 source、config、test 與 lockfile 檔案；以 policy test 或等價 readback 證明不會因漏列造成 false green。
+- workspace gate、build、資料庫服務與部署 targets 依目標 monorepo 的實際需求拆分；Coolify deploy 只適用 Coolify web app，不能複製到 Plugin／npm repo。
+- `release` 仍先 `github-release` 再 `release-pr`，兩個 write command 都使用 `release-please@<EXACT-RELEASE-PLEASE-VERSION>`；trusted main delivery 完成後由 source-controlled validator 自動合併候選，遵守上方 closed artifact contract。
 
 ---
 
@@ -274,7 +270,7 @@ steps:
 # publish step 僅在「真的有新版被 cut」時才發布；NPM_TOKEN 為 Drone repo-scope secret。
   - name: npm-publish
     image: oven/bun:1.3.14
-    depends_on: [release-please]
+    depends_on: [release]
     environment:
       NPM_TOKEN: { from_secret: NPM_TOKEN }
     commands:
@@ -301,6 +297,12 @@ steps:
 - `release-please` 用 `release-type: simple` + `extra-files` 同步 `plugin.json` / `marketplace.json` 版本號（見 SKILL.md「Release 設定」）。
 - 若明確選擇 Drone，validation 與 release 必須一起遷移，並刪除功能
   重疊的 GHA。小型 repo 使用 aggregate validate pipeline：
+
+- Plugin 沒有 Coolify deploy pipeline，仍必須在 trusted main delivery 的
+  `validate`／`release` 完成後自動處理 release PR；不得改成人工合併 fallback。
+  validator 必須使用該 Plugin repo 自己的 closed artifact contract（manifest、
+  CHANGELOG、plugin／marketplace metadata），驗證 candidate identity、SHA、
+  mergeability 與 final main-SHA recheck，再以 validated head SHA 合併。
 
 ```yaml
 ---
@@ -347,7 +349,7 @@ steps:
 3. **`.drone.yml` 加 `build` 與 `deploy` pipeline**（模板 A）+ 在 `lint-typecheck` / `test` / `build` 各步加同樣守衛；`deploy` 的 `depends_on` 涵蓋這三者。
 4. **驗證 Drone → Coolify 接線可用**（保留 auto-deploy 當安全網，合併一次觀察 Drone deploy pipeline 成功觸發 Coolify）。
 5. **確認 OK 後只關閉 PROD app 的 Coolify auto-deploy**（`is_auto_deploy_enabled = false`；**dev app 不動**）。⚠️ Coolify GET application API **不回傳**此欄位，無法讀取驗證 → 用「合併後是否只有一次部署」行為驗證。
-6. **`.drone.yml` 加 `release-pr-auto-merge` pipeline**（`depends_on: [release-please, deploy]`、`concurrency: { limit: 1 }`），讓 release PR 自動合併，不需要每次手動合併（模板 A 標準 6 pipeline 之一，非選用；見下方「部署收尾」）。
+6. **`.drone.yml` 加 `release-pr-auto-merge` pipeline**（Coolify app 的 `depends_on: [release, deploy]`；其他 repo 必須依自身 trusted validation／release pipelines 綁定同一 delivery；`concurrency: { limit: 1 }`）。它必須自動合併通過 contract 的 release PR，不提供 manual merge fallback（見下方「部署收尾」）。
 
 ### 守衛邏輯（為何這樣寫）
 
@@ -388,10 +390,10 @@ echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'
 合併 feature PR 進 main 後：
 
 1. Drone build 觸發 → deploy pipeline 部署一次 + release-please **自動開 `chore(main): release X.Y.Z` PR**。
-2. **這個 release PR 也要合併，否則版本與 tag 永遠不會 cut**。若 repo 已設 `release-pr-auto-merge` pipeline（見「設定步驟」第 6 步），該 PR 自身檢查與 deploy 都成功後會自動合併，不需要人工介入——只需確認自動合併確實發生；未設此 pipeline 的 repo 才需要人工合併。
-3. 合併 release PR → release commit → **deploy 被守衛跳過**（不重複部署）、release-please `github-release` 建 tag + release。
+2. **這個 release PR 必須由同一 trusted main delivery 的 source-controlled validator 自動合併**；它要驗證 target-specific closed artifact contract、official candidate identity、mergeability、final main-SHA recheck，並以 validated head SHA 合併。沒有 candidate、candidate base 已由較新 delivery 接手、或 final main tip 已改變，都是成功 no-op；其他 mismatch fail closed，不提供 manual merge fallback。
+3. 合併 release PR → release commit → **deploy 被守衛跳過**（不重複部署）、以 `release-please@<EXACT-RELEASE-PLEASE-VERSION>` 執行 `github-release` 建 tag + release。
 
-⚠️ **合併任何 PR 進 main 後，必須確認 CI 真的被觸發**（不可假設）：GitHub 偶爾漏發 `push` webhook（2026-06-01 踩坑：memory-dessert #31 release PR 合併後 GitHub 只發 `pull_request`、沒發 `push` → Drone 沒 build → `github-release` 沒跑 → `v1.2.0` 卡住沒 cut）。
+⚠️ **合併任何 PR 進 main 後，必須確認 CI 真的被觸發**（不可假設）：GitHub 偶爾漏發 `push` webhook，造成 Drone 沒 build、release 沒 cut。若 delivery 缺失，保留 candidate，修復後由新的 trusted main delivery 重試。
 
 驗證：
 ```bash
@@ -402,15 +404,7 @@ curl -fsS "$DRONE_SERVER/api/repos/jurislm/<repo>/builds?per_page=5" -H "Authori
   | jq -r '.[] | "#\(.number) \(.after[0:7]) \(.event) \(.status)"'
 ```
 
-漏發補救（冪等，安全）：
-```bash
-# 手動補 cut release（透過 API 偵測已合併的 release PR，不依賴本地 checkout）
-npx --yes release-please github-release --repo-url=https://github.com/jurislm/<repo> \
-  --config-file=release-please-config.json --manifest-file=.release-please-manifest.json \
-  --token=$JURISLM_DRONE_RELEASE_PLEASE_TOKEN
-```
-
-> `drone build restart <最近的 push build>` 可補觸發 build；但 `drone build create` 為 `custom` event、不匹配 `event: push` trigger，故無效。
+若 readback 顯示 delivery 缺失，修復 source-controlled pipeline／validator 後，讓新的 trusted `main` delivery 重新觸發完整流程；不得以手動 Release Please write command 或人工合併繞過 contract。
 
 ---
 
@@ -450,6 +444,6 @@ Code Review 的 `claude-code-review.yml` / `claude.yml`（及 Drone
 
 ## 參考
 
-- 來源 repo：`jurislm/memory-dessert`（`.drone.yml` — flat Coolify web app 含 deploy-gating 的正規範例）、`jurislm/entire`（monorepo 變體）。
+- Verified reference：僅 `jurislm/entire`；它提供 release delivery 安全不變量與 monorepo／Turborepo 的可觀測證據。其他 repo 都是 adoption target，必須完成自己的 acceptance；不得把其 Coolify topology 或 Runtime 當成 Plugin／npm repo 標準。
 - 自架 Drone 基礎設施：`entire/infra/ci-jurislm/`（docker-compose: drone-server + drone-runner-docker + drone-backup）。
 - 歷史教訓：GitHub Actions 時代的 duplicate-runs Issue #82（Drone `trigger.ref` 已從設計上避免）。
