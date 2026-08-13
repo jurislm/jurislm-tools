@@ -4,7 +4,7 @@
 
 `repo-standards` SHALL identify `jurislm/entire` as the verified reference implementation for release delivery and monorepo CI/CD invariants. It MUST derive portable rules from current source facts, prevented failures, target-repo rules, and observable acceptance; it MUST NOT declare another repository compliant before that repository has completed its own required acceptance.
 
-Every Release Please template, including npm／MCP templates, SHALL require a trusted main-delivery `release-pr-auto-merge` validator. The validator contract MUST bind the candidate to the same delivery commit, validate the repository-specific closed artifact contract and SHA relationship, validate required-check clean state and GitHub latest-base protection for the automation credential without a human release-PR approval gate, then use GitHub's PR merge API with the validated head SHA. It MUST prohibit direct ref updates and manual merge fallback, describe no-candidate, newer-candidate-base, a waiting candidate superseded by a changed main tip, and GitHub rejection of a stale candidate as successful no-op outcomes; every other discrepancy MUST fail closed. A template command that writes GitHub through Release Please MUST name an exact version selected by the target repository.
+Every Release Please template, including npm／MCP templates, SHALL require a trusted main-delivery `release-pr-auto-merge` validator. The validator contract MUST bind the candidate to the same delivery commit, validate the repository-specific closed artifact contract and SHA relationship, validate required-check clean state and GitHub latest-base protection for the automation credential without a human release-PR approval gate, then use GitHub's PR merge API with the validated head SHA. It MUST prohibit direct ref updates and manual merge fallback, describe no-candidate, newer-candidate-base, a waiting candidate superseded by a changed main tip, and GitHub rejection of a stale candidate as successful no-op outcomes; every other discrepancy MUST fail closed. Each target MUST record and enforce a merge mode compatible with its delivery-subject guard; for Conventional Commit Release Please repositories the safe default is squash-only with the PR title as the squash commit title. A template command that writes GitHub through Release Please MUST name an exact version selected by the target repository.
 
 #### Scenario: A repository adopts the delivery standard
 
@@ -36,6 +36,12 @@ Every Release Please template, including npm／MCP templates, SHALL require a tr
 - **WHEN** an npm package or MCP server enables Release Please
 - **THEN** it skips only deploy-specific gating
 - **AND** it still configures the trusted release PR auto-merge validator and its observable acceptance
+
+#### Scenario: A target selects its delivery merge mode
+
+- **WHEN** a repository enables a Conventional Commit release eligibility guard
+- **THEN** it records and readbacks a merge mode that preserves one validated mainline delivery title
+- **AND** it uses squash-only with the pull-request title as the squash title unless it documents and tests an equivalent target-specific representation
 
 ### Requirement: Monorepo standards require Turborepo and safe scoped execution
 

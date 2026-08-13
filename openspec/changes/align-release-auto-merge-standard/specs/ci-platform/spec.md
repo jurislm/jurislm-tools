@@ -4,7 +4,7 @@
 
 The repository SHALL run a source-controlled `release-pr-auto-merge` Drone pipeline only for trusted pushes to `main`. The pipeline MUST depend on the same delivery commit's `validate` and `release` pipelines, MUST serialize overlapping deliveries, and MUST receive the release write credential only in its trusted main context.
 
-The validator SHALL select at most one open Release Please candidate for the configured repository, base branch, official author, and release branch. Before merging, it MUST validate the exact title and Release Please body markers, base and head repository identity, base SHA, head SHA, required-check clean state, and mergeability. It MUST verify that the target branch protection or ruleset requires the candidate to be tested with the latest base, enforces that requirement for the automation credential, and does not require human approval for release PR automation. It MUST then use GitHub's PR merge API with the validated head SHA, never directly update the main ref.
+The validator SHALL select at most one open Release Please candidate for the configured repository, base branch, official author, and release branch. Before merging, it MUST validate the exact title and Release Please body markers, base and head repository identity, base SHA, head SHA, required-check clean state, and mergeability. It MUST verify that the target branch protection or ruleset requires the candidate to be tested with the latest base, enforces that requirement for the automation credential, and does not require human approval for release PR automation. The current target SHALL use GitHub's PR merge API with the validated head SHA, `merge_method: squash`, and the validated release title as `commit_title`, never directly updating the main ref.
 
 The candidate SHALL change exactly the trusted Plugin release artifact contract: the release manifest, CHANGELOG, all configured plugin version files, and marketplace version metadata. The validator MUST reject an extra, missing, deleted, or semantically inconsistent artifact. Every version field MUST equal the candidate manifest version, the candidate version MUST exceed the base manifest version, and the CHANGELOG MUST prepend exactly one candidate version entry without rewriting or inserting another version block before the base content.
 
@@ -13,7 +13,7 @@ The validator SHALL exit successfully without merging only when no candidate exi
 #### Scenario: Matching main delivery authorizes merge
 
 - **WHEN** `validate(C)` and `release(C)` succeed and the open candidate has base SHA `C`, a valid artifact contract, a mergeable head, and current main tip `C`
-- **THEN** the validator sends one GitHub PR merge request containing the validated head SHA
+- **THEN** the validator sends one GitHub PR squash-merge request containing the validated head SHA and release title
 - **AND** the pipeline reports the merged pull request
 
 #### Scenario: No candidate needs no action
@@ -65,6 +65,21 @@ The validator SHALL exit successfully without merging only when no candidate exi
 - **THEN** the auto-merge pipeline does not run
 - **AND** the release write credential is unavailable
 - **AND** no workflow checks out or executes candidate-head code with merge authority
+
+### Requirement: Release eligibility classifies mainline delivery units
+
+The `release-pr` eligibility gate SHALL bind its Compare request to immutable `DRONE_COMMIT`, not a mutable branch name. It MUST identify the release range by walking from that delivery commit through each first parent to the released tag base, and it MUST classify only those mainline units. Raw Compare reachability SHALL NOT cause a side-branch commit to be treated as a main delivery. A standard squash delivery uses its subject. To recover a pre-policy GitHub default merge delivery, the gate MAY use the first non-empty body line only when the merge subject exactly matches GitHub's default pull-request merge format and that body line itself passes the Conventional Commit validator. A missing, broken, cyclic, or untrusted path MUST fail closed.
+
+#### Scenario: Side-branch test commits do not block a valid main delivery
+
+- **WHEN** Compare includes intermediate side-branch commits with non-permitted types but the first-parent mainline contains a valid `feat` or `fix` delivery
+- **THEN** the gate runs Release Please
+- **AND** it does not classify the side-branch commits as main delivery subjects
+
+#### Scenario: A malformed historical merge delivery is not accepted
+
+- **WHEN** a two-parent delivery lacks the exact GitHub default merge subject or a valid Conventional Commit body title
+- **THEN** the gate fails closed before invoking Release Please
 
 ### Requirement: Release Please write commands use a fixed executable version
 

@@ -130,7 +130,11 @@ GitHub's PR merge API with the validated candidate head SHA, not directly update
 by proof that `main` changed since the triggering delivery SHALL be a successful
 no-op; every other discrepancy MUST fail closed. No manual merge fallback SHALL be documented or required, and every
 Release Please command with GitHub write authority SHALL name the target
-repository's exact executable version.
+repository's exact executable version. Each target SHALL record and read back a
+target-compatible merge mode before enabling the validator. For a Conventional
+Commit release eligibility guard, the safe default is squash-only with the
+pull-request title as the squash title; another representation requires its own
+documented and tested subject parser.
 
 #### Scenario: The candidate belongs to the same trusted delivery
 
@@ -167,11 +171,15 @@ repository's exact executable version.
 對使用 Release Please 且設定 `release-type: simple` 的 plugin 儲存庫，
 `repo-standards` 必須提供 Drone `release-pr` 發布資格閘門的指引。閘門必須
 位於無條件執行的 `github-release` 之後、`release-pr` 之前，並透過 Compare
-API 比較已發布版本 tag 與 target branch；只有完整未發布範圍含有有效的
-`feat` 或 `fix` subject 時，才可呼叫 Release Please。只有 `docs`、只有
-`chore` 或空範圍必須成功跳過；範圍、metadata、token 或 subject 無法驗證時
-必須 fail closed。範本不得記錄發布憑證，也不得指示維護者手動修改由
-Release Please 管理的版本。
+API 比較已發布版本 tag 與 immutable `DRONE_COMMIT`；Compare 只提供可到達
+提交，閘門必須從該 commit 沿 first-parent mainline 回走至已發布 tag 的 base，
+只分類這些 mainline delivery subjects，不能把 side branch 的中間提交算成
+main 歷史。只有該範圍含有有效的 `feat` 或 `fix` subject 時，才可呼叫 Release
+Please。只有 `docs`、只有 `chore` 或空範圍必須成功跳過；範圍、metadata、
+token、first-parent path 或 subject 無法驗證時必須 fail closed。既有 GitHub
+default merge delivery 僅可在精確 merge subject 與 body 的 Conventional Commit
+title 都驗證時做相容性判讀；未來應使用 target-compatible squash-only policy。
+範本不得記錄發布憑證，也不得指示維護者手動修改由 Release Please 管理的版本。
 
 #### Scenario: 採用範本的 plugin 儲存庫只有文件維護
 
@@ -180,7 +188,7 @@ Release Please 管理的版本。
 
 #### Scenario: 採用範本的 plugin 儲存庫有可發布變更
 
-- **當** 完整未發布範圍含有有效的 `feat` 或 `fix` subject
+- **當** immutable `DRONE_COMMIT` 的 first-parent 未發布 mainline 範圍含有有效的 `feat` 或 `fix` subject
 - **那麼** `release-pr` 在 `github-release` 之後呼叫 Release Please，並使用
   儲存庫的 manifest 與 extra-file 設定建立或更新 release PR
 
@@ -188,3 +196,9 @@ Release Please 管理的版本。
 
 - **當** Compare request、manifest metadata 或任一 commit subject 無法驗證
 - **那麼** `release-pr` 在任何版本升級命令前失敗，且失敗訊息不包含 token
+
+#### Scenario: Compare includes side-branch history
+
+- **當** Compare 回傳未被 first-parent mainline 採用的中間分支提交
+- **那麼** 發布資格只使用 immutable `DRONE_COMMIT` 的 first-parent delivery subjects
+- **並且** side-branch 的不允許 type 不會阻擋一個已驗證的 mainline `feat` 或 `fix`

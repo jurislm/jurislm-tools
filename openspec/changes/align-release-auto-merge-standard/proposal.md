@@ -8,7 +8,7 @@
 - 為 Plugin artifact contract 驗證官方來源、branch、title／body marker、精確變更檔案、版本內容、base／head SHA、required-check clean 狀態與 GitHub branch-protection guard；CHANGELOG 只能新增一個 candidate version block。由 GitHub PR merge API 以剛驗證的 head SHA 合併，並要求 `main` 的 latest-base required checks 與管理員 enforcement，讓 GitHub 在 base 已前進時拒絕舊 candidate。無候選、較新 candidate delivery 接手、候選等待期間 main 已改變，或 GitHub 拒絕 stale candidate 且 reread 證實 main 已改變則成功 no-op；其他不安全或不一致的候選一律 fail closed。
 - 讓 repo-standards 明定 entire 是唯一已驗證 reference repo；其他 repo 在實際驗收前僅屬待導入。
 - 同步 canonical spec、所有 repo 類型模板（含 npm／MCP）、checklist 與 executable policy tests：Turborepo 必要性、固定 Release Please CLI 版本、release PR auto-merge、Turbo `--filter`／`--affected` 邊界，以及 affected 判定不確定時的完整驗證／部署。
-- 保留既有 release eligibility：只有 unreleased feat／fix 範圍建立 release PR。
+- 修正 release eligibility 的來源判讀：Compare API 只用來取得已發布 tag 與不可變 `DRONE_COMMIT` 間的可到達提交；資格判斷只接受該 delivery 的 first-parent mainline 單位，不能把 PR side branch 的中間 `test` 提交當成 main 歷史。為回復已進入 main 的 GitHub default merge delivery，可在其格式與 body 的 Conventional Commit PR title 都嚴格驗證時使用該 title；未來一律以 squash merge 與 PR title 落地，避免再產生歧義。
 
 ## Non-Goals
 
@@ -32,6 +32,6 @@
 - Affected specs: `ci-platform`、`docs-and-standards`。
 - Affected code:
   - New: `scripts/release-pr-auto-merge.mjs`、`scripts/release-pr-auto-merge.test.mjs`。
-  - Modified: `.drone.yml`、`scripts/validate-drone-config.mjs`、`scripts/drone-ci-policy.test.mjs`、`plugins/repo-standards/skills/repo-standards/SKILL.md`、`plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md`、`plugins/repo-standards/skills/repo-standards/references/new-repo-checklist.md`、`openspec/specs/docs-and-standards/repo-standards-detail.md`。
+  - Modified: `.drone.yml`、`scripts/release-eligibility.mjs`、`scripts/release-eligibility.test.mjs`、`scripts/validate-drone-config.mjs`、`scripts/drone-ci-policy.test.mjs`、`plugins/repo-standards/skills/repo-standards/SKILL.md`、`plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md`、`plugins/repo-standards/skills/repo-standards/references/new-repo-checklist.md`、`openspec/specs/docs-and-standards/repo-standards-detail.md`。
   - Removed: none.
-- Tracking: Closes #215.
+- Tracking: Refs #215. The issue closes only after the real release delivery readback succeeds.

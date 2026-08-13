@@ -213,6 +213,7 @@ function selectReleaseCandidate(value) {
 
   return {
     number: pull.number,
+    title,
     version: titleMatch[1],
     baseSha: requiredSha(base.sha, "base.sha"),
     headSha: requiredSha(head.sha, "head.sha"),
@@ -455,7 +456,8 @@ export async function runReleasePrAutoMerge({
   }
   if (
     detailedCandidate.baseSha !== candidate.baseSha ||
-    detailedCandidate.headSha !== candidate.headSha
+    detailedCandidate.headSha !== candidate.headSha ||
+    detailedCandidate.title !== candidate.title
   ) {
     throw new Error("release PR SHA changed before validation");
   }
@@ -514,7 +516,8 @@ export async function runReleasePrAutoMerge({
     if (!mergeabilityCandidate) throw new Error("release PR disappeared during mergeability validation");
     if (
       mergeabilityCandidate.baseSha !== candidate.baseSha ||
-      mergeabilityCandidate.headSha !== candidate.headSha
+      mergeabilityCandidate.headSha !== candidate.headSha ||
+      mergeabilityCandidate.title !== candidate.title
     ) {
       if (await candidateBaseIsNewer(mergeabilityCandidate.baseSha)) {
         return { status: "no-op" };
@@ -541,7 +544,11 @@ export async function runReleasePrAutoMerge({
     const mergeSha = mergeResult(
       await request(`/repos/${REPOSITORY}/pulls/${candidate.number}/merge`, {
         method: "PUT",
-        body: JSON.stringify({ sha: candidate.headSha, merge_method: "merge" }),
+        body: JSON.stringify({
+          sha: candidate.headSha,
+          merge_method: "squash",
+          commit_title: candidate.title,
+        }),
       }),
     );
     return { status: "merged", pullNumber: candidate.number, mergeSha };
