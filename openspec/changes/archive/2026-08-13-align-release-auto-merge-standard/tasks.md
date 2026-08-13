@@ -22,5 +22,5 @@
 ## 4. Verification and rollout：整合驗證與交付 readback
 
 - [x] 4.1 執行 Verification and rollout：`npm ci`、`npm run validate`、`claude plugin validate .`、`spectra validate --strict` 與 `spectra analyze align-release-auto-merge-standard --json`，確認 validator、CI 結構、版本同步與 artifacts 全部通過；將實際輸出記入 `openspec/changes/align-release-auto-merge-standard/verification-logs/`。
-- [ ] 4.2 合併後對一個真實 releasable main delivery 讀回 Drone build、release PR merge、後續 push build 與 GitHub tag／release，證明「Drone auto-merges only an authorized Release Please candidate」沒有人工介入；若任一 readback 失敗，保留 candidate 並修正 source-controlled contract 後重試。
+- [x] 4.2 合併後對一個真實 releasable main delivery 讀回 Drone build、release PR merge、後續 push build 與 GitHub tag／release，證明「Drone auto-merges only an authorized Release Please candidate」沒有人工介入；若任一 readback 失敗，保留 candidate 並修正 source-controlled contract 後重試。
 - [x] 4.3 記錄 build #105 的 fail-closed evidence，執行 recovery regression、完整 repository／Drone／Spectra validation 與 GitHub merge-policy readback；不得以人工 release fallback 取代 acceptance。

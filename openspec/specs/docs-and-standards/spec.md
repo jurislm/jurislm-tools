@@ -117,8 +117,11 @@ cannot hide a relevant change.
 
 ### Requirement: Release Please auto-merge is authorized by the same delivery
 
-Every adopting repository that enables Release Please SHALL use a trusted
-`main`-delivery `release-pr-auto-merge` validator. The validator MUST depend on
+Every adopting repository that enables Release Please, including npm packages
+and MCP servers, SHALL use a trusted `main`-delivery
+`release-pr-auto-merge` validator. An npm or MCP target may skip only
+deploy-specific gating; it MUST still configure this validator and its
+observable acceptance. The validator MUST depend on
 the same delivery commit's required validation and release gates, validate a
 repository-specific closed artifact contract with no extra, missing, deleted,
 or semantically inconsistent release artifact, validate required-check clean
@@ -165,6 +168,12 @@ documented and tested subject parser.
   mergeability discrepancy
 - **THEN** the validator fails closed without merging
 - **AND** no manual merge path is used to bypass the rejection
+
+#### Scenario: An npm or MCP repository adopts a release template
+
+- **WHEN** an npm package or MCP server enables Release Please
+- **THEN** it skips only deploy-specific gating
+- **AND** it still configures the trusted release PR auto-merge validator and its observable acceptance
 
 ### Requirement: repo-standards 發布指引避免不可發布的版本升級
 
