@@ -16,6 +16,7 @@ const UPDATED_MAIN_SHA = "3333333333333333333333333333333333333333";
 const MERGE_SHA = "4444444444444444444444444444444444444444";
 const NEWER_BASE_SHA = "5555555555555555555555555555555555555555";
 const UNRELATED_MAIN_SHA = "6666666666666666666666666666666666666666";
+const UNRELATED_BASE_SHA = "7777777777777777777777777777777777777777";
 const PULL_NUMBER = 213;
 
 const RELEASE_BODY = `:robot: I have created a release *beep* *boop*
@@ -198,11 +199,11 @@ function releaseCandidate(overrides = {}) {
       repo: { full_name: REPOSITORY },
     },
     mergeable: true,
-    ...overrides,
   };
 
   return {
     ...candidate,
+    ...overrides,
     user: { ...candidate.user, ...(overrides.user ?? {}) },
     base: { ...candidate.base, ...(overrides.base ?? {}) },
     head: { ...candidate.head, ...(overrides.head ?? {}) },
@@ -247,7 +248,7 @@ function createGitHubMock({
     const url = new URL(request.url);
     const record = {
       method: request.method,
-      url: request.href,
+      url: request.url,
       body: init.body == null ? null : String(init.body),
     };
     requests.push(record);
@@ -367,6 +368,30 @@ test("an extra changed artifact is rejected without a merge request", async () =
   assertNoMerge(mock);
 });
 
+test("a missing configured release artifact is rejected without a merge request", async () => {
+  const files = RELEASE_ARTIFACTS.slice(0, -1);
+  const candidate = releaseCandidate({ changed_files: files.length });
+  const mock = createGitHubMock({
+    candidates: [candidate],
+    candidateDetail: candidate,
+    files: changedFiles(files),
+  });
+
+  await assert.rejects(invoke(mock));
+
+  assertNoMerge(mock);
+});
+
+test("a deleted configured release artifact is rejected without a merge request", async () => {
+  const files = changedFiles();
+  files.at(-1).status = "removed";
+  const mock = createGitHubMock({ files });
+
+  await assert.rejects(invoke(mock));
+
+  assertNoMerge(mock);
+});
+
 test("plugin version drift is rejected without a merge request", async () => {
   const driftedPluginPath = "plugins/repo-standards/.claude-plugin/plugin.json";
   const mock = createGitHubMock({
@@ -418,6 +443,19 @@ test("a candidate based on a newer delivery is a successful no-op", async () => 
   );
 });
 
+test("a candidate based on an unrelated delivery is rejected without a merge request", async () => {
+  const candidate = releaseCandidate({ base: { sha: UNRELATED_BASE_SHA } });
+  const mock = createGitHubMock({
+    candidates: [candidate],
+    candidateDetail: candidate,
+    compareStatus: "diverged",
+  });
+
+  await assert.rejects(invoke(mock));
+
+  assertNoMerge(mock);
+});
+
 test("any changed main tip during final recheck is a successful no-op", async () => {
   const mock = createGitHubMock({ mainSha: UNRELATED_MAIN_SHA });
 
@@ -438,4 +476,75 @@ test("a GitHub API failure is rejected without a merge request", async () => {
   await assert.rejects(invoke(mock));
 
   assertNoMerge(mock);
+});
+
+test("a GitHub API timeout is rejected without a merge request", async () => {
+  let requestCount = 0;
+  const fetchImpl = (_input, init = {}) =>
+    new Promise((_resolve, reject) => {
+      requestCount += 1;
+      const signal = init.signal;
+      assert.ok(signal, "GitHub requests must have a timeout signal");
+      signal.addEventListener(
+        "abort",
+        () => reject(new Error("simulated GitHub API timeout")),
+        { once: true },
+      );
+    });
+
+  await assert.rejects(
+    runReleasePrAutoMerge({
+      token: TOKEN,
+      commitSha: DRONE_COMMIT,
+      fetchImpl,
+      requestTimeoutMs: 10,
+    }),
+    /timed out/i,
+  );
+
+  assert.equal(requestCount, 1);
+});
+
+test("a GitHub API response-body timeout is rejected without a merge request", async () => {
+  let requestCount = 0;
+  const fetchImpl = (_input, init = {}) => {
+    requestCount += 1;
+    return Promise.resolve({
+      ok: true,
+      status: 200,
+      text: () =>
+        new Promise((_resolve, reject) => {
+          const signal = init.signal;
+          assert.ok(signal, "GitHub requests must keep the timeout signal while reading a response");
+          signal.addEventListener(
+            "abort",
+            () => reject(new Error("simulated GitHub API response-body timeout")),
+            { once: true },
+          );
+        }),
+    });
+  };
+  let deadlineId;
+  const deadline = new Promise((_, reject) => {
+    deadlineId = setTimeout(() => reject(new Error("test deadline exceeded")), 100);
+  });
+
+  try {
+    await assert.rejects(
+      Promise.race([
+        runReleasePrAutoMerge({
+          token: TOKEN,
+          commitSha: DRONE_COMMIT,
+          fetchImpl,
+          requestTimeoutMs: 10,
+        }),
+        deadline,
+      ]),
+      /timed out/i,
+    );
+  } finally {
+    clearTimeout(deadlineId);
+  }
+
+  assert.equal(requestCount, 1);
 });
