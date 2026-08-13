@@ -12,6 +12,9 @@ const GITHUB_API_URL = "https://api.github.com";
 const RELEASABLE_TYPES = new Set(["feat", "fix"]);
 const SUBJECT_PATTERN = /^([a-z]+)(?:\([^)]+\))?!?:/u;
 const SEMVER_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/u;
+const SHA_PATTERN = /^[0-9a-f]{40}$/iu;
+const GITHUB_DEFAULT_MERGE_SUBJECT =
+  /^Merge pull request #[1-9]\d* from [A-Za-z0-9][A-Za-z0-9_.-]*\/[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*$/u;
 
 function requireNonEmptyString(value, name) {
   if (typeof value !== "string" || value.length === 0) {
@@ -32,6 +35,14 @@ function parseRepository(repository) {
   return parts;
 }
 
+function requireSha(value, name) {
+  const sha = requireNonEmptyString(value, name);
+  if (!SHA_PATTERN.test(sha)) {
+    throw new Error(`${name} must be a 40-character Git SHA.`);
+  }
+  return sha;
+}
+
 function readManifestVersion(manifestPath) {
   let manifest;
 
@@ -49,12 +60,12 @@ function readManifestVersion(manifestPath) {
   return version;
 }
 
-function buildCompareUrl({ repository, branch, version }) {
+function buildCompareUrl({ repository, commitSha, version }) {
   const [owner, name] = parseRepository(repository);
-  const targetBranch = requireNonEmptyString(branch, "DRONE_BRANCH");
+  const targetCommit = requireSha(commitSha, "DRONE_COMMIT");
 
   return `${GITHUB_API_URL}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}` +
-    `/compare/${encodeURIComponent(`v${version}`)}...${encodeURIComponent(targetBranch)}` +
+    `/compare/${encodeURIComponent(`v${version}`)}...${encodeURIComponent(targetCommit)}` +
     "?per_page=100&page=1";
 }
 
@@ -92,13 +103,86 @@ function validateNextUrl(nextUrl, firstUrl) {
   return candidate.href;
 }
 
-function extractCommitSubject(commit, index) {
+function extractCommitMessage(commit, index) {
   const message = commit?.commit?.message;
   if (typeof message !== "string" || message.length === 0) {
     throw new Error(`Compare response commit ${index + 1} is missing a commit message.`);
   }
 
-  return message.split(/\r?\n/u, 1)[0];
+  return message;
+}
+
+function normalizeCompareCommit(commit, index) {
+  const sha = requireSha(commit?.sha, `Compare response commit ${index + 1} SHA`);
+  if (!Array.isArray(commit?.parents) || commit.parents.length === 0) {
+    throw new Error(`Compare response commit ${index + 1} is missing parents.`);
+  }
+
+  return {
+    sha,
+    message: extractCommitMessage(commit, index),
+    parents: commit.parents.map((parent, parentIndex) =>
+      requireSha(
+        parent?.sha,
+        `Compare response commit ${index + 1} parent ${parentIndex + 1} SHA`,
+      ),
+    ),
+  };
+}
+
+function mainlineDeliveryCommits({ commits, baseSha, commitSha }) {
+  if (!Array.isArray(commits)) throw new Error("Compare commits must be an array.");
+
+  const bySha = new Map();
+  for (const [index, commit] of commits.entries()) {
+    const normalized = normalizeCompareCommit(commit, index);
+    if (bySha.has(normalized.sha)) {
+      throw new Error(`Compare response repeats commit ${normalized.sha}.`);
+    }
+    bySha.set(normalized.sha, normalized);
+  }
+
+  const deliveries = [];
+  const seen = new Set();
+  let currentSha = commitSha;
+  while (currentSha !== baseSha) {
+    if (seen.has(currentSha)) {
+      throw new Error("Compare response first-parent mainline is cyclic.");
+    }
+    const current = bySha.get(currentSha);
+    if (!current) {
+      throw new Error(`Compare response first-parent mainline is missing commit ${currentSha}.`);
+    }
+    seen.add(currentSha);
+    deliveries.push(current);
+    currentSha = current.parents[0];
+  }
+
+  return deliveries.reverse();
+}
+
+function extractMainlineDeliverySubject(commit, index) {
+  const lines = commit.message.split(/\r?\n/u);
+  const subject = lines[0];
+
+  if (commit.parents.length === 1) return subject;
+  if (commit.parents.length !== 2) {
+    throw new Error(`Mainline delivery ${index + 1} has an unsupported parent count.`);
+  }
+  if (!GITHUB_DEFAULT_MERGE_SUBJECT.test(subject) || lines[1] !== "") {
+    throw new Error(`Mainline delivery ${index + 1} is not an exact GitHub default merge delivery.`);
+  }
+
+  const bodyTitle = lines.slice(2).find((line) => line.length > 0);
+  if (!bodyTitle) {
+    throw new Error(`Mainline delivery ${index + 1} is missing a GitHub default merge body title.`);
+  }
+  const validation = validateTitle(bodyTitle);
+  if (!validation.valid) {
+    throw new Error(`Mainline delivery ${index + 1} has an invalid merge body title: ${validation.reason}`);
+  }
+
+  return bodyTitle;
 }
 
 function responseLinkHeader(response) {
@@ -135,7 +219,7 @@ export function classifyCommitSubjects(subjects) {
 
 export async function fetchCompareCommits({
   repository,
-  branch,
+  commitSha,
   version,
   token,
   fetchImpl = globalThis.fetch,
@@ -151,9 +235,10 @@ export async function fetchCompareCommits({
   };
   const commits = [];
   const seenUrls = new Set();
-  const firstUrl = buildCompareUrl({ repository, branch, version });
+  const firstUrl = buildCompareUrl({ repository, commitSha, version });
   let nextUrl = firstUrl;
   let expectedTotal;
+  let baseSha;
 
   while (nextUrl) {
     if (seenUrls.has(nextUrl)) throw new Error("GitHub Compare pagination repeated a page.");
@@ -185,6 +270,15 @@ export async function fetchCompareCommits({
       throw new Error("GitHub Compare response is missing a valid total_commits or commits array.");
     }
 
+    const pageBaseSha = requireSha(
+      payload?.base_commit?.sha,
+      "GitHub Compare response base commit SHA",
+    );
+    if (baseSha === undefined) baseSha = pageBaseSha;
+    if (pageBaseSha !== baseSha) {
+      throw new Error("GitHub Compare response changed its base commit between pages.");
+    }
+
     if (expectedTotal === undefined) expectedTotal = payload.total_commits;
     if (payload.total_commits !== expectedTotal) {
       throw new Error("GitHub Compare response changed total_commits between pages.");
@@ -206,7 +300,7 @@ export async function fetchCompareCommits({
     );
   }
 
-  return commits;
+  return { baseSha, commits };
 }
 
 export async function evaluateReleaseEligibility({
@@ -216,17 +310,23 @@ export async function evaluateReleaseEligibility({
 } = {}) {
   const token = requireNonEmptyString(env.RELEASE_PLEASE_TOKEN, "RELEASE_PLEASE_TOKEN");
   const repository = requireNonEmptyString(env.DRONE_REPO, "DRONE_REPO");
-  const branch = requireNonEmptyString(env.DRONE_BRANCH, "DRONE_BRANCH");
+  requireNonEmptyString(env.DRONE_BRANCH, "DRONE_BRANCH");
+  const commitSha = requireSha(env.DRONE_COMMIT, "DRONE_COMMIT");
   const version = readManifestVersion(manifestPath);
-  const commits = await fetchCompareCommits({
+  const comparison = await fetchCompareCommits({
     repository,
-    branch,
+    commitSha,
     version,
     token,
     fetchImpl,
   });
 
-  return classifyCommitSubjects(commits.map(extractCommitSubject));
+  const deliveries = mainlineDeliveryCommits({
+    commits: comparison.commits,
+    baseSha: comparison.baseSha,
+    commitSha,
+  });
+  return classifyCommitSubjects(deliveries.map(extractMainlineDeliverySubject));
 }
 
 function redactToken(message, token) {

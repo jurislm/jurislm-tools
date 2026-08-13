@@ -80,6 +80,18 @@ GitHub branch protection 或 ruleset 對 automation credential 強制 latest-bas
 protection、required-check、API 或 mergeability 異常一律 fail closed。不得提供人工合併 fallback；
 所有帶 GitHub write credential 的 Release Please command 都必須鎖定該 repo 選定的 exact executable version。
 
+### Release eligibility 的 mainline 與 merge mode
+
+發布資格的 Compare target 必須是 immutable `DRONE_COMMIT`，不是 mutable branch name。
+Compare 回傳的是可到達提交集合；閘門要從此 delivery 沿 first-parent mainline 回到
+已發布 tag 的 base，只檢查真正落在 main 的 delivery subject。side branch 的 red/green
+測試提交不能被當成 main 歷史。任何遺失、斷裂或循環的 first-parent path 都 fail closed。
+
+每個 target 必須在啟用流程前 readback target-compatible merge mode。採 Conventional
+Commit eligibility 的 repo 預設使用 squash-only，並讓 pull-request title 成為 squash
+title；若因 target 現況需要讀 GitHub default merge body，必須精確驗證 GitHub merge
+subject 與 body title，且只能作已存在歷史的相容性 recovery，不能成為人工 fallback。
+
 ## Git Worktree 規則（JurisLM 統一標準）
 
 GitHub Flow 單段式：main worktree 根目錄必須永遠在 `main` 分支，每個需求／功能直接從 `main` 建立獨立 feature worktree，沒有 `develop` 分支：
@@ -113,15 +125,16 @@ Plugin repo（`release-type: simple`）特別規則：
 使用 `release-type: simple` 且以 Drone 執行 Release Please 的 Plugin repo，必須將
 `scripts/release-eligibility.mjs` 與其測試一同納入 repo。`release-please` pipeline
 必須先無條件執行 `github-release`，再由 `release-pr` 讀取 `.release-please-manifest.json`、
-`DRONE_REPO` 與 `DRONE_BRANCH`，透過已驗證身分的 GitHub Compare API 取得從已發布 tag
-到目前分支的完整提交範圍。只有完整範圍含有有效的 `feat` 或 `fix` subject 時，才可呼叫
-Release Please 建立或更新 release PR。
+`DRONE_REPO`、`DRONE_BRANCH`、`DRONE_COMMIT`，透過已驗證身分的 GitHub Compare API 取得
+從已發布 tag 到 immutable delivery SHA 的可到達提交。資格閘門只走該 SHA 的 first-parent
+mainline，不把 side branch 的提交當成 release subject。只有這條 mainline 含有有效的 `feat`
+或 `fix` subject 時，才可呼叫 Release Please 建立或更新 release PR。
 
 - 沒有提交，或只有有效的 `docs`／`chore` → exit `10`，成功跳過 `release-pr`。
 - 缺少 metadata、token、manifest 版本、Compare page、回應資料或有效 subject → 非 `10`
   的錯誤，pipeline fail closed，不得呼叫 Release Please。
 - `RELEASE_PLEASE_TOKEN` 只能透過 Drone secret indirection 提供，任何輸出不得包含 token。
-- 範本必須使用 Drone 提供的 `DRONE_REPO`／`DRONE_BRANCH`，不得把 consumer repo 名稱寫死。
+- 範本必須使用 Drone 提供的 `DRONE_REPO`、`DRONE_BRANCH`、`DRONE_COMMIT`，不得把 consumer repo 名稱或 mutable Compare target 寫死。
 
 ## 觸發條件
 

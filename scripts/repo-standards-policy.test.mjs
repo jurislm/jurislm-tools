@@ -88,3 +88,24 @@ test("release templates require exact versions and a trusted automatic merge con
     );
   }
 });
+
+test("release eligibility uses immutable mainline deliveries and target-compatible squash mode", () => {
+  assert.match(policyText, /immutable `DRONE_COMMIT`|immutable DRONE_COMMIT/i);
+  assert.match(policyText, /first-parent mainline|first-parent/i);
+  assert.match(policyText, /target-compatible merge mode/i);
+  assert.match(policyText, /squash-only/i);
+  assert.match(policyText, /pull-request title.*squash title|PR title.*squash/i);
+});
+
+test("plugin release templates bind eligibility to DRONE_COMMIT instead of a raw branch range", () => {
+  const template = policies[
+    "plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md"
+  ];
+  const detail = policies["openspec/specs/docs-and-standards/repo-standards-detail.md"];
+
+  assert.match(template, /DRONE_REPO／DRONE_BRANCH／DRONE_COMMIT/);
+  assert.match(template, /first-parent mainline/);
+  assert.doesNotMatch(template, /比較已發布 manifest tag 到目前分支的完整範圍/);
+  assert.match(detail, /DRONE_REPO`、`DRONE_BRANCH`、`DRONE_COMMIT/);
+  assert.match(detail, /first-parent mainline/);
+});

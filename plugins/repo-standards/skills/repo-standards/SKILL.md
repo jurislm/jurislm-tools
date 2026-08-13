@@ -312,8 +312,14 @@ Release Please 在 trusted `main` delivery 完成後，必須由該 repo source-
 - 以 target-specific closed artifact contract 驗證精確檔案清單、版本欄位與內容；不得把另一個 repo 的檔案 allowlist 直接套用。
 - 驗證官方 candidate identity（repository、base branch、head branch、作者、title／body marker）、base／head SHA、required-check clean 狀態與 mergeability。
 - 在寫入前驗證 target branch protection／ruleset：candidate 必須受 latest-base required checks 約束，automation credential 不可繞過，且 release PR 不得要求人工 approval；legacy branch protection 需 `strict: true` 且對 admin credential 啟用 enforcement。
-- 只用 GitHub PR merge API 並傳入剛驗證的 head SHA；若沒有 candidate、candidate base 已由較新 delivery 接手、候選等待時 reread 證實 main 已改變，或 GitHub 拒絕 stale merge 後 reread 證實 main 已改變，成功 no-op 並交由較新 delivery 處理。
+- 只用 GitHub PR merge API 並傳入剛驗證的 head SHA；每個 target 必須先 readback target-compatible merge mode。採 Conventional Commit eligibility 的 target 預設 squash-only，並以已驗證 PR title 作 squash title；若沒有 candidate、candidate base 已由較新 delivery 接手、候選等待時 reread 證實 main 已改變，或 GitHub 拒絕 stale merge 後 reread 證實 main 已改變，成功 no-op 並交由較新 delivery 處理。
 - 其他 identity、artifact、SHA、protection、required-check、API 或 mergeability mismatch 一律 fail closed；不得直接更新 main ref。
+
+Release eligibility 的 Compare request 必須綁定 immutable `DRONE_COMMIT`，並從該 commit
+沿 first-parent mainline 回到已發布 tag；Compare side branch 的中間提交不可當作 main
+delivery subject。first-parent path 不完整時 fail closed。若須為既有 GitHub default merge
+歷史做 recovery，僅能接受精確 default merge subject 與通過 Conventional Commit 驗證的
+body title；未來 merge policy 不得依賴此相容性分支。
 
 No candidate is a safe no-op；a candidate based on a newer delivery is a safe no-op；a waiting candidate or rejected protected merge that proves main changed is a safe no-op。其他狀態不得合併。
 
@@ -532,6 +538,7 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 - **Bun**：`"packageManager": "bun@1.3.14"`，scripts 換成 `bun run vitest` 等
 - **Release**：Drone repo 使用 `main`-only release pipeline，依序執行固定精確版本的 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`，並由同一 trusted delivery 的 source-controlled validator 自動合併 release PR；無人工 fallback
 - **Release 資格閘門**：使用 `release-type: simple` 的 Drone Plugin repo 必須在 `release-pr` 前執行 `scripts/release-eligibility.mjs`；只有 exit `0` 才呼叫 Release Please，exit `10` 成功跳過，其他錯誤 fail closed；完整模板見 `references/ci-workflow-templates.md`
+- **Delivery subject**：資格閘門必須對 immutable `DRONE_COMMIT` 走 first-parent mainline；對 Conventional Commit target，GitHub merge setting 預設 readback 為 squash-only + pull-request title 作 squash title
 - **Monorepo**：所有 JurisLM monorepo 必須有 root `turbo.json`；已知 workspace 用 `--filter`，可信 Git base／head 才能用 `--affected`，否則完整 validation／deploy，cache inputs 必須涵蓋 task 讀取的全部檔案
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.claude/worktrees/`
 - **CI**：Drone repo 的檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；plugin repo 若選 Drone，validation 與 release 一起遷移並移除重疊 GHA

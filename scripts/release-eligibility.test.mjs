@@ -12,6 +12,17 @@ import {
 
 const repositoryRoot = path.resolve(new URL("../", import.meta.url).pathname);
 
+function fixtureSha(value) {
+  return value.toString(16).padStart(40, "0");
+}
+
+const TAG_SHA = fixtureSha(1);
+const DOCS_SHA = fixtureSha(2);
+const HEAD_SHA = fixtureSha(3);
+const SIDE_TEST_SHA = fixtureSha(4);
+const SIDE_FEATURE_SHA = fixtureSha(5);
+const MISSING_SHA = fixtureSha(6);
+
 function makeManifest(version = "1.37.1") {
   const directory = mkdtempSync(path.join(tmpdir(), "release-eligibility-"));
   const manifestPath = path.join(directory, ".release-please-manifest.json");
@@ -24,6 +35,7 @@ function makeEnvironment(overrides = {}) {
     RELEASE_PLEASE_TOKEN: "test-token-that-must-not-leak",
     DRONE_REPO: "jurislm/jurislm-tools",
     DRONE_BRANCH: "main",
+    DRONE_COMMIT: HEAD_SHA,
     ...overrides,
   };
 }
@@ -42,18 +54,38 @@ function githubResponse(payload, { status = 200, link } = {}) {
   };
 }
 
-function comparePage(commits, totalCommits = commits.length, options = {}) {
+function comparePage({ commits, totalCommits = commits.length, baseSha = TAG_SHA, link } = {}) {
   return githubResponse(
     {
+      base_commit: { sha: baseSha },
       total_commits: totalCommits,
       commits,
     },
-    options,
+    { link },
   );
 }
 
-function commit(message) {
-  return { sha: `${message}-sha`, commit: { message } };
+function parent(sha) {
+  return { sha };
+}
+
+function commit({ sha, message, parents = [parent(TAG_SHA)] }) {
+  return { sha, commit: { message }, parents };
+}
+
+function normalMainlineCommits() {
+  return [
+    commit({
+      sha: DOCS_SHA,
+      message: "docs: update the guide",
+      parents: [parent(TAG_SHA)],
+    }),
+    commit({
+      sha: HEAD_SHA,
+      message: "feat(release): make a real release delivery",
+      parents: [parent(DOCS_SHA)],
+    }),
+  ];
 }
 
 test("an empty comparison is a deliberate skip", () => {
@@ -99,14 +131,14 @@ test("missing release metadata fails before making a Compare request", async () 
   try {
     await assert.rejects(
       evaluateReleaseEligibility({
-        env: makeEnvironment({ DRONE_REPO: "" }),
+        env: makeEnvironment({ DRONE_COMMIT: "" }),
         manifestPath,
         fetchImpl: async () => {
           fetchCalled = true;
           throw new Error("fetch must not be called");
         },
       }),
-      /DRONE_REPO/i,
+      /DRONE_COMMIT/i,
     );
     assert.equal(fetchCalled, false);
   } finally {
@@ -131,16 +163,126 @@ test("a Compare API failure fails closed", async () => {
   }
 });
 
-test("every Compare page is evaluated before deciding", async () => {
+test("eligibility binds Compare to immutable DRONE_COMMIT and follows its first-parent mainline", async () => {
+  const { directory, manifestPath } = makeManifest();
+  const calls = [];
+
+  try {
+    const result = await evaluateReleaseEligibility({
+      env: makeEnvironment(),
+      manifestPath,
+      fetchImpl: async (url, options) => {
+        calls.push({ url, options });
+        return comparePage({ commits: normalMainlineCommits() });
+      },
+    });
+
+    assert.equal(result.eligible, true);
+    assert.equal(result.exitCode, 0);
+    assert.equal(calls.length, 1);
+    assert.equal(
+      calls[0].url,
+      `https://api.github.com/repos/jurislm/jurislm-tools/compare/v1.37.1...${HEAD_SHA}?per_page=100&page=1`,
+    );
+    assert.equal(calls[0].options.headers.Authorization, "Bearer test-token-that-must-not-leak");
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("a valid GitHub default merge delivery ignores side-branch test commits", async () => {
+  const { directory, manifestPath } = makeManifest();
+  const commits = [
+    commit({
+      sha: DOCS_SHA,
+      message: "docs: update the guide",
+      parents: [parent(TAG_SHA)],
+    }),
+    commit({
+      sha: SIDE_TEST_SHA,
+      message: "test(ci): red test that never became a main delivery",
+      parents: [parent(DOCS_SHA)],
+    }),
+    commit({
+      sha: SIDE_FEATURE_SHA,
+      message: "fix(ci): later branch work",
+      parents: [parent(SIDE_TEST_SHA)],
+    }),
+    commit({
+      sha: HEAD_SHA,
+      message:
+        "Merge pull request #216 from jurislm/codex/recover-release-delivery\n\n" +
+        "feat(release): auto-merge trusted Release Please PRs\n\nRefs #215",
+      parents: [parent(DOCS_SHA), parent(SIDE_FEATURE_SHA)],
+    }),
+  ];
+
+  try {
+    const result = await evaluateReleaseEligibility({
+      env: makeEnvironment(),
+      manifestPath,
+      fetchImpl: async () => comparePage({ commits }),
+    });
+
+    assert.deepEqual(result, { eligible: true, exitCode: 0 });
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("a malformed historical merge delivery fails closed", async () => {
+  const { directory, manifestPath } = makeManifest();
+  const malformedMerge = commit({
+    sha: HEAD_SHA,
+    message: "Merge branch feature/release into main\n\nfeat: unsafe recovery",
+    parents: [parent(TAG_SHA), parent(SIDE_FEATURE_SHA)],
+  });
+
+  try {
+    await assert.rejects(
+      evaluateReleaseEligibility({
+        env: makeEnvironment(),
+        manifestPath,
+        fetchImpl: async () => comparePage({ commits: [malformedMerge] }),
+      }),
+      /GitHub default merge|mainline delivery/i,
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("a broken first-parent path fails closed", async () => {
+  const { directory, manifestPath } = makeManifest();
+  const incompleteHead = commit({
+    sha: HEAD_SHA,
+    message: "feat: delivery with a missing first parent",
+    parents: [parent(MISSING_SHA)],
+  });
+
+  try {
+    await assert.rejects(
+      evaluateReleaseEligibility({
+        env: makeEnvironment(),
+        manifestPath,
+        fetchImpl: async () => comparePage({ commits: [incompleteHead] }),
+      }),
+      /first-parent.*missing|mainline.*missing/i,
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("every Compare page is collected before mainline eligibility is decided", async () => {
   const { directory, manifestPath } = makeManifest();
   const calls = [];
   const nextUrl =
-    "https://api.github.com/repos/jurislm/jurislm-tools/compare/v1.37.1...main?per_page=100&page=2";
+    `https://api.github.com/repos/jurislm/jurislm-tools/compare/v1.37.1...${HEAD_SHA}?per_page=100&page=2`;
+  const [docs, feature] = normalMainlineCommits();
   const responses = [
-    comparePage([commit("docs: update the guide")], 2, {
-      link: `<${nextUrl}>; rel="next"`,
-    }),
-    comparePage([commit("fix(ci): stop a version bump")], 2),
+    comparePage({ commits: [docs], totalCommits: 2, link: `<${nextUrl}>; rel="next"` }),
+    comparePage({ commits: [feature], totalCommits: 2 }),
   ];
 
   try {
@@ -158,10 +300,9 @@ test("every Compare page is evaluated before deciding", async () => {
     assert.equal(calls.length, 2);
     assert.equal(
       calls[0].url,
-      "https://api.github.com/repos/jurislm/jurislm-tools/compare/v1.37.1...main?per_page=100&page=1",
+      `https://api.github.com/repos/jurislm/jurislm-tools/compare/v1.37.1...${HEAD_SHA}?per_page=100&page=1`,
     );
     assert.equal(calls[1].url, nextUrl);
-    assert.equal(calls[0].options.headers.Authorization, "Bearer test-token-that-must-not-leak");
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
@@ -180,7 +321,9 @@ test("a pagination link outside the GitHub Compare endpoint is rejected before t
         fetchImpl: async (url, options) => {
           calls.push({ url, options });
           if (calls.length > 1) throw new Error("token forwarded to an untrusted host");
-          return comparePage([commit("docs: update the guide")], 2, {
+          return comparePage({
+            commits: normalMainlineCommits().slice(0, 1),
+            totalCommits: 2,
             link: `<${untrustedUrl}>; rel="next"`,
           });
         },
@@ -201,7 +344,7 @@ test("a truncated Compare response fails closed", async () => {
       evaluateReleaseEligibility({
         env: makeEnvironment(),
         manifestPath,
-        fetchImpl: async () => comparePage([commit("docs: update the guide")], 2),
+        fetchImpl: async () => comparePage({ commits: normalMainlineCommits().slice(0, 1), totalCommits: 2 }),
       }),
       /incomplete|every Compare page/i,
     );
@@ -217,8 +360,9 @@ test("the CLI returns a non-skip error without printing the release token", () =
     env: {
       ...process.env,
       RELEASE_PLEASE_TOKEN: "secret-release-token",
-      DRONE_REPO: "",
+      DRONE_REPO: "jurislm/jurislm-tools",
       DRONE_BRANCH: "main",
+      DRONE_COMMIT: "",
     },
   });
   const output = `${result.stdout}\n${result.stderr}`;

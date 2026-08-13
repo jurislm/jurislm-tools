@@ -150,8 +150,8 @@ steps:
 
 ---
 # release-please：只在 push main 跑（含 release commit 本身）。RELEASE_PLEASE_TOKEN 為 Drone repo-scope secret。
-# `scripts/release-eligibility.mjs` 必須與此模板一同放入 repo，使用 DRONE_REPO／DRONE_BRANCH
-# 比較已發布 manifest tag 到目前分支的完整範圍；只有 feat／fix 才建立 release PR。
+# `scripts/release-eligibility.mjs` 必須與此模板一同放入 repo，使用 DRONE_REPO／DRONE_BRANCH／DRONE_COMMIT。
+# Compare 綁定 immutable delivery SHA；只有 first-parent mainline 的 feat／fix 才建立 release PR。
 kind: pipeline
 type: docker
 name: release
@@ -415,7 +415,7 @@ echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'
 合併 feature PR 進 main 後：
 
 1. Drone build 觸發 → deploy pipeline 部署一次 + release-please **自動開 `chore(main): release X.Y.Z` PR**。
-2. **這個 release PR 必須由同一 trusted main delivery 的 source-controlled validator 自動合併**；它要驗證 target-specific closed artifact contract、official candidate identity、required-check clean、mergeability 與 GitHub latest-base branch protection，並以 validated head SHA 使用 GitHub PR merge API。沒有 candidate、candidate base 已由較新 delivery 接手、候選等待時 main 已改變、或 GitHub 拒絕 stale merge 後 main 已改變，都是成功 no-op；其他 mismatch fail closed，不提供 manual merge fallback。
+2. **這個 release PR 必須由同一 trusted main delivery 的 source-controlled validator 自動合併**；它要驗證 target-specific closed artifact contract、official candidate identity、required-check clean、mergeability 與 GitHub latest-base branch protection，並以 validated head SHA 使用 GitHub PR merge API。target 必須先 readback target-compatible merge mode；Conventional Commit release eligibility 預設 squash-only，並以已驗證 PR title 作 squash title。沒有 candidate、candidate base 已由較新 delivery 接手、候選等待時 main 已改變、或 GitHub 拒絕 stale merge 後 main 已改變，都是成功 no-op；其他 mismatch fail closed，不提供 manual merge fallback。
 3. 合併 release PR → release commit → **deploy 被守衛跳過**（不重複部署）、以 `release-please@<EXACT-RELEASE-PLEASE-VERSION>` 執行 `github-release` 建 tag + release。
 
 ⚠️ **合併任何 PR 進 main 後，必須確認 CI 真的被觸發**（不可假設）：GitHub 偶爾漏發 `push` webhook，造成 Drone 沒 build、release 沒 cut。若 delivery 缺失，保留 candidate，修復後由新的 trusted main delivery 重試。
@@ -430,6 +430,15 @@ curl -fsS "$DRONE_SERVER/api/repos/jurislm/<repo>/builds?per_page=5" -H "Authori
 ```
 
 若 readback 顯示 delivery 缺失，修復 source-controlled pipeline／validator 後，讓新的 trusted `main` delivery 重新觸發完整流程；不得以手動 Release Please write command 或人工合併繞過 contract。
+
+### Release eligibility 的 mainline guard
+
+`release-eligibility` 的 Compare request 必須綁定 immutable `DRONE_COMMIT`，而不是 branch
+name。Compare 的 commits 是可到達集合，不能直接當作 release subjects；由該 SHA 沿
+first-parent mainline 回到已發布 tag 的 commits 才是可分類的 delivery units。任何遺失、
+斷裂或循環 path 都 fail closed。pre-policy GitHub default merge 僅能在 exact merge subject
+與 body Conventional Commit title 都驗證時做 recovery；不允許以此取代 target-compatible
+squash-only policy。
 
 ---
 

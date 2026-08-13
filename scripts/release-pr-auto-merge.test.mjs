@@ -345,7 +345,7 @@ function assertNoMerge(mock) {
   assert.equal(mock.mergeRequests().length, 0, "rejected or superseded candidates must not merge");
 }
 
-test("a valid Release Please candidate makes exactly one merge request with its validated head SHA", async () => {
+test("a valid Release Please candidate makes exactly one squash merge request with its validated title and head SHA", async () => {
   const mock = createGitHubMock();
 
   await invoke(mock);
@@ -359,7 +359,8 @@ test("a valid Release Please candidate makes exactly one merge request with its 
   );
   assert.deepEqual(JSON.parse(mergeRequests[0].body), {
     sha: RELEASE_HEAD_SHA,
-    merge_method: "merge",
+    merge_method: "squash",
+    commit_title: `chore(main): release ${RELEASE_VERSION}`,
   });
 });
 
