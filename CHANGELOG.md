@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.38.0](https://github.com/jurislm/jurislm-tools/compare/v1.37.2...v1.38.0) (2026-08-13)
+
+
+### 🚀 New Features
+
+* **release:** auto-merge trusted Release Please PRs ([3197ce9](https://github.com/jurislm/jurislm-tools/commit/3197ce9df8312d23f303405740e63132ef3e8326))
+* **release:** auto-merge trusted Release Please PRs ([#215](https://github.com/jurislm/jurislm-tools/issues/215)) ([c6997f2](https://github.com/jurislm/jurislm-tools/commit/c6997f28009adc584225e68c5416fea7664f2a5b))
+
+
+### 🐛 Bug Fixes
+
+* **release:** harden trusted release PR merge ([#215](https://github.com/jurislm/jurislm-tools/issues/215)) ([5acc1d0](https://github.com/jurislm/jurislm-tools/commit/5acc1d0b5aad030c7397c790e8852744d760f143))
+* **release:** recover mainline delivery eligibility ([#217](https://github.com/jurislm/jurislm-tools/issues/217)) ([7ea5754](https://github.com/jurislm/jurislm-tools/commit/7ea5754eff8a18b686258172deb88d4d55e559ff)), refs [#215](https://github.com/jurislm/jurislm-tools/issues/215)
+
+
+### 📚 Documentation
+
+* **openspec:** archive release eligibility change ([#214](https://github.com/jurislm/jurislm-tools/issues/214)) ([b79c28b](https://github.com/jurislm/jurislm-tools/commit/b79c28b07618bf1ff8f5fcc5d23e9b141002d821)), refs [#210](https://github.com/jurislm/jurislm-tools/issues/210)
+* **openspec:** sync release eligibility specs ([#213](https://github.com/jurislm/jurislm-tools/issues/213)) ([be562b4](https://github.com/jurislm/jurislm-tools/commit/be562b4e352246af3bac089ebaf500d9613af50f)), refs [#210](https://github.com/jurislm/jurislm-tools/issues/210)
+* **repo-standards:** align reference and adoption contracts ([#215](https://github.com/jurislm/jurislm-tools/issues/215)) ([62fdc1e](https://github.com/jurislm/jurislm-tools/commit/62fdc1e1d2fd1be390adf234385f7e51ba2122b7))
+* **repo-standards:** align release and monorepo standards ([#215](https://github.com/jurislm/jurislm-tools/issues/215)) ([84c41d3](https://github.com/jurislm/jurislm-tools/commit/84c41d3d32a6b7dcbd696eb57119ef3256c7e232))
+* **spectra:** align release auto-merge contract ([ffd7b62](https://github.com/jurislm/jurislm-tools/commit/ffd7b6270e9bec0d446617e4c23498dd2cba9f11)), refs [#215](https://github.com/jurislm/jurislm-tools/issues/215)
+* **spectra:** record main protection acceptance ([#215](https://github.com/jurislm/jurislm-tools/issues/215)) ([7277720](https://github.com/jurislm/jurislm-tools/commit/727772024d81d4ed994fafa4cf677467156c8304))
+
 ## [1.37.2](https://github.com/jurislm/jurislm-tools/compare/v1.37.1...v1.37.2) (2026-08-11)
 
 
