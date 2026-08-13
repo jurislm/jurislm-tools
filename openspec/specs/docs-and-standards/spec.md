@@ -30,14 +30,22 @@ workflow is documented separately in its detail spec.
 - **THEN** `.claude/worktrees/` is not added to the repo's committed `.gitignore`
 - **AND** `.claude/worktrees/**` (or the equivalent pattern for that tool) is added to `.prettierignore`, ESLint ignores, and `vitest.config.ts` exclude
 
-### Requirement: Flat-repo CI template stays synchronized with its reference repo
+### Requirement: CI templates distinguish the verified reference from adoption targets
 
-`repo-standards`'s Coolify web app CI template (Template A) SHALL list every
-Drone pipeline that its stated rationale requires, and that list SHALL be
-checked against `jurislm/entire`'s actual `.drone.yml` whenever either is known
-to have changed. The monorepo template (Template B) SHALL state the current
-pipeline count and names for `jurislm/entire`, since it explicitly mirrors that
-repo rather than defining independent rationale.
+`repo-standards` SHALL identify `jurislm/entire` at its current `main` as the
+sole verified reference for release delivery and monorepo CI/CD invariants.
+The monorepo template (Template B) SHALL mirror that source fact and currently
+list exactly these twelve Drone pipelines: `lint-typecheck`, `cli`, `app`,
+`module`, `package`, `release`, `build`, `deploy`, `release-pr-auto-merge`,
+`detect-missed-push-builds`, `audit-missed-builds`, and
+`audit-shared-migration-drift`. It MUST NOT identify another repository as a
+reference or compliant before that repository's own observable acceptance
+succeeds. The flat-repo template (Template A) SHALL remain independently
+justified and SHALL NOT imply that copying it establishes verified compliance.
+
+Every repository adopting a standard SHALL record the source fact, the failure
+that fact prevents, the local rule that implements it, and the observable
+acceptance that proves it. Copying `entire`'s topology alone is not acceptance.
 
 #### Scenario: Template A pipeline list matches its own stated rationale
 
@@ -46,18 +54,101 @@ repo rather than defining independent rationale.
 - **THEN** the corresponding pipeline appears in Template A's pipeline list and
   example YAML
 
+#### Scenario: The verified reference and adoption status are explicit
+
+- **WHEN** a repository is evaluated against repo-standards
+- **THEN** `jurislm/entire` at current `main` is the only repository described
+  as a verified reference for release delivery and monorepo CI/CD
+- **AND** every other repository is an adoption target until its own observable
+  acceptance succeeds
+- **AND** the repository records source fact, prevented failure, local rule,
+  and observable acceptance
+
 #### Scenario: Template B pipeline count matches entire's actual `.drone.yml`
 
 - **WHEN** someone compares Template B's stated pipeline list and count against
   `jurislm/entire`'s current `.drone.yml`
-- **THEN** the names and count match, or any intentional omission is explicitly
-  called out rather than silently missing
+- **THEN** the names and count match the twelve current pipelines, or any
+  intentional omission is explicitly called out rather than silently missing
 
 #### Scenario: A repo adopting Template A gets deploy-gating and build verification
 
 - **WHEN** a new flat-repo Coolify web app is set up following Template A
 - **THEN** its `.drone.yml` includes a `build` pipeline catching build-only
   failures and a `release-pr-auto-merge` pipeline automating release PR merges
+
+### Requirement: JurisLM monorepos require Turborepo and trustworthy scoped execution
+
+Every JurisLM monorepo SHALL use Turborepo with a root `turbo.json`, and
+cross-workspace scripts SHALL be owned by Turbo. `--filter` SHALL represent a
+fixed, explicitly named workspace boundary. `--affected` MAY be used only when
+the Git base and head are trustworthy and the source of that range is recorded.
+When the Git range is unavailable or the affected query cannot be established,
+the standard SHALL run full validation or full deployment and MUST NOT report an
+unaffected success. Turbo task inputs SHALL include every source,
+configuration, and test file read by the underlying task so a cached success
+cannot hide a relevant change.
+
+#### Scenario: A fixed workspace boundary uses filter
+
+- **WHEN** a CI gate has a known, fixed workspace boundary
+- **THEN** the gate uses Turbo `--filter` to select that boundary
+- **AND** it runs the task for the selected workspaces
+
+#### Scenario: Affected execution has a trustworthy Git range
+
+- **WHEN** a CI gate has a verified Git base and head and uses change-derived
+  routing
+- **THEN** the standard permits Turbo `--affected`
+- **AND** the gate records the source of its Git range
+
+#### Scenario: Affected execution cannot establish its range
+
+- **WHEN** the Git base or head is unavailable, untrusted, or the affected query
+  errors
+- **THEN** the gate runs full validation or full deployment
+- **AND** it does not report an unaffected success
+
+#### Scenario: Task inputs cover files read by the task
+
+- **WHEN** a Turbo task reads source, configuration, or test files
+- **THEN** those paths are included in the task's declared inputs
+- **AND** changing one of those files invalidates the cached result
+
+### Requirement: Release Please auto-merge is authorized by the same delivery
+
+Every adopting repository that enables Release Please SHALL use a trusted
+`main`-delivery `release-pr-auto-merge` validator. The validator MUST depend on
+the same delivery commit's required validation and release gates, validate a
+repository-specific closed artifact contract with no extra, missing, deleted,
+or semantically inconsistent release artifact, and merge only with the head SHA
+it just validated. A final recheck that finds `main` changed since the triggering
+delivery SHALL be a successful no-op for that validator; every other discrepancy
+MUST fail closed. No manual merge fallback SHALL be documented or required, and
+every Release Please command with GitHub write authority SHALL name the target
+repository's exact executable version.
+
+#### Scenario: The candidate belongs to the same trusted delivery
+
+- **WHEN** the trusted `main` delivery's validation and release gates succeed
+  and its candidate satisfies the closed artifact contract
+- **THEN** the validator may merge exactly the just-validated head SHA
+- **AND** a pull-request build cannot obtain the release write credential
+
+#### Scenario: The final main tip changes during validation
+
+- **WHEN** the validator's final `main` recheck differs from its triggering
+  delivery commit
+- **THEN** the validator exits successfully as a no-op
+- **AND** it sends no merge request
+
+#### Scenario: A candidate violates the closed artifact contract
+
+- **WHEN** a candidate has an extra, missing, deleted, or semantically
+  inconsistent release artifact, or any other identity, SHA, API, or
+  mergeability discrepancy
+- **THEN** the validator fails closed without merging
+- **AND** no manual merge path is used to bypass the rejection
 
 ### Requirement: repo-standards 發布指引避免不可發布的版本升級
 

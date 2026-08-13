@@ -23,13 +23,60 @@
 | Plugin | jurislm-tools, jurislm-plugins | `simple` | — | 無 TS 原始碼，不需要 ESLint |
 | Monorepo | entire | `node` | Bun | `@entire/eslint-config` |
 
+## 參考實作與導入狀態
+
+`jurislm/entire` 的 current `main` 是 release delivery 與 monorepo CI/CD
+不變量的唯一已驗證 reference。其他 repo 在自己的 acceptance evidence 完成前
+都是 adoption target，不得因為複製 `entire` 的拓撲或模板就標示為已符合標準。
+
+每個採用標準的 repo 都必須留下四段可回讀的紀錄：
+
+1. **Source fact**：從哪個目前原始檔或 pipeline 觀察到什麼事實。
+2. **Prevented failure**：這個事實要防止哪一種具體失敗。
+3. **Local rule**：本 repo 用哪條設定、程式或流程規則落實。
+4. **Observable acceptance**：用哪個可重現的測試、CI 結果或 runtime readback 證明。
+
 ## CI/CD 模板同步
 
-`references/ci-workflow-templates.md` 的「標準模板 A」（flat repo）獨立成立，不鏡像任何特定 repo；「標準模板 B」（monorepo）明確以 `jurislm/entire` 的 `.drone.yml` 為準鏡像。兩者都必須與各自的參考事實保持同步，而非只在初次撰寫時對過一次：
+`references/ci-workflow-templates.md` 的「標準模板 A」（flat repo）是獨立的
+adoption template：每個 pipeline 必須有自己的失敗防護理由與本 repo acceptance，
+不得把未驗證的採用 repo 當成 reference。模板 A 的 YAML 與理由必須一致，例如主張
+build-only failure 需要獨立攔截時，範例就必須包含 `build` pipeline。
 
-- 模板 A 列出的每個 pipeline 都要有獨立成立的理由（不依賴「因為 entire 有」），且範例 YAML 與該理由所需的 pipeline 名稱一致——例如若文件主張「build-only 失敗需要獨立 pipeline 攔截」，範例就必須包含 `build` pipeline，不能只在文字論述，YAML 卻沒有
-- 模板 B 的 pipeline 清單／計數必須與 `entire/.drone.yml` 目前實際內容一致；若 entire 新增或移除 pipeline，模板 B 需要同步更新，或至少明確標註「已知落後、待更新」而非讓讀者誤以為清單是最新的
-- 2026-08-07 教訓：entire 於 2026-06-02（`build` pipeline）與 2026-07-21（`release-pr-auto-merge` pipeline）兩次演進都沒有回填進模板 A／B，落差直到 `jurislm/musicer` 設定 CI 時才被發現——這正是 skill 自己文件內定義的「規範回填協議」要防止的情況，本次修正後應作為未來審查這兩個模板時的檢查基準
+「標準模板 B」（monorepo）只以 `jurislm/entire` current `main` 為已驗證來源，
+目前必須列出 `.drone.yml` 的十二個 pipeline：
+
+`lint-typecheck`、`cli`、`app`、`module`、`package`、`release`、`build`、
+`deploy`、`release-pr-auto-merge`、`detect-missed-push-builds`、
+`audit-missed-builds`、`audit-shared-migration-drift`。
+
+模板 B 的清單變動必須以 `entire` 最新原始檔重新核對並回填；其他 repo 的 pipeline
+數量或名稱不同時，記錄差異與自己的 observable acceptance，不得靜默宣稱已對齊。
+
+## Monorepo CI scope 與 cache
+
+- 每個 JurisLM monorepo 必須使用 Turborepo，根目錄必須有 `turbo.json`，跨 workspace
+  scripts 由 Turbo 統一管理。
+- 已知且固定的 workspace 邊界使用 Turbo `--filter` 明確指定；`--filter` 不是
+  受 Git diff 影響的自動判定。
+- `--affected` 只有在可信任的 Git base/head 已建立且有來源紀錄時才能使用。
+- Git base/head 不存在、不可信，或 affected query 失敗時，必須回退完整 validation
+  或完整 deploy，不得回報 unaffected success。
+- Turbo task 的 inputs 必須涵蓋 task 實際讀取的所有 source、config、test 檔案；否則
+  變更被讀取的檔案時不得接受舊 cache 結果。
+
+### Release PR 自動合併契約
+
+採用 Release Please 的 repo 必須由 trusted `main` delivery 觸發
+`release-pr-auto-merge`，並等待同一 delivery commit 的 validation 與 release gates
+成功後才取得合併資格。Validator 必須驗證 repo 專屬的 closed artifact contract：只允許
+設定內的 manifest、CHANGELOG、版本檔與 metadata，拒絕 extra、missing、deleted 或
+semantic drift；GitHub merge request 必須帶入剛驗證的 head SHA。
+
+合併前重新讀取 `main`；若 final main tip 已不是觸發本次 delivery 的 commit，這次
+validator 必須成功 no-op，不得合併過時 candidate。其他 identity、artifact、版本、SHA、
+API 或 mergeability 異常一律 fail closed。不得提供人工合併 fallback；所有帶 GitHub write
+credential 的 Release Please command 都必須鎖定該 repo 選定的 exact executable version。
 
 ## Git Worktree 規則（JurisLM 統一標準）
 
