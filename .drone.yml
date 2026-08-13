@@ -70,3 +70,34 @@ steps:
             exit "$eligibility_status"
             ;;
         esac
+
+---
+kind: pipeline
+type: docker
+name: release-pr-auto-merge
+
+platform:
+  os: linux
+  arch: amd64
+
+concurrency:
+  limit: 1
+
+trigger:
+  event:
+    - push
+  ref:
+    - refs/heads/main
+
+depends_on:
+  - validate
+  - release
+
+steps:
+  - name: merge-release-pr
+    image: node:22.22.2-bookworm-slim
+    environment:
+      RELEASE_PLEASE_TOKEN:
+        from_secret: RELEASE_PLEASE_TOKEN
+    commands:
+      - node scripts/release-pr-auto-merge.mjs

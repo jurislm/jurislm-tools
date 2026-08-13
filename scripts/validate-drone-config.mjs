@@ -24,10 +24,10 @@ function list(value) {
   return Array.isArray(value) ? value : [];
 }
 
-requireValue(pipelines.length === 2, "expected exactly two pipelines");
+requireValue(pipelines.length === 3, "expected exactly three pipelines");
 requireValue(
-  [...byName.keys()].sort().join(",") === "release,validate",
-  "expected only release and validate pipelines",
+  [...byName.keys()].sort().join(",") === "release,release-pr-auto-merge,validate",
+  "expected only validate, release, and release-pr-auto-merge pipelines",
 );
 
 const validate = byName.get("validate");
@@ -209,8 +209,13 @@ for (const step of releaseSteps) {
     `${step.name} must use Drone release-token secret indirection`,
   );
   const command = list(step.commands).join("\n");
+  const releasePleaseCommands = command
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => /\brelease-please(?:@|\b)/u.test(line));
   requireValue(
-    command.includes("release-please@17.10.4"),
+    releasePleaseCommands.length === 1 &&
+      /^npx --yes release-please@17\.10\.4\s/u.test(releasePleaseCommands[0]),
     `${step.name} must pin Release Please`,
   );
   requireValue(
@@ -222,9 +227,51 @@ for (const step of releaseSteps) {
   );
 }
 
+const autoMerge = byName.get("release-pr-auto-merge");
+const autoMergeEvents = list(autoMerge?.trigger?.event);
+const autoMergeRefs = list(autoMerge?.trigger?.ref);
+const autoMergeDependencies = list(autoMerge?.depends_on);
+const autoMergeSteps = list(autoMerge?.steps);
+const autoMergeStep = autoMergeSteps[0];
+
+requireValue(
+  autoMergeEvents.length === 1 && autoMergeEvents[0] === "push",
+  "release-pr-auto-merge must run only for push",
+);
+requireValue(
+  autoMergeRefs.length === 1 && autoMergeRefs[0] === "refs/heads/main",
+  "release-pr-auto-merge must run only for refs/heads/main",
+);
+requireValue(
+  [...autoMergeDependencies].sort().join(",") === "release,validate",
+  "release-pr-auto-merge must depend on validate and release",
+);
+requireValue(
+  autoMerge?.concurrency?.limit === 1,
+  "release-pr-auto-merge must serialize overlapping main deliveries",
+);
+requireValue(
+  autoMergeSteps.length === 1 && autoMergeStep?.name === "merge-release-pr",
+  "release-pr-auto-merge must contain exactly one merge-release-pr step",
+);
+requireValue(
+  autoMergeStep?.image === "node:22.22.2-bookworm-slim",
+  "release-pr-auto-merge must use the exact supported Node image",
+);
+requireValue(
+  autoMergeStep?.environment?.RELEASE_PLEASE_TOKEN?.from_secret ===
+    "RELEASE_PLEASE_TOKEN",
+  "release-pr-auto-merge must use Drone release-token secret indirection",
+);
+requireValue(
+  list(autoMergeStep?.commands).length === 1 &&
+    autoMergeStep.commands[0] === "node scripts/release-pr-auto-merge.mjs",
+  "release-pr-auto-merge must execute only the source-controlled validator",
+);
+
 if (errors.length > 0) {
   for (const error of errors) console.error(`ERROR: ${error}`);
   process.exit(1);
 }
 
-console.log(`validated ${configPath}: validate + release`);
+console.log(`validated ${configPath}: validate + release + release-pr-auto-merge`);

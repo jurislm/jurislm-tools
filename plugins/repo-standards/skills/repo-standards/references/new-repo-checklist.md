@@ -1,5 +1,7 @@
 # 新增 Repo 完整 Checklist
 
+> Reference status：`jurislm/entire` 是唯一已驗證的 release-delivery 與 monorepo CI/CD reference；其他 repo 都是 adoption target，必須完成自己的 observable acceptance 後才能標示符合。
+
 ## Agent 指引檔
 
 1. [ ] 若 repo 內存在 `AGENTS.md`，更新為讀取同層 `CLAUDE.md`；若同層沒有 `CLAUDE.md`，則讀取 repo 根目錄 `CLAUDE.md`
@@ -31,7 +33,7 @@
 
 ## Release
 
-18. [ ] release-please pipeline（push main only，**不指定 `release-type`**）—— Drone repo（`.drone.yml`）或 plugin repo 的 GHA `release.yml`；secret `RELEASE_PLEASE_TOKEN` 見項 28
+18. [ ] release-please pipeline（push main only，**不指定 `release-type`**）—— Drone repo（`.drone.yml`）或 plugin repo 的 GHA `release.yml`；每個 write command 必須使用 `release-please@<EXACT-RELEASE-PLEASE-VERSION>`，目標 repo 替換成經測試的精確版本；secret `RELEASE_PLEASE_TOKEN` 見項 28
 19. [ ] 建立 `release-please-config.json`（依統一模板，`release-type` 寫在這裡）
 20. [ ] Plugin repo：加 `extra-files`，確認目標在陣列第一位
 
@@ -44,9 +46,9 @@
 
 ## CI（Drone CI）
 
-25. [ ] 建立 `.drone.yml`（依 `references/ci-workflow-templates.md` 對應 repo 類型：Coolify web app / monorepo / npm 套件 / plugin）
+25. [ ] 建立 `.drone.yml`（依 `references/ci-workflow-templates.md` 對應 repo 類型：Coolify web app / monorepo / npm 套件 / plugin）；JurisLM monorepo 必須在 root 提供 `turbo.json`
 26. [ ] 各 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**禁止** `refs/heads/develop`，否則 push + PR 雙 build 競爭 runner）
-27. [ ] 各 step `bun install --frozen-lockfile`；lint / typecheck / test 各自獨立 pipeline（各自 clone + install）
+27. [ ] 各 step `bun install --frozen-lockfile`；lint / typecheck / test 各自獨立 pipeline（各自 clone + install）；monorepo 已知 fixed workspace gate 用 `--filter`，只有 trustworthy Git base／head 才能用 `--affected`，無法建立時執行 full validation／full deployment；Turbo cache inputs 必須涵蓋 task 讀取的全部 source/config/test/lockfile
 28. [ ] Drone repo-scope secret 加 `RELEASE_PLEASE_TOKEN`（release-please pipeline 用）
 29. [ ] 開 PR 確認 GitHub 只顯示 1 個 aggregated check（`drone/pr`），且 push develop **不** build
 
@@ -59,21 +61,22 @@
 32. [ ] `deploy` + `lint-typecheck` + `test` + `build` 各 step 加 release-commit 守衛：`echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'`（**grep 全訊息、勿加 `head -1`**——merge commit 合併時 release 行在 body，head -1 漏判 → 誤部署）
 33. [ ] Drone repo-scope secret 加 `COOLIFY_DEPLOY_TOKEN`（`pull_request: false`）
 34. [ ] 先驗證 Drone→Coolify deploy API 接線可用，再**只關閉 PROD app 的 Coolify `is_auto_deploy_enabled`**（dev app 不動；避免 prod 靜默停止部署）
-35. [ ] `.drone.yml` 加 `release-pr-auto-merge` pipeline（`depends_on: [release-please, deploy]`、`concurrency: { limit: 1 }`）；腳本優先從 `lexvision`（flat repo、最成熟）移植，`entire`／`musicer` 為次要參考，只改常數，不重新設計驗證邏輯
-36. [ ] 行為驗證：feature 合併進 main → prod 部署 **1 次**；release PR 合併 → prod 部署 **0 次**、且其自身檢查綠燈後由 `release-pr-auto-merge` 自動合併；dev 不受影響；並確認合併後 push webhook 有觸發 Drone build
+35. [ ] 所有採用 Release Please 的 repo（包括 npm／MCP）加 `release-pr-auto-merge` pipeline（Coolify app 用 `depends_on: [release, deploy]`；其他 repo 綁定自身 trusted validation／release pipelines；`concurrency: { limit: 1 }`）；由 target repo 自己 source-control validator，綁定同一 delivery commit，驗證 closed artifact contract、official candidate identity、required-check clean、mergeability 與 latest-base branch protection，並以 validated head SHA 使用 GitHub PR merge API
+36. [ ] 設定並 readback `main` branch protection／ruleset：required status check 必須要求 latest-base，規則不可被 automation credential bypass（legacy protection：`strict: true` 與 admin enforcement），且 release PR 不得有人工 approval gate
+37. [ ] 行為驗證：無 candidate、candidate base 已由較新 delivery 接手、候選等待時 main 已改變、GitHub 拒絕 stale merge 且 main 已改變，四者都是成功 no-op；其他 mismatch fail closed；不得使用 `pull_request_target`、candidate-head execution、PR write token 或直接 ref update
 
 ## Code Review（人工 + bot；無自動 Claude review）
 
 > 2026-06-02：自動 Claude PR 審查（`claude-code-review.yml` / `claude.yml` / Drone `claude-review`）已從標準移除。
 
-37. [ ] **人工 `/code-review`**：發 PR 前必跑多角度 review（見全域 CLAUDE.md PR 流程）
-38. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）；CodeRabbit 為 PR 自動回審，獨立運作無需設定
-39. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
+38. [ ] **人工 `/code-review`**：發 PR 前必跑多角度 review（見全域 CLAUDE.md PR 流程）
+39. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）；CodeRabbit 為 PR 自動回審，獨立運作無需設定
+40. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
 
 ## 發版收尾（每次合併進 main 後必做）
 
 > 詳見 `references/ci-workflow-templates.md`「部署收尾」。
 
-40. [ ] **確認 CI 真的被觸發**：合併後查 `gh api repos/jurislm/<repo>/hooks/<id>/deliveries`（push 事件是否送達）+ Drone builds list 有對應 commit 的 push build（GitHub 偶爾漏發 push webhook）
-41. [ ] **合併 release-please 自動開的 release PR**（`chore(main): release X.Y.Z`）——若 repo 已設 `release-pr-auto-merge` pipeline，其自身檢查綠燈後應自動合併，此項僅為確認；未設此 pipeline 的 repo 才需要人工合併，否則 tag / 版本永遠不 cut
-42. [ ] release PR 合併後再次確認其 push build 觸發 + `github-release` 有跑（tag 已建）；漏發則手動 `release-please github-release`（冪等）
+41. [ ] **確認 CI 真的被觸發**：合併後查 `gh api repos/jurislm/<repo>/hooks/<id>/deliveries`（push 事件是否送達）+ Drone builds list 有對應 commit 的 push build（GitHub 偶爾漏發 push webhook）
+42. [ ] **確認 release-please 自動開的 release PR**（`chore(main): release X.Y.Z`）由同一 trusted main delivery 的 validator 以 GitHub protected PR merge 自動合併；release PR 不得保留 manual merge fallback，未通過時維持候選開啟並 fail closed
+43. [ ] release PR 自動合併後再次確認其 push build 觸發 + 精確版本的 `github-release` 有跑（tag 已建）；若 webhook 漏發，修復 delivery 後由新的 trusted main delivery 重試，不手動執行 write command
