@@ -8,7 +8,7 @@
 - [x] 2.1 在 `scripts/release-pr-auto-merge.mjs` 實作 Trusted delivery authorization 與 Candidate artifact validation：只接受 `RELEASE_PLEASE_TOKEN` 與 `DRONE_COMMIT` 的 trusted main 呼叫，選取唯一 open candidate，驗證 identity、marker、SHA、required checks、mergeability、latest-base protection 與 Plugin artifact contract，並以 validated head SHA 呼叫 GitHub PR merge API；無候選、較新 candidate base、候選等待時 main 已改變，或 GitHub 拒絕 stale candidate 且 main 已改變時 no-op，其餘 mismatch fail closed；以 1.1 的完整行為矩陣驗證。
 - [x] 2.2 在 `.drone.yml` 新增 main-only `release-pr-auto-merge` pipeline，使它等待同一 delivery 的 `validate` 與 `release`、以 concurrency limit 1 序列化，且不向 PR build 暴露 release token；以 1.2 的 structural checks 與 Drone YAML parser 驗證。
 - [x] 2.3 在 `scripts/validate-drone-config.mjs` 與 `scripts/drone-ci-policy.test.mjs` 固定 release pipeline 唯一 Release Please write command 為 17.10.4，並驗證 auto-merge pipeline 只執行 source-controlled validator、拒絕 unpinned Release Please command；以 `node scripts/validate-drone-config.mjs` 與 policy tests 驗證。
-- [ ] 2.4 設定並 readback `main` 的 GitHub protection：required status checks 啟用 latest-base enforcement（`strict: true`），且規則套用到 automation credential（`enforce_admins.enabled: true`）；確認這不新增人工 review gate。
+- [x] 2.4 設定並 readback `main` 的 GitHub protection：required status checks 啟用 latest-base enforcement（`strict: true`），且規則套用到 automation credential（`enforce_admins.enabled: true`）；確認這不新增人工 review gate。
 
 ## 3. 同步 repo standards 的可驗收規則
 

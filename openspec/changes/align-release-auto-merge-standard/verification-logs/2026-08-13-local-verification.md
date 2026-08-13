@@ -13,6 +13,30 @@
 | `spectra analyze align-release-auto-merge-standard --json` | Coverage, Consistency, and Gaps are Clean. It reports 11 non-blocking Ambiguity Suggestions and no blocking finding. |
 | `spectra drift align-release-auto-merge-standard --json` | Light result: 0 blocked tasks and 0 maybe-done tasks. Its three syntax-anchor notices are the literal terms `--filter`, `--affected`, and the release branch suffix `--branches--main`, not an implementation discrepancy. |
 
+## GitHub `main` protection readback
+
+Before the configuration update, GitHub returned `strict: false` and
+`enforce_admins.enabled: false`; the sole required context was
+`continuous-integration/drone/pr`, no ruleset existed, and no pull-request
+review requirement existed.
+
+The narrowly scoped required-status-check update first received GitHub `422`
+because the CLI encoded `strict` as a string; it did not modify that setting.
+The typed retry then set `strict: true`, and the independent administrator
+enforcement endpoint set `enforce_admins.enabled: true`. Final GitHub readback
+returned:
+
+```json
+{
+  "enforce_admins": true,
+  "required_pull_request_reviews": null,
+  "required_status_checks": {
+    "contexts": ["continuous-integration/drone/pr"],
+    "strict": true
+  }
+}
+```
+
 Additional readback: GitHub's Contents API accepted the validator's percent-encoded
 nested artifact path at the base commit and returned
 `plugins/repo-standards/.claude-plugin/plugin.json`.
