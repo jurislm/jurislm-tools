@@ -71,12 +71,14 @@ build-only failure 需要獨立攔截時，範例就必須包含 `build` pipelin
 `release-pr-auto-merge`，並等待同一 delivery commit 的 validation 與 release gates
 成功後才取得合併資格。Validator 必須驗證 repo 專屬的 closed artifact contract：只允許
 設定內的 manifest、CHANGELOG、版本檔與 metadata，拒絕 extra、missing、deleted 或
-semantic drift；GitHub merge request 必須帶入剛驗證的 head SHA。
+semantic drift；並驗證 candidate identity、base／head SHA、required-check clean 狀態，以及
+GitHub branch protection 或 ruleset 對 automation credential 強制 latest-base check，且 release PR
+沒有人工 approval gate。最後只能呼叫帶剛驗證 head SHA 的 GitHub PR merge API，不可直接寫 main ref。
 
-合併前重新讀取 `main`；若 final main tip 已不是觸發本次 delivery 的 commit，這次
-validator 必須成功 no-op，不得合併過時 candidate。其他 identity、artifact、版本、SHA、
-API 或 mergeability 異常一律 fail closed。不得提供人工合併 fallback；所有帶 GitHub write
-credential 的 Release Please command 都必須鎖定該 repo 選定的 exact executable version。
+若 candidate 等待 mergeability 時，或 GitHub 拒絕 protected PR merge 後，reread 顯示 main
+已不是觸發本次 delivery 的 commit，這次 validator 必須成功 no-op，不得合併過時 candidate。其他 identity、artifact、版本、SHA、
+protection、required-check、API 或 mergeability 異常一律 fail closed。不得提供人工合併 fallback；
+所有帶 GitHub write credential 的 Release Please command 都必須鎖定該 repo 選定的 exact executable version。
 
 ## Git Worktree 規則（JurisLM 統一標準）
 

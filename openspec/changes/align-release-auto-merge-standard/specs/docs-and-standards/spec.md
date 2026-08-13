@@ -4,7 +4,7 @@
 
 `repo-standards` SHALL identify `jurislm/entire` as the verified reference implementation for release delivery and monorepo CI/CD invariants. It MUST derive portable rules from current source facts, prevented failures, target-repo rules, and observable acceptance; it MUST NOT declare another repository compliant before that repository has completed its own required acceptance.
 
-Every Release Please template SHALL require a trusted main-delivery `release-pr-auto-merge` validator. The validator contract MUST bind the candidate to the same delivery commit, validate the repository-specific closed artifact contract and SHA relationship, use a merge request with the validated head SHA, and prohibit manual merge fallback. It MUST describe no-candidate, newer-candidate-base, and a final main-tip change as successful no-op outcomes; every other discrepancy MUST fail closed. A template command that writes GitHub through Release Please MUST name an exact version selected by the target repository.
+Every Release Please template, including npm／MCP templates, SHALL require a trusted main-delivery `release-pr-auto-merge` validator. The validator contract MUST bind the candidate to the same delivery commit, validate the repository-specific closed artifact contract and SHA relationship, validate required-check clean state and GitHub latest-base protection for the automation credential without a human release-PR approval gate, then use GitHub's PR merge API with the validated head SHA. It MUST prohibit direct ref updates and manual merge fallback, describe no-candidate, newer-candidate-base, a waiting candidate superseded by a changed main tip, and GitHub rejection of a stale candidate as successful no-op outcomes; every other discrepancy MUST fail closed. A template command that writes GitHub through Release Please MUST name an exact version selected by the target repository.
 
 #### Scenario: A repository adopts the delivery standard
 
@@ -21,7 +21,7 @@ Every Release Please template SHALL require a trusted main-delivery `release-pr-
 
 #### Scenario: A newer delivery supersedes older automation
 
-- **WHEN** an older validator observes no candidate, a candidate based on a descendant delivery, or a final main tip that differs from its triggering delivery
+- **WHEN** an older validator observes no candidate, a candidate based on a descendant delivery, or a rejected protected PR merge followed by proof that main differs from its triggering delivery
 - **THEN** the documented validator contract exits successfully as a no-op
 - **AND** the newer delivery remains the only delivery authorized to merge its candidate
 
@@ -30,6 +30,12 @@ Every Release Please template SHALL require a trusted main-delivery `release-pr-
 - **WHEN** a maintainer copies a Release Please command from a standard template
 - **THEN** the command contains an explicit exact-version placeholder
 - **AND** the target repository replaces it with one exact executable version before enabling the pipeline
+
+#### Scenario: An npm or MCP repository adopts a release template
+
+- **WHEN** an npm package or MCP server enables Release Please
+- **THEN** it skips only deploy-specific gating
+- **AND** it still configures the trusted release PR auto-merge validator and its observable acceptance
 
 ### Requirement: Monorepo standards require Turborepo and safe scoped execution
 

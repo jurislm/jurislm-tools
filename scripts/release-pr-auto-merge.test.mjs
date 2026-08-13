@@ -146,14 +146,14 @@ function changelog(version) {
   return `# Changelog\n\n${version === RELEASE_VERSION ? `${releaseBlock}\n` : ""}${baseHistory}`;
 }
 
-function releaseContents(versionOverrides = {}) {
+function releaseContents({ versionOverrides = {}, headChangelog = undefined } = {}) {
   const baseFiles = new Map([
     [".release-please-manifest.json", JSON.stringify({ ".": BASE_VERSION })],
     ["CHANGELOG.md", changelog(BASE_VERSION)],
   ]);
   const headFiles = new Map([
     [".release-please-manifest.json", JSON.stringify({ ".": RELEASE_VERSION })],
-    ["CHANGELOG.md", changelog(RELEASE_VERSION)],
+    ["CHANGELOG.md", headChangelog ?? changelog(RELEASE_VERSION)],
   ]);
 
   for (const definition of PLUGIN_DEFINITIONS) {
@@ -199,6 +199,7 @@ function releaseCandidate(overrides = {}) {
       repo: { full_name: REPOSITORY },
     },
     mergeable: true,
+    mergeable_state: "clean",
   };
 
   return {
@@ -224,24 +225,44 @@ function mainRef(sha) {
   return { ref: "refs/heads/main", object: { type: "commit", sha } };
 }
 
+function branchProtection({
+  strict = true,
+  enforceAdmins = true,
+  contexts = ["continuous-integration/drone/pr"],
+  requiredReviews = null,
+} = {}) {
+  return {
+    required_status_checks: { strict, contexts },
+    enforce_admins: { enabled: enforceAdmins },
+    required_pull_request_reviews: requiredReviews,
+  };
+}
+
 function createGitHubMock({
   candidates = [releaseCandidate()],
   candidateDetail = candidates[0],
+  candidateDetails = [candidateDetail],
   files = changedFiles(),
-  mainSha = DRONE_COMMIT,
+  mainShas = [DRONE_COMMIT],
   compareStatus = "ahead",
   versionOverrides = {},
+  headChangelog = undefined,
+  protection = branchProtection(),
+  mergeResponse = { merged: true, sha: MERGE_SHA },
+  mergeStatus = 200,
   failure = null,
 } = {}) {
   const requests = [];
-  const contents = releaseContents(versionOverrides);
   const pullsPath = `/repos/${REPOSITORY}/pulls`;
   const candidatePath = `${pullsPath}/${PULL_NUMBER}`;
   const filesPath = `${candidatePath}/files`;
   const mergePath = `${candidatePath}/merge`;
   const mainRefPath = `/repos/${REPOSITORY}/git/ref/heads/${BASE_BRANCH}`;
+  const protectionPath = `/repos/${REPOSITORY}/branches/${BASE_BRANCH}/protection`;
   const comparePrefix = `/repos/${REPOSITORY}/compare/`;
   const contentPrefix = `/repos/${REPOSITORY}/contents/`;
+  let mainReadCount = 0;
+  let candidateDetailReadCount = 0;
 
   const fetchImpl = async (input, init = {}) => {
     const request = new Request(input, init);
@@ -264,13 +285,22 @@ function createGitHubMock({
       return jsonResponse(candidates);
     }
     if (request.method === "GET" && url.pathname === candidatePath) {
-      return jsonResponse(candidateDetail);
+      const detail = candidateDetails[
+        Math.min(candidateDetailReadCount, candidateDetails.length - 1)
+      ];
+      candidateDetailReadCount += 1;
+      return jsonResponse(detail);
     }
     if (request.method === "GET" && url.pathname === filesPath) {
       return jsonResponse(files);
     }
+    if (request.method === "GET" && url.pathname === protectionPath) {
+      return jsonResponse(protection);
+    }
     if (request.method === "GET" && url.pathname === mainRefPath) {
-      return jsonResponse(mainRef(mainSha));
+      const sha = mainShas[Math.min(mainReadCount, mainShas.length - 1)];
+      mainReadCount += 1;
+      return jsonResponse(mainRef(sha));
     }
     if (request.method === "GET" && url.pathname.startsWith(comparePrefix)) {
       return jsonResponse({ status: compareStatus });
@@ -278,6 +308,7 @@ function createGitHubMock({
     if (request.method === "GET" && url.pathname.startsWith(contentPrefix)) {
       const path = decodeURIComponent(url.pathname.slice(contentPrefix.length));
       const ref = url.searchParams.get("ref");
+      const contents = releaseContents({ versionOverrides, headChangelog });
       const text = ref === candidateDetail?.base?.sha
         ? contents.baseFiles.get(path)
         : contents.headFiles.get(path);
@@ -287,7 +318,7 @@ function createGitHubMock({
       return contentResponse(text);
     }
     if (request.method === "PUT" && url.pathname === mergePath) {
-      return jsonResponse({ merged: true, sha: MERGE_SHA });
+      return jsonResponse(mergeResponse, mergeStatus);
     }
 
     throw new Error(`unexpected mocked GitHub request: ${request.method} ${url.href}`);
@@ -332,10 +363,29 @@ test("a valid Release Please candidate makes exactly one merge request with its 
   });
 });
 
+test("a candidate with a second CHANGELOG release block is rejected without a merge request", async () => {
+  const changelogHeader = "# Changelog\n\n";
+  const baseHistory = changelog(BASE_VERSION).slice(changelogHeader.length);
+  const injectedBlock = `## [1.37.3](https://github.com/${REPOSITORY}/compare/v${BASE_VERSION}...v1.37.3) (2026-08-13)
+
+### 🐛 Bug Fixes
+
+* **release:** unverified second block
+
+`;
+  const mock = createGitHubMock({
+    headChangelog: changelog(RELEASE_VERSION).replace(baseHistory, `${injectedBlock}${baseHistory}`),
+  });
+
+  await assert.rejects(invoke(mock));
+
+  assertNoMerge(mock);
+});
+
 test("no open Release Please candidate is a successful no-op", async () => {
   const mock = createGitHubMock({ candidates: [] });
 
-  await invoke(mock);
+  assert.deepEqual(await invoke(mock), { status: "no-op" });
 
   assertNoMerge(mock);
 });
@@ -427,6 +477,61 @@ test("a non-mergeable candidate is rejected without a merge request", async () =
   assertNoMerge(mock);
 });
 
+test("a candidate without clean required checks is rejected without a merge request", async () => {
+  const candidate = releaseCandidate({ mergeable_state: "dirty" });
+  const mock = createGitHubMock({ candidates: [candidate], candidateDetail: candidate });
+
+  await assert.rejects(invoke(mock));
+
+  assertNoMerge(mock);
+});
+
+test("a candidate waits for required checks to become clean before merging", async () => {
+  const pendingCandidate = releaseCandidate({ mergeable: null, mergeable_state: "unknown" });
+  const cleanCandidate = releaseCandidate();
+  const mock = createGitHubMock({
+    candidates: [cleanCandidate],
+    candidateDetail: cleanCandidate,
+    candidateDetails: [cleanCandidate, pendingCandidate, cleanCandidate],
+  });
+  let sleepCalls = 0;
+
+  await invoke(mock, { sleep: async () => { sleepCalls += 1; } });
+
+  assert.equal(sleepCalls, 1);
+  assert.equal(mock.mergeRequests().length, 1);
+});
+
+test("a candidate that becomes behind after a newer main delivery is a successful no-op", async () => {
+  const initialCandidate = releaseCandidate();
+  const behindCandidate = releaseCandidate({ mergeable: false, mergeable_state: "behind" });
+  const mock = createGitHubMock({
+    candidates: [initialCandidate],
+    candidateDetail: initialCandidate,
+    candidateDetails: [initialCandidate, behindCandidate],
+    mainShas: [UNRELATED_MAIN_SHA],
+  });
+
+  assert.deepEqual(await invoke(mock), { status: "no-op" });
+
+  assertNoMerge(mock);
+});
+
+for (const [label, protection] of [
+  ["does not require the latest base", branchProtection({ strict: false })],
+  ["allows the automation credential to bypass protection", branchProtection({ enforceAdmins: false })],
+  ["does not require the repository validation check", branchProtection({ contexts: [] })],
+  ["requires human approval", branchProtection({ requiredReviews: { required_approving_review_count: 1 } })],
+]) {
+  test(`branch protection that ${label} is rejected without a merge request`, async () => {
+    const mock = createGitHubMock({ protection });
+
+    await assert.rejects(invoke(mock));
+
+    assertNoMerge(mock);
+  });
+}
+
 test("a candidate based on a newer delivery is a successful no-op", async () => {
   const mock = createGitHubMock({
     candidates: [releaseCandidate({ base: { sha: NEWER_BASE_SHA } })],
@@ -457,7 +562,7 @@ test("a candidate based on an unrelated delivery is rejected without a merge req
 });
 
 test("any changed main tip during final recheck is a successful no-op", async () => {
-  const mock = createGitHubMock({ mainSha: UNRELATED_MAIN_SHA });
+  const mock = createGitHubMock({ mainShas: [UNRELATED_MAIN_SHA] });
 
   await invoke(mock);
 
@@ -465,6 +570,23 @@ test("any changed main tip during final recheck is a successful no-op", async ()
   assert.ok(
     mock.requests.some((request) => request.url.endsWith(`/git/ref/heads/${BASE_BRANCH}`)),
     "the final decision must re-read the main ref",
+  );
+});
+
+test("a protected merge rejection after the final recheck yields when main advanced", async () => {
+  const mock = createGitHubMock({
+    mainShas: [DRONE_COMMIT, UNRELATED_MAIN_SHA],
+    mergeResponse: { message: "branch is not up to date" },
+    mergeStatus: 405,
+  });
+
+  await invoke(mock);
+
+  assert.equal(mock.mergeRequests().length, 1);
+  assert.equal(
+    mock.requests.filter((request) => request.url.endsWith(`/git/ref/heads/${BASE_BRANCH}`)).length,
+    2,
+    "a rejected merge must reread main before treating the candidate as superseded",
   );
 });
 

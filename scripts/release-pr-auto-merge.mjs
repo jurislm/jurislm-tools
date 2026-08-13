@@ -13,9 +13,18 @@ const RELEASE_BODY_FOOTER =
   "This PR was generated with [Release Please](https://github.com/googleapis/release-please).";
 const RELEASE_TITLE = /^chore\(main\): release ((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))$/u;
 const GITHUB_API = "https://api.github.com";
-const MAX_MERGEABLE_ATTEMPTS = 6;
+const REQUIRED_STATUS_CHECK = "continuous-integration/drone/pr";
+const MAX_MERGEABLE_ATTEMPTS = 180;
 const MERGEABLE_POLL_DELAY_MS = 5_000;
 const REQUEST_TIMEOUT_MS = 30_000;
+
+class GitHubApiError extends Error {
+  constructor(method, apiPath, status) {
+    super(`GitHub API ${method} ${apiPath.split("?")[0]} failed with status ${status}`);
+    this.name = "GitHubApiError";
+    this.status = status;
+  }
+}
 
 function isRecord(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -298,6 +307,11 @@ function validateReleaseContents({ contract, candidate, baseContents, headConten
   if (!newReleaseBlock.startsWith(`## [${candidate.version}](`)) {
     throw new Error("CHANGELOG must prepend the candidate version entry");
   }
+  const firstLineEnd = newReleaseBlock.indexOf("\n");
+  const remainingReleaseBlock = newReleaseBlock.slice(firstLineEnd === -1 ? 0 : firstLineEnd + 1);
+  if (/^## \[[^\]]+\]\(/mu.test(remainingReleaseBlock)) {
+    throw new Error("CHANGELOG must not insert a second release version entry");
+  }
 }
 
 function createGitHubClient({ token, fetchImpl, requestTimeoutMs }) {
@@ -331,15 +345,63 @@ function createGitHubClient({ token, fetchImpl, requestTimeoutMs }) {
       clearTimeout(timeout);
     }
 
-    if (!response.ok) {
-      throw new Error(`GitHub API ${method} ${apiPath.split("?")[0]} failed with status ${response.status}`);
-    }
+    if (!response.ok) throw new GitHubApiError(method, apiPath, response.status);
     try {
       return JSON.parse(text);
     } catch {
       throw new Error(`GitHub API ${method} ${apiPath.split("?")[0]} did not return valid JSON`);
     }
   };
+}
+
+function mainBranchSha(value) {
+  const ref = requiredRecord(value, "main branch ref");
+  return requiredSha(
+    requiredRecord(ref.object, "main branch ref.object").sha,
+    "main branch ref.object.sha",
+  );
+}
+
+function validateMainBranchProtection(value) {
+  const protection = requiredRecord(value, "main branch protection");
+  const requiredChecks = requiredRecord(
+    protection.required_status_checks,
+    "main branch protection.required_status_checks",
+  );
+  if (requiredChecks.strict !== true) {
+    throw new Error("main branch protection must require release PR checks against the latest base");
+  }
+  if (
+    !Array.isArray(requiredChecks.contexts) ||
+    !requiredChecks.contexts.includes(REQUIRED_STATUS_CHECK)
+  ) {
+    throw new Error(`main branch protection must require ${REQUIRED_STATUS_CHECK}`);
+  }
+  const admins = requiredRecord(
+    protection.enforce_admins,
+    "main branch protection.enforce_admins",
+  );
+  if (admins.enabled !== true) {
+    throw new Error("main branch protection must apply to the automation credential");
+  }
+  if (
+    protection.required_pull_request_reviews !== undefined &&
+    protection.required_pull_request_reviews !== null
+  ) {
+    throw new Error("main branch protection must not require human approval for release PR automation");
+  }
+}
+
+function mergeabilityDecision(value) {
+  const detail = requiredRecord(value, "mergeability pull request");
+  const mergeable = detail.mergeable;
+  const state = requiredString(detail.mergeable_state, "mergeability pull request.mergeable_state");
+  if (mergeable === true && state === "clean") return "ready";
+  if (["unknown", "blocked", "unstable", "behind"].includes(state)) return "pending";
+  if (mergeable === false || state === "dirty" || state === "draft" || state === "has_hooks") {
+    throw new Error("release PR is not mergeable with clean required checks");
+  }
+  throw new Error("invalid release PR mergeability state");
 }
 
 function mergeResult(value) {
@@ -364,6 +426,17 @@ export async function runReleasePrAutoMerge({
 
   const contract = readTrustedReleaseContract();
   const request = createGitHubClient({ token, fetchImpl, requestTimeoutMs: timeoutMs });
+  const readMainBranchSha = async () =>
+    mainBranchSha(await request(`/repos/${REPOSITORY}/git/ref/heads/${BASE_BRANCH}`));
+  const candidateBaseIsNewer = async (baseSha) => {
+    const comparison = requiredRecord(
+      await request(
+        `/repos/${REPOSITORY}/compare/${encodeURIComponent(expectedCommitSha)}...${encodeURIComponent(baseSha)}?per_page=1`,
+      ),
+      "commit comparison",
+    );
+    return requiredString(comparison.status, "commit comparison status") === "ahead";
+  };
   const query = new URLSearchParams({
     state: "open",
     base: BASE_BRANCH,
@@ -389,13 +462,7 @@ export async function runReleasePrAutoMerge({
   candidate = detailedCandidate;
 
   if (candidate.baseSha !== expectedCommitSha) {
-    const comparison = requiredRecord(
-      await request(
-        `/repos/${REPOSITORY}/compare/${encodeURIComponent(expectedCommitSha)}...${encodeURIComponent(candidate.baseSha)}?per_page=1`,
-      ),
-      "commit comparison",
-    );
-    if (requiredString(comparison.status, "commit comparison status") === "ahead") {
+    if (await candidateBaseIsNewer(candidate.baseSha)) {
       return { status: "no-op" };
     }
     throw new Error("release PR base SHA does not match the triggering Drone commit");
@@ -449,33 +516,42 @@ export async function runReleasePrAutoMerge({
       mergeabilityCandidate.baseSha !== candidate.baseSha ||
       mergeabilityCandidate.headSha !== candidate.headSha
     ) {
+      if (await candidateBaseIsNewer(mergeabilityCandidate.baseSha)) {
+        return { status: "no-op" };
+      }
       throw new Error("release PR SHA changed during mergeability validation");
     }
-    const mergeability = requiredRecord(mergeabilityValue, "mergeability pull request").mergeable;
-    if (mergeability === true) {
+    if (mergeabilityDecision(mergeabilityValue) === "ready") {
       mergeable = true;
       break;
     }
-    if (mergeability === false) throw new Error("release PR is not mergeable");
-    if (mergeability !== null) throw new Error("invalid release PR shape: mergeable");
+    if ((await readMainBranchSha()) !== expectedCommitSha) return { status: "no-op" };
     if (attempt < MAX_MERGEABLE_ATTEMPTS) await sleep(MERGEABLE_POLL_DELAY_MS);
   }
   if (!mergeable) throw new Error("release PR mergeability check timed out");
 
-  const currentRef = requiredRecord(
-    await request(`/repos/${REPOSITORY}/git/ref/heads/${BASE_BRANCH}`),
-    "main branch ref",
-  );
-  const currentSha = requiredSha(requiredRecord(currentRef.object, "main branch ref.object").sha, "main branch ref.object.sha");
+  const currentSha = await readMainBranchSha();
   if (currentSha !== expectedCommitSha) return { status: "no-op" };
 
-  const mergeSha = mergeResult(
-    await request(`/repos/${REPOSITORY}/pulls/${candidate.number}/merge`, {
-      method: "PUT",
-      body: JSON.stringify({ sha: candidate.headSha, merge_method: "merge" }),
-    }),
+  validateMainBranchProtection(
+    await request(`/repos/${REPOSITORY}/branches/${BASE_BRANCH}/protection`),
   );
-  return { status: "merged", pullNumber: candidate.number, mergeSha };
+
+  try {
+    const mergeSha = mergeResult(
+      await request(`/repos/${REPOSITORY}/pulls/${candidate.number}/merge`, {
+        method: "PUT",
+        body: JSON.stringify({ sha: candidate.headSha, merge_method: "merge" }),
+      }),
+    );
+    return { status: "merged", pullNumber: candidate.number, mergeSha };
+  } catch (error) {
+    if (!(error instanceof GitHubApiError) || ![405, 409, 422].includes(error.status)) {
+      throw error;
+    }
+    if ((await readMainBranchSha()) !== expectedCommitSha) return { status: "no-op" };
+    throw error;
+  }
 }
 
 async function main() {

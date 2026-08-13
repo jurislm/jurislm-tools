@@ -310,11 +310,12 @@ Release Please 在 trusted `main` delivery 完成後，必須由該 repo source-
 
 - 綁定同一個 delivery commit `C`，並確認 validate／release 前置 pipeline 都成功。
 - 以 target-specific closed artifact contract 驗證精確檔案清單、版本欄位與內容；不得把另一個 repo 的檔案 allowlist 直接套用。
-- 驗證官方 candidate identity（repository、base branch、head branch、作者、title／body marker）、base／head SHA 與 mergeability。
-- 在 merge 前重新讀取 `main` SHA；若沒有 candidate、candidate base 已由較新 delivery 接手，或 final `main` tip 已改變，成功 no-op 並交由較新 delivery 處理。
-- 其他 identity、artifact、SHA、API 或 mergeability mismatch 一律 fail closed；merge API 必須帶入剛驗證的 head SHA。
+- 驗證官方 candidate identity（repository、base branch、head branch、作者、title／body marker）、base／head SHA、required-check clean 狀態與 mergeability。
+- 在寫入前驗證 target branch protection／ruleset：candidate 必須受 latest-base required checks 約束，automation credential 不可繞過，且 release PR 不得要求人工 approval；legacy branch protection 需 `strict: true` 且對 admin credential 啟用 enforcement。
+- 只用 GitHub PR merge API 並傳入剛驗證的 head SHA；若沒有 candidate、candidate base 已由較新 delivery 接手、候選等待時 reread 證實 main 已改變，或 GitHub 拒絕 stale merge 後 reread 證實 main 已改變，成功 no-op 並交由較新 delivery 處理。
+- 其他 identity、artifact、SHA、protection、required-check、API 或 mergeability mismatch 一律 fail closed；不得直接更新 main ref。
 
-No candidate is a safe no-op；a candidate based on a newer delivery is a safe no-op；a changed final main tip is a safe no-op。其他狀態不得合併。
+No candidate is a safe no-op；a candidate based on a newer delivery is a safe no-op；a waiting candidate or rejected protected merge that proves main changed is a safe no-op。其他狀態不得合併。
 
 Validator 只能在 trusted main-delivery pipeline 執行。禁止 `pull_request_target`、candidate-head checkout／執行，以及把 write token 暴露給 PR workflow。
 

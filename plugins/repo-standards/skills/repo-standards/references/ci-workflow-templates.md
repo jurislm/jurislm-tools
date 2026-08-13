@@ -240,9 +240,9 @@ steps:
 
 > 取代 `<REPO>` / `<APP_UUID>` 為實際值（App UUID 見該 repo `CLAUDE.md` 的 Coolify 區）。Next.js / 純 Node app 模板相同。
 >
-> `release-pr-auto-merge` 必須執行 target repo 自己 source-controlled 的 validator。validator 綁定同一個 trusted delivery commit `C`，並以該 repo 的 closed artifact contract 驗證精確檔案清單、版本內容、repository／base branch／head branch／官方作者、title／body marker、base／head SHA 與 mergeability；不可直接複製另一個 repo 的 allowlist 或部署拓撲。
+> `release-pr-auto-merge` 必須執行 target repo 自己 source-controlled 的 validator。validator 綁定同一個 trusted delivery commit `C`，並以該 repo 的 closed artifact contract 驗證精確檔案清單、版本內容、repository／base branch／head branch／官方作者、title／body marker、base／head SHA、required-check clean 狀態與 mergeability；不可直接複製另一個 repo 的 allowlist 或部署拓撲。
 >
-> validator 在 merge 前重新讀取 `main` SHA，並以剛驗證的 head SHA 呼叫 merge API。無 candidate、candidate base 已由較新 delivery 接手，或 final `main` tip 已改變，都是成功 no-op；其他 identity、artifact、SHA、API 或 mergeability mismatch 一律 fail closed。它只能由 trusted main-delivery pipeline 執行；禁止 `pull_request_target`、candidate-head checkout／執行與 PR write token。
+> validator 必須先驗證 GitHub branch protection 或 ruleset 要求 latest-base checks，規則對 automation credential 生效（legacy protection：`strict: true` 加上 admin enforcement），且 release PR 不需人工 approval，再以剛驗證的 head SHA 呼叫 GitHub PR merge API。無 candidate、candidate base 已由較新 delivery 接手、候選等待時 reread 證實 main 已改變，或 GitHub 拒絕 stale merge 後 reread 證實 main 已改變，都是成功 no-op；其他 identity、artifact、SHA、protection、required-check、API 或 mergeability mismatch 一律 fail closed。它只能由 trusted main-delivery pipeline 執行；禁止 `pull_request_target`、candidate-head checkout／執行與 PR write token。
 
 ---
 
@@ -264,6 +264,7 @@ steps:
 - **CI**（lint / typecheck / test）：Drone `.drone.yml`，同模板 A 的觸發語意。
 - **無 `deploy` pipeline**：發布到 **npm**，不部署到 Coolify → **無重複部署問題、不需 deploy-gating**（npm publish 只在 release 時發生一次，本質無「每次 push 都部署」的問題）。
 - **release-please + npm publish**：Drone `release` pipeline（模板 A 的 release-please 兩步 + 一個 npm publish step，用 `NPM_TOKEN` secret）。骨架：
+- **仍需 `release-pr-auto-merge` pipeline**：依賴自身的 trusted `validate`／`release`，使用上方 validator contract 自動合併 release PR；npm／MCP 只跳過 deploy-gating，不能跳過 release PR auto-merge 或其 observable acceptance。
 
 ```yaml
 # release pipeline（push main only）：github-release → release-pr → npm publish
@@ -286,6 +287,29 @@ steps:
 
 > ⚠️ 上為骨架；build 指令與 publish flags 因套件而異，依該套件實際 build/publish 流程調整。
 
+```yaml
+---
+# npm／MCP release PR auto-merge（push main only；沒有 deploy dependency）
+kind: pipeline
+type: docker
+name: release-pr-auto-merge
+platform: { os: linux, arch: amd64 }
+concurrency: { limit: 1 }
+trigger:
+  event: [push]
+  ref: [refs/heads/main]
+depends_on: [validate, release]
+steps:
+  - name: merge-release-pr
+    image: oven/bun:1.3.14
+    environment:
+      RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
+    commands:
+      - bun run scripts/ci/release-pr-auto-merge.ts
+```
+
+> 此 validator 使用上方 protected PR merge contract；在啟用前，先對 `main` 設定並 readback latest-base required checks，且不可讓 automation credential bypass。
+
 ---
 
 ## 標準模板 D：Plugin repo（jurislm-tools / jurislm-plugins）
@@ -302,7 +326,7 @@ steps:
   `validate`／`release` 完成後自動處理 release PR；不得改成人工合併 fallback。
   validator 必須使用該 Plugin repo 自己的 closed artifact contract（manifest、
   CHANGELOG、plugin／marketplace metadata），驗證 candidate identity、SHA、
-  mergeability 與 final main-SHA recheck，再以 validated head SHA 合併。
+  required-check clean／mergeability 與 latest-base branch protection，最後用 GitHub PR merge API 合併。
 
 ```yaml
 ---
@@ -320,6 +344,7 @@ steps:
       - npm ci
       - npm run validate
 # + release pipeline（同模板 A，push main only，github-release → release-pr）
+# + release-pr-auto-merge pipeline（depends_on: [validate, release]；遵守上方 protected PR merge contract）
 ```
 
 - **部分 plugin（如 `jurislm-plugins`）有 `sync-plugins.yml`**（GHA）：發版後把 plugin 定義同步到 PostgreSQL DB（dev + prod）。觸發為**手動 `workflow_dispatch`**——因 `GITHUB_TOKEN` 建立的 release 不會自動觸發其他 workflow（GitHub 安全限制）。設定需 DB 連線 secret。
@@ -390,7 +415,7 @@ echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'
 合併 feature PR 進 main 後：
 
 1. Drone build 觸發 → deploy pipeline 部署一次 + release-please **自動開 `chore(main): release X.Y.Z` PR**。
-2. **這個 release PR 必須由同一 trusted main delivery 的 source-controlled validator 自動合併**；它要驗證 target-specific closed artifact contract、official candidate identity、mergeability、final main-SHA recheck，並以 validated head SHA 合併。沒有 candidate、candidate base 已由較新 delivery 接手、或 final main tip 已改變，都是成功 no-op；其他 mismatch fail closed，不提供 manual merge fallback。
+2. **這個 release PR 必須由同一 trusted main delivery 的 source-controlled validator 自動合併**；它要驗證 target-specific closed artifact contract、official candidate identity、required-check clean、mergeability 與 GitHub latest-base branch protection，並以 validated head SHA 使用 GitHub PR merge API。沒有 candidate、candidate base 已由較新 delivery 接手、候選等待時 main 已改變、或 GitHub 拒絕 stale merge 後 main 已改變，都是成功 no-op；其他 mismatch fail closed，不提供 manual merge fallback。
 3. 合併 release PR → release commit → **deploy 被守衛跳過**（不重複部署）、以 `release-please@<EXACT-RELEASE-PLEASE-VERSION>` 執行 `github-release` 建 tag + release。
 
 ⚠️ **合併任何 PR 進 main 後，必須確認 CI 真的被觸發**（不可假設）：GitHub 偶爾漏發 `push` webhook，造成 Drone 沒 build、release 沒 cut。若 delivery 缺失，保留 candidate，修復後由新的 trusted main delivery 重試。

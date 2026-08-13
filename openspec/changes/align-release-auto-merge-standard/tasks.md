@@ -1,19 +1,20 @@
 ## 1. 先建立可拒絕錯誤合併的測試
 
-- [x] [P] 1.1 在 `scripts/release-pr-auto-merge.test.mjs` 建立「Drone auto-merges only an authorized Release Please candidate」的 mock GitHub API 測試矩陣，使正確 candidate 唯一呼叫帶 head SHA 的 merge API；無候選、較新 candidate base、main SHA 已改變均成功 no-op，而偽造來源、額外檔案、版本漂移、錯 SHA、不可 merge 與 API error 均不呼叫 merge；以 `node --test scripts/release-pr-auto-merge.test.mjs` 驗證。
+- [x] [P] 1.1 在 `scripts/release-pr-auto-merge.test.mjs` 建立「Drone auto-merges only an authorized Release Please candidate」的 mock GitHub API 測試矩陣，使正確 candidate 唯一在 GitHub required checks clean 與 latest-base protection 已驗證後，發出帶 validated head SHA 的 PR merge request；無候選、較新 candidate base、候選等待時 main 已改變、GitHub 拒絕 stale merge 後 main 已改變均成功 no-op，而偽造來源、額外檔案、版本漂移、額外 CHANGELOG version block、錯 SHA、protection drift、不可 merge與 API error 均不發出 merge request；以 `node --test scripts/release-pr-auto-merge.test.mjs` 驗證。
 - [x] [P] 1.2 擴充 `scripts/drone-ci-policy.test.mjs` 與 `scripts/validate-drone-config.mjs`，使「Release Please write commands use a fixed executable version」及 trusted main pipeline 的 trigger、dependency、concurrency、token boundary 成為結構契約；以 `node --test scripts/drone-ci-policy.test.mjs` 與 `node scripts/validate-drone-config.mjs` 驗證。
 
 ## 2. 實作 trusted delivery authorization
 
-- [x] 2.1 在 `scripts/release-pr-auto-merge.mjs` 實作 Trusted delivery authorization 與 Candidate artifact validation：只接受 `RELEASE_PLEASE_TOKEN` 與 `DRONE_COMMIT` 的 trusted main 呼叫，選取唯一 open candidate，驗證 identity、marker、SHA、mergeability、main tip 和 Plugin artifact contract，並以 validated head SHA merge；無候選、較新 candidate base 或 main SHA 已改變時 no-op，其餘 mismatch fail closed；以 1.1 的完整行為矩陣驗證。
+- [x] 2.1 在 `scripts/release-pr-auto-merge.mjs` 實作 Trusted delivery authorization 與 Candidate artifact validation：只接受 `RELEASE_PLEASE_TOKEN` 與 `DRONE_COMMIT` 的 trusted main 呼叫，選取唯一 open candidate，驗證 identity、marker、SHA、required checks、mergeability、latest-base protection 與 Plugin artifact contract，並以 validated head SHA 呼叫 GitHub PR merge API；無候選、較新 candidate base、候選等待時 main 已改變，或 GitHub 拒絕 stale candidate 且 main 已改變時 no-op，其餘 mismatch fail closed；以 1.1 的完整行為矩陣驗證。
 - [x] 2.2 在 `.drone.yml` 新增 main-only `release-pr-auto-merge` pipeline，使它等待同一 delivery 的 `validate` 與 `release`、以 concurrency limit 1 序列化，且不向 PR build 暴露 release token；以 1.2 的 structural checks 與 Drone YAML parser 驗證。
 - [x] 2.3 在 `scripts/validate-drone-config.mjs` 與 `scripts/drone-ci-policy.test.mjs` 固定 release pipeline 唯一 Release Please write command 為 17.10.4，並驗證 auto-merge pipeline 只執行 source-controlled validator、拒絕 unpinned Release Please command；以 `node scripts/validate-drone-config.mjs` 與 policy tests 驗證。
+- [ ] 2.4 設定並 readback `main` 的 GitHub protection：required status checks 啟用 latest-base enforcement（`strict: true`），且規則套用到 automation credential（`enforce_admins.enabled: true`）；確認這不新增人工 review gate。
 
 ## 3. 同步 repo standards 的可驗收規則
 
-- [x] [P] 3.1 更新 `openspec/specs/docs-and-standards/spec.md` 與 `openspec/specs/docs-and-standards/repo-standards-detail.md`，使「Repo standards distinguish verified references from adoption targets」與「Monorepo standards require Turborepo and safe scoped execution」成為 living contract；以 `spectra validate --strict` 和 requirement/scenario readback 驗證。
-- [x] [P] 3.2 進行 Standards canonicalization：更新 `plugins/repo-standards/skills/repo-standards/SKILL.md`、`plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md` 與 `plugins/repo-standards/skills/repo-standards/references/new-repo-checklist.md`，使 entire-only verified status、exact-version Release Please、auto-merge contract、`--filter`／`--affected` boundary 和 affected 無法判定時回退完整驗證／部署規則一致；以文字 policy tests 與人工交叉讀回驗證。
-- [x] 3.3 擴充或新增 repository policy test，使 Monorepo 必用 Turborepo、templates 必須要求 exact-version release command、所有 adoption target 必有 observable acceptance，不只檢查單一 SKILL 字串；以 `npm test` 驗證。
+- [x] [P] 3.1 更新 `openspec/specs/docs-and-standards/spec.md` 與 `openspec/specs/docs-and-standards/repo-standards-detail.md`，使「Repo standards distinguish verified references from adoption targets」與「Monorepo standards require Turborepo and safe scoped execution」成為 living contract，並明定 npm／MCP 僅跳過 deploy-gating、不得跳過 release PR auto-merge；以 `spectra validate --strict` 和 requirement/scenario readback 驗證。
+- [x] [P] 3.2 進行 Standards canonicalization：更新 `plugins/repo-standards/skills/repo-standards/SKILL.md`、`plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md` 與 `plugins/repo-standards/skills/repo-standards/references/new-repo-checklist.md`，使 entire-only verified status、exact-version Release Please、所有 repo 類型的 auto-merge contract、`--filter`／`--affected` boundary 和 affected 無法判定時回退完整驗證／部署規則一致；以文字 policy tests 與人工交叉讀回驗證。
+- [x] 3.3 擴充或新增 repository policy test，使 Monorepo 必用 Turborepo、每個 Release Please template（含 npm／MCP）必須要求 exact-version release command 與 auto-merge、所有 adoption target 必有 observable acceptance，不只檢查單一 SKILL 字串；以 `npm test` 驗證。
 
 ## 4. Verification and rollout：整合驗證與交付 readback
 

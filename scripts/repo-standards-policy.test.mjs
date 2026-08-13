@@ -50,7 +50,9 @@ test("monorepo guidance requires Turborepo and safe scoped execution", () => {
 
 test("release templates require exact versions and a trusted automatic merge contract", () => {
   assert.match(policyText, /same (?:trusted )?delivery commit/i);
-  assert.match(policyText, /validated head SHA/i);
+  assert.match(policyText, /GitHub PR merge API/i);
+  assert.match(policyText, /latest-base (?:required )?checks/i);
+  assert.match(policyText, /automation credential/i);
   assert.match(policyText, /(?:no |without )manual merge fallback/i);
   assert.match(
     policyText,
@@ -60,11 +62,18 @@ test("release templates require exact versions and a trusted automatic merge con
     policyText,
     /candidate[\s\S]{0,200}(?:newer delivery|較新 delivery)[\s\S]{0,200}no-op/i,
   );
-  assert.match(policyText, /final main[\s\S]{0,160}no-op/i);
+  assert.match(policyText, /(?:GitHub rejects?|rejected protected merge)[\s\S]{0,200}no-op/i);
 
   const template = policies[
     "plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md"
   ];
+  const npmTemplate = template.slice(
+    template.indexOf("## 標準模板 C："),
+    template.indexOf("## 標準模板 D："),
+  );
+  assert.match(npmTemplate, /release-pr-auto-merge/i);
+  assert.match(npmTemplate, /trusted `validate`／`release`/i);
+  assert.match(npmTemplate, /npm／MCP.*不能跳過 release PR auto-merge/i);
   const writeCommands = template
     .split("\n")
     .map((line) => line.trim())

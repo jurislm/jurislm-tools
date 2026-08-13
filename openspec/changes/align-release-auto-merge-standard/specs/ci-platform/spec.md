@@ -4,23 +4,23 @@
 
 The repository SHALL run a source-controlled `release-pr-auto-merge` Drone pipeline only for trusted pushes to `main`. The pipeline MUST depend on the same delivery commit's `validate` and `release` pipelines, MUST serialize overlapping deliveries, and MUST receive the release write credential only in its trusted main context.
 
-The validator SHALL select at most one open Release Please candidate for the configured repository, base branch, official author, and release branch. Before merging, it MUST validate the exact title and Release Please body markers, base and head repository identity, base SHA, head SHA, mergeability, and current main tip. The GitHub merge request MUST include the head SHA that the validator just read.
+The validator SHALL select at most one open Release Please candidate for the configured repository, base branch, official author, and release branch. Before merging, it MUST validate the exact title and Release Please body markers, base and head repository identity, base SHA, head SHA, required-check clean state, and mergeability. It MUST verify that the target branch protection or ruleset requires the candidate to be tested with the latest base, enforces that requirement for the automation credential, and does not require human approval for release PR automation. It MUST then use GitHub's PR merge API with the validated head SHA, never directly update the main ref.
 
-The candidate SHALL change exactly the trusted Plugin release artifact contract: the release manifest, CHANGELOG, all configured plugin version files, and marketplace version metadata. The validator MUST reject an extra, missing, deleted, or semantically inconsistent artifact. Every version field MUST equal the candidate manifest version, the candidate version MUST exceed the base manifest version, and the CHANGELOG MUST prepend the new release entry without rewriting the base content.
+The candidate SHALL change exactly the trusted Plugin release artifact contract: the release manifest, CHANGELOG, all configured plugin version files, and marketplace version metadata. The validator MUST reject an extra, missing, deleted, or semantically inconsistent artifact. Every version field MUST equal the candidate manifest version, the candidate version MUST exceed the base manifest version, and the CHANGELOG MUST prepend exactly one candidate version entry without rewriting or inserting another version block before the base content.
 
-The validator SHALL exit successfully without merging only when no candidate exists, when the candidate base is a descendant of the triggering delivery commit, or when its last main-tip recheck finds that `main` no longer equals that delivery commit. Every other candidate, API, artifact, mergeability, or candidate-base SHA relationship failure MUST fail closed.
+The validator SHALL exit successfully without merging only when no candidate exists, when the candidate base is a descendant of the triggering delivery commit, when an awaiting candidate's main reread proves `main` no longer equals that delivery commit, or when GitHub rejects a stale merge and a reread proves `main` no longer equals that delivery commit. Every other candidate, API, protection, artifact, required-check, mergeability, or candidate-base SHA relationship failure MUST fail closed.
 
 #### Scenario: Matching main delivery authorizes merge
 
 - **WHEN** `validate(C)` and `release(C)` succeed and the open candidate has base SHA `C`, a valid artifact contract, a mergeable head, and current main tip `C`
-- **THEN** the validator sends one GitHub merge request containing the validated head SHA
+- **THEN** the validator sends one GitHub PR merge request containing the validated head SHA
 - **AND** the pipeline reports the merged pull request
 
 #### Scenario: No candidate needs no action
 
 - **WHEN** the authorized main delivery has no open Release Please candidate
 - **THEN** the validator exits successfully as a no-op
-- **AND** it does not send a GitHub merge request
+- **AND** it does not update `main`
 
 #### Scenario: A newer delivery owns a superseded candidate
 
@@ -28,18 +28,36 @@ The validator SHALL exit successfully without merging only when no candidate exi
 - **THEN** the older validator exits successfully as a no-op
 - **AND** it does not merge the candidate
 
-#### Scenario: A changed main tip supersedes a validated candidate
+#### Scenario: GitHub's protected merge detects a changed main tip
 
-- **WHEN** the validator's final main-tip recheck finds that `main` no longer equals `C`
+- **WHEN** the validator's protected PR merge is rejected and a reread finds that `main` no longer equals `C`
 - **THEN** the older validator exits successfully as a no-op
-- **AND** it does not send a GitHub merge request
+- **AND** it does not retry a merge for that stale candidate
+
+#### Scenario: A waiting candidate is superseded before mergeability is ready
+
+- **WHEN** GitHub reports the candidate as pending or behind and a main reread differs from `C`
+- **THEN** the older validator exits successfully as a no-op
+- **AND** it does not send a GitHub PR merge request
 
 #### Scenario: Candidate validation fails closed
 
 - **WHEN** the candidate has an unrecognized author, branch, marker, artifact, version value, mergeability state, API response, or a base SHA that is neither `C` nor a descendant of `C`
 - **THEN** the validator exits with failure
-- **AND** it does not send a GitHub merge request
+- **AND** it does not update `main`
 - **AND** the candidate remains open for a later trusted main delivery
+
+#### Scenario: Branch protection cannot support non-interactive latest-base merging
+
+- **WHEN** the target branch protection or ruleset does not require latest-base checks for the automation credential or requires human approval for release PRs
+- **THEN** the validator fails closed
+- **AND** it does not send a GitHub PR merge request
+
+#### Scenario: CHANGELOG contains a second release block
+
+- **WHEN** a candidate prepends its version entry but also inserts another version heading before the unchanged base CHANGELOG content
+- **THEN** the validator fails closed
+- **AND** it does not update `main`
 
 #### Scenario: Pull request code cannot obtain merge authority
 

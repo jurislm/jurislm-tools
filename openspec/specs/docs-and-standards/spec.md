@@ -121,26 +121,38 @@ Every adopting repository that enables Release Please SHALL use a trusted
 `main`-delivery `release-pr-auto-merge` validator. The validator MUST depend on
 the same delivery commit's required validation and release gates, validate a
 repository-specific closed artifact contract with no extra, missing, deleted,
-or semantically inconsistent release artifact, and merge only with the head SHA
-it just validated. A final recheck that finds `main` changed since the triggering
-delivery SHALL be a successful no-op for that validator; every other discrepancy
-MUST fail closed. No manual merge fallback SHALL be documented or required, and
-every Release Please command with GitHub write authority SHALL name the target
+or semantically inconsistent release artifact, validate required-check clean
+state, and verify that GitHub's branch protection or ruleset requires a
+latest-base check, applies it to the automation credential, and has no human
+release-PR approval gate. It MUST use
+GitHub's PR merge API with the validated candidate head SHA, not directly update
+`main`. A main reread during a pending candidate, or a GitHub rejection, followed
+by proof that `main` changed since the triggering delivery SHALL be a successful
+no-op; every other discrepancy MUST fail closed. No manual merge fallback SHALL be documented or required, and every
+Release Please command with GitHub write authority SHALL name the target
 repository's exact executable version.
 
 #### Scenario: The candidate belongs to the same trusted delivery
 
 - **WHEN** the trusted `main` delivery's validation and release gates succeed
   and its candidate satisfies the closed artifact contract
-- **THEN** the validator may merge exactly the just-validated head SHA
+- **THEN** the validator may send GitHub one protected PR merge request with
+  the validated candidate head SHA
 - **AND** a pull-request build cannot obtain the release write credential
 
-#### Scenario: The final main tip changes during validation
+#### Scenario: GitHub's protected PR merge detects a newer tip
 
-- **WHEN** the validator's final `main` recheck differs from its triggering
-  delivery commit
+- **WHEN** GitHub rejects the validator's protected PR merge and a reread of
+  `main` differs from its triggering delivery commit
 - **THEN** the validator exits successfully as a no-op
-- **AND** it sends no merge request
+- **AND** it does not retry the stale candidate
+
+#### Scenario: A waiting candidate is superseded by a newer tip
+
+- **WHEN** a candidate remains pending or behind and its main reread differs
+  from the triggering delivery commit
+- **THEN** the validator exits successfully as a no-op
+- **AND** it sends no protected PR merge request
 
 #### Scenario: A candidate violates the closed artifact contract
 
