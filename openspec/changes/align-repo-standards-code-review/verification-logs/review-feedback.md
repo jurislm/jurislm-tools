@@ -29,3 +29,10 @@
 - `npm run validate` passed with 169 tests.
 - `claude plugin validate .`, strict Spectra validation, Spectra analysis, and
   `git diff --check` passed after the accepted correction.
+
+## Archive review correction
+
+- The archive PR review found that the queue delta replaced the Delivery
+  Relations requirement without retaining its three dependency-cycle scenarios.
+  Restored the hard, acceptance-only, and mixed cycle outcomes; removing GitHub
+  Issue mapping does not change cyclic graph handling.

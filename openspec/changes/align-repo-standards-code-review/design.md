@@ -43,6 +43,10 @@ policy test, and living-spec deltas remove the optional Issue paths together.
 This leaves Spectra artifacts and Delivery Relations as the sole current
 planning, queue, and delivery record.
 
+The queue delta retains the pre-existing hard, acceptance-only, and mixed
+dependency-cycle scenarios. Removing Issue mapping changes only the tracking
+source, not the `BLOCKED` outcome for a cyclic dependency graph.
+
 ## Risks / Trade-offs
 
 - [Stale duplicated wording] → Package one concise template, make the target

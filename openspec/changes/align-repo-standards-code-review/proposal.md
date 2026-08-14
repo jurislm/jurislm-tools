@@ -19,6 +19,8 @@ artifact 作為唯一追蹤紀錄的決策不一致。
 - 將 Spectra 的 `proposal → design → specs → tasks` 寫為唯一變更追蹤紀錄；
   非初始化 repo 先執行 `spectra init`，且 `jt-flow`、living specs、測試都不建立、
   不引用、也不依賴 GitHub Issue。
+- 保留既有的 hard、acceptance-only 與 mixed dependency-cycle 結果；移除
+  GitHub Issue mapping 不得改變 cycle 的 `BLOCKED` 行為。
 
 ## Non-Goals
 

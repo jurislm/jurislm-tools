@@ -113,3 +113,21 @@ or a mixture of hard and acceptance dependencies SHALL be invalid and
   and production targets
 - **WHEN** `jt-flow-all` reads the proposal from the refreshed snapshot
 - **THEN** it can determine the applicable queue state from those fields alone
+
+#### Scenario: Hard-dependency cycle exists
+
+- **WHEN** hard-dependency edges form a cycle
+- **THEN** the cycle members and their descendants are `BLOCKED` while unrelated
+  nodes remain eligible
+
+#### Scenario: Acceptance-only dependency cycle exists
+
+- **WHEN** acceptance-dependency edges form a cycle
+- **THEN** the cycle members and their descendants are `BLOCKED` before
+  integration while unrelated nodes remain eligible
+
+#### Scenario: Mixed dependency cycle exists
+
+- **WHEN** hard and acceptance edges together form a directed cycle
+- **THEN** the cycle members and their descendants are `BLOCKED` rather than
+  allowed to deadlock
