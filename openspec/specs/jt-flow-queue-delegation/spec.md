@@ -22,7 +22,7 @@ unrelated `READY` items SHALL continue.
 - **THEN** the coordinator passes the OpenSpec identity and durable proposal GO
   evidence to `jt-flow-one` and dispatches the whole change
 
-### Requirement: Active changes use OpenSpec delivery records before queueing
+### Requirement: Active changes use Spectra delivery records before queueing
 
 `jt-flow-all` SHALL read all active OpenSpec changes from the same clean
 dependency snapshot and SHALL derive the queue from those changes and their
@@ -46,7 +46,7 @@ pause an otherwise valid active change.
   active changes
 
 ### Requirement: Single-request delivery workflow has one owner
-The `jt-flow-all` Skill MUST NOT duplicate the single-request OpenSpec
+The `jt-flow-all` Skill MUST NOT duplicate the single-request Spectra
 preparation, proposal, worktree, implementation, review, merge, deployment,
 archive, or proposal-synchronization procedures. `jt-flow-one` SHALL remain
 the owner of those procedures for every delegated item.

@@ -36,3 +36,11 @@
   Relations requirement without retaining its three dependency-cycle scenarios.
   Restored the hard, acceptance-only, and mixed cycle outcomes; removing GitHub
   Issue mapping does not change cyclic graph handling.
+- CodeRabbit CLI completed one review with nine findings. Adopted: restore the
+  three dependency-cycle scenarios; align Proposal GO and Delivery Relations
+  with the existing `jt-flow` documentation, policy-test, and living-spec work;
+  and normalize the remaining operational `OpenSpec` labels to Spectra.
+  Rejected: a new proposal-revision gate, a broader queue-state rewrite, and
+  replacing existing target `CLAUDE.md` sections. Those are outside the approved
+  scope; the existing Skills already fetch remote main before worktree creation
+  and rebuild a drifted dependency snapshot.

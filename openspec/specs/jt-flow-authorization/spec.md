@@ -5,7 +5,7 @@ Define the authorization checkpoints, bounded post-GO exceptions, review
 consent disclosure, and durable approval handoff shared by `jt-flow-one` and
 delegated `jt-flow-all` items.
 ## Requirements
-### Requirement: Explicit invocation authorizes OpenSpec preparation
+### Requirement: Explicit invocation authorizes Spectra preparation
 
 An explicit `jt-flow-one` invocation SHALL authorize repository-scoped
 discovery and OpenSpec artifact creation or update without additional

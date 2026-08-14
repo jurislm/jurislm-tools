@@ -17,7 +17,7 @@ unrelated `READY` items SHALL continue.
 - **THEN** the coordinator passes the Spectra identity and durable proposal GO
   evidence to `jt-flow-one` and dispatches the whole change
 
-### Requirement: Active changes use OpenSpec delivery records before queueing
+### Requirement: Active changes use Spectra delivery records before queueing
 
 `jt-flow-all` SHALL read all active Spectra changes from the same clean
 dependency snapshot and SHALL derive the queue from those changes and their

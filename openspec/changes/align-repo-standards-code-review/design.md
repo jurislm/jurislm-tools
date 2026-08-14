@@ -17,6 +17,7 @@ path even though this repository records a change only in Spectra artifacts.
 
 - Change global review orchestration, CI, release, deployment, or external
   review service settings.
+- Change the existing queue state model or add a proposal-revision gate.
 
 ## Decisions
 
@@ -46,6 +47,10 @@ planning, queue, and delivery record.
 The queue delta retains the pre-existing hard, acceptance-only, and mixed
 dependency-cycle scenarios. Removing Issue mapping changes only the tracking
 source, not the `BLOCKED` outcome for a cyclic dependency graph.
+
+The change records `jt-flow` documentation and policy tests as affected areas.
+Its operational change-tracking terminology is Spectra; `openspec/` remains the
+artifact directory name only.
 
 ## Risks / Trade-offs
 
