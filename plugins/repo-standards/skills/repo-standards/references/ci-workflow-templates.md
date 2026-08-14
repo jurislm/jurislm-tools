@@ -9,7 +9,7 @@
 > | npm / MCP | Drone | release-please + npm publish | npm（無 Coolify 部署）|
 > | Plugin（content-first）| GitHub Actions（預設）或 Drone aggregate validation（須明確選擇）| 與 CI 使用同一平台 | — |
 >
-> Code review：依 repo `CLAUDE.md` 與 `jt-flow-review-orchestration` 的 Skill-driven contract 執行。CodeRabbit auto-review 關閉並明確 request App 一次、Copilot 一次、Codex 被動。**自動 Claude PR 審查已從標準移除**，不再設 `claude-code-review.yml` / `claude.yml` 或 Drone `claude-review` pipeline。Copilot 自訂指示模板見 `references/code-review-setup.md`。
+> Code review：依目標 repo `CLAUDE.md` 的 Skill-driven contract 執行；缺少時先採用 `references/review-orchestration-template.md` 並客製化。CodeRabbit auto-review 關閉並明確 request App 一次、Copilot 一次、Codex 被動。**自動 Claude PR 審查已從標準移除**，不再設 `claude-code-review.yml` / `claude.yml` 或 Drone `claude-review` pipeline。Copilot 自訂指示模板見 `references/code-review-setup.md`。
 
 ---
 

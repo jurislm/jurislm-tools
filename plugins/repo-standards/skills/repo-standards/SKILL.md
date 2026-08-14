@@ -63,9 +63,11 @@ argument-hint: "[repo-name]"
 
 ---
 
-## 變更追蹤：只用 Spectra
+## Spectra 初始化與變更追蹤
 
-非瑣碎變更一律建立或沿用一個 Spectra change，並以
+開始非瑣碎變更前，先執行 `spectra --version`。目標 repo 尚未有 `openspec/` 或
+`.spectra.yaml` 時，先在 repo 根目錄執行 `spectra init`，再建立或沿用 Spectra
+change。完成初始化後，一律以
 `proposal → design → specs → tasks` 作為唯一追蹤與授權紀錄。不要建立、引用或
 依賴 GitHub Issue。標準變更影響其他 adoption target 時，在 active proposal 的
 Delivery Relations 記錄目標與 acceptance dependency；完成後由 archive 留下歷史。
@@ -527,12 +529,18 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 
 ## Code Review 設定
 
-PR review 與 merge 的唯一操作契約是 repo 的 `CLAUDE.md` 與
-`jt-flow-review-orchestration`。建立 PR 後必須 invoke
+PR review 與 merge 的唯一操作契約是目標 repo 自身的 `CLAUDE.md`。目標 repo 缺少
+`## PR review and merge contract` 時，先將本 skill 的
+`references/review-orchestration-template.md` 複製進其 `CLAUDE.md`，再依 repo 的
+required checks 與部署方式客製化。建立 PR 後必須 invoke
 `superpowers:requesting-code-review`；收到 finding 時以
 `superpowers:receiving-code-review` 逐項處置、修正或記錄具體拒絕理由，並 resolve
 所有 review thread。合併前還必須符合 CI、`MERGEABLE`／`CLEAN`、Copilot 與
 CodeRabbit gate。
+
+目標 repo 使用 `jt-flow-all` 時，它只協調 Spectra change queue；每個 delegated
+item 仍由 `jt-flow-one` invoke `superpowers:requesting-code-review` 並擁有該 item
+的本地 review。`jt-flow-all` 不得發起或擁有額外 review。
 
 repo 設定必須提供以下前置條件：
 
@@ -556,7 +564,7 @@ repo 設定必須提供以下前置條件：
 
 **快速概覽**（各類別必做項）：
 - **AGENTS.md**：若 repo 內存在 `AGENTS.md`，更新為讀取同層或 repo 根目錄 `CLAUDE.md`；不要複製 CLAUDE 全文
-- **變更追蹤**：非瑣碎變更只用 Spectra `proposal → design → specs → tasks`；不建立 GitHub Issue，跨 repo 目標記在 proposal 的 Delivery Relations
+- **Spectra**：先確認已初始化；非瑣碎變更只用 `proposal → design → specs → tasks`，跨 repo 目標記在 proposal 的 Delivery Relations
 - **Worktree**：feature worktree 直接從 main 建立於 `.claude/worktrees/<change-name>`，不建立 develop；`.claude/worktrees/` 不進 `.gitignore`（由 Claude Code runtime 本地排除）
 - **Bun**：`"packageManager": "bun@1.3.14"`，scripts 換成 `bun run vitest` 等
 - **Release**：Drone repo 使用 `main`-only release pipeline，依序執行固定精確版本的 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`，並由同一 trusted delivery 的 source-controlled validator 自動合併 release PR；無人工 fallback
@@ -566,4 +574,4 @@ repo 設定必須提供以下前置條件：
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.claude/worktrees/`
 - **CI**：Drone repo 的檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；plugin repo 若選 Drone，validation 與 release 一起遷移並移除重疊 GHA
 - **CD**（Coolify web app）：`.drone.yml` 加 `build`、`deploy`、`release-pr-auto-merge` 三個 pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
-- **Code Review**：依 `CLAUDE.md`／`jt-flow-review-orchestration` invoke Skill-driven review；CodeRabbit 一次明確 App request、Copilot 一次、Codex 被動；**無**自動 Claude review
+- **Code Review**：將 packaged review contract 寫入目標 `CLAUDE.md` 後，依其 invoke Skill-driven review；CodeRabbit 一次明確 App request、Copilot 一次、Codex 被動；**無**自動 Claude review

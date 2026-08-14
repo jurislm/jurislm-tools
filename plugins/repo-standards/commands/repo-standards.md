@@ -24,4 +24,4 @@ Parse the arguments as follows (optional):
 
 ## Delegation
 
-Follow the `repo-standards` skill: identify repo type → standardize any existing `AGENTS.md` to read `CLAUDE.md` → use an active Spectra change as the only tracking record → apply standard `.drone.yml` (lint/typecheck/test + release-please + Coolify deploy gating) + release-please-config.json → apply standard ESLint config → configure the canonical review prerequisites → verify checklist.
+Follow the `repo-standards` skill: identify repo type → standardize any existing `AGENTS.md` to read `CLAUDE.md` → initialize Spectra when missing and use its active change as the only tracking record → apply standard `.drone.yml` (lint/typecheck/test + release-please + Coolify deploy gating) + release-please-config.json → apply standard ESLint config → install the packaged review contract in target `CLAUDE.md` and configure its prerequisites → verify checklist.

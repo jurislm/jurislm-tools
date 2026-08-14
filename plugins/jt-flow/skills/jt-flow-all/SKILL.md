@@ -61,10 +61,9 @@ required checks），依既有規則執行，不適用本段的自由裁量。
    caller worktree. Prefer native workspace isolation; otherwise create a
    validated temporary detached git worktree, use it read-only, record the map,
    then remove it.
-2. From that same snapshot, read all active OpenSpec changes. Each whole active
-   change is one execution unit. An existing GitHub Issue MAY be recorded as
-   optional external context, but open-Issue inventory is not part of queue
-   eligibility; unrelated Issues remain outside the execution graph.
+2. From that same snapshot, read all active Spectra changes. Each whole active
+   Spectra change is one execution unit. Spectra artifacts and their Delivery Relations are
+   the only queue inputs; do not create, read, link, or depend on GitHub Issues.
 3. Inventory every current proposal's `Priority`, `Hard dependencies`,
    `Acceptance dependencies`, `External blockers`, `Affected areas`,
    `Production targets`. Each external blocker must declare a `dispatch` or

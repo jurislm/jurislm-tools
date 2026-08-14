@@ -42,7 +42,7 @@ Skills 由自然語言意圖觸發；本 repo 不再提供舊版 `/jt:*` 或 `/j
 
 `jt-flow-all` 先以乾淨、已更新的 remote `main` snapshot 建立 whole-change
 dependency map；每個 proposal 都以 Delivery Relations 記錄優先序、相依、外部
-blocker、受影響區域、production target 與 Issue 對應。關係缺漏或矛盾只會讓該
+blocker、受影響區域與 production target。關係缺漏或矛盾只會讓該
 item `BLOCKED`，不會停止無關的 `READY` items；coordinator 保留一個 agent slot，
 其餘可用容量交由 `jt-flow-one` 擁有各 item 的 worktree、實作與品質審查。
 

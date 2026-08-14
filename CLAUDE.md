@@ -201,7 +201,7 @@ alone owns its isolated worktree and delivery. Do not dispatch partial change
 tasks. An item reaches `INTEGRATION_READY` only after its implementation,
 required tests, `jt-flow-one` quality review, PR checks, review disposition,
 and current HEAD readback. Keep merge and all production mutation in one
-integration lane: issue at most one permit whose repository, change, item HEAD
+integration lane: grant at most one permit whose repository, change, item HEAD
 SHA, verified remote-main SHA, required-check set and terminal-success results,
 current mergeability result, and readback time exactly match the owner. Fail
 closed and reread all fields at grant and immediately before merge or production

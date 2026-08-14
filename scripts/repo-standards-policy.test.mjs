@@ -10,6 +10,7 @@ const policyPaths = [
   "plugins/repo-standards/skills/repo-standards/SKILL.md",
   "plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md",
   "plugins/repo-standards/skills/repo-standards/references/new-repo-checklist.md",
+  "plugins/repo-standards/skills/repo-standards/references/review-orchestration-template.md",
 ];
 
 function readPolicy(relativePath) {
@@ -108,4 +109,14 @@ test("plugin release templates bind eligibility to DRONE_COMMIT instead of a raw
   assert.doesNotMatch(template, /比較已發布 manifest tag 到目前分支的完整範圍/);
   assert.match(detail, /DRONE_REPO`、`DRONE_BRANCH`、`DRONE_COMMIT/);
   assert.match(detail, /first-parent mainline/);
+});
+
+test("portable review contract preserves jt-flow review ownership", () => {
+  const template = policies[
+    "plugins/repo-standards/skills/repo-standards/references/review-orchestration-template.md"
+  ];
+
+  assert.match(template, /`jt-flow-all`.*只協調.*Spectra change queue/s);
+  assert.match(template, /`jt-flow-one`.*invoke.*`superpowers:requesting-code-review`/s);
+  assert.match(template, /`jt-flow-all`.*不發起或擁有額外 review/s);
 });

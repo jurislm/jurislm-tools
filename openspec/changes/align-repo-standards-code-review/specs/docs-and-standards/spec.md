@@ -4,15 +4,19 @@
 
 `jurislm-tools` and repositories adopting `repo-standards` SHALL use the
 active Spectra change's `proposal`, `design`, `specs`, and `tasks` artifacts as
-the only change-tracking record. Guidance MUST NOT create, require, link, or
-depend on a GitHub Issue. When a standard change affects other adoption
-targets, its active proposal's Delivery Relations SHALL record those targets
-and their acceptance dependencies.
+the only change-tracking record. Before requiring an active change, guidance
+MUST run `spectra --version` and, when the target lacks `openspec/` or
+`.spectra.yaml`, MUST run `spectra init` at the repository root. Guidance MUST
+NOT create, require, link, or depend on a GitHub Issue. When a standard change
+affects other adoption targets, its active proposal's Delivery Relations SHALL
+record those targets and their acceptance dependencies.
 
 #### Scenario: A repository starts a standard change
 
-- **WHEN** a repository begins a non-trivial standards change
-- **THEN** it records the work in the active Spectra change without creating or referencing a GitHub Issue
+- **WHEN** a repository begins a non-trivial standards change and lacks
+  Spectra initialization
+- **THEN** it runs `spectra init` before it records the work in an active
+  Spectra change without creating or referencing a GitHub Issue
 
 ##### Example: Next.js repository setup
 
@@ -33,20 +37,27 @@ and their acceptance dependencies.
 
 ### Requirement: Canonical PR review contract
 
-`repo-standards` SHALL identify the repository `CLAUDE.md` and
-`jt-flow-review-orchestration` as the canonical PR review and merge contract.
+`repo-standards` SHALL package a portable PR review and merge template and
+identify the target repository's `CLAUDE.md` as its canonical contract. When
+the target lacks the template's `PR review and merge contract` section, its
+skill MUST write and customize that section before configuring review services.
 Its skill, command, checklist, CI reference, and Copilot reference MUST direct
 agents to invoke `superpowers:requesting-code-review`, use
 `superpowers:receiving-code-review` for findings, dispose every finding, resolve
 review threads, and satisfy CI and mergeability gates. It MUST configure
 CodeRabbit auto-review as disabled with one explicit App request, permit the
 CLI only as the prescribed fallback, allow one Copilot review, treat Codex as
-passive, and exclude automatic Claude PR-review pipelines.
+passive, and exclude automatic Claude PR-review pipelines. For a target using
+`jt-flow-all`, that Skill SHALL only coordinate its Spectra change queue;
+delegated `jt-flow-one` SHALL own and invoke the local review without any
+additional `jt-flow-all` review.
 
 #### Scenario: A repository opens a pull request
 
 - **WHEN** an adopting repository opens a pull request
-- **THEN** its guidance invokes the canonical Skill-driven review contract rather than manual `/code-review` plus bot automation
+- **THEN** its own `CLAUDE.md` invokes the canonical Skill-driven review
+  contract rather than a source-repository-only pointer or manual `/code-review`
+  plus bot automation
 
 #### Scenario: A review produces findings
 

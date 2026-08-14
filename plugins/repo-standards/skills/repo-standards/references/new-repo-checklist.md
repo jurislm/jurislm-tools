@@ -8,9 +8,9 @@
 2. [ ] 不把 `CLAUDE.md` 全文複製進 `AGENTS.md`，避免兩份規範 drift
 3. [ ] 若 repo 內沒有 `AGENTS.md`，不主動新增，除非使用者明確要求
 
-## 變更追蹤（Spectra）
+## Spectra 初始化與變更追蹤
 
-非瑣碎變更只使用 active Spectra change 的 `proposal`、`design`、`specs`、`tasks`；不建立、不引用、也不依賴 GitHub Issue。跨 repo adoption target 與 acceptance dependency 記錄在 proposal 的 Delivery Relations。
+開始非瑣碎變更前，執行 `spectra --version`；若目標 repo 沒有 `openspec/` 或 `.spectra.yaml`，先在根目錄執行 `spectra init`。完成後只使用 active Spectra change 的 `proposal`、`design`、`specs`、`tasks` 作為追蹤與授權紀錄。跨 repo adoption target 與 acceptance dependency 記錄在 proposal 的 Delivery Relations。
 
 ## Git Worktree
 
@@ -74,7 +74,7 @@
 
 > 2026-06-02：自動 Claude PR 審查（`claude-code-review.yml` / `claude.yml` / Drone `claude-review`）已從標準移除。
 
-39. [ ] 建立 PR 後 invoke `superpowers:requesting-code-review`；finding 以 `superpowers:receiving-code-review` 逐項處置，accepted finding 修正驗證、rejected finding 記錄具體理由，並 resolve 全部 review thread（完整順序依 repo `CLAUDE.md`／`jt-flow-review-orchestration`）
+39. [ ] 將 `references/review-orchestration-template.md` 的 `PR review and merge contract` 寫入目標 repo `CLAUDE.md`，依 required checks 與部署方式客製化；建立 PR 後 invoke `superpowers:requesting-code-review`，finding 以 `superpowers:receiving-code-review` 逐項處置，accepted finding 修正驗證、rejected finding 記錄具體理由，並 resolve 全部 review thread
 40. [ ] 建立 `.coderabbit.yaml`，設定 `reviews.auto_review.enabled: false`；每個 PR 只明確 request CodeRabbit App 一次，僅在 App 無法產生有效 review 時依 canonical contract 使用 CLI fallback
 41. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）；每個 PR 一次 Copilot review budget，Codex 為被動審查不主動觸發或等待
 42. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）；合併前確認 CI 全綠、`MERGEABLE`／`CLEAN`、Copilot 與 CodeRabbit 無未處理意見；不設定自動 Claude PR review pipeline

@@ -8,9 +8,10 @@ path even though this repository records a change only in Spectra artifacts.
 
 **Goals:**
 
-- Teach one review contract and one change-tracking record.
-- Keep operational review detail in its canonical `CLAUDE.md` and `jt-flow`
-  sources while retaining repository setup prerequisites in `repo-standards`.
+- Teach one portable review contract and one change-tracking record.
+- Keep the installed target repository's `CLAUDE.md` as the operational review
+  contract while retaining the reusable template and setup prerequisites in
+  `repo-standards`.
 
 **Non-Goals:**
 
@@ -19,31 +20,43 @@ path even though this repository records a change only in Spectra artifacts.
 
 ## Decisions
 
-### Spectra-only tracking
+### Spectra-only tracking and bootstrap
 
 The active Spectra change supplies the durable proposal, design, specification,
-and task record. Repository guidance will direct follow-up adoption targets to
-the change's Delivery Relations rather than creating a GitHub Issue.
+and task record. Before this record is required, `repo-standards` checks for
+Spectra and initializes a target that lacks `openspec/` or `.spectra.yaml`.
+Repository guidance and `jt-flow` direct follow-up adoption targets to the
+change's Delivery Relations rather than creating or linking a GitHub Issue.
 
-### Canonical PR review contract
+### Portable PR review contract
 
-`repo-standards` will point to the existing `CLAUDE.md` and
-`jt-flow-review-orchestration` contract instead of maintaining a competing
-manual-review procedure. It will retain only the setup conditions that a
-repository must configure for that contract.
+`repo-standards` will package a concise review-orchestration template. When a
+target lacks that section, the skill writes it into the target's `CLAUDE.md`
+and customizes the target-specific checks and delivery details. The target
+`CLAUDE.md`, not an unreachable source-repository spec, is the canonical
+contract for that target.
+
+### Remove GitHub Issue workflow surfaces
+
+`jt-flow-one`, `jt-flow-all`, their README, the root README, authorization
+policy test, and living-spec deltas remove the optional Issue paths together.
+This leaves Spectra artifacts and Delivery Relations as the sole current
+planning, queue, and delivery record.
 
 ## Risks / Trade-offs
 
-- [Stale duplicated wording] → Search every repo-standards entry point and
-  retain one canonical operational pointer.
+- [Stale duplicated wording] → Package one concise template, make the target
+  `CLAUDE.md` canonical, and search every entry point for source-only pointers.
+- [Uninitialized target] → Require `spectra init` before a new target needs an
+  active change.
 - [Follow-up work becomes invisible] → Require active Spectra Delivery
   Relations to name affected adoption targets and their acceptance.
 
 ## Migration Plan
 
-Close the mistakenly created Issue, remove its reference from the active
-proposal, update the local rule and plugin guidance, then validate the
-Spectra change and documentation checks.
+Remove current Issue workflow references, update the target-portable review
+contract and bootstrap guidance, then validate the Spectra change and
+documentation checks.
 
 ## Open Questions
 
