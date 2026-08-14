@@ -9,7 +9,7 @@
 > | npm / MCP | Drone | release-please + npm publish | npm（無 Coolify 部署）|
 > | Plugin（content-first）| GitHub Actions（預設）或 Drone aggregate validation（須明確選擇）| 與 CI 使用同一平台 | — |
 >
-> Code review：人工 `/code-review` + bot（CodeRabbit / Copilot）。**自動 Claude PR 審查已從標準移除（2026-06-02）**，不再設 `claude-code-review.yml` / `claude.yml` 或 Drone `claude-review` pipeline。Copilot 自訂指示模板見 `references/code-review-setup.md`。
+> Code review：依 repo `CLAUDE.md` 與 `jt-flow-review-orchestration` 的 Skill-driven contract 執行。CodeRabbit auto-review 關閉並明確 request App 一次、Copilot 一次、Codex 被動。**自動 Claude PR 審查已從標準移除**，不再設 `claude-code-review.yml` / `claude.yml` 或 Drone `claude-review` pipeline。Copilot 自訂指示模板見 `references/code-review-setup.md`。
 
 ---
 
@@ -470,7 +470,7 @@ Code Review 的 `claude-code-review.yml` / `claude.yml`（及 Drone
 
 1. 在來源 repo 修復（PR 含 root cause 分析）。
 2. **同步**回填到此模板（`references/ci-workflow-templates.md`）+ SKILL.md 相關章節。
-3. 在 `jurislm-tools` 開 issue 追蹤其他 repo 是否需同步。
+3. 在 active Spectra proposal 的 Delivery Relations 記錄其他 adoption target 與 acceptance dependency。
 
 **禁止**：只修單一 repo 不回填模板 → 下一個 repo 仍會踩同個雷。
 

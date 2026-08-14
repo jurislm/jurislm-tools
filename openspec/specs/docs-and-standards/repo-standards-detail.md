@@ -4,6 +4,18 @@
 
 描述 `repo-standards` plugin 的設計內容，審查並套用 JurisLM 各 repo 的統一設定規範，涵蓋 Release workflow、ESLint、Git worktree、Bun runtime 與 Vitest 設定。
 
+## 變更追蹤與 Code Review
+
+非瑣碎變更只以 active Spectra change 的 `proposal`、`design`、`specs`、`tasks`
+作為追蹤紀錄；不建立、不引用、也不依賴 GitHub Issue。跨 repo adoption target
+與 acceptance dependency 記錄在 proposal 的 Delivery Relations。
+
+PR review 與 merge 以 repo `CLAUDE.md` 和 `jt-flow-review-orchestration` 為唯一操作
+契約：invoke `superpowers:requesting-code-review`、以
+`superpowers:receiving-code-review` 處置 findings、resolve threads，並通過 CI、
+mergeability 與外部 review gates。`repo-standards` 只負責設定 CodeRabbit 的一次明確
+App review、Copilot 指示與無自動 Claude review pipeline 等前置條件。
+
 ## 產物
 
 | 產物 | 路徑 | 說明 |

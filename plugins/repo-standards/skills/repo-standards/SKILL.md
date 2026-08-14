@@ -63,6 +63,15 @@ argument-hint: "[repo-name]"
 
 ---
 
+## 變更追蹤：只用 Spectra
+
+非瑣碎變更一律建立或沿用一個 Spectra change，並以
+`proposal → design → specs → tasks` 作為唯一追蹤與授權紀錄。不要建立、引用或
+依賴 GitHub Issue。標準變更影響其他 adoption target 時，在 active proposal 的
+Delivery Relations 記錄目標與 acceptance dependency；完成後由 archive 留下歷史。
+
+---
+
 ## Git Worktree 規則
 
 **GitHub Flow 單段式：main worktree（根目錄）永遠保持在 `main` 分支，不做 feature commits；每個需求／功能直接從 `main` 建立獨立 feature worktree，沒有 `develop` 分支這一段。**
@@ -489,7 +498,7 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 
 ### 規範回填協議
 
-當任一 repo 的 `.drone.yml` 發現新陷阱：在來源 repo 修復（PR 含 root cause）→ **同步**回填 `references/ci-workflow-templates.md` + 本檔 → 開 issue 追蹤其他 repo。**禁止**只修單一 repo 不回填。
+當任一 repo 的 `.drone.yml` 發現新陷阱：在來源 repo 修復（PR 含 root cause）→ **同步**回填 `references/ci-workflow-templates.md` + 本檔 → 在 active Spectra proposal 的 Delivery Relations 記錄其他 adoption target。**禁止**只修單一 repo 不回填。
 
 ---
 
@@ -518,13 +527,26 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 
 ## Code Review 設定
 
-標準**不含**自動 Claude PR 審查（2026-06-02 移除：`claude-code-review.yml` / `claude.yml` / Drone `claude-review` pipeline 皆不再設定，`CLAUDE_CODE_OAUTH_TOKEN` secret 不需要）。code review 採三層：
+PR review 與 merge 的唯一操作契約是 repo 的 `CLAUDE.md` 與
+`jt-flow-review-orchestration`。建立 PR 後必須 invoke
+`superpowers:requesting-code-review`；收到 finding 時以
+`superpowers:receiving-code-review` 逐項處置、修正或記錄具體拒絕理由，並 resolve
+所有 review thread。合併前還必須符合 CI、`MERGEABLE`／`CLEAN`、Copilot 與
+CodeRabbit gate。
 
-- **人工 `/code-review`**：發 PR 前必跑多角度 review（見全域 CLAUDE.md PR 流程）。
-- **Bot 自動審查**（獨立運作、無需額外 CI 設定）：**CodeRabbit**（PR 自動回審）+ **GitHub Copilot**（透過 `.github/copilot-instructions.md` 客製化指示；首行加「請使用繁體中文回覆所有問題與建議。」；模板見 `references/code-review-setup.md`）。
-- **Review 發布**：正式 review 用 `gh pr review <number> --comment --body-file review.md`（顯示在 Reviews 區），**勿**用 `gh pr comment`（發到一般留言區）。
+repo 設定必須提供以下前置條件：
 
-> 為何移除自動 Claude 審查：用戶決定改回人工 `/code-review` + bot；自動 Claude pipeline 每 PR 計費且維運成本高。
+- CodeRabbit：`.coderabbit.yaml` 設定 `reviews.auto_review.enabled: false`，每個 PR
+  只明確 request App 一次；CLI 只依 canonical contract 作為 App 無法產生有效 review
+  時的 fallback。
+- Copilot：建立針對 repo 客製化的 `.github/copilot-instructions.md`；每個 PR 一次
+  review budget。
+- Codex：被動審查，不主動觸發或等待。
+- 不設定自動 Claude PR review pipeline：不新增 `claude-code-review.yml`、`claude.yml`
+  或 Drone `claude-review`，也不需要 `CLAUDE_CODE_OAUTH_TOKEN`。
+
+完整的 consent、secret preflight、外部審查預算與 gate 細節只以 canonical contract
+為準，避免在此複製而 drift。
 
 ---
 
@@ -534,6 +556,7 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 
 **快速概覽**（各類別必做項）：
 - **AGENTS.md**：若 repo 內存在 `AGENTS.md`，更新為讀取同層或 repo 根目錄 `CLAUDE.md`；不要複製 CLAUDE 全文
+- **變更追蹤**：非瑣碎變更只用 Spectra `proposal → design → specs → tasks`；不建立 GitHub Issue，跨 repo 目標記在 proposal 的 Delivery Relations
 - **Worktree**：feature worktree 直接從 main 建立於 `.claude/worktrees/<change-name>`，不建立 develop；`.claude/worktrees/` 不進 `.gitignore`（由 Claude Code runtime 本地排除）
 - **Bun**：`"packageManager": "bun@1.3.14"`，scripts 換成 `bun run vitest` 等
 - **Release**：Drone repo 使用 `main`-only release pipeline，依序執行固定精確版本的 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`，並由同一 trusted delivery 的 source-controlled validator 自動合併 release PR；無人工 fallback
@@ -543,4 +566,4 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.claude/worktrees/`
 - **CI**：Drone repo 的檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；plugin repo 若選 Drone，validation 與 release 一起遷移並移除重疊 GHA
 - **CD**（Coolify web app）：`.drone.yml` 加 `build`、`deploy`、`release-pr-auto-merge` 三個 pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
-- **Code Review**：人工 `/code-review` + bot（CodeRabbit / Copilot via `.github/copilot-instructions.md`）；**無**自動 Claude review（2026-06-02 移除）
+- **Code Review**：依 `CLAUDE.md`／`jt-flow-review-orchestration` invoke Skill-driven review；CodeRabbit 一次明確 App request、Copilot 一次、Codex 被動；**無**自動 Claude review

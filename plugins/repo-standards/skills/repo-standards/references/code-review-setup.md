@@ -1,6 +1,6 @@
 # Code Review 設定（Copilot 自訂指示）
 
-> **2026-06-02**：自動 Claude PR 審查（`.github/workflows/claude-code-review.yml` / `claude.yml` / Drone `claude-review` pipeline）已從 repo-standards 移除。本檔僅保留 **GitHub Copilot 自訂指示**模板；code review 整體做法（人工 `/code-review` + bot）見 SKILL.md「Code Review 設定」。
+> 自動 Claude PR 審查（`.github/workflows/claude-code-review.yml` / `claude.yml` / Drone `claude-review` pipeline）已從 repo-standards 移除。本檔只保留 **GitHub Copilot 自訂指示**模板；review 的唯一操作契約見 repo `CLAUDE.md` 與 `jt-flow-review-orchestration`，設定摘要見 SKILL.md「Code Review 設定」。
 
 ## Copilot 自訂指示檔案
 
