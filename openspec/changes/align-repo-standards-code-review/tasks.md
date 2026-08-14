@@ -20,4 +20,4 @@
 - [x] 3.8 Per-item gates remain effective：讓 `AWAITING_GO` 與 `READY` 比對只綁定 change、proposal、repo、scope 與 durable evidence，並以 queue delta 驗證。
 - [x] 3.9 Queue inventory uses refreshed remote truth：讓乾淨 remote snapshot 只建立 Spectra inventory，並以 queue delta 與 queue execution test 驗證。
 - [x] 3.10 Proposals declare delivery relations：讓 queue relation metadata 不含 GitHub Issue mapping，並以 queue delta 驗證。
-- [ ] 3.11 全量驗證與 PR 處置：執行 strict validate、analyze、targeted test、`npm run validate`、`claude plugin validate .`、`git diff --check`；回覆並 resolve 每個已修正 review thread。
+- [x] 3.11 全量驗證與 PR 處置：執行 strict validate、analyze、targeted test、`npm run validate`、`claude plugin validate .`、`git diff --check`；回覆並 resolve 每個已修正 review thread。
