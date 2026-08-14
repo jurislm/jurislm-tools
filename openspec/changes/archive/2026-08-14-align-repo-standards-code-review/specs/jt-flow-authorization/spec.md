@@ -1,6 +1,6 @@
 ## MODIFIED Requirements
 
-### Requirement: Explicit invocation authorizes OpenSpec preparation
+### Requirement: Explicit invocation authorizes Spectra preparation
 
 An explicit `jt-flow-one` invocation SHALL authorize repository-scoped
 discovery and Spectra artifact creation or update without additional
