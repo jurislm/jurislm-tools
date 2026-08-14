@@ -19,8 +19,8 @@ claude plugin install jt-flow@jurislm-tools
 
 `jt-flow-one` 以 proposal GO 作為唯一正常停頓點：明確呼叫先授權 OpenSpec 準備；
 GO 後即授權實作、push、PR、review finding 處置、merge、部署驗收與歸檔，不再逐項
-確認。既有 GitHub Issue 只作 optional external context，不是建立、GO、queue 或歸檔
-前置條件。只有證據無法排除的目標歧義、重大範圍／架構／依賴／
+確認。Spectra artifacts 是唯一交付與追蹤紀錄；不建立、引用或依賴 GitHub Issue。
+只有證據無法排除的目標歧義、重大範圍／架構／依賴／
 production 風險變更、secret 或敏感 payload、缺少權限或平台強制 approval、未揭露
 的破壞性 production mutation，以及高風險 rollback 才暫停。`jt-flow-all` 沿用可
 證實且已記錄的 proposal GO，不因 queue context 重複詢問。

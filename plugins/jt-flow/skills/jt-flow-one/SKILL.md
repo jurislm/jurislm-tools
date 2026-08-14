@@ -24,12 +24,12 @@ description: >
 
 使用者明確點名／呼叫 `jt-flow-one`，即授權本 Skill 在目標 repository 內完成
 現況盤點與建立或更新 OpenSpec artifacts，不需為這些 proposal 準備動作逐項確認；
-若需求來自既有 GitHub Issue，可將其記為 optional external context，但不得要求、
-建立或更新 Issue 才能繼續；proposal GO 之前仍不得建立 feature worktree 或進入實作。
+Spectra artifacts 是唯一 current planning record；不建立、引用或依賴 GitHub Issue。
+proposal GO 之前仍不得建立 feature worktree 或進入實作。
 
 使用者對 proposal 明確給出 GO，即授權本 Skill 在已核准範圍內連續完成實作、
 commit、push、建立 PR、已揭露的 review request、finding 處置、merge、部署驗收、
-OpenSpec 歸檔。Issue 的建立、更新與關閉均為 optional，不是 approval 或 completion gate。
+Spectra 歸檔。GitHub Issue 不屬於此流程，也不是 approval 或 completion gate。
 正常交付鏈不得重複詢問授權，也不得把驗證 gate
 誤當成使用者 approval gate；不再尋求額外授權或重複確認。
 
@@ -105,7 +105,7 @@ Context7、Exa、Firecrawl **各派一個 agent 平行查**（`model: sonnet`，
 | 工具       | 強項                                       |
 | ---------- | ------------------------------------------ |
 | Context7   | 官方文件、API 參考、函式簽名               |
-| Exa        | 搜尋摘要、GitHub issue、討論串、社群報告   |
+| Exa        | 搜尋摘要、GitHub PR、討論串、社群報告      |
 | Firecrawl  | 整頁全文、整站批次、需互動或分頁的來源     |
 
 交叉比對時明確區分「官方文件明說」與「社群經驗／推測」，並標註分歧。查不到就說查不到，
@@ -334,7 +334,7 @@ design／specs delta／tasks，不只改一份，記錄新方案與 why）→ �
 只有同時滿足下列三者才另立 OpenSpec change：與當前提案的交付目標無關（不同
 capability）、不阻塞當前交付、且不修也不會讓當前交付變成半成品。即使如此也**只
 建立 change 記錄，不當場建 worktree**——等當前這顆合併回 main 之後，再依優先序
-決定要不要開。既有 GitHub Issue 只作 optional external context，不改變上述判斷。
+決定是否建立或沿用 Spectra change；GitHub Issue 不屬於此流程。
 
 ⚠️ **delegated 執行（由 `jt-flow-all` 委派）時的例外**：若新問題屬於不同
 capability **且會阻塞交付**，不得自行吸收進提案。那會改變 coordinator 已比對過的
@@ -360,8 +360,7 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
 1. 建立／沿用 OpenSpec 提案
    - 先查有無相關既有提案：`ls openspec/changes/`（active）+
      `openspec/changes/archive/`，grep 各 proposal.md 比對需求關鍵詞
-   - 若需求來自既有 GitHub Issue，只記 optional external context link；不得搜尋、
-     建立、更新或關閉 Issue 才能建立 proposal 或繼續流程
+   - 不建立、引用或依賴 GitHub Issue；只以 Spectra change artifacts 記錄需求與交付
    - 只命中 1 個 active 提案且範圍明確相符 → 沿用，用 `/spectra-apply` 或
      直接編輯既有 4 artifacts（依提案同步鐵則）；只命中 1 個 active 提案但用
      proposal、specs、tasks、code 與使用者需求仍無法明確證實範圍相符 → 視為
@@ -384,7 +383,7 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
      approval status、change identifier、proposal 路徑、目標 `<owner>/<repo>`、
      已核准範圍、可回溯的 proposal GO evidence
      （例如該 task context 的明確 `GO` 訊息與時間）及 CodeRabbit consent
-     狀態；若有 optional external context 可一併記錄，但不得把 Issue 當成必要欄位。
+     狀態；不得記錄 GitHub Issue link。
      不得記錄 secret 或敏感 payload。此檔是後續 resume／queue reuse
      的 durable evidence；只憑「應該曾經核准」或無法對應目前 proposal 的
      對話摘要不得沿用。
@@ -435,7 +434,7 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
    下列 push／PR 鏈；其他情況直接進行：
    `git push -u <remote> <change-name>` → `gh pr create --repo
    <owner>/<repo> --base main --head <change-name> ...` 開 PR：
-   <change-name> → main（PR body 可選附上既有 Issue link）→ 記下
+   <change-name> → main → 記下
    PR number；PR labels 與 assignee 是兩個獨立 API 呼叫，依「PR 必做」
    分別補（`<owner>/<repo>` 皆為前置檢查步驟 2 解析出的同一目標）：
    labels 用 `gh api repos/<owner>/<repo>/issues/<pr-num>/labels -f
@@ -512,8 +511,7 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
    部署平台手動重新部署；宣稱 prod 驗收通過前用
    verification-before-completion 跑實際請求／截圖／log 佐證
 
-6. main 驗收無誤後，`/spectra-archive` 歸檔整個 <change-name>；若有 optional
-   Issue link，是否關閉不構成流程 gate。
+6. main 驗收無誤後，`/spectra-archive` 歸檔整個 <change-name>。
 
 ## 例外／不適用情境
 

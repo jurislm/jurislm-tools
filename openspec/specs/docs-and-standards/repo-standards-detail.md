@@ -4,12 +4,31 @@
 
 描述 `repo-standards` plugin 的設計內容，審查並套用 JurisLM 各 repo 的統一設定規範，涵蓋 Release workflow、ESLint、Git worktree、Bun runtime 與 Vitest 設定。
 
+## 變更追蹤與 Code Review
+
+開始非瑣碎變更前，先確認 `spectra --version`；目標 repo 缺少 `openspec/` 或
+`.spectra.yaml` 時先執行 `spectra init`。完成後只以 active Spectra change 的
+`proposal`、`design`、`specs`、`tasks` 作為追蹤紀錄；不建立、不引用、也不依賴
+GitHub Issue。跨 repo adoption target 與 acceptance dependency 記錄在 proposal 的
+Delivery Relations。
+
+PR review 與 merge 以目標 repo 自身 `CLAUDE.md` 為唯一操作契約；缺少時先採用
+repo-standards packaged `review-orchestration-template.md` 並依 target 客製化。契約中
+invoke `superpowers:requesting-code-review`、以
+`superpowers:receiving-code-review` 處置 findings、resolve threads，並通過 CI、
+mergeability 與外部 review gates。`repo-standards` 只負責設定 CodeRabbit 的一次明確
+App review、Copilot 指示與無自動 Claude review pipeline 等前置條件。
+
+目標 repo 使用 `jt-flow-all` 時，它只協調 Spectra change queue；每個 delegated
+item 仍由 `jt-flow-one` 發起並擁有本地 review，`jt-flow-all` 不發起額外 review。
+
 ## 產物
 
 | 產物 | 路徑 | 說明 |
 |------|------|------|
 | `repo-standards` skill | `plugins/repo-standards/skills/repo-standards/SKILL.md` | 規範主體 |
 | `/repo-standards` command | `plugins/repo-standards/commands/repo-standards.md` | 入口 command |
+| review orchestration template | `plugins/repo-standards/skills/repo-standards/references/review-orchestration-template.md` | 寫入 target `CLAUDE.md` 的可攜 review 契約 |
 | code-review-setup reference | `plugins/repo-standards/skills/repo-standards/references/code-review-setup.md` | Copilot 自訂指示設定（自動 Claude review 已移除，2026-06-02）|
 | eslint-templates reference | `plugins/repo-standards/skills/repo-standards/references/eslint-templates.md` | ESLint 設定模板 |
 | ci-workflow-templates reference | `plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md` | Flat-repo 與 monorepo Drone CI 模板 |

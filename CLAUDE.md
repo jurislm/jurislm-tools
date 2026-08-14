@@ -140,6 +140,10 @@ apply, ingest, verify, archive, and commit changes; the remaining `opsx:*`
 files are legacy compatibility surfaces and must not be used for new proposal
 work. Artifact order is `proposal → design → specs → tasks`.
 
+This repository SHALL use a Spectra change as its only change-tracking record.
+Do not create, link, or depend on GitHub Issues for proposal, implementation,
+review, release, or archive work.
+
 Some legacy detail specs remain historical. For current marketplace membership, prefer `.claude-plugin/marketplace.json`, plugin manifests, and the repository integrity checker. When changing an owned area, update its living OpenSpec documentation in the same proposal. For an active OpenSpec delta that changes a deployed requirement, keep the living spec at deployed behavior until the successor change is archived; the delta must modify the existing requirement by its exact name rather than silently pre-applying the successor to the living spec.
 
 `jt-flow` depends on externally installed `superpowers:*` Skills. Preserve that dependency unless a proposal explicitly replaces it.
@@ -152,8 +156,7 @@ pipelines would create the prohibited parallel record. It retains the scoped
 Superpowers execution and verification skills required by its approved workflow.
 
 For `jt-flow-one`, proposal GO is the sole normal-path checkpoint. Explicit
-invocation authorizes OpenSpec preparation; an existing Issue may be recorded
-as optional external context but is never required. Proposal GO authorizes
+invocation authorizes OpenSpec preparation. Proposal GO authorizes
 implementation, commits, push, PR, disclosed reviews, finding disposition,
 merge, deployment verification, and archive. Do not add another
 normal authorization prompt for those actions. After GO, pause only for
@@ -198,7 +201,7 @@ alone owns its isolated worktree and delivery. Do not dispatch partial change
 tasks. An item reaches `INTEGRATION_READY` only after its implementation,
 required tests, `jt-flow-one` quality review, PR checks, review disposition,
 and current HEAD readback. Keep merge and all production mutation in one
-integration lane: issue at most one permit whose repository, change, item HEAD
+integration lane: grant at most one permit whose repository, change, item HEAD
 SHA, verified remote-main SHA, required-check set and terminal-success results,
 current mergeability result, and readback time exactly match the owner. Fail
 closed and reread all fields at grant and immediately before merge or production

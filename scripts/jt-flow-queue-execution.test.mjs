@@ -141,13 +141,15 @@ test("queue inventory is built from a clean refreshed remote main snapshot", () 
   assert.match(snapshotSection, /fetch.*prune|fetch.*--prune/i);
   assert.match(snapshotSection, /clean detached snapshot.*<remote>\/main|乾淨.*detached.*<remote>\/main/is);
   assert.match(snapshotSection, /never from a dirty or stale\s+caller worktree/);
-  assert.match(snapshotSection, /all active\s+OpenSpec changes/);
+  assert.match(snapshotSection, /all active\s+Spectra changes/);
 });
 
-test("queue derives execution units from OpenSpec without requiring Issue inventory", () => {
+test("queue derives execution units from Spectra without GitHub Issue inventory", () => {
   const dispatchSection = getDispatchSection();
 
-  assert.match(snapshotSection, /read all active\s+OpenSpec changes/);
+  assert.match(snapshotSection, /read all active\s+Spectra changes/);
+  assert.match(snapshotSection, /Spectra artifacts[\s\S]*only queue inputs/i);
+  assert.match(snapshotSection, /do not create, read, link, or depend on GitHub Issues/i);
   assert.doesNotMatch(snapshotSection, /paginate all open Issues/);
   assert.doesNotMatch(snapshotSection, /primary Issue|Issue mapping/);
   assert.doesNotMatch(dispatchSection, /Issue mapping|primary Issue/);
@@ -168,7 +170,7 @@ test("remote-main drift rebuilds the entire dependency snapshot before dispatch 
 test("proposal relations gate whole-change dispatch and derive descendant-only impact", () => {
   assert.match(snapshotSection, /Priority[\s\S]*Hard dependencies[\s\S]*Acceptance dependencies[\s\S]*External blockers[\s\S]*Affected areas[\s\S]*Production targets/);
   assert.doesNotMatch(snapshotSection, /Issue mapping|primary Issue/);
-  assert.match(snapshotSection, /Each whole active\s+change is one execution unit/);
+  assert.match(snapshotSection, /Each whole active\s+Spectra change is one execution unit/);
   assert.match(scopeSection, /dispatch only a subset of a change's tasks/);
   assert.match(fixedStateSection, /Hard dependencies prevent dispatch[\s\S]*`SUCCESS`/);
   assert.match(fixedStateSection, /Acceptance dependencies permit work through[\s\S]*`INTEGRATION_READY`[\s\S]*integration permit/);
@@ -182,7 +184,7 @@ test("waiting, blocking, pausing, failure, and cancellation isolate unrelated re
   assert.match(fixedStateSection, /dispatch unrelated `READY` changes/);
   assert.match(fixedStateSection, /`PAUSED`; it consumes no item-owner capacity/);
   assert.match(snapshotSection, /acceptance-only and mixed hard\/acceptance cycles[\s\S]*block cycle members and their descendants/i);
-  assert.match(snapshotSection, /unrelated Issues remain outside the execution graph|unrelated `READY` changes/);
+  assert.match(snapshotSection, /unrelated\s+nodes remain eligible/);
 });
 
 test("coordinator reserves one slot and hands each ready item to jt-flow-one", () => {

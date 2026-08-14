@@ -318,7 +318,7 @@ test("jt-flow-one uses OpenSpec as the sole current planning record", () => {
   }
 });
 
-test("OpenSpec-only delivery does not require a tracking issue", () => {
+test("Spectra-only delivery does not use GitHub Issue tracking", () => {
   const flow = sectionContaining(oneSkill, "流程");
   const contract = sectionContaining(oneSkill, "端到端授權契約");
   const executionContract = normalize(
@@ -326,7 +326,11 @@ test("OpenSpec-only delivery does not require a tracking issue", () => {
   );
 
   assert.match(flow, /需求.*OpenSpec.*proposal GO.*實作.*PR/s);
-  assert.match(flow, /Issue.*(?:可選|選用|optional)/i);
+  assert.match(contract, /Spectra artifacts.*唯一.*planning record/i);
+  assert.match(flow, /不建立、引用或依賴 GitHub Issue/i);
+  assert.match(contract, /GitHub Issue 不屬於此流程/i);
+  assert.doesNotMatch(flow, /Issue.*(?:可選|選用|optional)/i);
+  assert.doesNotMatch(contract, /Issue.*(?:可選|選用|optional)/i);
   assert.doesNotMatch(flow, /建立／沿用追蹤 issue/);
   assert.doesNotMatch(contract, /tracking issue/i);
   assert.doesNotMatch(executionContract, /issue identifier/i);

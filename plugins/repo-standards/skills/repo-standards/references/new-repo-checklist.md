@@ -8,6 +8,10 @@
 2. [ ] 不把 `CLAUDE.md` 全文複製進 `AGENTS.md`，避免兩份規範 drift
 3. [ ] 若 repo 內沒有 `AGENTS.md`，不主動新增，除非使用者明確要求
 
+## Spectra 初始化與變更追蹤
+
+開始非瑣碎變更前，執行 `spectra --version`；若目標 repo 沒有 `openspec/` 或 `.spectra.yaml`，先在根目錄執行 `spectra init`。完成後只使用 active Spectra change 的 `proposal`、`design`、`specs`、`tasks` 作為追蹤與授權紀錄。跨 repo adoption target 與 acceptance dependency 記錄在 proposal 的 Delivery Relations。
+
 ## Git Worktree
 
 4. [ ] 確認 main worktree 在 `main` 分支：`git branch --show-current`
@@ -66,18 +70,19 @@
 37. [ ] release eligibility 的 Compare request 綁定 immutable `DRONE_COMMIT`，只走 first-parent mainline 回到已發布 tag；side branch 的中間提交不得當作 release subject，path 無法驗證時 fail closed
 38. [ ] 行為驗證：無 candidate、candidate base 已由較新 delivery 接手、候選等待時 main 已改變、GitHub 拒絕 stale merge 且 main 已改變，四者都是成功 no-op；其他 mismatch fail closed；不得使用 `pull_request_target`、candidate-head execution、PR write token 或直接 ref update
 
-## Code Review（人工 + bot；無自動 Claude review）
+## Code Review（Skill-driven；無自動 Claude review）
 
 > 2026-06-02：自動 Claude PR 審查（`claude-code-review.yml` / `claude.yml` / Drone `claude-review`）已從標準移除。
 
-39. [ ] **人工 `/code-review`**：發 PR 前必跑多角度 review（見全域 CLAUDE.md PR 流程）
-40. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）；CodeRabbit 為 PR 自動回審，獨立運作無需設定
-41. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）
+39. [ ] 將 `references/review-orchestration-template.md` 的 `PR review and merge contract` 寫入目標 repo `CLAUDE.md`，依 required checks 與部署方式客製化；建立 PR 後 invoke `superpowers:requesting-code-review`，finding 以 `superpowers:receiving-code-review` 逐項處置，accepted finding 修正驗證、rejected finding 記錄具體理由，並 resolve 全部 review thread
+40. [ ] 建立 `.coderabbit.yaml`，設定 `reviews.auto_review.enabled: false`；每個 PR 只明確 request CodeRabbit App 一次，僅在 App 無法產生有效 review 時依 canonical contract 使用 CLI fallback
+41. [ ] 建立 `.github/copilot-instructions.md`（**必須針對此 repo 客製化**，首行加入 `請使用繁體中文回覆所有問題與建議。`，並包含：project overview、git workflow、tool/module 分類、key design decisions、code conventions、code review 重點、auto-generated files 列表）；每個 PR 一次 Copilot review budget，Codex 為被動審查不主動觸發或等待
+42. [ ] 視需要在 `.github/instructions/` 建立路徑特定指示（加 `applyTo` frontmatter）；合併前確認 CI 全綠、`MERGEABLE`／`CLEAN`、Copilot 與 CodeRabbit 無未處理意見；不設定自動 Claude PR review pipeline
 
 ## 發版收尾（每次合併進 main 後必做）
 
 > 詳見 `references/ci-workflow-templates.md`「部署收尾」。
 
-42. [ ] **確認 CI 真的被觸發**：合併後查 `gh api repos/jurislm/<repo>/hooks/<id>/deliveries`（push 事件是否送達）+ Drone builds list 有對應 commit 的 push build（GitHub 偶爾漏發 push webhook）
-43. [ ] **確認 release-please 自動開的 release PR**（`chore(main): release X.Y.Z`）由同一 trusted main delivery 的 validator 以 GitHub protected PR squash merge 自動合併；release PR 不得保留 manual merge fallback，未通過時維持候選開啟並 fail closed
-44. [ ] release PR 自動合併後再次確認其 push build 觸發 + 精確版本的 `github-release` 有跑（tag 已建）；若 webhook 漏發，修復 delivery 後由新的 trusted main delivery 重試，不手動執行 write command
+43. [ ] **確認 CI 真的被觸發**：合併後查 `gh api repos/jurislm/<repo>/hooks/<id>/deliveries`（push 事件是否送達）+ Drone builds list 有對應 commit 的 push build（GitHub 偶爾漏發 push webhook）
+44. [ ] **確認 release-please 自動開的 release PR**（`chore(main): release X.Y.Z`）由同一 trusted main delivery 的 validator 以 GitHub protected PR squash merge 自動合併；release PR 不得保留 manual merge fallback，未通過時維持候選開啟並 fail closed
+45. [ ] release PR 自動合併後再次確認其 push build 觸發 + 精確版本的 `github-release` 有跑（tag 已建）；若 webhook 漏發，修復 delivery 後由新的 trusted main delivery 重試，不手動執行 write command
