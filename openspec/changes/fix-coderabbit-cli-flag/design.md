@@ -1,0 +1,43 @@
+# Design
+
+## Evidence
+
+| id | readback | expected | on-failure |
+| --- | --- | --- | --- |
+| D1 | `coderabbit review --help` | option list contains `--committed`; `--type` appears nowhere | stop — the whole change rests on this |
+| D2 | `grep -n 'coderabbit review' plugins/jt-flow/skills/jt-flow-one/SKILL.md` | exactly three hits: `:238` (the `--help` preflight, correct), `:247`, `:479` | stop — a fourth site means the fix is incomplete |
+
+D1 was run on 2026-08-16 (Taiwan time) against CLI 0.7.3; the full output is in
+`verification-logs/2026-08-16-cli-flag-readback.md`. D2 was run on the same
+checkout and returned exactly those three lines.
+
+## Decision — correct the prescribed command, and say where the truth lives
+
+**Chosen.** Replace the flag at both sites, and attach one sentence stating the
+spelling comes from `--help` at invocation time.
+
+The one sentence is the part that matters beyond today. A CLI flag is external
+state this repository does not control, so a literal command in a skill is a
+snapshot that expires silently — nothing here fails when the CLI renames a flag,
+and the failure surfaces only in the one place that cannot absorb it (a spent,
+non-retryable fallback). Correcting the spelling alone fixes the current
+instance and leaves the mechanism intact.
+
+`:238` already requires the `--help` preflight, so the instruction is not new;
+what is new is putting it where the copyable command is, because a reader who
+copies line 247 has no reason to scroll up.
+
+**Rejected: delete the concrete command and keep only "read `--help`".** The
+command carries more than the flag spelling — `--agent` for structured output
+and `--base <remote>/main` for the range. Removing it would trade a stale flag
+for an under-specified invocation.
+
+**Rejected: leave the authority and keep patching downstream.** That is what
+`jurislm/entire` is doing now, and it multiplies with every repo that adopts
+`jt-flow`. The counter-example note there is a symptom, not a fix.
+
+## Scope boundary
+
+Nothing else in the CodeRabbit lane moves. The budget, the routing, the
+terminal-state definition, and the authorization and disclosure contract are
+untouched — this change corrects one factual error and nothing else.

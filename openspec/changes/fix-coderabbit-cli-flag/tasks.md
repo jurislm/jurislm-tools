@@ -1,0 +1,56 @@
+# Tasks
+
+## Phase 0 — preconditions (stop on failure)
+
+- [x] `0.1` Read back the CLI flags. `coderabbit review --help`. **Expected:**
+      option list contains `--committed`; `--type` appears nowhere.
+      **Actual:** confirmed against CLI 0.7.3 on 2026-08-16 (Taiwan time); full
+      output saved to
+      `openspec/changes/fix-coderabbit-cli-flag/verification-logs/2026-08-16-cli-flag-readback.md`.
+      **On failure:** stop.
+- [x] `0.2` Enumerate every prescribed invocation.
+      `grep -n 'coderabbit review' plugins/jt-flow/skills/jt-flow-one/SKILL.md`.
+      **Expected:** exactly three hits — `:238` (the `--help` preflight,
+      already correct), `:247`, `:479`. **Actual:** exactly those three.
+      **On failure:** stop — a fourth site means the fix is incomplete.
+
+## Phase 1 — correct the skill
+
+- [x] `1.1` In `plugins/jt-flow/skills/jt-flow-one/SKILL.md:247`, replace
+      `--type committed` with `--committed`, and state that the spelling is read
+      from `coderabbit review --help` at invocation time, never copied from a
+      document.
+- [x] `1.2` Apply the same correction and the same sentence at
+      `plugins/jt-flow/skills/jt-flow-one/SKILL.md:479`.
+- [x] `1.3` Re-run `grep -n 'coderabbit review' plugins/jt-flow/skills/jt-flow-one/SKILL.md`
+      and confirm zero remaining `--type` occurrences across the whole plugin
+      tree: `grep -rn -- '--type committed' plugins/` returns nothing.
+      **Actual:** both invocation sites now read `--committed`; the plugin-tree
+      grep returns nothing.
+- [x] `1.4` Satisfy `External tool invocations name their source of truth`:
+      both corrected sites state that the flag spelling is read from
+      `coderabbit review --help` at invocation time and is never taken from
+      this file, any document, or an archived change.
+
+## Phase 2 — validation
+
+- [x] `2.1` `npm ci && npm run validate` from the repository root. **Actual:**
+      plugin repository validation passed, version sync OK (1.38.0), markdownlint
+      clean over the new OpenSpec artifacts.
+- [x] `2.2` `claude plugin validate .`. **Actual:** ✔ Validation passed.
+- [x] `2.3` `spectra validate --strict fix-coderabbit-cli-flag` and
+      `spectra analyze`. **Actual:** valid; analyze's only finding was the
+      requirement-without-task warning, resolved by `1.4`.
+- [x] `2.4` Confirm no release-managed version field was touched:
+      `git diff origin/main -- '*/plugin.json' '.claude-plugin/marketplace.json'`
+      **Actual:** empty (0 lines).
+
+## Phase 3 — delivery
+
+- [ ] `3.1` Commit as `fix:` (the prescribed command is incorrect behaviour, not
+      maintenance), push, and open the PR against `main`.
+- [ ] `3.2` Invoke `superpowers:requesting-code-review` through the Skill tool
+      and disposition every finding.
+- [ ] `3.3` Handle external reviewer comments per this repository's rules, then
+      merge once the gates pass. Archiving follows in its own PR, matching this
+      repository's existing pattern (#219, #222).

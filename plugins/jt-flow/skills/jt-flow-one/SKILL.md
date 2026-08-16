@@ -244,8 +244,12 @@ CodeRabbit 有兩個獨立管道，授權、資料範圍與 rate limit 不得混
   沒有該模式時須逐一掃描每個 commit patch 與其新增或修改的文字、binary 內容，
   同時掃描相對 `<remote>/main` 的完整 committed diff，以及每個明確傳給 `-c` 的
   instruction file。只在整段即將推送的 history 與本機 payload 都通過後，才執行
-  `coderabbit review --agent --type committed --base <remote>/main`
-  （有額外 instructions 才加 `-c <已列名且已掃描的檔案>...`）。CodeRabbit CLI
+  `coderabbit review --agent --committed --base <remote>/main`
+  （有額外 instructions 才加 `-c <已列名且已掃描的檔案>...`）。⚠️ **旗標拼法一律以呼叫當下
+  的 `coderabbit review --help` 為準，不以本行、任何文件或 archived change 為準**——CLI 是
+  本 repository 未版控的外部工具，寫死的指令會靜默過期；而它只在 App 已進終態後才被呼叫、
+  一次即耗盡 fallback，所以旗標錯的代價是該 PR 的外部審查 gate 直接無解（2026-08-16 實測
+  CLI 0.7.3：只有 `--committed`，無 `--type`）。CodeRabbit CLI
   可能依帳號／repository 設定自動使用 code guidelines、learnings 或 codebase history；
   本機預檢只能限制並驗證本機 change set 與明示 config，不能宣稱掌握服務端使用的
   每個 context byte。上述預先授權包含此已揭露的 CLI context 範圍。
@@ -476,7 +480,8 @@ exact GO，再決定併入本 item 或另立 change。單獨執行（非 delegat
      只有該次 App 要求進入終態且完全沒有產出真實 review，或明確回報 rate-limited、
      usage limited、quota exhausted、受限或無法審查，才停止等待 App，並在建立 PR
      後依上方預檢執行
-     `coderabbit review --agent --type committed --base <remote>/main`。CLI 若產出
+     `coderabbit review --agent --committed --base <remote>/main`（⚠️ 旗標拼法以呼叫當下的
+     `coderabbit review --help` 為準，不以本行為準——理由見上方預檢節）。CLI 若產出
      真實 review，即依 receiving-code-review 規則處理。CLI 一經呼叫即耗盡唯一
      fallback，無論是否產出真實 review、回報何種錯誤或中斷，都不得重試。
      CLI 若明確回報 rate limit、
