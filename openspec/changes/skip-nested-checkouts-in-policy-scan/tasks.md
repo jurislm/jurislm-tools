@@ -6,8 +6,12 @@
       `node --test scripts/jt-flow-review-policy.test.mjs` in a working tree
       that has sibling worktrees under `.claude/worktrees/`. **Expected:**
       `fail 1`. **On failure:** stop — nothing to fix.
-      **Actual:** `fail 1`, message `carries a CLI flag spelling the current
-      CodeRabbit CLI rejects`.
+      **Actual:** `fail 1`, message `a paragraph prescribes the CLI without
+      naming --help as the authority for its flag spelling`, pointing at
+      `.claude/worktrees/research-spectra-stale-in-progress-markers/CLAUDE.md`.
+      ⚠️ It is the `--help` assertion that fires, not the stale-spelling one —
+      two stale copies contain no `coderabbit review --help` at all and that
+      assertion runs first.
 - [x] `0.2` Confirm every hit is inside a nested checkout:
       `grep -rln -- '--type committed' .claude/`. **Expected:** only
       `.claude/worktrees/<branch>/…` paths. **On failure:** stop — a hit outside
@@ -44,6 +48,21 @@
       it did not disable the check. **Actual:** reintroducing `--type committed`
       into the skill → 8 pass / 1 fail; a new document prescribing the command
       without `--help` → 8 pass / 1 fail; clean → 9 pass / 0 fail.
+
+- [x] `1.6` Narrow the exemption after review: archived changes exempt from both
+      assertions, active change artifacts exempt only from the stale-spelling
+      one. The blanket version let an `openspec/changes/<active>/tasks.md`
+      prescribing the command without `--help` pass silently — the file
+      `spectra-apply` executes line by line.
+- [x] `1.7` Update `External tool invocations name their source of truth` via
+      `specs/jt-flow-review-orchestration/spec.md` delta, recording the widened
+      exclusion clause. **The earlier claim that the contract was
+      unchanged was wrong**: the living spec excluded only archived changes and
+      the change performing the correction, not every change artifact.
+- [x] `1.8` Re-run all four probes in the tree with nested worktrees.
+      **Actual:** baseline 9 pass; active-change `tasks.md` without `--help`
+      → 8 pass / 1 fail; active-change quoting `--type committed` → 9 pass;
+      skill reverted to `--type committed` → 8 pass / 1 fail.
 
 ## Phase 2 — validation
 

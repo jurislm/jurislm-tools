@@ -192,57 +192,63 @@ test("every prescribed CodeRabbit CLI invocation names --help as its flag author
   // 改為走訪檔案系統列舉 markdown,由內容決定要不要檢查。
   // ⚠️ 不用 `git ls-files`:CI 容器沒有 git(實測 build 125 `spawnSync git ENOENT`),
   // 而這支測試必須在本機與 CI 行為一致。
-  const isCheckout = (dir) =>
-    readdirSync(dir, { withFileTypes: true }).some(
-      (entry) => entry.name === ".git",
-    );
-  const walk = (dir) =>
-    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+  // ⚠️ 跳過巢狀 checkout(目錄內含 `.git` 者,worktree 是檔案、submodule 亦然)。
+  // 本 repo 的工作流會在 .claude/worktrees/<change-name> 建 worktree,那裡是
+  // 「其他分支」的同名檔案——掃進去會讓本機恆紅而 CI(fresh clone)恆綠,紅燈
+  // 於是變成噪音。判準用「這個目錄是不是一個 checkout」而非寫死路徑:
+  // git worktree add 接受任何位置。
+  const walk = (dir) => {
+    const entries = readdirSync(dir, { withFileTypes: true });
+    if (dir !== "." && entries.some((entry) => entry.name === ".git")) return [];
+    return entries.flatMap((entry) => {
       const path = `${dir}/${entry.name}`;
       if (entry.isDirectory()) {
-        if (entry.name === "node_modules" || entry.name === ".git") return [];
-        // ⚠️ 跳過巢狀 checkout(內含 .git 者)。本 repo 的工作流會在
-        // .claude/worktrees/<change-name> 建 worktree,那裡放的是「其他分支」
-        // 的同名檔案,多數早於旗標修正——掃進去會讓本機恆紅而 CI(fresh clone)
-        // 恆綠,紅燈於是變成噪音。
-        // 判準用「這個目錄是不是一個 checkout」而非寫死 .claude/worktrees:
-        // git worktree add 接受任何路徑,寫死路徑只涵蓋今天的慣例。
-        return isCheckout(path) ? [] : walk(path);
+        return entry.name === "node_modules" || entry.name === ".git"
+          ? []
+          : walk(path);
       }
       return entry.name.endsWith(".md") ? [path.replace(/^\.\//, "")] : [];
     });
+  };
 
-  // openspec/changes/** 一律豁免:那裡是提案與歷史紀錄,合法地同時引述舊寫法
-  // 與新寫法(修正的 proposal 必須寫出它在修什麼)。指示性的指令只會出現在
-  // skill 與 CLAUDE.md,那才是讀者會複製的地方。
-  // ⚠️ 判準是「這個路徑是不是 change artifact」,不是某個 change 的名字——
-  // 前一版硬編了 fix-coderabbit-cli-flag,於是下一個提到舊寫法的 change 一
-  // 開檔就被判違規(2026-08-16 實測),與寫死 .claude/worktrees 是同一個毛病。
-  const isQuotingContext = (path) => path.startsWith("openspec/changes/");
-
-  const prescribing = walk(".")
-    .filter((path) => !isQuotingContext(path))
+  const documents = walk(".")
     .map((path) => [path, readFileSync(path, "utf8")])
     .filter(([, body]) => /coderabbit review/.test(body));
 
   assert.ok(
-    prescribing.length > 0,
-    "expected at least one document prescribing the CodeRabbit CLI",
+    documents.length > 0,
+    "expected at least one document mentioning the CodeRabbit CLI",
   );
 
-  for (const [name, document] of prescribing) {
-    const paragraphs = document
-      .split(/\n\s*\n/)
-      .filter((candidate) => /coderabbit review --agent/.test(candidate));
+  // archive 是不可變歷史:它記錄的是「當時怎麼做」,包含當時尚未修正的寫法。
+  // 兩條斷言都豁免它——去改 archive 才是錯的。
+  const isArchived = (path) => path.startsWith("openspec/changes/archive/");
 
-    for (const paragraph of paragraphs) {
+  // 斷言一:寫死指令的段落必須同時指出拼法從哪裡讀回。**除 archive 外全樹適用**。
+  // 特別是 active change 的 tasks.md——那是 spectra-apply 會逐條執行的檔案,
+  // 正是最不該失去這道防護的地方(2026-08-16 review 實測:豁免它會讓探針靜默通過)。
+  for (const [name, document] of documents) {
+    if (isArchived(name)) continue;
+    for (const paragraph of document.split(/\n\s*\n/)) {
+      if (!/coderabbit review --agent/.test(paragraph)) continue;
       assert.match(
         paragraph.replaceAll("\n", " "),
         /coderabbit review --help/,
         `${name}: a paragraph prescribes the CLI without naming --help as the authority for its flag spelling`,
       );
     }
+  }
 
+  // 斷言二:不得留下現行 CLI 會拒絕的拼法。這條額外豁免 active change 的
+  // artifacts——修正 drift 的提案必須寫出它在修什麼。
+  // ⚠️ 判準是「這個路徑是不是 change artifact」,不是某個 change 的名字:
+  // 前一版硬編 fix-coderabbit-cli-flag,下一個提到舊寫法的 change 一開檔就被
+  // 判違規。此處的擴大(spec 原文只寫「執行修正的那一個 change」)已寫進
+  // spec delta,不是靜默放寬。
+  const isChangeArtifact = (path) => path.startsWith("openspec/changes/");
+
+  for (const [name, document] of documents) {
+    if (isChangeArtifact(name)) continue;
     assert.doesNotMatch(
       document,
       /--type committed/,
