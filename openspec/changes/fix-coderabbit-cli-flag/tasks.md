@@ -55,9 +55,14 @@
       a spelling the current CLI rejects — rather than the literal flag, which
       would expire with the next CLI rename.
       **Actual:** `node --test scripts/jt-flow-review-policy.test.mjs` → 9 pass,
-      0 fail. Positive control run separately: both assertions were fed the
-      pre-fix text and both failed as required (2/2), so the test detects the
-      regression rather than passing vacuously.
+      0 fail. Positive control: adding one markdown file that prescribes the
+      command without naming `--help` turns the run into 8 pass / 1 fail, and
+      removing it restores 9 pass — so the test detects the regression rather
+      than passing vacuously.
+      ⚠️ The first implementation enumerated files with `git ls-files` and
+      passed locally but failed CI (Drone build 125: `spawnSync git ENOENT` —
+      the container has no `git`). Replaced with a `readdirSync` walk, which is
+      also strictly stronger: it catches untracked files too.
 
 ## Phase 2 — validation
 
