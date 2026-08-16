@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.38.2](https://github.com/jurislm/jurislm-tools/compare/v1.38.1...v1.38.2) (2026-08-16)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** 政策守衛掃描範圍與豁免改用結構判準，不寫死路徑名 ([2b84f36](https://github.com/jurislm/jurislm-tools/commit/2b84f3652e6befc9bc436bd50d5dbed5395dc348))
+
+
+### 📚 Documentation
+
+* **spectra:** archive coderabbit cli flag correction ([377f505](https://github.com/jurislm/jurislm-tools/commit/377f505b5da953b11ee45e4fd6188a3a88fcb152))
+
 ## [1.38.1](https://github.com/jurislm/jurislm-tools/compare/v1.38.0...v1.38.1) (2026-08-16)
 
 
