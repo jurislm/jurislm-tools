@@ -65,10 +65,10 @@
       skill reverted to `--type committed` → 8 pass / 1 fail.
 
 - [x] `1.9` Close the gap Codex raised (P2): an active change writing
-      `coderabbit review --type committed` **without** `--agent` matched neither
-      assertion — the `--help` one did not trigger, and the stale-spelling one
-      exempts change artifacts. Broadened the `--help` trigger from
-      `coderabbit review --agent` to `coderabbit review` followed by any flag.
+      the CLI command with the stale flag and **without** `--agent` matched
+      neither assertion — the `coderabbit review --help` one did not trigger,
+      and the stale-spelling one exempts change artifacts. Broadened that
+      trigger from `--agent` only to the CLI name followed by any flag.
       **Actual:** probe reproduced the hole (`9 pass` — silently green), and
       turns red (`8 pass / 1 fail`) after the change. All four earlier probes
       re-run and still behave as specified.

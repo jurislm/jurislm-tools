@@ -75,8 +75,8 @@ correction"), so it ships with a spec delta rather than as a silent widening.
 active change is broader than the living spec's clause. That widening is real and
 now ships as a delta rather than silently — but the residual risk it named (an
 active change carrying a copyable stale command) is closed from the other side:
-the `--help` assertion triggers on `coderabbit review` followed by any flag, not
-only `--agent`. A change artifact can therefore quote the stale spelling in prose,
+the `--help` assertion triggers on the CLI name followed by any flag, not only
+on `--agent`. A change artifact can therefore quote the stale spelling in prose,
 but cannot present a runnable invocation without naming where the spelling comes
 from. Distinguishing "quotation" from "prescription" by content was rejected — no
 syntactic signal separates them reliably, and a guard that guesses is worse than
@@ -99,7 +99,7 @@ nested worktrees:
 | active change's `tasks.md` prescribes the command, no `--help` | red | 8 pass / 1 fail |
 | active change's `tasks.md` quotes `--type committed` | green | 9 pass |
 | skill reverted to `--type committed` | red | 8 pass / 1 fail |
-| active change writes `coderabbit review --type committed` with no `--agent` | red | 8 pass / 1 fail (was silently green before `1.9`) |
+| active change writes the CLI command with the stale flag and no `--agent` | red | 8 pass / 1 fail (was silently green before `1.9`) |
 
 The second probe is the one review added; under the first attempt's blanket
 exemption it passed silently.
