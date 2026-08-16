@@ -1,7 +1,7 @@
 # CodeRabbit CLI flag readback
 
 Date: 2026-08-16 (Taiwan time)
-Binary: /Users/terrychen/.local/bin/coderabbit
+Binary: `coderabbit` resolved from PATH (`command -v coderabbit`)
 Version: 0.7.3
 
 `coderabbit review --help` — full output:

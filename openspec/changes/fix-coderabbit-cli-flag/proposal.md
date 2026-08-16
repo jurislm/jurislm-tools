@@ -34,11 +34,18 @@ trying to remove.
 
 ## What Changes
 
-- Replace `--type committed` with `--committed` at both `SKILL.md:247` and
-  `:479`.
-- State at both sites that the spelling is re-read from `coderabbit review
+- Replace `--type committed` with `--committed` at **all three** call sites:
+  `plugins/jt-flow/skills/jt-flow-one/SKILL.md:247`, the same file's `:479`, and
+  `CLAUDE.md:216`. The last one is the one that matters most and the one the
+  first draft missed — it carried the command with no caveat at all, in the file
+  that loads before any skill.
+- State at every site that the spelling is re-read from `coderabbit review
   --help` at invocation time and never copied from a document, so the next drift
   is caught by the reader rather than by a spent fallback.
+- Add a node test to `scripts/jt-flow-review-policy.test.mjs` that enumerates
+  tracked markdown and asserts the invariant on whatever it finds, rather than on
+  a hardcoded file list. A list would repeat this change's own defect the moment
+  a fourth document prescribes the command.
 
 ## Non-goals
 

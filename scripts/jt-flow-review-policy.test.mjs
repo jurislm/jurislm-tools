@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
@@ -188,20 +189,34 @@ test("every prescribed CodeRabbit CLI invocation names --help as its flag author
   // 鎖的是耐久的不變量，不是旗標字面值:一旦 CLI 改名,鎖 `--committed` 會讓
   // 這支測試自己變成下一個過期的斷言。這裡只要求「寫死指令的段落必須同時
   // 指出現行拼法從哪裡讀回」,以及「repo 內不得留下現行 CLI 會拒絕的拼法」。
-  const documentsThatPrescribe = [
-    ["plugins/jt-flow/skills/jt-flow-one/SKILL.md", skill],
-    ["CLAUDE.md", guidance],
-  ];
+  // ⚠️ 硬編檔名清單會重蹈這次的覆轍——第三個檔案開始寫死指令時不會被抓到。
+  // 改為實際列舉 repo 內所有 tracked 的 markdown,由內容決定要不要檢查。
+  const tracked = execFileSync("git", ["ls-files", "-z", "*.md"], {
+    encoding: "utf8",
+  })
+    .split("\0")
+    .filter(Boolean);
 
-  for (const [name, document] of documentsThatPrescribe) {
+  // archive 是歷史反例(必須保留),本 change 的 artifacts 引述的是被修對象。
+  // 兩者都是預期命中,不屬於「會被讀者複製當成指令」的位置。
+  const isQuotingContext = (path) =>
+    path.startsWith("openspec/changes/archive/") ||
+    path.startsWith("openspec/changes/fix-coderabbit-cli-flag/");
+
+  const prescribing = tracked
+    .filter((path) => !isQuotingContext(path))
+    .map((path) => [path, readFileSync(path, "utf8")])
+    .filter(([, body]) => /coderabbit review/.test(body));
+
+  assert.ok(
+    prescribing.length > 0,
+    "expected at least one document prescribing the CodeRabbit CLI",
+  );
+
+  for (const [name, document] of prescribing) {
     const paragraphs = document
       .split(/\n\s*\n/)
       .filter((candidate) => /coderabbit review --agent/.test(candidate));
-
-    assert.ok(
-      paragraphs.length > 0,
-      `${name}: expected at least one prescribed CodeRabbit CLI invocation`,
-    );
 
     for (const paragraph of paragraphs) {
       assert.match(
@@ -210,11 +225,7 @@ test("every prescribed CodeRabbit CLI invocation names --help as its flag author
         `${name}: a paragraph prescribes the CLI without naming --help as the authority for its flag spelling`,
       );
     }
-  }
 
-  // 已知失效的拼法不得留在會被複製的位置。archive 是歷史反例、本 change 的
-  // artifacts 引述的是被修對象,兩者都是預期命中,不在此檢查範圍。
-  for (const [name, document] of documentsThatPrescribe) {
     assert.doesNotMatch(
       document,
       /--type committed/,

@@ -8,11 +8,17 @@
       option list is saved to
       `openspec/changes/fix-coderabbit-cli-flag/verification-logs/2026-08-16-cli-flag-readback.md`.
       **On failure:** stop.
-- [x] `0.2` Enumerate every prescribed invocation.
-      `grep -n 'coderabbit review' plugins/jt-flow/skills/jt-flow-one/SKILL.md`.
-      **Expected:** exactly three hits — `:238` (the `--help` preflight,
-      already correct), `:247`, `:479`. **Actual:** exactly those three.
-      **On failure:** stop — a fourth site means the fix is incomplete.
+- [x] `0.2` Enumerate every prescribed invocation **repo-wide**, not in one
+      file: `git ls-files -z '*.md' | xargs -0 grep -n 'coderabbit review'`.
+      **Expected:** every hit is either an already-correct `--help` preflight, a
+      call site this change corrects, or a quoting context (archive / this
+      change's own artifacts). **Actual:** hits in
+      `plugins/jt-flow/skills/jt-flow-one/SKILL.md` (`:238` preflight — already
+      correct; `:247` and `:479` — corrected here), `CLAUDE.md:216` (corrected
+      here), plus quoting contexts. **On failure:** stop — an uncorrected site
+      outside a quoting context means the fix is incomplete.
+      ⚠️ The first draft scanned only `SKILL.md`, which is precisely why
+      `CLAUDE.md:216` survived the first round; see `design.md` D2.
 
 ## Phase 1 — correct the skill
 
@@ -29,8 +35,12 @@
       `grep -rn -- '--type committed' . --exclude-dir=.git --exclude-dir=node_modules`.
       **Expected:** hits only in `openspec/changes/archive/**` (historical
       counter-example, correctly preserved) and this change's own artifacts
-      (which quote what is being fixed). **Actual:** exactly that — two archive
-      lines and four lines in this change's `proposal.md` / `tasks.md`.
+      (which quote what is being fixed), plus the guard's own assertion in
+      `scripts/jt-flow-review-policy.test.mjs`. **Actual:** exactly that — the
+      archive verification-log, this change's `proposal.md` / `tasks.md` /
+      `design.md` (the last one holds the search string inside D2's own grep
+      command), and the test's `doesNotMatch` regex. No prescribing site
+      remains.
       ⚠️ The first draft scoped this to `plugins/`, which is why `CLAUDE.md`
       was missed; see `design.md` D2.
 - [x] `1.5` Satisfy `External tool invocations name their source of truth`:
