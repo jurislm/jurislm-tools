@@ -71,6 +71,17 @@ corrects a drift has to write down what it is correcting. That exemption is wide
 than the living spec's clause ("archived changes and the change that performs the
 correction"), so it ships with a spec delta rather than as a silent widening.
 
+**Why the exemption is not narrowed further.** Codex raised that exempting every
+active change is broader than the living spec's clause. That widening is real and
+now ships as a delta rather than silently — but the residual risk it named (an
+active change carrying a copyable stale command) is closed from the other side:
+the `--help` assertion triggers on `coderabbit review` followed by any flag, not
+only `--agent`. A change artifact can therefore quote the stale spelling in prose,
+but cannot present a runnable invocation without naming where the spelling comes
+from. Distinguishing "quotation" from "prescription" by content was rejected — no
+syntactic signal separates them reliably, and a guard that guesses is worse than
+one with a stated boundary.
+
 ## Verification shape
 
 A clean checkout cannot distinguish the fixed guard from the broken one — it has
@@ -88,6 +99,7 @@ nested worktrees:
 | active change's `tasks.md` prescribes the command, no `--help` | red | 8 pass / 1 fail |
 | active change's `tasks.md` quotes `--type committed` | green | 9 pass |
 | skill reverted to `--type committed` | red | 8 pass / 1 fail |
+| active change writes `coderabbit review --type committed` with no `--agent` | red | 8 pass / 1 fail (was silently green before `1.9`) |
 
 The second probe is the one review added; under the first attempt's blanket
 exemption it passed silently.

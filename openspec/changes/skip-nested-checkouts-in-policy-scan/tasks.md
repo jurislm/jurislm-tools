@@ -64,6 +64,15 @@
       → 8 pass / 1 fail; active-change quoting `--type committed` → 9 pass;
       skill reverted to `--type committed` → 8 pass / 1 fail.
 
+- [x] `1.9` Close the gap Codex raised (P2): an active change writing
+      `coderabbit review --type committed` **without** `--agent` matched neither
+      assertion — the `--help` one did not trigger, and the stale-spelling one
+      exempts change artifacts. Broadened the `--help` trigger from
+      `coderabbit review --agent` to `coderabbit review` followed by any flag.
+      **Actual:** probe reproduced the hole (`9 pass` — silently green), and
+      turns red (`8 pass / 1 fail`) after the change. All four earlier probes
+      re-run and still behave as specified.
+
 ## Phase 2 — validation
 
 - [x] `2.1` `npm run validate` from the repository root. **Actual:** 170 pass /

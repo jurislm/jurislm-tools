@@ -225,12 +225,15 @@ test("every prescribed CodeRabbit CLI invocation names --help as its flag author
   const isArchived = (path) => path.startsWith("openspec/changes/archive/");
 
   // 斷言一:寫死指令的段落必須同時指出拼法從哪裡讀回。**除 archive 外全樹適用**。
+  // 觸發條件是「coderabbit review 後面接任何旗標」而非只認 --agent:否則一份
+  // active change 寫 `coderabbit review --type committed`(無 --agent)會兩邊落空
+  // ——不觸發本斷言,又被斷言二豁免,靜默通過(2026-08-16 Codex P2 指出,實測確認)。
   // 特別是 active change 的 tasks.md——那是 spectra-apply 會逐條執行的檔案,
   // 正是最不該失去這道防護的地方(2026-08-16 review 實測:豁免它會讓探針靜默通過)。
   for (const [name, document] of documents) {
     if (isArchived(name)) continue;
     for (const paragraph of document.split(/\n\s*\n/)) {
-      if (!/coderabbit review --agent/.test(paragraph)) continue;
+      if (!/coderabbit review\s+--/.test(paragraph)) continue;
       assert.match(
         paragraph.replaceAll("\n", " "),
         /coderabbit review --help/,
