@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.38.1](https://github.com/jurislm/jurislm-tools/compare/v1.38.0...v1.38.1) (2026-08-16)
+
+
+### 🐛 Bug Fixes
+
+* **jt-flow:** CLI fallback 指令的旗標已失效，改為 --committed ([d8e3bc2](https://github.com/jurislm/jurislm-tools/commit/d8e3bc225a90cc025ceaff961f0c8e4590478a6b))
+
+
+### 📚 Documentation
+
+* **repo-standards:** align review workflow ([#221](https://github.com/jurislm/jurislm-tools/issues/221)) ([0b30d2d](https://github.com/jurislm/jurislm-tools/commit/0b30d2d0d7d1eed15813b8ad369b60847c36ccf4))
+* **spectra:** archive release auto-merge standard ([#219](https://github.com/jurislm/jurislm-tools/issues/219)) ([3a9041d](https://github.com/jurislm/jurislm-tools/commit/3a9041dc7930776ce221ae90bc4aac81f1519d97)), refs [#215](https://github.com/jurislm/jurislm-tools/issues/215)
+* **spectra:** archive repo standards review alignment ([#222](https://github.com/jurislm/jurislm-tools/issues/222)) ([2544be4](https://github.com/jurislm/jurislm-tools/commit/2544be488632e6cf7969ecb9afa748e1f8c40cc8))
+
 ## [1.38.0](https://github.com/jurislm/jurislm-tools/compare/v1.37.2...v1.38.0) (2026-08-13)
 
 
