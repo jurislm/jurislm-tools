@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import test from "node:test";
 
 const skill = readFileSync(
@@ -182,4 +182,60 @@ test("Copilot quota exhaustion records a skip without blocking a delegated item 
   const queueContract = sectionContaining(skill, "Queue execution contract");
 
   assert.match(queueContract, /quota\s+exhausted.*record.*skip.*continue.*item.*queue/is);
+});
+
+test("every prescribed CodeRabbit CLI invocation names --help as its flag authority", () => {
+  // 鎖的是耐久的不變量，不是旗標字面值:一旦 CLI 改名,鎖 `--committed` 會讓
+  // 這支測試自己變成下一個過期的斷言。這裡只要求「寫死指令的段落必須同時
+  // 指出現行拼法從哪裡讀回」,以及「repo 內不得留下現行 CLI 會拒絕的拼法」。
+  // ⚠️ 硬編檔名清單會重蹈這次的覆轍——第三個檔案開始寫死指令時不會被抓到。
+  // 改為走訪檔案系統列舉 markdown,由內容決定要不要檢查。
+  // ⚠️ 不用 `git ls-files`:CI 容器沒有 git(實測 build 125 `spawnSync git ENOENT`),
+  // 而這支測試必須在本機與 CI 行為一致。
+  const walk = (dir) =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) {
+        return entry.name === "node_modules" || entry.name === ".git"
+          ? []
+          : walk(path);
+      }
+      return entry.name.endsWith(".md") ? [path.replace(/^\.\//, "")] : [];
+    });
+
+  // archive 是歷史反例(必須保留),本 change 的 artifacts 引述的是被修對象。
+  // 兩者都是預期命中,不屬於「會被讀者複製當成指令」的位置。
+  const isQuotingContext = (path) =>
+    path.startsWith("openspec/changes/archive/") ||
+    path.startsWith("openspec/changes/fix-coderabbit-cli-flag/");
+
+  const prescribing = walk(".")
+    .filter((path) => !isQuotingContext(path))
+    .map((path) => [path, readFileSync(path, "utf8")])
+    .filter(([, body]) => /coderabbit review/.test(body));
+
+  assert.ok(
+    prescribing.length > 0,
+    "expected at least one document prescribing the CodeRabbit CLI",
+  );
+
+  for (const [name, document] of prescribing) {
+    const paragraphs = document
+      .split(/\n\s*\n/)
+      .filter((candidate) => /coderabbit review --agent/.test(candidate));
+
+    for (const paragraph of paragraphs) {
+      assert.match(
+        paragraph.replaceAll("\n", " "),
+        /coderabbit review --help/,
+        `${name}: a paragraph prescribes the CLI without naming --help as the authority for its flag spelling`,
+      );
+    }
+
+    assert.doesNotMatch(
+      document,
+      /--type committed/,
+      `${name}: carries a CLI flag spelling the current CodeRabbit CLI rejects`,
+    );
+  }
 });
