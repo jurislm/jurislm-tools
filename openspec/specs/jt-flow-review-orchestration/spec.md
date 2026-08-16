@@ -156,11 +156,14 @@ the one moment the workflow cannot absorb it.
 #### Scenario: A document prescribes the non-recoverable command
 
 - **WHEN** any file in this repository writes a literal `coderabbit review`
-  invocation — a skill, `CLAUDE.md`, or any other guidance a reader can copy
+  invocation — a skill, `CLAUDE.md`, a change's `tasks.md`, or any other
+  guidance a reader can copy
 - **THEN** the same passage names `coderabbit review --help` as the authority
-  for its flag spelling
-- **AND** no file in the repository, excluding archived changes and the change
-  that performs the correction, carries a flag spelling the current CLI rejects
+  for its flag spelling, **excluding archived changes**, which record how the
+  work was done at the time and are not amended
+- **AND** no file in the repository, excluding archived changes and **any change
+  artifact under `openspec/changes/`**, carries a flag spelling the current CLI
+  rejects
 
 #### Scenario: The prescribed CLI command is about to be run
 

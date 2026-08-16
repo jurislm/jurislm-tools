@@ -38,8 +38,13 @@ stale spelling — as a correcting proposal must — was flagged on creation.
 
 ## Non-goals
 
-- No change to what the guard asserts, or to the `node_modules` / `.git`
-  exclusions.
+- No change to the `node_modules` / `.git` exclusions.
+- No change to what the two assertions require — a prescribing passage names
+  `coderabbit review --help`, and no prescribing document carries a spelling the
+  current CLI rejects. ⚠️ Their **scope** did move: the `--help` assertion now
+  triggers on the CLI name followed by any flag, not only on `--agent`. That was
+  added mid-change to close the gap Codex raised, and it is covered by the spec
+  delta rather than left as a silent widening.
 - No change to any jt-flow skill text or to the CodeRabbit contract itself.
 
 ## Affected plugins
