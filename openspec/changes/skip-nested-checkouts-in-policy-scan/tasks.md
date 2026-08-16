@@ -5,7 +5,8 @@
 - [x] `0.1` Reproduce the false red. Run
       `node --test scripts/jt-flow-review-policy.test.mjs` in a working tree
       that has sibling worktrees under `.claude/worktrees/`. **Expected:**
-      `fail 1`. **On failure:** stop — nothing to fix.
+      `fail 1` — that is the defect reproducing. **If it does not fail:** stop,
+      there is nothing to fix.
       **Actual:** `fail 1`, message `a paragraph prescribes the CLI without
       naming --help as the authority for its flag spelling`, pointing at
       `.claude/worktrees/research-spectra-stale-in-progress-markers/CLAUDE.md`.
@@ -79,9 +80,10 @@
       0 fail; plugin repository validation passed; version sync OK (1.38.1).
 - [x] `2.2` `claude plugin validate .`. **Actual:** ✔ Validation passed.
 - [x] `2.3` `spectra validate --strict skip-nested-checkouts-in-policy-scan` and
-      `spectra analyze`. **Actual:** valid; analyze reports no issues. The
-      `No delta specs found` warning is expected — see the proposal's
-      **No spec delta** section.
+      `spectra analyze`. **Actual:** valid, no issues. ⚠️ The earlier run's
+      `No delta specs found` warning no longer applies: `1.7` added the delta,
+      and the proposal's **No spec delta** section — which claimed the contract
+      was unchanged — was removed as incorrect.
 - [x] `2.4` Confirm no release-managed version field was touched:
       `git diff origin/main -- '*/plugin.json' '.claude-plugin/marketplace.json'`
       **Actual:** empty (0 lines).
