@@ -5,11 +5,18 @@
 | id | readback | expected | on-failure |
 | --- | --- | --- | --- |
 | D1 | `coderabbit review --help` | option list contains `--committed`; `--type` appears nowhere | stop — the whole change rests on this |
-| D2 | `grep -n 'coderabbit review' plugins/jt-flow/skills/jt-flow-one/SKILL.md` | exactly three hits: `:238` (the `--help` preflight, correct), `:247`, `:479` | stop — a fourth site means the fix is incomplete |
+| D2 | `grep -rn -- '--type committed' . --exclude-dir=.git --exclude-dir=node_modules` | hits only in `openspec/changes/archive/**` (historical counter-example) and this change's own artifacts (which quote what is being fixed) | stop — any other hit is an unfixed site |
 
-D1 was run on 2026-08-16 (Taiwan time) against CLI 0.7.3; the full output is in
-`verification-logs/2026-08-16-cli-flag-readback.md`. D2 was run on the same
-checkout and returned exactly those three lines.
+D1 was run on 2026-08-16 (Taiwan time) against CLI 0.7.3; the option list is in
+`verification-logs/2026-08-16-cli-flag-readback.md`.
+
+⚠️ **D2's scope is repo-wide on purpose, and the first draft got this wrong.**
+It originally searched `plugins/` only, while the conclusion it was supposed to
+support was "the fix is complete". A search narrower than its own claim cannot
+fail when the claim is false — and it did not: `CLAUDE.md:216` carried the same
+stale command, with no caveat, in the file that loads before any skill. An
+enumerating claim has to state its search range, and that range has to be at
+least as wide as what the claim asserts.
 
 ## Decision — correct the prescribed command, and say where the truth lives
 

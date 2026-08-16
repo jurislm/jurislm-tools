@@ -4,8 +4,8 @@
 
 - [x] `0.1` Read back the CLI flags. `coderabbit review --help`. **Expected:**
       option list contains `--committed`; `--type` appears nowhere.
-      **Actual:** confirmed against CLI 0.7.3 on 2026-08-16 (Taiwan time); full
-      output saved to
+      **Actual:** confirmed against CLI 0.7.3 on 2026-08-16 (Taiwan time); the
+      option list is saved to
       `openspec/changes/fix-coderabbit-cli-flag/verification-logs/2026-08-16-cli-flag-readback.md`.
       **On failure:** stop.
 - [x] `0.2` Enumerate every prescribed invocation.
@@ -22,25 +22,42 @@
       document.
 - [x] `1.2` Apply the same correction and the same sentence at
       `plugins/jt-flow/skills/jt-flow-one/SKILL.md:479`.
-- [x] `1.3` Re-run `grep -n 'coderabbit review' plugins/jt-flow/skills/jt-flow-one/SKILL.md`
-      and confirm zero remaining `--type` occurrences across the whole plugin
-      tree: `grep -rn -- '--type committed' plugins/` returns nothing.
-      **Actual:** both invocation sites now read `--committed`; the plugin-tree
-      grep returns nothing.
-- [x] `1.4` Satisfy `External tool invocations name their source of truth`:
-      both corrected sites state that the flag spelling is read from
+- [x] `1.3` Correct `CLAUDE.md:216`, which prescribes the same command with no
+      caveat and loads before any skill.
+      **Actual:** now reads `--committed` plus the `--help` authority clause.
+- [x] `1.4` Sweep **repo-wide**, not just `plugins/`:
+      `grep -rn -- '--type committed' . --exclude-dir=.git --exclude-dir=node_modules`.
+      **Expected:** hits only in `openspec/changes/archive/**` (historical
+      counter-example, correctly preserved) and this change's own artifacts
+      (which quote what is being fixed). **Actual:** exactly that — two archive
+      lines and four lines in this change's `proposal.md` / `tasks.md`.
+      ⚠️ The first draft scoped this to `plugins/`, which is why `CLAUDE.md`
+      was missed; see `design.md` D2.
+- [x] `1.5` Satisfy `External tool invocations name their source of truth`:
+      every corrected site states that the flag spelling is read from
       `coderabbit review --help` at invocation time and is never taken from
       this file, any document, or an archived change.
+- [x] `1.6` Add machine enforcement in `scripts/jt-flow-review-policy.test.mjs`,
+      matching this repository's convention of pinning each jt-flow policy with
+      a node test. It asserts the durable invariant — every paragraph
+      prescribing `coderabbit review --agent` also names
+      `coderabbit review --help`, and neither the skill nor `CLAUDE.md` carries
+      a spelling the current CLI rejects — rather than the literal flag, which
+      would expire with the next CLI rename.
+      **Actual:** `node --test scripts/jt-flow-review-policy.test.mjs` → 9 pass,
+      0 fail. Positive control run separately: both assertions were fed the
+      pre-fix text and both failed as required (2/2), so the test detects the
+      regression rather than passing vacuously.
 
 ## Phase 2 — validation
 
 - [x] `2.1` `npm ci && npm run validate` from the repository root. **Actual:**
       plugin repository validation passed, version sync OK (1.38.0), markdownlint
       clean over the new OpenSpec artifacts.
-- [x] `2.2` `claude plugin validate .`. **Actual:** ✔ Validation passed.
+- [x] `2.2` `claude plugin validate .` (validates `.claude-plugin/marketplace.json`). **Actual:** ✔ Validation passed.
 - [x] `2.3` `spectra validate --strict fix-coderabbit-cli-flag` and
       `spectra analyze`. **Actual:** valid; analyze's only finding was the
-      requirement-without-task warning, resolved by `1.4`.
+      requirement-without-task warning, resolved by `1.5`.
 - [x] `2.4` Confirm no release-managed version field was touched:
       `git diff origin/main -- '*/plugin.json' '.claude-plugin/marketplace.json'`
       **Actual:** empty (0 lines).

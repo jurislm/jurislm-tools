@@ -1,9 +1,16 @@
 # CodeRabbit CLI flag readback
 
 Date: 2026-08-16 (Taiwan time)
-Binary: $(command -v coderabbit) — version 0.7.3
+Binary: /Users/terrychen/.local/bin/coderabbit
+Version: 0.7.3
+
+`coderabbit review --help` — full output:
 
 ```
+Usage: coderabbit review [options] [command]
+
+AI-driven code review for the current git repository
+
 Options:
   -V, --version            output the version number
   --light                  Run a lighter review with reduced context work
@@ -45,4 +52,4 @@ Notes:
   Use coderabbit auth login --agent for agent-driven OAuth login.
 ```
 
-`--committed` is present. `--type` does not appear anywhere in the option list.
+`--committed` is present. `--type` does not appear anywhere in the output.

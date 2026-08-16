@@ -183,3 +183,42 @@ test("Copilot quota exhaustion records a skip without blocking a delegated item 
 
   assert.match(queueContract, /quota\s+exhausted.*record.*skip.*continue.*item.*queue/is);
 });
+
+test("every prescribed CodeRabbit CLI invocation names --help as its flag authority", () => {
+  // 鎖的是耐久的不變量，不是旗標字面值:一旦 CLI 改名,鎖 `--committed` 會讓
+  // 這支測試自己變成下一個過期的斷言。這裡只要求「寫死指令的段落必須同時
+  // 指出現行拼法從哪裡讀回」,以及「repo 內不得留下現行 CLI 會拒絕的拼法」。
+  const documentsThatPrescribe = [
+    ["plugins/jt-flow/skills/jt-flow-one/SKILL.md", skill],
+    ["CLAUDE.md", guidance],
+  ];
+
+  for (const [name, document] of documentsThatPrescribe) {
+    const paragraphs = document
+      .split(/\n\s*\n/)
+      .filter((candidate) => /coderabbit review --agent/.test(candidate));
+
+    assert.ok(
+      paragraphs.length > 0,
+      `${name}: expected at least one prescribed CodeRabbit CLI invocation`,
+    );
+
+    for (const paragraph of paragraphs) {
+      assert.match(
+        paragraph.replaceAll("\n", " "),
+        /coderabbit review --help/,
+        `${name}: a paragraph prescribes the CLI without naming --help as the authority for its flag spelling`,
+      );
+    }
+  }
+
+  // 已知失效的拼法不得留在會被複製的位置。archive 是歷史反例、本 change 的
+  // artifacts 引述的是被修對象,兩者都是預期命中,不在此檢查範圍。
+  for (const [name, document] of documentsThatPrescribe) {
+    assert.doesNotMatch(
+      document,
+      /--type committed/,
+      `${name}: carries a CLI flag spelling the current CodeRabbit CLI rejects`,
+    );
+  }
+});
