@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.39.0](https://github.com/jurislm/jurislm-tools/compare/v1.38.2...v1.39.0) (2026-08-17)
+
+
+### 🚀 New Features
+
+* import Bubble Planet media workflow plugins ([#229](https://github.com/jurislm/jurislm-tools/issues/229)) ([fd0ce5a](https://github.com/jurislm/jurislm-tools/commit/fd0ce5a7d272e11352a71647350def35b89e5c03))
+
+
+### 📚 Documentation
+
+* **spectra:** archive nested-checkout scan fix ([a64b66f](https://github.com/jurislm/jurislm-tools/commit/a64b66f3c827f605b0080ba0a4249d71ba61592d))
+
 ## [1.38.2](https://github.com/jurislm/jurislm-tools/compare/v1.38.1...v1.38.2) (2026-08-16)
 
 

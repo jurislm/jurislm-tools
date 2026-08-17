@@ -1,7 +1,7 @@
 {
   "name": "minimax-design",
   "description": "透過 Computer Use 操作 MiniMax Design 的圖像、影片、音訊、音樂、TTS、MV、Canvas、Asset Center、Skills、Plugins 與匯出流程",
-  "version": "1.38.2",
+  "version": "1.39.0",
   "author": {
     "name": "Terry Chen"
   },
