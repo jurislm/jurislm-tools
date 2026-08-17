@@ -1,0 +1,19 @@
+{
+  "name": "ai-audio-analysis",
+  "description": "用多重證據分析本地音檔與歌詞 — 本地轉寫、訊號檢查與 MiniMax Design 交叉核對",
+  "version": "1.38.2",
+  "author": {
+    "name": "Terry Chen"
+  },
+  "homepage": "https://github.com/jurislm/jurislm-tools",
+  "repository": "https://github.com/jurislm/jurislm-tools",
+  "license": "UNLICENSED",
+  "keywords": [
+    "audio-analysis",
+    "whisper",
+    "lyrics",
+    "transcription",
+    "minimax-design",
+    "verification"
+  ]
+}

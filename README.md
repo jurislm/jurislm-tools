@@ -1,6 +1,6 @@
 # jurislm-tools
 
-JurisLM 內部使用的 Claude Code Plugin Marketplace，提供基礎設施、可觀測性、內容處理與開發工作流 plugins。Codex 亦可透過 Claude marketplace 相容層載入本 repo。
+JurisLM 內部使用的 Claude Code Plugin Marketplace，提供基礎設施、可觀測性、內容處理、媒體工作流與開發工作流 plugins。Codex 亦可透過 Claude marketplace 相容層載入本 repo。
 
 ## 安裝
 
@@ -37,6 +37,9 @@ claude plugin update coolify@jurislm-tools
 | `codebase-sync` | Skill | `claude plugin install codebase-sync@jurislm-tools` | README 與 CLAUDE.md 同步 |
 | `learn-eval` | Skill | `claude plugin install learn-eval@jurislm-tools` | 從 session 萃取可重用 patterns |
 | `jt-flow` | Skills | `claude plugin install jt-flow@jurislm-tools` | `jt-flow-one` 單一需求與 `jt-flow-all` 依相依關係派送 active changes、序列化整合的 OpenSpec 工作流 |
+| `ai-audio-analysis` | Skill | `claude plugin install ai-audio-analysis@jurislm-tools` | 本地音檔、Whisper、訊號與 MiniMax Design 交叉分析 |
+| `suno-audio-download` | Skill | `claude plugin install suno-audio-download@jurislm-tools` | Suno 官方下載與本地音檔驗證 |
+| `minimax-design` | Skill | `claude plugin install minimax-design@jurislm-tools` | MiniMax Design 多模態、付費確認與結果驗證 |
 
 Skills 由自然語言意圖觸發；本 repo 不再提供舊版 `/jt:*` 或 `/jt-flow` slash commands。
 

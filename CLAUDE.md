@@ -33,7 +33,7 @@ This file provides project-specific guidance for `jurislm-tools`. Also follow th
 
 ## Repository overview
 
-`jurislm-tools` is a nine-entry Claude Code Plugin Marketplace for JurisLM infrastructure, observability, content, and development workflows. Codex consumes the same `.claude-plugin` marketplace through its supported compatibility path; do not create a parallel `.codex-plugin` or `.agents` tree without a demonstrated incompatibility.
+`jurislm-tools` is a twelve-entry Claude Code Plugin Marketplace for JurisLM infrastructure, observability, content, media, and development workflows. Codex consumes the same `.claude-plugin` marketplace through its supported compatibility path; do not create a parallel `.codex-plugin` or `.agents` tree without a demonstrated incompatibility.
 
 The repository is primarily JSON, YAML, JavaScript validation scripts, and Markdown. It has no application build or deployment pipeline.
 
@@ -85,6 +85,9 @@ Skills and commands are auto-discovered. A plugin manifest owns metadata; it doe
 | `codebase-sync` | Skill | README and CLAUDE.md synchronization |
 | `learn-eval` | Skill | Reusable session-pattern extraction |
 | `jt-flow` | Skills | `jt-flow-one` single-request and `jt-flow-all` active OpenSpec change-queue delivery workflows |
+| `ai-audio-analysis` | Skill | Local audio identity, transcription, signal checks, and cross-analysis |
+| `suno-audio-download` | Skill | Official Suno download and local-file verification |
+| `minimax-design` | Skill | MiniMax Design multimodal workflows through Computer Use |
 
 Do not restore retired `/jt:*`, `/jt-flow`, or `/jt-flow-all` command surfaces. Current Skills are triggered by intent.
 
@@ -107,7 +110,7 @@ Never print credentials or shell environment values during validation.
 
 Never manually edit plugin or marketplace release versions. Release Please owns:
 
-- All nine `plugins/<name>/.claude-plugin/plugin.json` version fields.
+- All published `plugins/<name>/.claude-plugin/plugin.json` version fields.
 - `.claude-plugin/marketplace.json` at `$.plugins[0].version`.
 
 `coolify` must remain the first marketplace entry because Release Please uses array index zero. Append new plugins unless the release configuration is changed atomically.
