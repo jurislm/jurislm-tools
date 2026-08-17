@@ -1,6 +1,6 @@
 {
   "name": "jurislm-tools",
-  "description": "JurisLM 內部使用的基礎設施、可觀測性、內容處理與開發工作流 plugins",
+  "description": "JurisLM 內部使用的基礎設施、可觀測性、內容處理、媒體工作流與開發工作流 plugins",
   "owner": {
     "name": "Terry Chen",
     "email": "zxtw17985321@gmail.com"
@@ -75,6 +75,30 @@
       "name": "higgsfield",
       "source": "./plugins/higgsfield",
       "description": "Higgsfield AI 圖像/影片/3D/音訊生成 — 官方 remote MCP（OAuth）+ 7 個 CLI skills",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "ai-audio-analysis",
+      "source": "./plugins/ai-audio-analysis",
+      "description": "用多重證據分析本地音檔與歌詞 — 本地轉寫、訊號檢查與 MiniMax Design 交叉核對",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "suno-audio-download",
+      "source": "./plugins/suno-audio-download",
+      "description": "使用 Suno 官方下載控制取得音檔，並驗證本地檔案身份與可解碼性",
+      "author": {
+        "name": "Terry Chen"
+      }
+    },
+    {
+      "name": "minimax-design",
+      "source": "./plugins/minimax-design",
+      "description": "透過 Computer Use 操作 MiniMax Design 的圖像、影片、音訊、音樂、TTS、MV、Canvas、Asset Center、Skills、Plugins 與匯出流程",
       "author": {
         "name": "Terry Chen"
       }

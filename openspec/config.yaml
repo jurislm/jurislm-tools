@@ -2,13 +2,14 @@ schema: spec-driven
 
 context: |
   Tech stack: Claude Code Plugin Marketplace (YAML/Markdown only, no compilation step)
-  Domain: jurislm-tools — 9-plugin marketplace for JurisLM development workflows
+  Domain: jurislm-tools — 12-plugin marketplace for JurisLM development workflows
 
   Plugin types:
     - Credential-bearing local MCP: exact-version .mcp.json launcher + skill (coolify, hetzner, langfuse)
     - OAuth remote MCP: remote server configuration + skills (higgsfield)
     - Skill: SKILL.md with optional compatibility command (repo-standards, podcast-to-blog, codebase-sync, learn-eval)
     - jt-flow: jt-flow-one and jt-flow-all skills for single-request and queue delivery
+    - Media workflow Skills: local audio download and analysis, plus MiniMax Design multimodal workflows
     - Commands are optional entry points; they are not separate plugin categories or sources of truth
 
   Version management: Release Please automation
