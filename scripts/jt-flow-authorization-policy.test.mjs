@@ -278,17 +278,12 @@ test("CodeRabbit queue consent successor is exact and consistent across delivery
 
 test("published guidance describes one normal checkpoint", () => {
   const normalizedReadme = normalize(readme);
-  const normalizedGuidance = normalize(guidance);
 
   assert.match(
     normalizedReadme,
     /proposal GO.*唯一.*正常.*停頓|唯一.*正常.*proposal GO/s,
   );
-  assert.match(
-    normalizedGuidance,
-    /proposal GO.*sole normal-path checkpoint|sole normal-path checkpoint.*proposal GO/is,
-  );
-  for (const policy of [normalizedReadme, normalizedGuidance]) {
+  for (const policy of [normalizedReadme]) {
     assert.doesNotMatch(
       policy,
       /merge 前.*(?:再次|重新).*(?:授權|approval|確認)/i,
@@ -303,10 +298,9 @@ test("published guidance describes one normal checkpoint", () => {
 test("jt-flow-one uses OpenSpec as the sole current planning record", () => {
   const normalizedSkill = normalize(oneSkill);
   const normalizedReadme = normalize(readme);
-  const normalizedGuidance = normalize(guidance);
 
   assert.doesNotMatch(oneSkill, /superpowers:(?:brainstorming|writing-plans)/i);
-  for (const policy of [normalizedSkill, normalizedReadme, normalizedGuidance]) {
+  for (const policy of [normalizedSkill, normalizedReadme]) {
     assert.match(
       policy,
       /OpenSpec.*(?:唯一|sole).*(?:需求|計畫|planning|交付)/i,
@@ -358,10 +352,6 @@ test("OpenSpec-only planning excludes the Superpowers plan pipeline", () => {
   assert.doesNotMatch(
     oneSkill,
     /superpowers:(?:using-superpowers|brainstorming|writing-plans)/i,
-  );
-  assert.match(
-    guidance,
-    /MUST NOT invoke[\s\S]*superpowers:using-superpowers[\s\S]*superpowers:brainstorming[\s\S]*superpowers:writing-plans/i,
   );
 });
 

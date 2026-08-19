@@ -1,31 +1,30 @@
-<!-- SPECTRA:START v1.0.2 -->
+<!-- DELIVERY:START -->
 
-# Spectra Instructions
+# Linear + Superpowers Delivery
 
-This project uses Spectra for Spec-Driven Development(SDD). Specs live in `openspec/specs/`, change proposals in `openspec/changes/`.
+New product and development requests use this authority chain:
 
-## Use `/spectra-*` skills when:
+```text
+Linear product requirement
+  → Superpowers engineering workflow
+  → GitHub PR, CI, and browser/runtime acceptance evidence
+  → Linear readback
+  → product-owner final acceptance
+```
 
-- A discussion needs structure before coding → `/spectra-discuss`
-- User wants to plan, propose, or design a change → `/spectra-propose`
-- Tasks are ready to implement → `/spectra-apply`
-- There's an in-progress change to continue → `/spectra-ingest`
-- User asks about specs or how something works → `/spectra-ask`
-- Implementation is done → `/spectra-archive`
-- Commit only files related to a specific change → `/spectra-commit`
+Linear is the source of truth for product intent, approved behavior, scope,
+acceptance criteria, owner decisions, and delivery status. Superpowers owns
+engineering clarification, design, implementation planning, TDD, debugging,
+review, and verification. GitHub, CI, and runtime/browser readback own delivery
+evidence; none of them silently redefine product behavior.
 
-## Workflow
+For a new request, begin from its Linear issue or document and use the available
+Superpowers skills directly. Do not create another orchestration plugin,
+role-agent framework, or Spectra/OpenSpec proposal unless the user explicitly
+requests one. Product behavior or scope changes discovered during delivery
+return to Linear for an owner decision before engineering work resumes.
 
-discuss? → propose → apply ⇄ ingest → archive
-
-- `discuss` is optional — skip if requirements are clear
-- Requirements change mid-work? Plan mode → `ingest` → resume `apply`
-
-## Parked Changes
-
-Changes can be parked（暫存）— temporarily moved out of `openspec/changes/`. Parked changes won't appear in `spectra list` but can be found with `spectra list --parked`. To restore: `spectra unpark <name>`. The `/spectra-apply` and `/spectra-ingest` skills handle parked changes automatically.
-
-<!-- SPECTRA:END -->
+<!-- DELIVERY:END -->
 
 ## CLAUDE.md
 
@@ -135,134 +134,38 @@ merged release before opening or updating the next release PR, and never
 receives that token in pull-request builds. Do not add overlapping GitHub
 Actions validation or release workflows.
 
-## OpenSpec
+## Delivery authority
 
-`openspec/` is the specification store, and the generated repo-local `/spectra-*`
-Skills are the canonical workflow for every proposal. Use Spectra to propose,
-apply, ingest, verify, archive, and commit changes; the remaining `opsx:*`
-files are legacy compatibility surfaces and must not be used for new proposal
-work. Artifact order is `proposal → design → specs → tasks`.
+For new work, use Linear for requirements, decisions, acceptance criteria, and
+progress. Use Superpowers directly for clarification, engineering design,
+implementation planning, TDD, systematic debugging, code review, and completion
+verification. Prefer the smallest applicable Superpowers skill sequence instead
+of maintaining a second workflow abstraction.
 
-This repository SHALL use a Spectra change as its only change-tracking record.
-Do not create, link, or depend on GitHub Issues for proposal, implementation,
-review, release, or archive work.
+Engineering defects return through systematic debugging, TDD, and fresh
+verification. A change to product behavior or scope returns to Linear and
+requires product-owner acceptance before the affected engineering plan resumes.
 
-Some legacy detail specs remain historical. For current marketplace membership, prefer `.claude-plugin/marketplace.json`, plugin manifests, and the repository integrity checker. When changing an owned area, update its living OpenSpec documentation in the same proposal. For an active OpenSpec delta that changes a deployed requirement, keep the living spec at deployed behavior until the successor change is archived; the delta must modify the existing requirement by its exact name rather than silently pre-applying the successor to the living spec.
+Completion requires acceptance-criteria evidence, fresh tests, applicable CI
+and browser/runtime readback, resolved review findings, a durable Linear
+readback, and the product owner's final acceptance. Linear may be marked Done
+only after these conditions hold. Missing credentials,
+platform-enforced approval, destructive production changes, unresolved product
+ambiguity, or repeated no-progress iterations are explicit pause conditions.
 
-`jt-flow` depends on externally installed `superpowers:*` Skills. Preserve that dependency unless a proposal explicitly replaces it.
+## Legacy OpenSpec and jt-flow
 
-For this repository's `jt-flow-one`, OpenSpec's `proposal`／`design`／`specs`／`tasks` are the sole
-current requirement, design, and implementation-plan record. Do not create a parallel planning document.
-`jt-flow-one` MUST NOT invoke `superpowers:using-superpowers`,
-`superpowers:brainstorming`, or `superpowers:writing-plans`: those planning
-pipelines would create the prohibited parallel record. It retains the scoped
-Superpowers execution and verification skills required by its approved workflow.
+`openspec/`, generated `/spectra-*` Skills, and the `jt-flow` plugin remain for
+maintaining or completing existing OpenSpec changes. Route new work to them only
+when the user explicitly requests Spectra, OpenSpec, `jt-flow-one`, or
+`jt-flow-all`. Within such an explicitly selected legacy run, its artifacts and
+authorization contract remain authoritative; do not mix Linear/Superpowers
+planning artifacts into that same delivery container.
 
-For `jt-flow-one`, proposal GO is the sole normal-path checkpoint. Explicit
-invocation authorizes OpenSpec preparation. Proposal GO authorizes
-implementation, commits, push, PR, disclosed reviews, finding disposition,
-merge, deployment verification, and archive. Do not add another
-normal authorization prompt for those actions. After GO, pause only for
-evidence-unresolved target or behavior ambiguity, material scope or architecture
-change or new external dependency or production risk, secrets or sensitive
-payloads, missing permissions or platform-enforced approval, an unapproved
-destructive production mutation, or rollback with database, schema, data-loss,
-or unclear-target risk. A `jt-flow-all` item reuses a recorded explicit proposal
-GO and must not ask again solely because the item entered the queue. For
-intent-routed runs without CodeRabbit consent, include the App and CLI
-disclosure in the proposal summary and let the same proposal GO record consent;
-do not defer this predictable consent into a second normal checkpoint.
-
-Invoking or routing to `jt-flow-all` alone never proves CodeRabbit consent. Only
-durable evidence that the user saw the complete disclosure and explicitly
-consented may use `codeRabbitAuthorization=preauthorized` with
-`authorizationSource=explicit-coderabbit-consent`; otherwise pass
-`codeRabbitAuthorization=requires-disclosure` to `jt-flow-one`.
-
-For `jt-flow-all`, resolve the actual remote, fetch and prune it, then derive
-the queue from a clean detached snapshot of refreshed remote `main`, never a
-dirty or stale caller worktree. Every new or updated proposal must declare
-Delivery Relations: priority, hard dependencies, acceptance dependencies,
-external blockers with a `dispatch` or `integration` gate, affected areas, and
-production targets. Optional external links are descriptive only. Derive reverse blockers
-and parallel candidates from those relations; do not infer missing data as
-safe or require authors to duplicate derived edges. Missing, contradictory,
-cyclic, or unverifiable data blocks only its item and descendants with a
-correction owner and resume condition; valid unresolved dependencies wait only
-at their item gate, while unrelated `READY` changes continue.
-
-Reread remote main before every subsequent dispatch or integration-permit
-decision. Any SHA drift invalidates the dependency snapshot and requires a new
-clean snapshot plus refreshed active changes, Delivery Relations, reverse
-edges, descendants, and eligibility; an `ACTIVE` or `INTEGRATION_READY` item may
-be reclassified. Acceptance-only and mixed hard/acceptance cycles are invalid
-and block their members and descendants rather than deadlocking integration.
-
-The primary agent is the coordinator and reserves one agent slot; each
-remaining slot may own one whole `READY` change through `jt-flow-one`, which
-alone owns its isolated worktree and delivery. Do not dispatch partial change
-tasks. An item reaches `INTEGRATION_READY` only after its implementation,
-required tests, `jt-flow-one` quality review, PR checks, review disposition,
-and current HEAD readback. Keep merge and all production mutation in one
-integration lane: grant at most one permit whose repository, change, item HEAD
-SHA, verified remote-main SHA, required-check set and terminal-success results,
-current mergeability result, and readback time exactly match the owner. Fail
-closed and reread all fields at grant and immediately before merge or production
-mutation. Revoke only after proving no merge, production mutation, or derived
-pipeline began; after merge, hold the lane until downstream CI/deployment is
-healthy or the system reaches a known rollback state. SHA drift invalidates the
-permit and needs refreshed integration evidence, not a new proposal GO by
-itself. Proposal-scope overdesign review is independent and bounded;
-`jt-flow-one` remains the sole implementation-quality reviewer. Preserve
-existing quota-exhausted skip rules rather than permanently blocking the queue.
-
-Keep `jt-flow` review orchestration portable across Claude Code and Codex. Its two CodeRabbit channels are the CodeRabbit GitHub App and the independently installed CodeRabbit CLI (`coderabbit review --agent --committed --base <remote>/main`, whose flag spelling is read from `coderabbit review --help` at invocation time and never copied from this line); do not model the CLI as, or require, a host-specific Claude or Codex plugin. Preserve the Skill's disclosure, consent, secret-scanning, explicit local change selection, service-side context disclosure, and App-to-CLI fallback gates when changing this workflow. Secret preflight must scan every new commit, tree, and blob that will be pushed, not only the aggregate base-to-HEAD diff; removing a secret in a later commit does not make the earlier object safe to transmit.
-
-CodeRabbit completion means every finding has an explicit disposition: accepted
-findings are fixed and verified, while rejected findings retain a concrete
-reason. It does not require a zero-finding response. Keep CodeRabbit
-`reviews.auto_review.enabled` false and explicitly request the App once so later
-pushes cannot create another automatic review. The CodeRabbit GitHub App and CLI
-together permit at most one effective review per PR or change: prefer the App,
-wait for that sole request to reach a terminal outcome, use the CLI at most once
-only when the App cannot produce a review, and stop the fallback as soon as
-either channel produces a real review.
-
-Only `jt-flow-one` owns local code review and uses
-`superpowers:requesting-code-review`; `jt-flow-all` only orchestrates its active
-OpenSpec change queue and must not initiate or own an additional review. Local review permits
-at most 3 total runs per PR or change: an initial run once the implementation
-is ready, plus up to 2 further runs each triggered only by an accepted finding
-that changes code; after the 3rd run, no further local review occurs even if
-new findings appear, and no intervening code change means no repeat review
-regardless of runs remaining. Use `superpowers:receiving-code-review` to
-verify findings, not as another reviewer. Copilot permits at most one review
-per PR or change. Codex is treated as budgeted at one review per PR or change,
-contingent on the Codex account/organization review-trigger-condition setting
-being configured to review only on PR open — a manual precondition outside
-this repository, not something the workflow verifies programmatically; Codex
-receives no active trigger and the workflow does not request or wait for a
-Codex review; it also receives no CodeRabbit-style pre-authorization or
-disclosure gate, since the workflow never causes it to read repository data,
-and any review it posts (expected or an unexpected extra one) is still
-evaluated via `superpowers:receiving-code-review`. Fixes and later pushes must
-not restart CodeRabbit or Copilot; final `HEAD` is covered by tests, behavioral
-acceptance, CI, mergeability, and resolved review threads. Skip Copilot when its
-quota is exhausted, move from the CodeRabbit App to the CLI when the App cannot
-produce a review, and close the CodeRabbit channel when the CLI is limited.
-
-`jt-flow-one` detects team-mode (Agent Teams) availability once per run:
-unavailable if delegated by `jt-flow-all` as a nested run (Agent Teams has
-no nested teams), otherwise available only if
-`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and the
-`SendMessage`/`TaskCreate`/`TaskList` tool schemas resolve. Its two existing
-2+-angle dispatch points — the three-tool research trio and code review —
-are unaffected by this detection today: `Workflow` tool calls are only
-possible from the top-level session (verified — a spawned agent has no
-access to it), so both continue to call `Workflow` directly from the
-current session regardless of team-mode availability. The detection logic
-is retained for a future single-purpose dispatch point that would not need
-`Workflow` access.
+For current marketplace membership, prefer `.claude-plugin/marketplace.json`,
+plugin manifests, and repository validation over historical specs. Do not
+delete or rewrite archived OpenSpec evidence merely because the default workflow
+has changed.
 
 ## GitHub Flow and worktrees
 
