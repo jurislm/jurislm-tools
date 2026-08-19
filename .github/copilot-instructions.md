@@ -4,7 +4,7 @@
 
 ## Project overview
 
-`jurislm-tools` 是十二個 plugin 組成的 Claude Code Marketplace，Codex 亦可透過 Claude marketplace 相容層載入。`.claude-plugin/marketplace.json` 與 `plugins/<name>/.claude-plugin/plugin.json` 是結構來源；不要建議恢復已移除的單一 `jt` plugin。
+`jurislm-tools` 是九個 plugin 組成的 Claude Code Marketplace，Codex 亦可透過 Claude marketplace 相容層載入。`.claude-plugin/marketplace.json` 與 `plugins/<name>/.claude-plugin/plugin.json` 是結構來源；不要建議恢復已移除的單一 `jt` plugin。
 
 ## Git workflow
 
@@ -25,7 +25,7 @@ plugins/<plugin-name>/
 └── README.md
 ```
 
-目前 marketplace entries：`coolify`、`hetzner`、`langfuse`、`repo-standards`、`podcast-to-blog`、`codebase-sync`、`learn-eval`、`jt-flow`、`higgsfield`、`ai-audio-analysis`、`suno-audio-download`、`minimax-design`。
+目前 marketplace entries：`coolify`、`hetzner`、`langfuse`、`repo-standards`、`podcast-to-blog`、`codebase-sync`、`learn-eval`、`jt-flow`、`higgsfield`。
 
 ## Review requirements
 

@@ -73,21 +73,6 @@ const PLUGIN_DEFINITIONS = [
     description: "Higgsfield AI 圖像、影片、3D 與音訊生成 — 官方 remote MCP 與 CLI skills",
     keywords: ["image-generation", "video", "audio", "mcp"],
   },
-  {
-    name: "ai-audio-analysis",
-    description: "用多重證據分析本地音檔與歌詞 — 本地轉寫、訊號檢查與 MiniMax Design 交叉核對",
-    keywords: ["audio-analysis", "whisper", "lyrics", "transcription", "minimax-design", "verification"],
-  },
-  {
-    name: "suno-audio-download",
-    description: "使用 Suno 官方下載控制取得音檔，並驗證本地檔案身份與可解碼性",
-    keywords: ["suno", "download", "mp3", "audio", "in-app-browser", "verification"],
-  },
-  {
-    name: "minimax-design",
-    description: "透過 Computer Use 操作 MiniMax Design 的圖像、影片、音訊、音樂、TTS、MV、Canvas、Asset Center、Skills、Plugins 與匯出流程",
-    keywords: ["minimax", "minimax-design", "h3", "image-generation", "video-generation", "audio", "music-generation", "tts", "mv", "canvas", "asset-center", "skills", "plugins", "capcut", "jianying", "computer-use"],
-  },
 ];
 
 const PLUGIN_PATHS = PLUGIN_DEFINITIONS.map(
@@ -131,7 +116,7 @@ function pluginManifest(definition, version) {
 function marketplace(version) {
   return {
     name: "jurislm-tools",
-    description: "JurisLM 內部使用的基礎設施、可觀測性、內容處理、媒體工作流與開發工作流 plugins",
+    description: "JurisLM 內部使用的基礎設施、可觀測性、內容處理與開發工作流 plugins",
     owner: { name: "Terry Chen", email: "zxtw17985321@gmail.com" },
     plugins: PLUGIN_DEFINITIONS.map((definition, index) => ({
       name: definition.name,
