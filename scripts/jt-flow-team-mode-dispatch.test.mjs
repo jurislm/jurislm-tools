@@ -119,16 +119,11 @@ test("team-mode section precedes both dispatch points it governs in reading orde
   assert.ok(sectionIndex < codeReviewIndex, "team-mode section must precede the Phase 4 code-review dispatch paragraph");
 });
 
-test("mirrors the detection logic and the no-behavior-change rationale in README.md and root CLAUDE.md", () => {
+test("mirrors the detection logic and the no-behavior-change rationale in the jt-flow README", () => {
   assertContains(readme, "團隊模式");
   assertContains(readme, "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 且");
   assertNotContains(readme, "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` 或");
   assert.match(readme, /no nested teams|nested.*team/i);
   assertContains(readme, "不受偵測結果影響");
   assertContains(readme, "只有主 session 能呼叫");
-
-  assertContains(guidance, "jt-flow-one");
-  assertContains(guidance, "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` and the");
-  assertContains(guidance, "unaffected by this detection today");
-  assertContains(guidance, "only possible from the top-level session");
 });

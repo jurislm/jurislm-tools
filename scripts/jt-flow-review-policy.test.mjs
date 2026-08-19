@@ -46,10 +46,6 @@ test("caps local review at 3 total runs per PR or change", () => {
     "`superpowers:requesting-code-review` 進行本地 code review",
   );
   const readmePolicy = paragraphContaining(readme, "本地 review 使用");
-  const guidancePolicy = paragraphContaining(
-    guidance,
-    "Only `jt-flow-one` owns local code review",
-  );
 
   assert.match(skillPolicy, /全程最多\s*進行\s*3\s*次/);
   assert.match(skillPolicy, /第 3 次跑完後.*不再重跑\s*本地\s*review/s);
@@ -57,10 +53,6 @@ test("caps local review at 3 total runs per PR or change", () => {
   assert.match(readmePolicy, /全程.*最多\s*3\s*次/);
   assert.match(readmePolicy, /第 3 次跑完後即使仍有新 finding 也不再重跑/);
   assert.match(readmePolicy, /沒有程式碼變更也不得\s*重跑/);
-  assert.match(guidancePolicy, /at most 3 total runs per PR or change/i);
-  assert.match(guidancePolicy, /after the 3rd run, no further local review occurs/i);
-  assert.match(guidancePolicy, /no intervening code change means no repeat/i);
-  assert.match(guidancePolicy, /jt-flow-all.*must not initiate or own/i);
 });
 
 test("limits each external reviewer to one effective review", () => {
@@ -72,17 +64,11 @@ test("limits each external reviewer to one effective review", () => {
     readme,
     "CodeRabbit GitHub App 與 CodeRabbit CLI",
   );
-  const guidancePolicy = paragraphContaining(
-    guidance,
-    "CodeRabbit completion means",
-  );
 
   assert.match(skillPolicy, /GitHub App.*CLI 合計最多一次有效 review/);
   assert.match(readmePolicy, /App 與 CLI.*合計最多一次有效 review/);
-  assert.match(guidancePolicy, /App and CLI together permit at most one/i);
   assert.match(paragraphContaining(skill, "Copilot 每個"), /最多一次 review/);
   assert.match(paragraphContaining(readme, "Copilot 每個"), /最多一次 review/);
-  assert.match(paragraphContaining(guidance, "Copilot permits"), /at most one/i);
   assert.match(
     paragraphContaining(skill, "外部 review 不因修正重啟"),
     /finding.*修正.*push.*不得重新啟動外部 review/,
@@ -91,10 +77,6 @@ test("limits each external reviewer to one effective review", () => {
     paragraphContaining(readme, "finding 的修正與後續 push"),
     /不得重新啟動外部 review/,
   );
-  assert.match(
-    paragraphContaining(guidance, "Copilot permits"),
-    /Fixes and later pushes must not restart CodeRabbit or Copilot/i,
-  );
   assert.match(codeRabbitConfig, /auto_review:\s*\n\s+enabled: false/);
   assert.match(skillPolicy, /明確\s*要求一次 GitHub App review/);
   assert.match(
@@ -102,19 +84,11 @@ test("limits each external reviewer to one effective review", () => {
     /該次 App 要求進入終態.*上方預檢執行.*coderabbit review/,
   );
   assert.match(readmePolicy, /要求進入成功、失敗或受限終態.*CLI fallback/);
-  assert.match(
-    guidancePolicy,
-    /wait for that sole request to reach a terminal outcome.*CLI/i,
-  );
 });
 
 test("adds Codex as a one-review external reviewer contingent on a manual precondition", () => {
   const skillPolicy = paragraphContaining(skill, "Codex 每個 PR／變更最多一次");
   const readmePolicy = paragraphContaining(readme, "本地 review 使用");
-  const guidancePolicy = paragraphContaining(
-    guidance,
-    "Only `jt-flow-one` owns local code review",
-  );
 
   assert.match(skillPolicy, /Codex 每個 PR／變更最多一次 review/);
   assert.match(skillPolicy, /不主動送出\s*`@codex review`.*不等待 Codex/);
@@ -126,11 +100,6 @@ test("adds Codex as a one-review external reviewer contingent on a manual precon
   assert.match(readmePolicy, /不主動\s*要求也不等待 Codex/);
   assert.match(readmePolicy, /審查觸發條件＝\s*開啟 PR/);
   assert.match(readmePolicy, /非 repo\s*內可驗證的人工前置確認/);
-  assert.match(guidancePolicy, /Codex is treated as budgeted at one review per PR or change/i);
-  assert.match(guidancePolicy, /review-trigger-condition setting/i);
-  assert.match(guidancePolicy, /does not request or wait for a\s*Codex review/i);
-  assert.match(guidancePolicy, /no CodeRabbit-style pre-authorization or\s*disclosure gate/i);
-  assert.match(guidancePolicy, /evaluated via `superpowers:receiving-code-review`/i);
 });
 
 test("does not restart CodeRabbit when a real review lacks current SHA proof", () => {
