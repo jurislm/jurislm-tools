@@ -158,9 +158,12 @@ git worktree add -b <branch> .claude/worktrees/<branch> <remote>/main
    **CodeRabbit 有兩個獨立管道，額度分開計算**（官方 plans 頁面對 PR／IDE／CLI
    各列一個每小時上限，滾動式視窗），所以 App 受限不代表 CLI 也不能用：
 
-   1. **先走 GitHub App**：在 PR 留言 `@coderabbitai review`。`.coderabbit.yaml`
-      關閉了 auto-review，一定要明確要求，不能等它自己跑。想先確認額度可留言
-      `@coderabbitai rate limit`，它只回報、不觸發 review
+   1. **先走 GitHub App**：`.coderabbit.yaml` 已開啟 auto-review，PR 建立時會自動
+      審一次，正常情況不必手動要求。但**要確認它真的產出了 review**——沒出現、
+      或回報 rate limit／Fair Usage 上限時，才留言 `@coderabbitai review` 補要求
+      一次。想先確認額度可留言 `@coderabbitai rate limit`，它只回報、不觸發 review。
+      設定裡 `auto_incremental_review: false`，所以修 findings 後的 push **不會**
+      再自動審，最終 HEAD 由測試、CI 與 mergeability 覆核
    2. **App 受限就改走 CLI**，這是必走的 fallback 而非放棄理由。App 回報
       rate limit／Fair Usage 上限／服務不可用時，執行
       `coderabbit review --agent --committed --base <remote>/main`。
