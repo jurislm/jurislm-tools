@@ -262,7 +262,9 @@ containers.
 
 - **GIVEN** a Drone fix applies to two adoption targets
 - **WHEN** its source change records the lesson
-- **THEN** Delivery Relations names both targets and their acceptance dependency without a GitHub Issue
+- **THEN** the delivery's tracking record — the Linear issue's relations by default, Delivery
+  Relations for a repository that chose Spectra — names both targets and their dependency
+  without a GitHub Issue
 
 ---
 ### Requirement: Canonical PR review contract

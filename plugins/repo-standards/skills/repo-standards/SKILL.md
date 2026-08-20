@@ -72,6 +72,11 @@ argument-hint: "[repo-name]"
 標準變更影響其他 adoption target 時，用 Linear 的 project、issue 關聯與
 blocks／blocked-by 記錄目標與相依關係。
 
+⚠️ **前置條件:已連接的 Linear workspace**（讀寫 issue 用）。`spectra init` 可以由目標
+repo 自己跑起來，Linear 不行——沒有 workspace 就沒有預設路徑可走。目標 repo 未接
+Linear 時，**開始非瑣碎變更前先問使用者要用哪個追蹤容器**，不要自行假設，也不要因此
+略過追蹤。
+
 **只有使用者明確要求 Spectra／OpenSpec 時**才改用它：那時先執行 `spectra --version`，
 目標 repo 缺少 `openspec/` 或 `.spectra.yaml` 就先在根目錄 `spectra init`，之後一律以
 `proposal → design → specs → tasks` 作為該次交付的唯一紀錄。兩套不混用——一次交付
