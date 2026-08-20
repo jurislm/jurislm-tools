@@ -10,9 +10,9 @@
 thread 留下具體理由；完成後 resolve 每一個 review thread。修正後的 HEAD 由本地驗證、
 CI 與 mergeability 覆核，不重啟外部 review。
 
-使用 `jt-flow-all` 時，它只協調 Spectra change queue；每個 delegated item 由
-`jt-flow-one` invoke `superpowers:requesting-code-review` 並擁有本地 review。
-`jt-flow-all` 不發起或擁有額外 review。
+使用 `jt-flow-one` 時，本地 review 由該 Skill invoke
+`superpowers:requesting-code-review` 擁有；外部 review 交給 `coderabbit:code-review`
+skill，不另起第二套審查機制。
 
 CodeRabbit 的 `.coderabbit.yaml` 必須設定 `reviews.auto_review.enabled: false`。首次人工
 request App 前，揭露 GitHub App 會依其安裝權限讀取 repo 與 PR 內容，CLI 可能使用

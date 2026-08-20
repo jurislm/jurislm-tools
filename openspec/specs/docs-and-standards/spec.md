@@ -266,9 +266,9 @@ review threads, and satisfy CI and mergeability gates. It MUST configure
 CodeRabbit auto-review as disabled with one explicit App request, permit the
 CLI only as the prescribed fallback, allow one Copilot review, treat Codex as
 passive, and exclude automatic Claude PR-review pipelines. For a target using
-`jt-flow-all`, that Skill SHALL only coordinate its Spectra change queue;
-delegated `jt-flow-one` SHALL own and invoke the local review without any
-additional `jt-flow-all` review.
+`jt-flow-one`, that Skill SHALL own and invoke the local review; external review
+SHALL be delegated to the `coderabbit:code-review` skill rather than a second
+review mechanism.
 
 #### Scenario: A repository opens a pull request
 
