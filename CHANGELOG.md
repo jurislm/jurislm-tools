@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.40.2](https://github.com/jurislm/jurislm-tools/compare/v1.40.1...v1.40.2) (2026-08-20)
+
+
+### 🐛 Bug Fixes
+
+* stop hardcoding tool names, and verify dispatched agent results ([#238](https://github.com/jurislm/jurislm-tools/issues/238)) ([9ac1629](https://github.com/jurislm/jurislm-tools/commit/9ac1629068069b197681d8ea658755388b434ce2))
+
 ## [1.40.1](https://github.com/jurislm/jurislm-tools/compare/v1.40.0...v1.40.1) (2026-08-20)
 
 
