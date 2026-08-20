@@ -151,6 +151,9 @@ git worktree add -b <branch> .claude/worktrees/<branch> <remote>/main
 4. **CodeRabbit review 是必經環節，不是備案**——年約已付費，它就是這條流程的代碼
    審查關卡。「這次改動很小」不是略過的理由。授權與資料範圍由
    `coderabbit:code-review` skill 自己管，本流程不重複那套規則。
+   唯一不適用的 PR 是 Release Please 開的版號 PR（標題為
+   `chore(main): release X.Y.Z`）：`.coderabbit.yaml` 的 `ignore_title_keywords`
+   已設定跳過，要求也不會被受理，白白消耗一次額度。要求前先看 PR 標題。
 
    **CodeRabbit 有兩個獨立管道，額度分開計算**（官方 plans 頁面對 PR／IDE／CLI
    各列一個每小時上限，滾動式視窗），所以 App 受限不代表 CLI 也不能用：

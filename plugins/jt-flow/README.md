@@ -35,7 +35,8 @@ Linear issue 是需求、範圍、驗收標準與交付紀錄的唯一來源，�
 
 **CodeRabbit review 是每個 PR 的必經環節**，不是需要時才做的備案——年約已付費，它就是
 這條流程的代碼審查關卡。授權與資料範圍由 `coderabbit:code-review` skill 自己管，
-本 plugin 不重複那套規則。
+本 plugin 不重複那套規則。唯一不適用的是 Release Please 的版號 PR（標題
+`chore(main): release X.Y.Z`），`.coderabbit.yaml` 已設定跳過。
 
 CodeRabbit 的 GitHub App 與 CLI 是兩個獨立管道，review 額度分開計算。先在 PR 留言
 `@coderabbitai review` 走 App（`.coderabbit.yaml` 關閉了 auto-review）；App 回報
