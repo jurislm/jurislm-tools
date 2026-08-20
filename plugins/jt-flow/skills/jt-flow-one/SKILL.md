@@ -95,8 +95,11 @@ git worktree add -b <branch> .claude/worktrees/<branch> <remote>/main
 
 1. `superpowers:requesting-code-review` 做本地 review，findings 依
    `superpowers:receiving-code-review` 逐項核實後處置
-2. push 前掃過相對 `<remote>/main` 的完整 diff，確認沒有 secret、credential、非範本
-   `.env*` 或其他不該外傳的內容。發現就停止，清除並重新掃描後才 push
+2. push 前掃描 `<remote>/main..HEAD` 的**每一個 commit**，不只最終 aggregate diff——
+   secret 若在某個 commit 加入、後續 commit 刪除，aggregate diff 是乾淨的，但
+   `git push` 仍會把那個帶 secret 的 commit 推上去。確認沒有 secret、credential、
+   非範本 `.env*` 或其他不該外傳的內容。發現就停止，從**所有將推送的 commit**
+   清除（只在後續 commit 刪除不算清除）、處理必要的憑證輪替，重新掃描後才 push
 3. `git push -u <remote> <branch>` → `gh pr create --repo <owner>/<repo> --base main`，
    PR 標題或內文帶 Linear identifier
 4. 需要外部 review 時 invoke `coderabbit:code-review` skill——授權、資料範圍與
@@ -125,8 +128,11 @@ merge 授權已包含在最初的交付授權裡，gates 全綠後直接合併�
   核准——都確認過再走該 repo 部署平台的手動重新部署
 - 宣稱 prod 驗收通過前用 `superpowers:verification-before-completion` 跑實際請求／
   截圖／log 佐證
-- **回寫 Linear**：在 issue 留言貼 PR 連結與驗收證據摘要，把 issue 轉成完成狀態。
-  這是本次交付的 durable record，不另建歸檔文件
+- **回寫 Linear**：在 issue 留言貼 PR 連結與驗收證據摘要。這是本次交付的 durable
+  record，不另建歸檔文件
+- **Done 由 product owner 決定**：驗收證據齊全不等於可以標 Done。issue 留在等待
+  驗收的狀態，由 product owner 最終接受後才轉完成——技術驗證通過只是完成的必要
+  條件之一，不是充分條件
 
 ## 例外／不適用情境
 
