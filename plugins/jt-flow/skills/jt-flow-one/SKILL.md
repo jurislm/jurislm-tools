@@ -76,7 +76,10 @@ Linear issue → 釐清 → worktree → TDD 實作 → PR + review → merge �
 
 - 讀 Linear issue 的標題、描述、留言與驗收標準。優先用已連接的 Linear MCP 讀取工具；
   若目前連線的 Linear connector 沒有提供讀取工具，請使用者貼上 issue 內容即可繼續
-- grep／Read 相關 codebase 確認現況，不憑假設斷言
+- **先派 Explore agent 做範圍探索**，拿到相關檔案、現有做法與影響面的全貌，再依它
+  回報的結果決定要對哪些檔案做精確的 grep／Read。順序不可顛倒：先用自己想得到的
+  關鍵字 grep，只會找到自己**已經想到**的東西，漏掉的那些不會有人提醒你
+- 一律不憑假設斷言：每個結論都要指得出是哪次搜尋或哪個檔案讀出來的
 - 進 `superpowers:brainstorming`，依它自己的分類（spike／bounded／architectural）
   決定要問多少、要不要寫設計文件。只問影響架構或長期路徑的問題，其餘自行拍板
 
