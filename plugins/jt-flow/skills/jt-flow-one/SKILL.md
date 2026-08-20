@@ -73,10 +73,13 @@ Context7／Exa／Firecrawl 就三個都用，它們強項不同：官方 API 參
    linked worktree 的 `--git-dir` 是 `.git/worktrees/<name>`，主 checkout 兩者相同。
 
    - **已在 linked worktree** → 沿用它，走步驟 2 的「已在 linked worktree」分支
-     （**不是跳過步驟 2**——fetch、落後就 rebase、髒工作區檢查都在那裡）。
-     **不檢查主目錄在哪個分支**，主目錄在做什麼與本次交付無關
-   - **在主 checkout** → 走步驟 2 的「新建」分支。工作樹是從下面第 3 點解析出的
-     `<remote>/<main>` 建立的，與主 checkout 目前在哪個分支無關，不需要先切過去
+     （**不是跳過步驟 2**——fetch、落後就 rebase、髒工作區檢查都在那裡）
+   - **在主 checkout** → 走步驟 2 的「新建」分支
+
+   目標 repo 的 `CLAUDE.md` 常有「主目錄維持在預設分支」這類規約——**遵守它**，但它
+   不是本流程的 gate：worktree 是從下面第 3 點解析出的 `<remote>/<main>` 建立的，
+   root 目前在哪個分支不影響本次交付的正確性。發現 root 不在預設分支時回報一聲，
+   不要因此停下整個交付，也不要自己去切換別人的工作區。
 
 2. `git remote -v` 解析實際 remote 名稱（不假設叫 `origin`）與 `<owner>/<repo>`；
    多個候選或 fetch／push 目標不一致 → 停下確認。所有 `gh` 指令一律明寫
@@ -123,9 +126,15 @@ git fetch <remote> <main>
 git merge-base --is-ancestor <remote>/<main> HEAD || echo "落後 $(git rev-list --count HEAD..<remote>/<main>) 個 commit"
 ```
 
-落後就 rebase 到最新 `<remote>/<main>` 再開始，避免在舊 base 上開發導致 PR 帶著無關
-差異或重複修已在預設分支修好的東西。rebase 前先看 `git status`：工作區有未 commit
-的變更就停下回報，不要自行 stash 或丟棄別人留在這裡的東西。
+**動任何東西之前先無條件檢查工作區**——不只 rebase 前，換分支前、開始實作前都一樣：
+
+```bash
+git status --porcelain     # 有輸出就停下回報
+```
+
+有未 commit 的變更就立刻停下回報，不要自行 stash 或丟棄別人留在這裡的東西，也不要
+把它混進本次交付。工作區乾淨後，落後就 rebase 到最新 `<remote>/<main>` 再開始，避免
+在舊 base 上開發導致 PR 帶著無關差異或重複修已在預設分支修好的東西。
 
 #### 在主 checkout（新建）
 
@@ -133,8 +142,11 @@ git merge-base --is-ancestor <remote>/<main> HEAD || echo "落後 $(git rev-list
 git worktree add --no-track -b <branch> .claude/worktrees/<branch> <remote>/<main>
 ```
 
-`--no-track` 避免新分支把預設分支設成 upstream，讓 `git status` 在 push 之前一直
-報 ahead／behind。也可用 `superpowers:using-git-worktrees`。
+不加 `--no-track` 時新分支會把 `<remote>/<main>` 設成 upstream，`git status` 於是一路
+報「ahead／behind 預設分支」——那是拿本次分支跟預設分支比，不是有用的訊號。加上
+`--no-track` 就沒有 upstream，直到 `git push -u` 時才設定成自己的遠端分支。要看與
+預設分支的關係時用 `git rev-list --count <remote>/<main>..HEAD`，不要靠 `git status`。
+也可用 `superpowers:using-git-worktrees`。
 
 #### 分支命名（兩支都適用）
 
