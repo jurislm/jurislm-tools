@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.40.5](https://github.com/jurislm/jurislm-tools/compare/v1.40.4...v1.40.5) (2026-08-20)
+
+
+### 🐛 Bug Fixes
+
+* track changes in Linear, not Spectra, across repo-standards ([#243](https://github.com/jurislm/jurislm-tools/issues/243)) ([e00ef5e](https://github.com/jurislm/jurislm-tools/commit/e00ef5eaf8d9b5a14df507c05f06607d2368a155))
+
 ## [1.40.4](https://github.com/jurislm/jurislm-tools/compare/v1.40.3...v1.40.4) (2026-08-20)
 
 
