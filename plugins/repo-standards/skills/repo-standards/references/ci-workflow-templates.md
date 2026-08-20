@@ -470,7 +470,7 @@ Code Review 的 `claude-code-review.yml` / `claude.yml`（及 Drone
 
 1. 在來源 repo 修復（PR 含 root cause 分析）。
 2. **同步**回填到此模板（`references/ci-workflow-templates.md`）+ SKILL.md 相關章節。
-3. 在 active Spectra proposal 的 Delivery Relations 記錄其他 adoption target 與 acceptance dependency。
+3. 在該次交付的追蹤紀錄裡登記其他 adoption target 與相依關係（Linear：issue 關聯與 blocks／blocked-by；選用 Spectra 的 repo：proposal 的 Delivery Relations）。
 
 **禁止**：只修單一 repo 不回填模板 → 下一個 repo 仍會踩同個雷。
 

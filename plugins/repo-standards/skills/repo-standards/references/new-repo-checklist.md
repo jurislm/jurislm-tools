@@ -8,9 +8,9 @@
 2. [ ] 不把 `CLAUDE.md` 全文複製進 `AGENTS.md`，避免兩份規範 drift
 3. [ ] 若 repo 內沒有 `AGENTS.md`，不主動新增，除非使用者明確要求
 
-## Spectra 初始化與變更追蹤
+## 變更追蹤
 
-開始非瑣碎變更前，執行 `spectra --version`；若目標 repo 沒有 `openspec/` 或 `.spectra.yaml`，先在根目錄執行 `spectra init`。完成後只使用 active Spectra change 的 `proposal`、`design`、`specs`、`tasks` 作為追蹤與授權紀錄。跨 repo adoption target 與 acceptance dependency 記錄在 proposal 的 Delivery Relations。
+預設以 Linear issue 作為需求、範圍、驗收標準與交付狀態的唯一紀錄；不建立、不引用、也不依賴 GitHub Issue。跨 repo adoption target 與相依關係用 Linear 的 project 與 issue blocks／blocked-by 表示。僅在使用者明確要求 Spectra／OpenSpec 時才改用四件套（`spectra --version` → 必要時 `spectra init` → `proposal`／`design`／`specs`／`tasks`），兩套不混用。
 
 ## Git Worktree
 

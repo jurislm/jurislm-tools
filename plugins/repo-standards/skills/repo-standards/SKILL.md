@@ -63,14 +63,24 @@ argument-hint: "[repo-name]"
 
 ---
 
-## Spectra 初始化與變更追蹤
+## 變更追蹤
 
-開始非瑣碎變更前，先執行 `spectra --version`。目標 repo 尚未有 `openspec/` 或
-`.spectra.yaml` 時，先在 repo 根目錄執行 `spectra init`，再建立或沿用 Spectra
-change。完成初始化後，一律以
-`proposal → design → specs → tasks` 作為唯一追蹤與授權紀錄。不要建立、引用或
-依賴 GitHub Issue。標準變更影響其他 adoption target 時，在 active proposal 的
-Delivery Relations 記錄目標與 acceptance dependency；完成後由 archive 留下歷史。
+**預設以 Linear issue 作為需求、範圍、驗收標準與交付狀態的唯一紀錄**，比照
+`jurislm-tools` 根目錄 `CLAUDE.md` 的 Linear + Superpowers 交付鏈。不要建立、引用或
+依賴 GitHub Issue。
+
+標準變更影響其他 adoption target 時，用 Linear 的 project、issue 關聯與
+blocks／blocked-by 記錄目標與相依關係。
+
+⚠️ **前置條件:已連接的 Linear workspace**（讀寫 issue 用）。`spectra init` 可以由目標
+repo 自己跑起來，Linear 不行——沒有 workspace 就沒有預設路徑可走。目標 repo 未接
+Linear 時，**開始非瑣碎變更前先問使用者要用哪個追蹤容器**，不要自行假設，也不要因此
+略過追蹤。
+
+**只有使用者明確要求 Spectra／OpenSpec 時**才改用它：那時先執行 `spectra --version`，
+目標 repo 缺少 `openspec/` 或 `.spectra.yaml` 就先在根目錄 `spectra init`，之後一律以
+`proposal → design → specs → tasks` 作為該次交付的唯一紀錄。兩套不混用——一次交付
+只屬於其中一個容器。
 
 ---
 
@@ -500,7 +510,7 @@ repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migrati
 
 ### 規範回填協議
 
-當任一 repo 的 `.drone.yml` 發現新陷阱：在來源 repo 修復（PR 含 root cause）→ **同步**回填 `references/ci-workflow-templates.md` + 本檔 → 在 active Spectra proposal 的 Delivery Relations 記錄其他 adoption target。**禁止**只修單一 repo 不回填。
+當任一 repo 的 `.drone.yml` 發現新陷阱：在來源 repo 修復（PR 含 root cause）→ **同步**回填 `references/ci-workflow-templates.md` + 本檔 → 在該次交付的追蹤紀錄裡登記其他 adoption target（Linear：issue 關聯；選用 Spectra 的 repo：proposal 的 Delivery Relations）。**禁止**只修單一 repo 不回填。
 
 ---
 
@@ -564,7 +574,7 @@ repo 設定必須提供以下前置條件：
 
 **快速概覽**（各類別必做項）：
 - **AGENTS.md**：若 repo 內存在 `AGENTS.md`，更新為讀取同層或 repo 根目錄 `CLAUDE.md`；不要複製 CLAUDE 全文
-- **Spectra**：先確認已初始化；非瑣碎變更只用 `proposal → design → specs → tasks`，跨 repo 目標記在 proposal 的 Delivery Relations
+- **變更追蹤**：預設用 Linear issue 記錄需求、範圍與驗收；跨 repo 目標用 Linear 的 project 與 issue 關聯表示。僅在使用者明確要求時改用 Spectra 四件套
 - **Worktree**：feature worktree 直接從 main 建立於 `.claude/worktrees/<change-name>`，不建立 develop；`.claude/worktrees/` 不進 `.gitignore`（由 Claude Code runtime 本地排除）
 - **Bun**：`"packageManager": "bun@1.3.14"`，scripts 換成 `bun run vitest` 等
 - **Release**：Drone repo 使用 `main`-only release pipeline，依序執行固定精確版本的 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`，並由同一 trusted delivery 的 source-controlled validator 自動合併 release PR；無人工 fallback
