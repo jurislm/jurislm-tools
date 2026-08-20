@@ -6,11 +6,11 @@
 
 ## 變更追蹤與 Code Review
 
-開始非瑣碎變更前，先確認 `spectra --version`；目標 repo 缺少 `openspec/` 或
-`.spectra.yaml` 時先執行 `spectra init`。完成後只以 active Spectra change 的
-`proposal`、`design`、`specs`、`tasks` 作為追蹤紀錄；不建立、不引用、也不依賴
-GitHub Issue。跨 repo adoption target 與 acceptance dependency 記錄在 proposal 的
-Delivery Relations。
+預設以 Linear issue 作為需求、範圍、驗收標準與交付狀態的唯一紀錄；不建立、不引用、
+也不依賴 GitHub Issue。跨 repo adoption target 與相依關係用 Linear 的 project 與 issue
+blocks／blocked-by 表示。只有使用者明確要求 Spectra／OpenSpec 時才改用四件套
+（`spectra --version` → 必要時 `spectra init` → `proposal`／`design`／`specs`／`tasks`），
+兩套不混用。
 
 PR review 與 merge 以目標 repo 自身 `CLAUDE.md` 為唯一操作契約；缺少時先採用
 repo-standards packaged `review-orchestration-template.md` 並依 target 客製化。契約中

@@ -217,34 +217,46 @@ title 都驗證時做相容性判讀；未來應使用 target-compatible squash-
 - **並且** side-branch 的不允許 type 不會阻擋一個已驗證的 mainline `feat` 或 `fix`
 
 ---
-### Requirement: Spectra-only change tracking
+### Requirement: Linear-based change tracking
 
-`jurislm-tools` and repositories adopting `repo-standards` SHALL use the
-active Spectra change's `proposal`, `design`, `specs`, and `tasks` artifacts as
-the only change-tracking record. Before requiring an active change, guidance
-MUST run `spectra --version` and, when the target lacks `openspec/` or
-`.spectra.yaml`, MUST run `spectra init` at the repository root. Guidance MUST
+`jurislm-tools` and repositories adopting `repo-standards` SHALL record a
+non-trivial change's requirement, scope, acceptance criteria, and delivery
+status in a Linear issue as the single change-tracking record. Guidance MUST
 NOT create, require, link, or depend on a GitHub Issue. When a standard change
-affects other adoption targets, its active proposal's Delivery Relations SHALL
-record those targets and their acceptance dependencies.
+affects other adoption targets, the tracking record SHALL name those targets
+and their dependencies — in Linear through issue relations and
+blocks/blocked-by.
+
+Spectra artifacts SHALL be used only when the user explicitly asks for Spectra
+or OpenSpec. In that case guidance MUST run `spectra --version` and, when the
+target lacks `openspec/` or `.spectra.yaml`, MUST run `spectra init` at the
+repository root, and that change's `proposal`, `design`, `specs`, and `tasks`
+become its only tracking record. A single delivery SHALL NOT mix the two
+containers.
 
 #### Scenario: A repository starts a standard change
 
-- **WHEN** a repository begins a non-trivial standards change and lacks
-  Spectra initialization
-- **THEN** it runs `spectra init` before it records the work in an active
-  Spectra change without creating or referencing a GitHub Issue
+- **WHEN** a repository begins a non-trivial standards change and the user has
+  not asked for Spectra
+- **THEN** it records the requirement, scope, and acceptance criteria in a
+  Linear issue without creating or referencing a GitHub Issue, and without
+  creating Spectra artifacts
 
 ##### Example: Next.js repository setup
 
-- **GIVEN** an active change named `adopt-nextjs-standard`
+- **GIVEN** a Linear issue describing the Next.js standard adoption
 - **WHEN** the repository starts its standards work
-- **THEN** its proposal, design, specs, and tasks record the work and no GitHub Issue is created
+- **THEN** that issue records the requirement and acceptance criteria, and no GitHub Issue is created
+
+#### Scenario: The user explicitly asks for Spectra
+
+- **WHEN** the user asks for the change to run through Spectra or OpenSpec and the target lacks initialization
+- **THEN** it runs `spectra init` and records the work in that change's proposal, design, specs, and tasks, without also opening a parallel Linear planning artifact for the same delivery
 
 #### Scenario: A discovered standard affects other repositories
 
 - **WHEN** a source repository discovers a CI or deployment lesson that affects other adoption targets
-- **THEN** the active Spectra proposal records the affected targets and acceptance dependencies in Delivery Relations without opening a GitHub Issue
+- **THEN** its tracking record names the affected targets and their dependencies without opening a GitHub Issue
 
 ##### Example: CI template lesson
 

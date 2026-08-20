@@ -16,7 +16,8 @@ skill，不另起第二套審查機制。
 
 CodeRabbit 的 `.coderabbit.yaml` 必須設定 `reviews.auto_review.enabled: false`。首次人工
 request App 前，揭露 GitHub App 會依其安裝權限讀取 repo 與 PR 內容，CLI 可能使用
-review guidelines、learnings 與 history；在 Spectra proposal GO 記錄使用者明確 consent。
+review guidelines、learnings 與 history；在該次交付的追蹤紀錄（Linear issue 留言，或
+該 repo 選用的追蹤容器）記錄使用者明確 consent。
 每個 PR 只 request App 一次。App 產出有效 review 後不執行 CLI；只有 App 進入終態且
 未產出有效 review 時，CLI 才可執行一次 fallback。
 
