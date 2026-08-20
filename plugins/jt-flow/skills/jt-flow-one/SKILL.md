@@ -3,7 +3,7 @@ name: jt-flow-one
 description: >
   以 Linear issue 為需求來源，用 Superpowers skill 集完成一個需求的端到端交付：
   釐清 → worktree → TDD 實作 → PR → review → merge → 部署驗收 → Linear readback。
-  GitHub Flow 單段式（無 develop 分支，feature 直接對 main 開 PR）。
+  GitHub Flow 單段式（無 develop 分支，feature 直接對預設分支開 PR）。
   Linear issue 本身即授權，不另設提案核准關卡。
   Use when the user asks to "做完這個 Linear issue", "把這個需求做完",
   "deliver this issue end to end", or points at a Linear issue and asks for
@@ -30,6 +30,7 @@ issue 是需求、範圍與驗收標準的唯一來源；不另建平行規劃�
 - 不可逆或破壞性的 production mutation
 - rollback 涉及 DB／schema／資料遺失風險，或找不到明確安全的回復目標
 - 前提與預期不符，繼續下去會破壞既有工作或空轉：工作樹有別人未提交的變更、
+  沿用的分支上有未合併也查不到已合併 PR 的 commit、
   remote 解析不唯一、必要的外部管道因**存取或設定問題**（未安裝、未登入、
   權限不符）而不可用。⚠️ 服務端的額度用盡或暫時中斷**不屬於**這一類——那是
   記錄後繼續，不是停下
@@ -56,8 +57,9 @@ Context7／Exa／Firecrawl 就三個都用，它們強項不同：官方 API 參
 兩個方向都要避免：因為文件只寫了某個工具，就不用其他更合適的；或因為文件寫的那個
 沒裝，就停下來說做不到——換一個能達成同一目的的工具繼續。
 
-**唯一例外是流程明文指定的具名管道**（步驟 4 的 CodeRabbit 審查關卡）：那不是「做這件
-事的一種工具」，而是關卡本身，不能拿別的東西替代。它缺席時依該步驟自己的分流處理。
+**例外是流程明文指定的具名管道**（步驟 4 的 CodeRabbit 審查關卡、各步驟點名的
+`superpowers:*` 方法論 skill）：那不是「做這件事的一種工具」，而是關卡或方法本身，
+不能拿別的東西替代。它缺席時依該步驟自己的分流處理。
 
 ## 前置檢查
 
@@ -134,19 +136,27 @@ git worktree add --no-track -b <branch> .claude/worktrees/<branch> <remote>/<mai
 `--no-track` 避免新分支把預設分支設成 upstream，讓 `git status` 在 push 之前一直
 報 ahead／behind。也可用 `superpowers:using-git-worktrees`。
 
+#### 分支命名（兩支都適用）
+
 分支名由 Linear identifier 加簡短 slug 組成（如 `eng-123-fix-token-refresh`），讓 PR
-與 issue 能雙向對應。沿用的 worktree 若分支名對不上本次 issue，先確認目前分支的工作
-沒有失聯，再開新分支：
+與 issue 能雙向對應。
+
+**沿用的 worktree 若分支名對不上本次 issue**，先確認目前分支的工作沒有失聯，再開
+新分支：
 
 ```bash
+git log <remote>/<main>..HEAD --oneline          # 只用來看「有沒有」commit
 gh pr list --repo <owner>/<repo> --head "$(git branch --show-current)" --state merged --json number
 ```
 
-有已合併的 PR → 工作已交付，可以直接開新分支。⚠️ **不要用
-`git log <remote>/<main>..HEAD` 是否為空來判斷**：squash merge 不會讓原始 commit 成為
-預設分支的祖先（本 repo 的標準正是 squash-only），已交付的分支照樣列出一整串 commit，
-每次都會被誤判成未合併而擋住。查不到已合併 PR 且確實有本次以外的 commit 時才停下
-回報。確認後從最新 `<remote>/<main>` 開一個對得上的新分支即可，仍不新建 worktree。
+- 沒有 commit，或查得到已合併的 PR → 工作已交付，直接開新分支
+- 有 commit 但查不到已合併的 PR → **停下回報**，別把別人的工作留在原地失聯
+
+⚠️ `git log` **只能用來判斷有沒有 commit，不能用來判斷是否已合併**：squash merge 不會
+讓原始 commit 成為預設分支的祖先（多數 repo 採 squash merge 時都是這個情況），已交付
+的分支照樣列出一整串 commit。是否已交付一律以 GitHub 上該分支的 PR 狀態為準。
+
+確認後從最新 `<remote>/<main>` 開一個對得上的新分支即可，仍不新建 worktree。
 
 ### 3. TDD 實作
 
@@ -183,7 +193,7 @@ gh pr list --repo <owner>/<repo> --head "$(git branch --show-current)" --state m
    - `false`、沒有這個檔、或讀不到 → 不會自動審，直接留言 `@coderabbitai review`
      要求一次
    - PR 標題命中 `reviews.auto_review.ignore_title_keywords`（例如 Release Please
-     的 `chore(main): release X.Y.Z`）→ 該 repo 已宣告這種 PR 不需要審查，跳過本
+     的 `chore(<main>): release X.Y.Z`）→ 該 repo 已宣告這種 PR 不需要審查，跳過本
      關，不要為它要求 review
    - `auto_incremental_review: false` → 修 findings 後的 push 不會再自動審，最終
      HEAD 由測試、CI 與 mergeability 覆核；`true` 則會再審，注意額度消耗
@@ -197,7 +207,8 @@ gh pr list --repo <owner>/<repo> --head "$(git branch --show-current)" --state m
 
    1. **先走 GitHub App**：依上面讀到的設定，等自動 review 或主動留言
       `@coderabbitai review` 要求一次。想先確認額度可留言
-      `@coderabbitai rate limit`，它只回報、不觸發 review。
+      `@coderabbitai rate limit`，它只回報、不觸發 review（2026-08 官方 plans 頁面
+      明列此用法；指令集會變，不確定時用 `@coderabbitai help` 確認當下支援哪些）。
       **App 未在合理時間內產出 review 就進入下一步，不論原因**——包含完全沒有
       回應（App 未安裝、未授權此 repo、webhook 沒觸發都會長這樣）
    2. **改走 CLI**，這是必走的 fallback 而非放棄理由：
@@ -231,11 +242,15 @@ gh pr list --repo <owner>/<repo> --head "$(git branch --show-current)" --state m
 9. **gate 清單以目標 repo 的 `CLAUDE.md` 為準**——它若寫了 PR review 與 merge 契約
    （例如額外的 Copilot gate），那份為準；下面這組是它沒寫時的預設：
 
-   - `mergeable` 為 `MERGEABLE`
-   - **所有 required status check 成功**、無 branch protection blocker。⚠️ 不要求
-     `mergeStateStatus` 等於 `CLEAN`——非必要的 check（CodeRabbit 額度耗盡留下的那個
-     就是）會讓聚合狀態停在 `UNSTABLE`，但它不影響 mergeability。用 `CLEAN` 當 gate
-     會跟「額度耗盡不擋合併」互相矛盾，永遠過不了
+   - `mergeable` 為 `MERGEABLE`（`UNKNOWN` 代表 GitHub 還在背景計算，push 後很常見，
+     重新查詢即可，不是失敗）
+   - `mergeStateStatus` 為 `CLEAN` **或** `UNSTABLE`，不可為 `BLOCKED`／`DIRTY`／
+     `BEHIND`。⚠️ 別要求一定是 `CLEAN`——`UNSTABLE` 的定義就是「只有非必要的 check
+     沒過」，CodeRabbit 額度耗盡留下的正是這種；要求 `CLEAN` 會跟「額度耗盡不擋合併」
+     互相矛盾，永遠過不了。`BLOCKED` 才是「required check 失敗或缺席」。
+     用這兩個值判斷，不必去讀 branch protection API——`gh pr view --json
+     statusCheckRollup` 不會標示哪些 check 是必要的，而 protection API 對沒有 admin
+     權限的人回 403
    - 所有 review thread 已 resolve，外部 reviewer（CodeRabbit、Copilot 等）沒有未
      處理的 finding
    - CodeRabbit review 已完成，或已依上方分流記錄其服務端限制，或屬存取／設定問題
@@ -248,11 +263,13 @@ gh pr list --repo <owner>/<repo> --head "$(git branch --show-current)" --state m
 
 merge 授權已包含在最初的交付授權裡，gates 全綠後直接合併，不再詢問。
 
-⚠️ **Release Please 的版號 PR（`chore(main): release X.Y.Z`）不由本流程合併。**
+⚠️ **Release Please 的版號 PR（標題形如 `chore(<main>): release X.Y.Z`，括號裡是該 repo
+的預設分支名）不由本流程合併。**
 這類 PR 應由目標 repo 自己 source-controlled 的 validator 自動處理——它會比對標題、
 body marker、base／head SHA 與 artifact 是否齊全，不通過就維持候選開啟並 fail
 closed。人工合併等於跳過那整套檢查。本流程對它只做一件事：監看它的終態；沒有自動
-合併就回報，讓 validator 重試，不要自己動手。這類 PR 也不對應 Linear issue，
+合併就回報，讓 validator 重試，不要自己動手。目標 repo 沒有這種 validator 時同樣不
+自行合併：回報現況、交由使用者決定。這類 PR 也不對應 Linear issue，
 略過標題帶 identifier 與 Linear readback 的要求；要不要跑 CodeRabbit 依目標 repo
 `.coderabbit.yaml` 的 `ignore_title_keywords` 而定，不預設任何一種。
 
