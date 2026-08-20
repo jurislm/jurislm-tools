@@ -3,7 +3,13 @@ language: "zh"
 tone_instructions: "一律使用繁體中文（台灣正體用語）撰寫審查意見與回覆。"
 reviews:
   auto_review:
-    enabled: false
+    enabled: true
+    # 每個 PR 只在開啟時自動審一次。關閉遞增審查：修 findings 後的 push 會再消耗一次
+    # PR review 額度（滾動式視窗，實際上限見 CodeRabbit plans 頁面），很快就會被
+    # 限流；最終 HEAD 改由測試、CI 與 mergeability 覆核。
+    auto_incremental_review: false
+    # draft PR 不審（官方預設值，明寫避免日後誤解）
+    drafts: false
     base_branches:
       - "^main$"
     # release-please 自動開的 release PR（標題固定 "chore(main): release X.Y.Z"）純版號/CHANGELOG，跳過審查
