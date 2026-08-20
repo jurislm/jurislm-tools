@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.40.3](https://github.com/jurislm/jurislm-tools/compare/v1.40.2...v1.40.3) (2026-08-20)
+
+
+### 🐛 Bug Fixes
+
+* make CodeRabbit review a required step, not a fallback ([#240](https://github.com/jurislm/jurislm-tools/issues/240)) ([19e76a8](https://github.com/jurislm/jurislm-tools/commit/19e76a8f7acdf5f59e164ad73950543c2988bd01))
+
 ## [1.40.2](https://github.com/jurislm/jurislm-tools/compare/v1.40.1...v1.40.2) (2026-08-20)
 
 
