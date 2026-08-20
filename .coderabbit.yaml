@@ -5,8 +5,8 @@ reviews:
   auto_review:
     enabled: true
     # 每個 PR 只在開啟時自動審一次。關閉遞增審查：修 findings 後的 push 會再消耗一次
-    # PR review 額度（Pro 方案每位開發者每小時 5 次，滾動式視窗），很快就會被限流；
-    # 最終 HEAD 改由測試、CI 與 mergeability 覆核。
+    # PR review 額度（滾動式視窗，實際上限見 CodeRabbit plans 頁面），很快就會被
+    # 限流；最終 HEAD 改由測試、CI 與 mergeability 覆核。
     auto_incremental_review: false
     # draft PR 不審（官方預設值，明寫避免日後誤解）
     drafts: false
