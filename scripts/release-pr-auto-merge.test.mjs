@@ -65,8 +65,8 @@ const PLUGIN_DEFINITIONS = [
   },
   {
     name: "jt-flow",
-    description: "端到端落地需求的個人工作流 — Spectra、GitHub Flow 與交付驗證",
-    keywords: ["workflow", "spectra", "github-flow", "delivery"],
+    description: "以 Linear issue 為需求來源的端到端交付工作流 — GitHub Flow 與交付驗證",
+    keywords: ["workflow", "linear", "github-flow", "delivery"],
   },
   {
     name: "higgsfield",
