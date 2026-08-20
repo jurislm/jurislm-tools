@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.40.0](https://github.com/jurislm/jurislm-tools/compare/v1.39.0...v1.40.0) (2026-08-20)
+
+
+### 🚀 New Features
+
+* redesign jt-flow as a lightweight Linear + Superpowers flow ([#233](https://github.com/jurislm/jurislm-tools/issues/233)) ([a55b2bf](https://github.com/jurislm/jurislm-tools/commit/a55b2bfcadde1f01028aa8b3ffb3d0118abee33d))
+* remove Bubble Planet media plugins ([624b2f9](https://github.com/jurislm/jurislm-tools/commit/624b2f991e8d737cb7dc6a7f39e7c0c3791c5d4b))
+* simplify delivery workflow to Linear and Superpowers ([#231](https://github.com/jurislm/jurislm-tools/issues/231)) ([8d7627a](https://github.com/jurislm/jurislm-tools/commit/8d7627a487d2019ddeed8defd2cebd7bdb272d46))
+
+
+### 🐛 Bug Fixes
+
+* reuse the current worktree when the flow already starts inside one ([#234](https://github.com/jurislm/jurislm-tools/issues/234)) ([3122f29](https://github.com/jurislm/jurislm-tools/commit/3122f29ccda4a50e3bc09c27d6a8080c8345b74c))
+
 ## [1.39.0](https://github.com/jurislm/jurislm-tools/compare/v1.38.2...v1.39.0) (2026-08-17)
 
 
