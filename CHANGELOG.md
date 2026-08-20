@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.40.1](https://github.com/jurislm/jurislm-tools/compare/v1.40.0...v1.40.1) (2026-08-20)
+
+
+### 🐛 Bug Fixes
+
+* explore before grepping in the requirement-clarification step ([#236](https://github.com/jurislm/jurislm-tools/issues/236)) ([ff93814](https://github.com/jurislm/jurislm-tools/commit/ff9381452a7250381179bb8e403b571b51f5cfc8))
+
 ## [1.40.0](https://github.com/jurislm/jurislm-tools/compare/v1.39.0...v1.40.0) (2026-08-20)
 
 
