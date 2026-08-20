@@ -17,7 +17,7 @@ issue 是需求、範圍與驗收標準的唯一來源；不另建平行規劃�
 
 ## 授權契約
 
-**使用者指向一個 Linear issue 並要求交付，即授權走完整條鏈**：釐清、建立 worktree、
+**使用者指向一個 Linear issue 並要求交付，即授權走完整條鏈**：釐清、備妥 worktree、
 實作、commit、push、開 PR、處理 review findings、merge、部署驗收、回寫 Linear。
 不逐項確認、不重複要求授權，也不把驗證 gate 誤當成使用者核准 gate。
 
@@ -44,7 +44,19 @@ issue 是需求、範圍與驗收標準的唯一來源；不另建平行規劃�
 
 ## 前置檢查
 
-1. 主目錄／repository root 在 `main`（`git branch --show-current`）——不在則停止
+1. **先判斷目前是否已經在專屬的 feature worktree 裡**——Claude Code 的 new session
+   可以直接開新工作樹，那時本流程就已經在該工作樹內執行：
+
+   ```bash
+   [ "$(git rev-parse --git-dir)" != "$(git rev-parse --git-common-dir)" ] && echo linked
+   ```
+
+   linked worktree 的 `--git-dir` 是 `.git/worktrees/<name>`，主 checkout 兩者相同。
+
+   - **已在 linked worktree** → 沿用它，跳過步驟 2。**不檢查主目錄在哪個分支**——
+     主目錄在做什麼與本次交付無關
+   - **在主 checkout** → 要求目前在 `main`（`git branch --show-current`），不在則停止
+
 2. `git remote -v` 解析實際 remote 名稱（不假設叫 `origin`）與 `<owner>/<repo>`；
    多個候選或 fetch／push 目標不一致 → 停下確認。所有 `gh` 指令一律明寫
    `--repo <owner>/<repo>`，不依賴 `gh` 的預設 repository
@@ -55,9 +67,10 @@ issue 是需求、範圍與驗收標準的唯一來源；不另建平行規劃�
 Linear issue → 釐清 → worktree → TDD 實作 → PR + review → merge → 部署驗收 → Linear readback
 ```
 
-**一次執行只擁有一個 feature worktree**，從建立到合併回 main 為止不另開第二個。需要
-看其他分支的內容時用 `git show <branch>:<path>`，不要 `cd` 進別的 worktree——那是
-「修 A 卻動到 B」與堆疊分支互相污染的起點。
+**一次執行只擁有一個 feature worktree**，到合併回 main 為止不另開第二個——沿用一個
+既有的工作樹也算數，重點是不再多開。需要看其他分支的內容時用
+`git show <branch>:<path>`，不要 `cd` 進別的 worktree——那是「修 A 卻動到 B」與堆疊
+分支互相污染的起點。
 
 ### 1. 釐清需求
 
@@ -67,16 +80,32 @@ Linear issue → 釐清 → worktree → TDD 實作 → PR + review → merge �
 - 進 `superpowers:brainstorming`，依它自己的分類（spike／bounded／architectural）
   決定要問多少、要不要寫設計文件。只問影響架構或長期路徑的問題，其餘自行拍板
 
-### 2. 建立 feature worktree
+### 2. 確保有 feature worktree
+
+依前置檢查第 1 條的判斷結果分流。兩條路徑都先 `git fetch <remote> main`。
+
+#### 已在 linked worktree（沿用，不新建）
 
 ```bash
 git fetch <remote> main
+git merge-base --is-ancestor <remote>/main HEAD || echo "落後 $(git rev-list --count HEAD..<remote>/main) 個 commit"
+```
+
+落後就 rebase 到最新 `<remote>/main` 再開始，避免在舊 base 上開發導致 PR 帶著無關
+差異或重複修已在 main 修好的東西。rebase 前先看 `git status`：工作區有未 commit
+的變更就停下回報，不要自行 stash 或丟棄別人留在這裡的東西。
+
+#### 在主 checkout（新建）
+
+```bash
 git worktree add -b <branch> .claude/worktrees/<branch> <remote>/main
 ```
 
-分支名由 Linear identifier 加簡短 slug 組成（如 `eng-123-fix-token-refresh`），讓 PR
-與 issue 能雙向對應。基於最新的 `<remote>/main` 建立，避免本地 main 落後。
 也可用 `superpowers:using-git-worktrees`。
+
+分支名由 Linear identifier 加簡短 slug 組成（如 `eng-123-fix-token-refresh`），讓 PR
+與 issue 能雙向對應。沿用的 worktree 若分支名對不上本次 issue，從最新
+`<remote>/main` 開一個對得上的新分支即可，仍不新建 worktree。
 
 ### 3. TDD 實作
 
@@ -136,8 +165,8 @@ merge 授權已包含在最初的交付授權裡，gates 全綠後直接合併�
 
 ## 例外／不適用情境
 
-瑣碎修改（單行 typo、單一檔案小修）不必套完整流程，量力而為，但仍先建 worktree
-再動手。
+瑣碎修改（單行 typo、單一檔案小修）不必套完整流程，量力而為，但仍要在 feature
+worktree 內動手——已經在一個裡面就直接用，不在則先建一個。
 
 多個需求的排序與相依關係交給 Linear 本身（project、cycle、priority、issue 的
 blocks／blocked-by），本 Skill 一次只處理一個 issue。
