@@ -135,10 +135,18 @@ git worktree add --no-track -b <branch> .claude/worktrees/<branch> <remote>/<mai
 報 ahead／behind。也可用 `superpowers:using-git-worktrees`。
 
 分支名由 Linear identifier 加簡短 slug 組成（如 `eng-123-fix-token-refresh`），讓 PR
-與 issue 能雙向對應。沿用的 worktree 若分支名對不上本次 issue，先確認目前分支沒有
-未合併進 `<remote>/<main>` 的 commit（`git log <remote>/<main>..HEAD`）——有就停下
-回報，別把別人的工作留在原地失聯；確認乾淨後從最新 `<remote>/<main>` 開一個對得上
-的新分支即可，仍不新建 worktree。
+與 issue 能雙向對應。沿用的 worktree 若分支名對不上本次 issue，先確認目前分支的工作
+沒有失聯，再開新分支：
+
+```bash
+gh pr list --repo <owner>/<repo> --head "$(git branch --show-current)" --state merged --json number
+```
+
+有已合併的 PR → 工作已交付，可以直接開新分支。⚠️ **不要用
+`git log <remote>/<main>..HEAD` 是否為空來判斷**：squash merge 不會讓原始 commit 成為
+預設分支的祖先（本 repo 的標準正是 squash-only），已交付的分支照樣列出一整串 commit，
+每次都會被誤判成未合併而擋住。查不到已合併 PR 且確實有本次以外的 commit 時才停下
+回報。確認後從最新 `<remote>/<main>` 開一個對得上的新分支即可，仍不新建 worktree。
 
 ### 3. TDD 實作
 
@@ -223,8 +231,11 @@ git worktree add --no-track -b <branch> .claude/worktrees/<branch> <remote>/<mai
 9. **gate 清單以目標 repo 的 `CLAUDE.md` 為準**——它若寫了 PR review 與 merge 契約
    （例如額外的 Copilot gate），那份為準；下面這組是它沒寫時的預設：
 
-   - CI 綠燈
-   - `mergeable`／`mergeStateStatus` 為 `MERGEABLE`／`CLEAN`
+   - `mergeable` 為 `MERGEABLE`
+   - **所有 required status check 成功**、無 branch protection blocker。⚠️ 不要求
+     `mergeStateStatus` 等於 `CLEAN`——非必要的 check（CodeRabbit 額度耗盡留下的那個
+     就是）會讓聚合狀態停在 `UNSTABLE`，但它不影響 mergeability。用 `CLEAN` 當 gate
+     會跟「額度耗盡不擋合併」互相矛盾，永遠過不了
    - 所有 review thread 已 resolve，外部 reviewer（CodeRabbit、Copilot 等）沒有未
      處理的 finding
    - CodeRabbit review 已完成，或已依上方分流記錄其服務端限制，或屬存取／設定問題
