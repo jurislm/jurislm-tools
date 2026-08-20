@@ -1,7 +1,7 @@
 {
   "name": "jt-flow",
   "description": "以 Linear issue 為需求來源的端到端交付工作流（整合 superpowers + GitHub Flow 單段式 + TDD）：jt-flow-one Skill 從釐清做到 PR、merge、部署驗收與 Linear readback",
-  "version": "1.40.3",
+  "version": "1.40.4",
   "author": {
     "name": "Terry Chen"
   },

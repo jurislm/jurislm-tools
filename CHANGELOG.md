@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.40.4](https://github.com/jurislm/jurislm-tools/compare/v1.40.3...v1.40.4) (2026-08-20)
+
+
+### 🐛 Bug Fixes
+
+* resolve the logic conflicts found auditing the delivery flow ([#242](https://github.com/jurislm/jurislm-tools/issues/242)) ([13fd23b](https://github.com/jurislm/jurislm-tools/commit/13fd23bf3c1c30ee29cd88b7f199532ba44b8683))
+
 ## [1.40.3](https://github.com/jurislm/jurislm-tools/compare/v1.40.2...v1.40.3) (2026-08-20)
 
 
