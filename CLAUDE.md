@@ -83,9 +83,9 @@ Skills and commands are auto-discovered. A plugin manifest owns metadata; it doe
 | `podcast-to-blog` | Skill | Podcast transcription and writing |
 | `codebase-sync` | Skill | README and CLAUDE.md synchronization |
 | `learn-eval` | Skill | Reusable session-pattern extraction |
-| `jt-flow` | Skills | `jt-flow-one` single-request and `jt-flow-all` active OpenSpec change-queue delivery workflows |
+| `jt-flow` | Skill | `jt-flow-one` Linear-issue-driven single-request delivery workflow |
 
-Do not restore retired `/jt:*`, `/jt-flow`, or `/jt-flow-all` command surfaces. Current Skills are triggered by intent.
+Do not restore retired `/jt:*`, `/jt-flow`, or `/jt-flow-all` command surfaces, or the retired `jt-flow-all` Skill. Current Skills are triggered by intent.
 
 ## MCP dependency and credential policy
 
@@ -152,12 +152,17 @@ ambiguity, or repeated no-progress iterations are explicit pause conditions.
 
 ## Legacy OpenSpec and jt-flow
 
-`openspec/`, generated `/spectra-*` Skills, and the `jt-flow` plugin remain for
-maintaining or completing existing OpenSpec changes. Route new work to them only
-when the user explicitly requests Spectra, OpenSpec, `jt-flow-one`, or
-`jt-flow-all`. Within such an explicitly selected legacy run, its artifacts and
-authorization contract remain authoritative; do not mix Linear/Superpowers
-planning artifacts into that same delivery container.
+`openspec/` and the generated `/spectra-*` Skills remain for maintaining or
+completing existing OpenSpec changes. Route new work to them only when the user
+explicitly requests Spectra or OpenSpec. Within such an explicitly selected
+legacy run, its artifacts and authorization contract remain authoritative; do
+not mix Linear/Superpowers planning artifacts into that same delivery container.
+
+The `jt-flow` plugin is no longer part of that legacy surface. Its `jt-flow-one`
+Skill now runs the Linear + Superpowers delivery chain described above and
+creates no OpenSpec artifacts. The `jt-flow-all` OpenSpec change queue is
+retired; its record is in
+`openspec/changes/archive/2026-08-20-retire-openspec-jt-flow/`.
 
 For current marketplace membership, prefer `.claude-plugin/marketplace.json`,
 plugin manifests, and repository validation over historical specs. Do not

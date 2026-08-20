@@ -21,11 +21,6 @@ openspec/
 │   ├── docs-and-standards/
 │   ├── github-flow-entry-documentation/
 │   ├── infra/
-│   ├── jt-flow-authorization/
-│   ├── jt-flow-one-team-mode-dispatch/
-│   ├── jt-flow-queue-delegation/
-│   ├── jt-flow-review-orchestration/
-│   ├── jt-flow-single-skill-naming/
 │   ├── learning/
 │   ├── observability/
 │   └── plugin-packaging-integrity/

@@ -32,7 +32,7 @@ Marketplace entry name、source folder basename 與 manifest name 必須一致�
 | `podcast-to-blog` | Skill | Transcription and writing workflow |
 | `codebase-sync` | Skill | Documentation synchronization |
 | `learn-eval` | Skill | Session-pattern extraction |
-| `jt-flow` | Skills | `jt-flow-one` single-request and `jt-flow-all` issue-queue delivery |
+| `jt-flow` | Skill | `jt-flow-one` Linear-issue-driven single-request delivery |
 
 ## Dependency integrity
 
@@ -87,11 +87,6 @@ The aggregate command checks tests, marketplace integrity, immutable dependencie
 - [Coolify detail](../infra/coolify-detail.md)
 - [Hetzner detail](../infra/hetzner-detail.md)
 - [GitHub Flow entry documentation](../github-flow-entry-documentation/spec.md)
-- [jt-flow authorization](../jt-flow-authorization/spec.md)
-- [jt-flow team-mode dispatch](../jt-flow-one-team-mode-dispatch/spec.md)
-- [jt-flow queue delegation](../jt-flow-queue-delegation/spec.md)
-- [jt-flow review orchestration](../jt-flow-review-orchestration/spec.md)
-- [jt-flow single-request Skill naming](../jt-flow-single-skill-naming/spec.md)
 - [Langfuse detail](../observability/langfuse-detail.md)
 - [Repository standards detail](../docs-and-standards/repo-standards-detail.md)
 - [Codebase sync detail](../docs-and-standards/codebase-sync-detail.md)
