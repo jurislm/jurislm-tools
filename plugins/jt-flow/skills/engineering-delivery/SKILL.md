@@ -34,7 +34,7 @@ description: >
 | N0 前提 | `delivery-preflight` 回 `ok` | `ok` → N1 ／ 否則直接回傳其終態 |
 | N1 需求分析 | 範圍與驗收標準明確 | 明確 → N2 ／ 真實歧義 → `halted/ambiguity` |
 | N2 設計 | 方案定案 | 定案 → N3 ／ 需重大架構變更或新依賴 → `halted/authorization` |
-| N3 工作樹 | 在專屬 feature 分支且工作區乾淨 | 就緒 → N4 ／ 當前為預設分支 → 先建分支再進 N4 ／ 有他人未提交變更 → `halted/risk` ／ 沿用分支有 commit 但查無已合併 PR → `halted/risk` |
+| N3 工作樹 | 在**對得上本次 issue** 的 feature 分支且工作區乾淨 | 就緒 → N4 ／ 當前為預設分支 → 先建分支再進 N4 ／ 有他人未提交變更 → `halted/risk` ／ 沿用分支對不上本次 issue 且（無 commit **或**查得到已合併 PR）→ 從最新預設分支開對得上的新分支再進 N4 ／ 沿用分支有 commit 但查無已合併 PR → `halted/risk` |
 | N4 實作 | 測試綠＋行為性驗收通過 | 通過 → N5 ／ 非預期行為 → 除錯後回 N4 |
 | N5 本地審查 | 品質＋資安＋資料三面過 | 過 → N6 ／ 有 finding → 回 N4 |
 | N6 開 PR | PR 存在且帶 Linear identifier | 建立 → N7 ／ 掃出 secret → 回 N4 清除後重來 |
@@ -79,8 +79,16 @@ git status --porcelain     # 有輸出就停下回報
 `--no-track` 會讓 `git status` 一路報 ahead／behind 預設分支。分支名為 Linear
 identifier 加簡短 slug。
 
+**沿用的分支若名稱對不上本次 issue**，先確認它上面的工作沒有失聯，再開新分支。兩個
+問題都要問，因為「有沒有 commit」與「是否已交付」是兩件事：
+
+- 無 commit，**或**查得到該分支已合併的 PR → 工作已交付，從最新 `<defaultBranch>`
+  開一個對得上本次 issue 的新分支，仍在同一個 worktree 內，不另開 worktree
+- 有 commit 但查不到已合併的 PR → `halted/risk`，別把別人的工作留在原地失聯
+
 ⚠️ **`git log` 只能判斷有沒有 commit，不能判斷是否已合併**——squash merge 不會讓原始
-commit 成為預設分支的祖先。是否已交付一律以該分支的 PR 狀態為準。
+commit 成為預設分支的祖先（多數 repo 採 squash merge 時都是這個情況），已交付的分支
+照樣列出一整串 commit。是否已交付一律以該分支的 PR 狀態為準。
 
 一次執行只擁有一個 feature worktree；要看其他分支內容用 `git show <branch>:<path>`。
 

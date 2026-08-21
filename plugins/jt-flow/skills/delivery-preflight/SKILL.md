@@ -24,7 +24,7 @@ description: >
 | 目標 repo 託管於 GitHub | `not_applicable` |
 | 可用的 GitHub 事實來源至少一種（例如 `gh`、GitHub MCP、整合功能） | `halted / access_config` |
 | remote 解析唯一，且 fetch／push 目標一致 | `halted / ambiguity` |
-| 案件管理讀取管道可用 | 不停下：向使用者索取 issue 內容後回 `ok`，並記入 `notes`（案件記錄仍需寫回，寫入失敗時另依 `references/case-record.md` 的失敗規則處理） |
+| 案件管理讀取管道可用 | 不停下：向使用者索取 issue 內容後回 `ok`，並記入 `notes`（案件記錄仍需寫回，寫入失敗時另依 `engineering-delivery/references/case-record.md` 的失敗規則處理） |
 
 **版本控制是前提，不是工具選項**：不可用時停下，不尋找替代品。取得 GitHub 事實的
 管道則是可替換工具，換一個能取得同一事實的即可。

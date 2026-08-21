@@ -41,9 +41,15 @@ Copilot gate），那份為準。它沒寫時，本 Skill 的預設值是：
 |---|---|
 | 全部成立 | `ok`，`payload` 附 `mergeable`、`mergeStateStatus` |
 | `BLOCKED` 且 required check **尚未回報完畢** | 依 `using-jt-workflow` 紀律 2 的來源優先序重查，預設**上限 3 次**；逾上限 → `halted/access_config`，`recoverableByCode: false` |
-| `BLOCKED` 且 required check **已失敗**，或 `DIRTY`／`BEHIND`，或有未處理 finding | `halted`，`recoverableByCode: true` |
+| `BLOCKED` 且 required check **已失敗**，且失敗屬**程式碼缺陷**（測試紅、lint、型別、build） | `halted`，`recoverableByCode: true` |
+| `BLOCKED` 且 required check **已失敗**，且失敗屬**基礎設施或設定**（runner 中斷、憑證過期、CI 設定錯誤、相依服務不可用） | `halted/access_config`，`recoverableByCode: false`，`needed` 寫明實際錯誤 |
+| `DIRTY`／`BEHIND`，或有未處理 finding | `halted`，`recoverableByCode: true` |
 | `UNKNOWN` 逾重查上限 | `halted/access_config`，`recoverableByCode: false` |
 | Release Please 版號 PR | `not_applicable` |
+
+**check 失敗時先讀它的實際輸出再分類**，不要從 check 名稱推測。分錯的代價不對稱：把
+基礎設施故障判成程式碼缺陷，會讓 coordinator 回到實作節點改一份根本沒問題的程式碼，
+連續三次後誤報成 `halted/ambiguity`——症狀看起來像需求不清，實際上是 runner 掛了。
 
 ## Release Please 版號 PR
 

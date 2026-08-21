@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 
 const repositoryRoot = new URL("../", import.meta.url);
@@ -299,4 +299,41 @@ test("engineering-delivery 本文自帶重跑指引與 disposition 時序", () =
   assert.match(source, /^## 重跑$/m, "coordinator 本文要有重跑指引，不能只存在於 references");
   assert.match(source, /冪等鍵/);
   assert.match(source, /沒有 `pending` 這個值/, "disposition 的時序必須寫明，避免被當成待辦清單");
+});
+
+test("N3 對沿用分支的三種情況都有轉移", () => {
+  const source = readSkill("engineering-delivery");
+
+  assert.match(source, /無 commit，\*\*或\*\*查得到該分支已合併的 PR/, "已交付的分支要能開新分支，不是停下");
+  assert.match(source, /對不上本次 issue/);
+  assert.match(source, /halted\/risk/);
+});
+
+test("merge-gate 依失敗原因分類 required check，不一律判成可改碼解除", () => {
+  const source = readSkill("merge-gate");
+
+  assert.match(source, /屬\*\*程式碼缺陷\*\*/);
+  assert.match(source, /屬\*\*基礎設施或設定\*\*/, "runner 中斷或憑證過期不是改碼能解除的");
+  assert.match(source, /先讀它的實際輸出再分類/);
+});
+
+test("跨 Skill 引用的檔案路徑真的存在", () => {
+  const referenced = new Set();
+  for (const name of ALL_SKILLS) {
+    for (const match of readSkill(name).matchAll(/`([\w./-]*references\/[\w.-]+\.md)`/g)) {
+      referenced.add(match[1]);
+    }
+  }
+
+  assert.ok(referenced.size > 0, "至少要有一處 references 引用，否則本測試無意義");
+  for (const relativePath of referenced) {
+    const candidates = [
+      new URL(relativePath, skillsDir),
+      ...ALL_SKILLS.map((name) => new URL(`${name}/${relativePath}`, skillsDir)),
+    ];
+    assert.ok(
+      candidates.some((url) => existsSync(url)),
+      `引用的 ${relativePath} 在 plugins/jt-flow/skills/ 底下找不到對應檔案`,
+    );
+  }
 });
