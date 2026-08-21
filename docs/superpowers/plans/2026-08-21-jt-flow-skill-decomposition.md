@@ -45,6 +45,7 @@
 
 **Files:**
 - Create: `scripts/jt-flow-skills-policy.test.mjs`
+- Modify: `.gitignore`（新增 `.superpowers/`）
 - Rename: `plugins/jt-flow/skills/jt-flow-one/` → `plugins/jt-flow/skills/engineering-delivery/`
 - Create: `plugins/jt-flow/skills/{using-jt-workflow,delivery-preflight,external-review-gate,merge-gate,acceptance-readback}/SKILL.md`
 - Modify: `scripts/repo-standards-policy.test.mjs:119`
@@ -131,7 +132,15 @@ test("內部 Skill 宣告自己由 coordinator 調用", () => {
 Run: `node --test scripts/jt-flow-skills-policy.test.mjs`
 Expected: FAIL，`readdirSync` 讀到 `["jt-flow-one"]`，第一個測試的 `deepEqual` 不符。
 
-- [ ] **Step 3: 改名來源目錄並建立五個新目錄**
+- [ ] **Step 3: 把 SDD 工作區排除在版控外**
+
+`.gitignore` 目前沒有 `.superpowers/`。在 `.spectra/` 那一行之後補一行：
+
+```gitignore
+.superpowers/
+```
+
+- [ ] **Step 4: 改名來源目錄並建立五個新目錄**
 
 ```bash
 git mv plugins/jt-flow/skills/jt-flow-one plugins/jt-flow/skills/engineering-delivery
@@ -143,11 +152,11 @@ mkdir -p plugins/jt-flow/skills/using-jt-workflow \
          plugins/jt-flow/skills/engineering-delivery/references
 ```
 
-- [ ] **Step 4: 改 `engineering-delivery/SKILL.md` 的 frontmatter name**
+- [ ] **Step 5: 改 `engineering-delivery/SKILL.md` 的 frontmatter name**
 
 把第一行 `name: jt-flow-one` 改為 `name: engineering-delivery`。**本 Task 只改 name，內文留待 Task 4。**
 
-- [ ] **Step 5: 寫五個新 Skill 的 frontmatter 骨架**
+- [ ] **Step 6: 寫五個新 Skill 的 frontmatter 骨架**
 
 `plugins/jt-flow/skills/using-jt-workflow/SKILL.md`：
 
@@ -214,18 +223,18 @@ description: >
 （內容於 Task 6 補齊）
 ```
 
-- [ ] **Step 6: 跑新測試確認通過**
+- [ ] **Step 7: 跑新測試確認通過**
 
 Run: `node --test scripts/jt-flow-skills-policy.test.mjs`
 Expected: PASS（3 個測試）
 
-- [ ] **Step 7: 跑既有測試，確認舊名斷言變紅**
+- [ ] **Step 8: 跑既有測試，確認舊名斷言變紅**
 
 Run: `node --test scripts/repo-standards-policy.test.mjs`
 Expected: FAIL —— `portable review contract preserves jt-flow review ownership` 的
 `assert.match(template, /\`jt-flow-one\`.*invoke.*\`superpowers:requesting-code-review\`/s)` 不再成立。
 
-- [ ] **Step 8: 同批更新該斷言與其模板**
+- [ ] **Step 9: 同批更新該斷言與其模板**
 
 `plugins/repo-standards/skills/repo-standards/references/review-orchestration-template.md` 第 13 行起，把
 
@@ -251,15 +260,15 @@ Expected: FAIL —— `portable review contract preserves jt-flow review ownersh
   assert.match(template, /`engineering-delivery`.*invoke.*`superpowers:requesting-code-review`/s);
 ```
 
-- [ ] **Step 9: 跑全部測試確認綠**
+- [ ] **Step 10: 跑全部測試確認綠**
 
 Run: `npm test`
 Expected: PASS，無 failing。
 
-- [ ] **Step 10: Commit**
+- [ ] **Step 11: Commit**
 
 ```bash
-git add scripts/jt-flow-skills-policy.test.mjs scripts/repo-standards-policy.test.mjs plugins/repo-standards/skills/repo-standards/references/review-orchestration-template.md plugins/jt-flow/skills
+git add .gitignore scripts/jt-flow-skills-policy.test.mjs scripts/repo-standards-policy.test.mjs plugins/repo-standards/skills/repo-standards/references/review-orchestration-template.md plugins/jt-flow/skills
 git commit -m "feat: 建立 jt-flow 六 Skill 骨架與結構驗證"
 ```
 
@@ -415,7 +424,7 @@ test("delivery-preflight 列出六項查證且每項都有出口", () => {
   assert.match(source, /`remote`/);
   assert.match(source, /`ownerRepo`/);
   assert.match(source, /`defaultBranch`/);
-  assert.doesNotMatch(source, /外部審查/, "外部審查管道不在 preflight 查證，避免提早阻擋");
+  assert.match(source, /外部審查管道不在此查證/, "preflight 必須明文把外部審查排除在查證之外，避免提早阻擋");
 
   const exitRows = source.split("\n").filter((line) => /\| .*halted|not_applicable|回 `ok`/.test(line));
   assert.ok(exitRows.length >= 6, `每項查證都要有出口，實際 ${exitRows.length} 列`);
@@ -1052,6 +1061,7 @@ test("live 檔案不再引用 jt-flow-one", () => {
     ".claude/worktrees",
     "openspec/changes/archive",
     "docs/superpowers",
+    ".superpowers",
   ]);
   const EXCLUDED_FILES = new Set([
     "CHANGELOG.md",
