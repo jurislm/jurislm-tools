@@ -257,3 +257,16 @@ test("六個 Skill 都不使用需要拿捏的措辭", () => {
     }
   }
 });
+
+test("jt-flow 的 README 不重複外部審查的管道細節，也不使用需要拿捏的措辭", () => {
+  const readme = readFileSync(new URL("plugins/jt-flow/README.md", repositoryRoot), "utf8");
+
+  assert.doesNotMatch(readme, /@coderabbitai/, "App 指令細節屬於 coderabbit:code-review");
+  assert.doesNotMatch(readme, /coderabbit review --/, "CLI 旗標細節屬於 coderabbit:code-review");
+  assert.doesNotMatch(readme, /\.coderabbit\.yaml/, "設定檔判讀細節屬於 coderabbit:code-review");
+  assert.match(readme, /`coderabbit:code-review`/, "仍須指出審查的所有權歸屬");
+
+  for (const hedge of ["合理時間", "適當", "看情況", "盡快"]) {
+    assert.ok(!readme.includes(hedge), `README 出現需要拿捏的措辭「${hedge}」`);
+  }
+});

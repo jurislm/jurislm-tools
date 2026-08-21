@@ -43,25 +43,17 @@ Linear issue 是需求、範圍、驗收標準與交付紀錄的唯一來源，�
 本地 review 用 `superpowers:requesting-code-review`，findings 依
 `superpowers:receiving-code-review` 逐項核實處置。
 
-**CodeRabbit review 是每個 PR 的必經環節**，不是需要時才做的備案——年約已付費，它就是
-這條流程的代碼審查關卡。授權與資料範圍由 `coderabbit:code-review` skill 自己管，
-本 plugin 不重複那套規則。
+**外部審查是每個 PR 的必經關卡**，不是需要時才做的備案。審查的**取得**由
+`coderabbit:code-review` skill 擁有——授權、資料範圍、管道呼叫方式全歸它管，本 plugin
+不重複那套規則，也不描述任何管道呼叫細節（寫在這裡會讓所有權重複，且外部工具改版後
+這份文件會靜默過期）。
 
-機制依**目標 repo 的 `.coderabbit.yaml`** 而定，本 plugin 不假設任何一種設定：
-`auto_review.enabled: true` 就等 PR 建立後自動審，否則主動留言 `@coderabbitai review`
-要求一次；PR 標題命中 `ignore_title_keywords`（例如 Release Please 的版號 PR）則跳過。
+`external-review-gate` 只做兩件事：依目標 repo 宣告決定本 PR 是否需要審查，以及把審查
+結果映射為 gate 終態。它枚舉八種可觀測狀態，每一種都有出口——包含「已受理但尚未完成」
+與「無任何受理跡象」，兩者出口不同，因此不會卡住，也不會把進行中的審查誤判為失敗。
 
-GitHub App 與 CLI 是兩個獨立管道，review 額度分開計算，所以 App 受限不代表 CLI 不能
-用。App 未在合理時間內產出 review 就改走 CLI
-（`coderabbit review --agent --committed --base <remote>/<main>`，旗標以當下
-`coderabbit review --help` 為準）。
-
-兩個管道都走完仍拿不到 review 時依原因分流：**服務端限制或中斷**（含額度耗盡）記錄
-後繼續；**存取或設定問題**（App 未安裝或未授權、CLI 未安裝或未登入、權限不符）則停下
-告知使用者。兩邊原因不同時以較嚴格者為準。
-
-合併 gate 以**目標 repo 的 `CLAUDE.md`** 為準，本 plugin 的清單是它沒寫時的預設。
-CodeRabbit 是流程 gate，不該被設成 GitHub required status check。
+合併 gate 以**目標 repo 的 `CLAUDE.md`** 為準，`merge-gate` 的清單是它沒寫時的預設。
+外部審查是流程 gate，不該被設成 GitHub required status check。
 
 **Release Please 的版號 PR 不由本流程合併**——交給目標 repo source-controlled 的
 validator 自動處理，本流程只監看終態。
