@@ -155,3 +155,11 @@ test("案件記錄以 references 子檔承載，不是獨立 Skill", () => {
   assert.match(record, /Done 由 product owner 決定/);
   assert.ok(!ALL_SKILLS.includes("linear-case-record"));
 });
+
+test("using-jt-workflow 保留環境問題處置與平行查證方法論", () => {
+  const source = readSkill("using-jt-workflow");
+
+  assert.match(source, /不動全域設定/, "環境類修正的行動指引不得消失");
+  assert.match(source, /多個角度平行查/, "外部文件的平行查證方法論不得消失");
+  assert.match(source, /不用推理填空/);
+});
