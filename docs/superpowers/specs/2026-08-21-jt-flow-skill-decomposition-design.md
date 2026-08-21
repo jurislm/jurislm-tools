@@ -27,7 +27,7 @@
 ## 目標
 
 - 把 `jt-flow` 重構成與 `superpowers` 同構的多 Skill 外掛：一個常駐紀律 Skill ＋ 一個
-  coordinator ＋ 四個單一職責 Skill，彼此以名字互相調用。
+  coordinator ＋ 四個單一職責 Skill（案件記錄是 coordinator 的 references 子檔，不是 Skill），彼此以名字互相調用。
 - 每個 Skill 只回答一個問題，並回傳結構化終態，使單一關卡可被獨立修正與驗證。
 - 外部審查關卡的每一種可觀測狀態都有明確出口，既不無限等待，也不把進行中的審查誤判為
   失敗。
@@ -86,8 +86,9 @@ repo 根 `CLAUDE.md` 目前寫著：新工作直接使用 Superpowers，**除非
 1. **可替換工具一律是例子。** 使用前先查證可用性，每一種查證結果都要有出口。具名依賴不
    適用本條，見上節。
 2. **repo 事實去讀該 repo 自己宣告的定義。** 驗證指令、merge gate 清單、hook 行為、重查
-   上限一律從目標 repo 的 `CLAUDE.md` 與其專案定義取得。宣告優先序：目標 repo `CLAUDE.md`
-   > 該工具自己的設定檔（如 `.coderabbit.yaml`）> 本文預設值。
+   上限一律從目標 repo 自己宣告的定義取得。**來源優先序全文只定義這一次，下游一律引用
+   本條，不重寫也不跳級**：目標 repo `CLAUDE.md` → 該工具自己的設定檔（如
+   `.coderabbit.yaml`）→ 本文預設值。上一級無宣告才往下一級取。
 3. **Linear 是案件檔案。** 每個節點結束、每次停下，都落一筆。
 
 另有一條判定紀律：**不使用需要 agent 自行拿捏的措辭**（「合理時間」「適當」「看情況」）。
@@ -109,7 +110,7 @@ plugins/jt-flow/skills/
 ```
 
 - **公開 Skill 兩個**：`using-jt-workflow`、`engineering-delivery`。
-- **內部 Skill 三個**：`description` 一律以「由 `engineering-delivery` 調用」開頭，避免被
+- **內部 Skill 四個**：`description` 一律以「由 `engineering-delivery` 調用」開頭，避免被
   自然語言直接路由。
 - **案件記錄改為 `references/` 子檔，不是獨立 Skill。** 第二版曾以「未來所有產品線共用」
   為由設為獨立 Skill，那是投機抽象，與本文非目標矛盾。它目前只有單一 caller。**升格條件**：
@@ -123,23 +124,46 @@ plugins/jt-flow/skills/
 - **副作用宣告**：每個 Skill 在文件開頭列出它會改變什麼（檔案、遠端狀態、Linear）。
 - **可重跑**：所有 Skill 必須可在同一案件上重跑而不產生重複副作用。
 
-### 終態 union
+### 兩層結果模型
+
+契約分兩層，**不共用同一份 schema**——第三版把兩者混為一談，導致 `branch` 對尚未有分支的
+`delivery-preflight` 也成了必填。
+
+| 層 | 誰產生 | 可回的 status |
+|---|---|---|
+| **internal result** | 四個內部 Skill | `ok` ／ `halted` ／ `not_applicable` |
+| **coordinator envelope** | `engineering-delivery` | 上列三者 ＋ `awaiting_owner_acceptance` |
 
 ```
 ok                          本關通過，附本關產出
 halted                      需要人介入
 not_applicable              本關對此案件不適用（例：版號 PR 不走合併關）
-awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（僅 coordinator 使用）
+awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（coordinator envelope 專用）
 ```
 
-### payload schema（欄位級）
+- coordinator 收到 internal result 後，補上案件層欄位（`issue`、`branch`、`pr`）組成
+  envelope。**內部 Skill 不需要、也不得自行填寫案件層欄位。**
+
+### internal result schema（欄位級）
+
+| 欄位 | 型別 | 必填 | 說明 |
+|---|---|---|---|
+| `status` | `ok` \| `halted` \| `not_applicable` | 是 | — |
+| `stage` | string | `halted` 時必填 | Skill 名 |
+| `payload` | object | `ok` 時必填 | 見「各 Skill 的輸入輸出」表 |
+| `findings[]` | `{ source, severity, disposition }` | 否 | 定義同下 |
+| `blocked` | `{ kind, what, needed }` | `halted` 時必填 | 定義同下 |
+| `recoverableByCode` | bool | `halted` 時必填 | 此阻塞可否由改碼解除；coordinator 依此決定是否回 N4 |
+| `notes[]` | string | 否 | 定義同下 |
+
+### coordinator envelope schema（欄位級）
 
 | 欄位 | 型別 | 必填 | 說明 |
 |---|---|---|---|
 | `status` | union（上表四值） | 是 | — |
-| `stage` | string | `halted` 時必填 | 節點代號或 Skill 名 |
+| `stage` | string | `halted` 時必填 | 節點代號 |
 | `issue` | string \| null | 否 | Linear identifier；版號 PR 為 `null` |
-| `branch` | string | 是 | 分支名 |
+| `branch` | string \| null | N3 之後必填 | 分支名；N0–N2 尚未建立分支時為 `null` |
 | `pr` | string \| null | 否 | PR 連結；尚未開 PR 為 `null` |
 | `evidence[]` | `{ kind, ref, summary }` | 否 | `kind` ∈ `test` \| `runtime` \| `ci` \| `deploy` |
 | `findings[]` | `{ source, severity, disposition }` | 否 | `severity` ∈ `critical` \| `high` \| `medium` \| `low`；`disposition` ∈ `fixed` \| `rejected`（附理由）\| `deferred`（附去向） |
@@ -158,6 +182,10 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（�
 | `external-review-gate` | `owner/repo`、`pr`、目標 repo 宣告 | `findings[]`、`needsCodeChange`（bool） | `ok`／`halted`／`not_applicable` |
 | `merge-gate` | `owner/repo`、`pr`、目標 repo 宣告、上關 `findings[]` | `mergeable`、`mergeStateStatus` | `ok`／`halted`／`not_applicable` |
 | `acceptance-readback` | `owner/repo`、合併後 sha、部署管道宣告 | `evidence[]` | `ok`／`halted`／`not_applicable` |
+
+- **`recoverableByCode`（bool）**：`external-review-gate`、`merge-gate`、`acceptance-readback`
+  回 `halted` 時必填，表示「此阻塞可由修改程式碼解除」。**coordinator 依這個欄位決定是否
+  回 N4，不讀 `blocked.what` 的文字。**
 
 ## 各 Skill 契約
 
@@ -211,8 +239,8 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（�
 | N5 本地審查 | 品質＋資安＋資料三面過 | 過 → N6 ／ 有 finding → 回 N4 |
 | N6 開 PR | PR 存在且帶 Linear identifier | 建立 → N7 ／ 掃出 secret → 回 N4 清除後重來 |
 | N7 外部審查 | `external-review-gate` 回終態 | `ok` 且 `needsCodeChange` 為真 → **回 N4** ／ `ok` 且為假 → N8 ／ `not_applicable` → N8 ／ `halted` → 回傳 |
-| N8 合併 | `merge-gate` 回 `ok` | `ok` → 合併 → N9 ／ `halted` 且原因可由改碼解決 → **回 N4** ／ `halted` 其他 → 回傳 ／ `not_applicable`（版號 PR）→ 回傳 |
-| N9 驗收 | `acceptance-readback` 回 `ok` | `ok` → N10 ／ `halted` 且原因可由改碼解決 → **回 N4** ／ `halted` 其他（需授權、回退風險不明）→ 回傳 |
+| N8 合併 | `merge-gate` 回 `ok` | `ok` → 合併 → N9 ／ `halted` 且 `recoverableByCode` 為真 → **回 N4** ／ `halted` 且為假 → 回傳 ／ `not_applicable`（版號 PR）→ 回傳 |
+| N9 驗收 | `acceptance-readback` 回 `ok` | `ok` → N10 ／ `halted` 且 `recoverableByCode` 為真 → **回 N4** ／ `halted` 且為假（需授權、回退風險不明）→ 回傳 |
 | N10 結案 | Linear 已留完整記錄 | → `awaiting_owner_acceptance` |
 
 - **回頭邊的收斂保護**：N7／N8／N9 回到 N4 時，同一 `(issue, branch, 節點)` 連續第三次
@@ -256,8 +284,9 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（�
   細節**，只做兩件事：依目標 repo 宣告決定本 PR 是否需要審查，以及把審查結果映射為終態。
 - **副作用**：可能在 PR 上留言請求審查（由被調用的 Skill 執行）。
 - **完成條件不是「拿到 review 內容」，而是「已到達可判定狀態」。**
-- **重查上限**：由目標 repo `CLAUDE.md` 宣告；未宣告時**預設重查 3 次**。以次數計，不以
-  時間計。
+- **重查上限**：依「設計原則」第 2 條的來源優先序取得（repo `CLAUDE.md` → `.coderabbit.yaml`
+  → 本文預設值 **3 次**）。以次數計，不以時間計。本上限只管**審查是否產出**，與 graph 的
+  回頭上限是兩個獨立計數器，不互相消耗。
 - **狀態矩陣**（涵蓋所有可觀測狀態）：
 
 | 可觀測狀態 | 出口 | `needsCodeChange` |
@@ -283,7 +312,9 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（�
 - **回答**：什麼條件才可以合併？誰說了算？
 - **副作用**：無（唯讀判定；合併動作由 coordinator 執行）。
 - **gate 清單以目標 repo 的 `CLAUDE.md` 為準**；未宣告時的預設：
-  - `mergeable` 為 `MERGEABLE`（`UNKNOWN` 表示尚在計算，重查即可，非失敗）
+  - `mergeable` 為 `MERGEABLE`。`UNKNOWN` 表示 GitHub 尚在背景計算，非失敗：依同一來源
+    優先序重查（預設上限 **3 次**）；逾上限仍為 `UNKNOWN` → `halted/access_config`，
+    `recoverableByCode: false`，`needed` 寫明「GitHub 未能算出 mergeable 狀態」
   - `mergeStateStatus` 為 `CLEAN` 或 `UNSTABLE`；不可為 `BLOCKED`／`DIRTY`／`BEHIND`
   - 所有 review thread 已 resolve，外部 reviewer 無未處理 finding
   - `external-review-gate` 已回 `ok` 或 `not_applicable`
@@ -298,9 +329,10 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（�
 - **副作用**：可能觸發重新部署（需授權時走 `halted/authorization`）。
 - 有部署管道 → 監看到終態並確認 health check（含 commit 比對）；沒有部署管道（library、
   外掛市集、文件 repo）→ 驗收對象改為合併後預設分支的 CI 終態。
-- **失敗時的分工**：本 Skill 用 `systematic-debugging` 判定**根因類別**，再據以回傳：
-  程式碼缺陷 → `halted`，`blocked.what` 註明可由改碼解決（coordinator 據此回 N4）；
-  需人工核准 → `halted/authorization`；回退目標不明或涉 migration → `halted/risk`。
+- **失敗時的分工**：本 Skill 用 `systematic-debugging` 判定**根因類別**，再據以回傳，
+  一律附 `recoverableByCode`：程式碼缺陷 → `halted`，`recoverableByCode: true`；
+  需人工核准 → `halted/authorization`，`false`；回退目標不明或涉 migration →
+  `halted/risk`，`false`。
 - 需回退時先確認三件事：回退目標明確可辨識（上一個 health check 通過的 tag／sha，不憑
   印象）、本次改動是否含 migration、是否需要人工核准。三者有一不明 → `halted/risk`。
 - 宣稱通過前一律用 `verification-before-completion` 取得實際輸出。
@@ -325,6 +357,7 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（�
 
 | 檔案 | 性質 | 備註 |
 |---|---|---|
+| `plugins/jt-flow/skills/jt-flow-one/` | **來源目錄** | 拆解為六個 Skill 目錄後刪除；不留 shim |
 | `scripts/repo-standards-policy.test.mjs:119` | **測試硬斷言** | **實作第一步**：改名會直接讓 `npm test` 變紅 |
 | `openspec/config.yaml:11` | 外掛分類描述 | — |
 | `README.md` | 外掛清單 | — |
@@ -385,9 +418,10 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（�
 
 1. `plugins/jt-flow/skills/` 下存在六個 Skill 目錄，且 `jt-flow-one` 不存在。
 2. 每個 Skill 的目錄名與 frontmatter `name` 一致。
-3. 三個內部 Skill 的 `description` 以「由 `engineering-delivery` 調用」開頭。
-4. 所有 live 檔案（排除 `openspec/changes/archive/**` 與 `CHANGELOG.md`）不含
-   `jt-flow-one` 字串。
+3. 四個內部 Skill 的 `description` 以「由 `engineering-delivery` 調用」開頭。
+4. 所有 live 檔案不含 `jt-flow-one` 字串。掃描範圍排除三類，且排除清單本身寫進測試：
+   `openspec/changes/archive/**`（歷史證據）、`CHANGELOG.md`（Release Please 擁有）、
+   `docs/superpowers/specs/**`（設計文件必須談論舊名，否則無法記錄遷移理由）。
 5. 六個 Skill 全文不出現需要拿捏的措辭清單（「合理時間」「適當」「看情況」「盡快」）。
 6. `external-review-gate` 的狀態矩陣列數等於八，且同時含「無受理跡象」與「已受理未完成」
    兩列。
