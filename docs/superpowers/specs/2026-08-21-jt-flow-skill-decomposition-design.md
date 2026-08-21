@@ -1,6 +1,6 @@
 # jt-flow：從單一巨石 Skill 拆解為 superpowers 式多 Skill 外掛
 
-- 日期：2026-08-21（第三版，納入 Codex 第二輪審查）
+- 日期：2026-08-21（第五版，納入 Codex 第四輪審查）
 - 現況檔案：`plugins/jt-flow/skills/jt-flow-one/SKILL.md`（311 行，單一 Skill）
 - 對照組：`superpowers` 外掛（14 個 Skill，入口 `using-superpowers` 63 行）
 
@@ -162,7 +162,7 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（c
 |---|---|---|---|
 | `status` | union（上表四值） | 是 | — |
 | `stage` | string | `halted` 時必填 | 節點代號 |
-| `issue` | string \| null | 否 | Linear identifier；版號 PR 為 `null` |
+| `issue` | string \| null | **是**（值可為 `null`） | Linear identifier。正常案件必須有值；**只有 Release Please 版號 PR 允許 `null`**，因為它不對應任何 issue |
 | `branch` | string \| null | N3 之後必填 | 分支名；N0–N2 尚未建立分支時為 `null` |
 | `pr` | string \| null | 否 | PR 連結；尚未開 PR 為 `null` |
 | `evidence[]` | `{ kind, ref, summary }` | 否 | `kind` ∈ `test` \| `runtime` \| `ci` \| `deploy` |
@@ -171,8 +171,14 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（c
 | `notes[]` | string | 否 | 服務端限制、hook 造成的範圍外變動、未自動化的觀察 |
 
 - `blocked.needed` 必須是給人看的下一步（例：「審查 CLI 未登入，請登入後重跑」）。
-- **重跑語義**：所有 Skill 以 `(issue, branch, 節點)` 為冪等鍵。重跑時先讀取該鍵既有的
-  副作用（既有 PR、既有 Linear 留言、既有分支），存在且內容未變即跳過，不重建。
+- **重跑語義依副作用分層**，不是所有 Skill 都需要冪等鍵：
+
+| 類別 | Skill | 規則 |
+|---|---|---|
+| 無副作用 | `delivery-preflight`、`merge-gate` | 純查證，天然可重跑，**不需要冪等鍵** |
+| 有副作用 | `external-review-gate`、`acceptance-readback`、coordinator 的 N3／N6／N8 與案件記錄 | 以 `(issue, branch, 節點)` 為冪等鍵；重跑時先讀取該鍵既有的副作用（既有 PR、既有 Linear 留言、既有分支），存在且內容未變即跳過，不重建 |
+
+- 冪等鍵只在 N3 之後才完整（分支此時已存在）。N0–N2 沒有帶副作用的動作，因此不受影響。
 
 ### 各 Skill 的輸入輸出
 
@@ -219,7 +225,7 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（c
 | 目標 repo 託管於 GitHub | `not_applicable` |
 | 可用的 GitHub 事實來源至少一種 | `halted / access_config` |
 | remote 解析唯一，且 fetch／push 目標一致 | `halted / ambiguity` |
-| 案件管理讀取管道可用 | 降級：請使用者提供 issue 內容後繼續，記入 `notes` |
+| 案件管理讀取管道可用 | 不停下：向使用者索取 issue 內容後回 `ok`，並記入 `notes`（案件記錄仍需寫回，寫入失敗時另依 case-record 的失敗規則處理） |
 
 - 外部審查管道**不在此查證**，由 `external-review-gate` 在需要時查，避免提早阻擋。
 
