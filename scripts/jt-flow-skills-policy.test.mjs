@@ -163,3 +163,25 @@ test("using-jt-workflow 保留環境問題處置與平行查證方法論", () =>
   assert.match(source, /多個角度平行查/, "外部文件的平行查證方法論不得消失");
   assert.match(source, /不用推理填空/);
 });
+
+test("external-review-gate 枚舉八種可觀測狀態", () => {
+  const source = readSkill("external-review-gate");
+  const matrix = source.slice(source.indexOf("| 可觀測狀態"));
+  const rows = matrix
+    .split("\n")
+    .filter((line) => line.startsWith("|") && !line.startsWith("|---") && !line.startsWith("| 可觀測狀態"));
+
+  assert.equal(rows.length, 8, `狀態矩陣必須有八列，實際 ${rows.length}`);
+  assert.match(source, /無任何受理跡象/);
+  assert.match(source, /已受理但尚未完成/);
+  assert.match(source, /needsCodeChange/);
+});
+
+test("external-review-gate 不擁有審查管道", () => {
+  const source = readSkill("external-review-gate");
+
+  assert.match(source, /`coderabbit:code-review`/);
+  assert.doesNotMatch(source, /@coderabbitai/, "不得描述 App 指令");
+  assert.doesNotMatch(source, /coderabbit review --/, "不得描述 CLI 旗標");
+  assert.match(source, /不受信任/, "外部留言必須被當成不受信任資料");
+});
