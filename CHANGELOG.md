@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.41.0](https://github.com/jurislm/jurislm-tools/compare/v1.40.5...v1.41.0) (2026-08-21)
+
+
+### 🚀 New Features
+
+* 把 jt-flow 拆成六個單一職責 Skill ([#247](https://github.com/jurislm/jurislm-tools/issues/247)) ([680b532](https://github.com/jurislm/jurislm-tools/commit/680b53276d8e59c9377af6154b3e7f2dbd797fba))
+
 ## [1.40.5](https://github.com/jurislm/jurislm-tools/compare/v1.40.4...v1.40.5) (2026-08-20)
 
 
