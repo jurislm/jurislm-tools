@@ -83,3 +83,25 @@ test("using-jt-workflow 不執行動作", () => {
   const source = readSkill("using-jt-workflow");
   assert.doesNotMatch(source, /^```bash/m, "紀律 Skill 不應包含可執行指令區塊");
 });
+
+test("delivery-preflight 列出六項查證且每項都有出口", () => {
+  const source = readSkill("delivery-preflight");
+
+  for (const marker of [
+    "版本控制",
+    "git",
+    "GitHub",
+    "remote 解析唯一",
+    "案件管理讀取管道",
+  ]) {
+    assert.match(source, new RegExp(marker), `缺少查證項：${marker}`);
+  }
+
+  assert.match(source, /`remote`/);
+  assert.match(source, /`ownerRepo`/);
+  assert.match(source, /`defaultBranch`/);
+  assert.match(source, /外部審查管道不在此查證/, "preflight 必須明文把外部審查排除在查證之外，避免提早阻擋");
+
+  const exitRows = source.split("\n").filter((line) => /\| .*halted|not_applicable|回 `ok`/.test(line));
+  assert.ok(exitRows.length >= 6, `每項查證都要有出口，實際 ${exitRows.length} 列`);
+});
