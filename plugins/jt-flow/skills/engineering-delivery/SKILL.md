@@ -133,6 +133,20 @@ push 仍會把那個 commit 推上去。發現即回 N4，從所有將推送的 
 **內部 Skill 不填寫案件層欄位**（`issue`／`branch`／`pr`／`evidence[]`），那是本
 coordinator 的責任。
 
+**`findings[]` 只在處置完成後才回傳。** `disposition` 記錄的是已經發生的結果，不是待辦
+清單，所以沒有 `pending` 這個值——一個關卡若還沒把 finding 處置完，它就還沒到終態，不會
+把 `findings[]` 交出來。哪些 severity 只能是哪些 disposition，由發出 finding 的關卡自己
+規定（外部審查見 `external-review-gate`）。
+
+## 重跑
+
+**重跑不是從頭再做一遍。**帶副作用的節點（N3 建分支、N6 開 PR、N8 合併）與案件記錄，
+一律以 `(issue, branch, 節點)` 為冪等鍵：先讀該鍵既有的副作用——既有分支、既有 PR、既有
+Linear 留言——存在且內容未變就跳過，不重建。N0–N2 沒有帶副作用的動作，冪等鍵在 N3 之後
+才完整。無副作用的關卡（`delivery-preflight`、`merge-gate`）是純查證，天然可重跑。
+
+完整的分層規則與案件記錄的去重標記見 `references/case-record.md`。
+
 ## 案件記錄
 
 見 `references/case-record.md`。

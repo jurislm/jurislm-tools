@@ -292,3 +292,11 @@ test("engineering-delivery 涵蓋 check 終態與版號 PR 兩條路徑", () => 
   assert.match(source, /check 到終態/, "進外部審查前必須先等 check，否則會被誤判成需要改碼");
   assert.match(source, /版號 PR/, "版號 PR 的監看責任必須有落點");
 });
+
+test("engineering-delivery 本文自帶重跑指引與 disposition 時序", () => {
+  const source = readSkill("engineering-delivery");
+
+  assert.match(source, /^## 重跑$/m, "coordinator 本文要有重跑指引，不能只存在於 references");
+  assert.match(source, /冪等鍵/);
+  assert.match(source, /沒有 `pending` 這個值/, "disposition 的時序必須寫明，避免被當成待辦清單");
+});

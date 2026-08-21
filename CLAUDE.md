@@ -164,16 +164,16 @@ described above and creates no OpenSpec artifacts. The `jt-flow-all` OpenSpec
 change queue is retired; its record is in
 `openspec/changes/archive/2026-08-20-retire-openspec-jt-flow/`.
 
+For current marketplace membership, prefer `.claude-plugin/marketplace.json`,
+plugin manifests, and repository validation over historical specs. Do not
+delete or rewrite archived OpenSpec evidence merely because the default workflow
+has changed.
+
 `jt-flow` is an explicitly requested orchestration surface. The product owner
 asked for it on 2026-08-21; the "use Superpowers directly, do not build another
 orchestration layer" rule above is therefore satisfied by that explicit request,
 not bypassed. Its design record is
 `docs/superpowers/specs/2026-08-21-jt-flow-skill-decomposition-design.md`.
-
-For current marketplace membership, prefer `.claude-plugin/marketplace.json`,
-plugin manifests, and repository validation over historical specs. Do not
-delete or rewrite archived OpenSpec evidence merely because the default workflow
-has changed.
 
 ## GitHub Flow and worktrees
 
