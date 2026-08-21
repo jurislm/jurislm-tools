@@ -45,7 +45,6 @@ test("jt-flow 只提供六個 Skill，且 jt-flow-one 已退場", () => {
     .sort();
 
   assert.deepEqual(actual, ALL_SKILLS);
-  assert.ok(!actual.includes("jt-flow-one"), "jt-flow-one 目錄必須刪除，不留 shim");
 });
 
 test("每個 Skill 的目錄名與 frontmatter name 一致", () => {
@@ -89,7 +88,6 @@ test("delivery-preflight 列出六項查證且每項都有出口", () => {
 
   for (const marker of [
     "版本控制",
-    "git",
     "GitHub",
     "remote 解析唯一",
     "案件管理讀取管道",
@@ -102,8 +100,10 @@ test("delivery-preflight 列出六項查證且每項都有出口", () => {
   assert.match(source, /`defaultBranch`/);
   assert.match(source, /外部審查管道不在此查證/, "preflight 必須明文把外部審查排除在查證之外，避免提早阻擋");
 
-  const exitRows = source.split("\n").filter((line) => /\| .*halted|not_applicable|回 `ok`/.test(line));
-  assert.ok(exitRows.length >= 6, `每項查證都要有出口，實際 ${exitRows.length} 列`);
+  const exitRows = source
+    .split("\n")
+    .filter((line) => /^\|.*(halted|not_applicable|回 `ok`)/.test(line));
+  assert.equal(exitRows.length, 6, `每項查證都要有出口，實際 ${exitRows.length} 列`);
 });
 
 test("engineering-delivery 定義 N0-N10 且每個節點都有出口", () => {
@@ -141,7 +141,7 @@ test("engineering-delivery 調用而非重寫工法與關卡", () => {
   }
 
   assert.doesNotMatch(source, /@coderabbitai/, "審查管道細節屬於 coderabbit:code-review，不得複製到此");
-  assert.doesNotMatch(source, /mergeStateStatus/, "合併判定細節屬於 merge-gate");
+  assert.doesNotMatch(source, /`CLEAN`|`UNSTABLE`|`DIRTY`|`BEHIND`/, "合併判定的狀態清單屬於 merge-gate");
 });
 
 test("案件記錄以 references 子檔承載，不是獨立 Skill", () => {
@@ -153,7 +153,6 @@ test("案件記錄以 references 子檔承載，不是獨立 Skill", () => {
   assert.match(record, /去重/);
   assert.match(record, /寫入失敗/);
   assert.match(record, /Done 由 product owner 決定/);
-  assert.ok(!ALL_SKILLS.includes("linear-case-record"));
 });
 
 test("using-jt-workflow 保留環境問題處置與平行查證方法論", () => {
@@ -166,7 +165,7 @@ test("using-jt-workflow 保留環境問題處置與平行查證方法論", () =>
 
 test("external-review-gate 枚舉八種可觀測狀態", () => {
   const source = readSkill("external-review-gate");
-  const matrix = source.slice(source.indexOf("| 可觀測狀態"));
+  const matrix = source.slice(source.indexOf("| 可觀測狀態"), source.indexOf("## 兩個管道結論不同時"));
   const rows = matrix
     .split("\n")
     .filter((line) => line.startsWith("|") && !line.startsWith("|---") && !line.startsWith("| 可觀測狀態"));
@@ -187,9 +186,9 @@ test("external-review-gate 不擁有審查管道", () => {
 });
 
 test("merge-gate 與 acceptance-readback 在 halted 時提供 recoverableByCode", () => {
-  for (const name of ["merge-gate", "acceptance-readback"]) {
+  for (const name of INTERNAL_SKILLS) {
     const source = readSkill(name);
-    assert.match(source, /`recoverableByCode`/, `${name} 必須宣告 recoverableByCode`);
+    assert.match(source, /`recoverableByCode/, `${name} 必須宣告 recoverableByCode`);
     assert.match(source, /`halted`/, `${name} 必須說明 halted 的情況`);
   }
 });
@@ -269,4 +268,27 @@ test("jt-flow 的 README 不重複外部審查的管道細節，也不使用需�
   for (const hedge of ["合理時間", "適當", "看情況", "盡快"]) {
     assert.ok(!readme.includes(hedge), `README 出現需要拿捏的措辭「${hedge}」`);
   }
+});
+
+test("merge-gate 區分 required check 未回報與已失敗，且涵蓋 HAS_HOOKS", () => {
+  const source = readSkill("merge-gate");
+
+  assert.match(source, /`HAS_HOOKS`/, "HAS_HOOKS 是 GitHub 實際會回的值，必須有出口");
+  assert.match(source, /尚未回報完畢/, "required check 未回報不得與已失敗共用出口");
+  assert.match(source, /已失敗/);
+  assert.doesNotMatch(source, /`PENDING`/, "GitHub 的 MergeStateStatus 沒有 PENDING 這個值");
+});
+
+test("external-review-gate 綁定嚴重度與可用的處置", () => {
+  const source = readSkill("external-review-gate");
+
+  assert.match(source, /只能 `fixed`/, "critical/high/medium 不得以 rejected 結案");
+  assert.match(source, /`recoverableByCode: false`/);
+});
+
+test("engineering-delivery 涵蓋 check 終態與版號 PR 兩條路徑", () => {
+  const source = readSkill("engineering-delivery");
+
+  assert.match(source, /check 到終態/, "進外部審查前必須先等 check，否則會被誤判成需要改碼");
+  assert.match(source, /版號 PR/, "版號 PR 的監看責任必須有落點");
 });

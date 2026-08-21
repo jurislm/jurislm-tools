@@ -38,10 +38,15 @@ description: >
 | N4 實作 | 測試綠＋行為性驗收通過 | 通過 → N5 ／ 非預期行為 → 除錯後回 N4 |
 | N5 本地審查 | 品質＋資安＋資料三面過 | 過 → N6 ／ 有 finding → 回 N4 |
 | N6 開 PR | PR 存在且帶 Linear identifier | 建立 → N7 ／ 掃出 secret → 回 N4 清除後重來 |
-| N7 外部審查 | `external-review-gate` 回終態 | `ok` 且 `needsCodeChange` 為真 → **回 N4** ／ `ok` 且為假 → N8 ／ `not_applicable` → N8 ／ `halted` → 回傳 |
+| N7 外部審查 | PR 的 check 已到終態，且 `external-review-gate` 回終態 | `ok` 且 `needsCodeChange` 為真 → **回 N4** ／ `ok` 且為假 → N8 ／ `not_applicable` → N8 ／ `halted` → 回傳 |
 | N8 合併 | `merge-gate` 回 `ok` | `ok` → 合併 → N9 ／ `halted` 且 `recoverableByCode` 為真 → **回 N4** ／ `halted` 且為假 → 回傳 ／ `not_applicable` → 回傳 |
 | N9 驗收 | `acceptance-readback` 回 `ok` | `ok` → N10 ／ `halted` 且 `recoverableByCode` 為真 → **回 N4** ／ `halted` 且為假 → 回傳 |
 | N10 結案 | Linear 已留完整記錄 | → `awaiting_owner_acceptance` |
+
+**N7 的前置：先等 check 到終態。** 進入外部審查前，先監看 PR 上的 check 直到全部到達
+終態（有背景監看工具就用）。`check` 尚未回報完畢時不要進 `merge-gate`——那時的
+`mergeStateStatus` 必然是 `BLOCKED`（required check 缺席），會被誤判成需要改碼而回到
+N4，白跑一輪並多燒一次外部審查額度。
 
 **回頭邊的收斂保護**：N7／N8／N9 回到 N4 時，同一 `(issue, branch, 節點)` 連續第三次
 回頭即 `halted/ambiguity`，`needed` 寫明反覆失敗的具體症狀。此計數器與
@@ -131,6 +136,13 @@ coordinator 的責任。
 ## 案件記錄
 
 見 `references/case-record.md`。
+
+## 合併後出現的版號 PR
+
+Release Please 這類版號 PR 不對應任何 Linear issue，因此不會從 N0 進入本 graph。它由
+目標 repo 自己 source-controlled 的 validator 處理；本流程對它只做一件事：**監看終態
+後回報**。沒有自動合併就回報現況，讓 validator 重試，不要自己動手。目標 repo 沒有這種
+validator 時同樣不自行合併，回報現況交由使用者決定。
 
 ## 不適用情境
 

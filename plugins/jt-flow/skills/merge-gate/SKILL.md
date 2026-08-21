@@ -22,11 +22,13 @@ Copilot gate），那份為準。它沒寫時，本 Skill 的預設值是：
   **不是失敗**：依 `using-jt-workflow` 紀律 2 的來源優先序重查，預設**上限 3 次**；
   逾上限仍為 `UNKNOWN` → `halted/access_config`，`recoverableByCode: false`，
   `needed` 寫明「GitHub 未能算出 mergeable 狀態」。
-- `mergeStateStatus` 為 `CLEAN` **或** `UNSTABLE`，不可為 `BLOCKED`／`DIRTY`／`BEHIND`。
+- `mergeStateStatus` 為 `CLEAN`、`UNSTABLE` **或** `HAS_HOOKS`，不可為 `BLOCKED`／
+  `DIRTY`／`BEHIND`。
 
   ⚠️ 別要求一定是 `CLEAN`——`UNSTABLE` 的定義就是「只有非必要的 check 沒過」，外部
   審查額度耗盡留下的正是這種；要求 `CLEAN` 會跟「額度耗盡不擋合併」互相矛盾，永遠
-  過不了。`BLOCKED` 才是「required check 失敗或缺席」。用這兩個值判斷，不必去讀
+  過不了。`BLOCKED` 才是「required check 失敗或尚未回報」，兩者出口不同，見下方出口表。
+  `HAS_HOOKS` 是「可合併，但該 repo 裝了 pre-receive hook」，屬可合併狀態。用這幾個值判斷，不必去讀
   branch protection API——它對沒有 admin 權限的人回 403。
 - 所有 review thread 已 resolve，外部 reviewer 沒有未處理的 finding。
 - `external-review-gate` 已回 `ok` 或 `not_applicable`。
@@ -38,7 +40,8 @@ Copilot gate），那份為準。它沒寫時，本 Skill 的預設值是：
 | 情況 | 終態 |
 |---|---|
 | 全部成立 | `ok`，`payload` 附 `mergeable`、`mergeStateStatus` |
-| `BLOCKED`／`DIRTY`／`BEHIND`，或有未處理 finding | `halted`，`recoverableByCode: true` |
+| `BLOCKED` 且 required check **尚未回報完畢** | 依 `using-jt-workflow` 紀律 2 的來源優先序重查，預設**上限 3 次**；逾上限 → `halted/access_config`，`recoverableByCode: false` |
+| `BLOCKED` 且 required check **已失敗**，或 `DIRTY`／`BEHIND`，或有未處理 finding | `halted`，`recoverableByCode: true` |
 | `UNKNOWN` 逾重查上限 | `halted/access_config`，`recoverableByCode: false` |
 | Release Please 版號 PR | `not_applicable` |
 
