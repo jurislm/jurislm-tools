@@ -10,7 +10,7 @@
 thread 留下具體理由；完成後 resolve 每一個 review thread。修正後的 HEAD 由本地驗證、
 CI 與 mergeability 覆核，不重啟外部 review。
 
-使用 `jt-flow-one` 時，本地 review 由該 Skill invoke
+使用 `engineering-delivery` 時，本地 review 由該 Skill invoke
 `superpowers:requesting-code-review` 擁有；外部 review 交給 `coderabbit:code-review`
 skill，不另起第二套審查機制。
 

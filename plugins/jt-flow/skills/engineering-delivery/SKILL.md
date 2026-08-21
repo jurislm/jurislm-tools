@@ -1,5 +1,5 @@
 ---
-name: jt-flow-one
+name: engineering-delivery
 description: >
   以 Linear issue 為需求來源，用 Superpowers skill 集完成一個需求的端到端交付：
   釐清 → worktree → TDD 實作 → PR → review → merge → 部署驗收 → Linear readback。
