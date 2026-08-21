@@ -83,7 +83,7 @@ Skills and commands are auto-discovered. A plugin manifest owns metadata; it doe
 | `podcast-to-blog` | Skill | Podcast transcription and writing |
 | `codebase-sync` | Skill | README and CLAUDE.md synchronization |
 | `learn-eval` | Skill | Reusable session-pattern extraction |
-| `jt-flow` | Skill | `jt-flow-one` Linear-issue-driven single-request delivery workflow |
+| `jt-flow` | Skill | `using-jt-workflow` 紀律與 `engineering-delivery` Linear-issue-driven delivery coordinator（另有四個內部 Skill） |
 
 Do not restore retired `/jt:*`, `/jt-flow`, or `/jt-flow-all` command surfaces, or the retired `jt-flow-all` Skill. Current Skills are triggered by intent.
 
@@ -158,16 +158,22 @@ explicitly requests Spectra or OpenSpec. Within such an explicitly selected
 legacy run, its artifacts and authorization contract remain authoritative; do
 not mix Linear/Superpowers planning artifacts into that same delivery container.
 
-The `jt-flow` plugin is no longer part of that legacy surface. Its `jt-flow-one`
-Skill now runs the Linear + Superpowers delivery chain described above and
-creates no OpenSpec artifacts. The `jt-flow-all` OpenSpec change queue is
-retired; its record is in
+The `jt-flow` plugin is no longer part of that legacy surface. Its
+`engineering-delivery` Skill now runs the Linear + Superpowers delivery chain
+described above and creates no OpenSpec artifacts. The `jt-flow-all` OpenSpec
+change queue is retired; its record is in
 `openspec/changes/archive/2026-08-20-retire-openspec-jt-flow/`.
 
 For current marketplace membership, prefer `.claude-plugin/marketplace.json`,
 plugin manifests, and repository validation over historical specs. Do not
 delete or rewrite archived OpenSpec evidence merely because the default workflow
 has changed.
+
+`jt-flow` is an explicitly requested orchestration surface. The product owner
+asked for it on 2026-08-21; the "use Superpowers directly, do not build another
+orchestration layer" rule above is therefore satisfied by that explicit request,
+not bypassed. Its design record is
+`docs/superpowers/specs/2026-08-21-jt-flow-skill-decomposition-design.md`.
 
 ## GitHub Flow and worktrees
 

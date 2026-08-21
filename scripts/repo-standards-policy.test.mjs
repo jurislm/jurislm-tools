@@ -116,7 +116,7 @@ test("portable review contract preserves jt-flow review ownership", () => {
     "plugins/repo-standards/skills/repo-standards/references/review-orchestration-template.md"
   ];
 
-  assert.match(template, /`jt-flow-one`.*invoke.*`superpowers:requesting-code-review`/s);
+  assert.match(template, /`engineering-delivery`.*invoke.*`superpowers:requesting-code-review`/s);
   assert.match(template, /外部 review 交給 `coderabbit:code-review`/s);
   assert.doesNotMatch(template, /jt-flow-all/);
 });

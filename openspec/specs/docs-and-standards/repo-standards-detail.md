@@ -19,7 +19,7 @@ invoke `superpowers:requesting-code-review`、以
 mergeability 與外部 review gates。`repo-standards` 只負責設定 CodeRabbit 的一次明確
 App review、Copilot 指示與無自動 Claude review pipeline 等前置條件。
 
-目標 repo 使用 `jt-flow-one` 時，本地 review 由該 Skill 發起並擁有；外部 review
+目標 repo 使用 `engineering-delivery` 時，本地 review 由該 Skill 發起並擁有；外部 review
 交給 `coderabbit:code-review` skill，不另起第二套審查機制。
 
 ## 產物

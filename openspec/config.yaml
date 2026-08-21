@@ -8,7 +8,7 @@ context: |
     - Credential-bearing local MCP: exact-version .mcp.json launcher + skill (coolify, hetzner, langfuse)
     - OAuth remote MCP: remote server configuration + skills (higgsfield)
     - Skill: SKILL.md with optional compatibility command (repo-standards, podcast-to-blog, codebase-sync, learn-eval)
-    - jt-flow: jt-flow-one skill for Linear-issue-driven single-request delivery
+    - jt-flow: using-jt-workflow discipline plus engineering-delivery coordinator for Linear-issue-driven delivery
     - Commands are optional entry points; they are not separate plugin categories or sources of truth
 
   Version management: Release Please automation

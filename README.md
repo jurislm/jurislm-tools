@@ -36,11 +36,11 @@ claude plugin update coolify@jurislm-tools
 | `podcast-to-blog` | Skill | `claude plugin install podcast-to-blog@jurislm-tools` | Podcast 轉錄與繁體中文文章生成 |
 | `codebase-sync` | Skill | `claude plugin install codebase-sync@jurislm-tools` | README 與 CLAUDE.md 同步 |
 | `learn-eval` | Skill | `claude plugin install learn-eval@jurislm-tools` | 從 session 萃取可重用 patterns |
-| `jt-flow` | Skill | `claude plugin install jt-flow@jurislm-tools` | `jt-flow-one` 以 Linear issue 為來源的單一需求端到端交付工作流 |
+| `jt-flow` | Skill | `claude plugin install jt-flow@jurislm-tools` | `engineering-delivery` 以 Linear issue 為來源的單一需求端到端交付工作流 |
 
 Skills 由自然語言意圖觸發；本 repo 不再提供舊版 `/jt:*` 或 `/jt-flow` slash commands。
 
-`jt-flow-one` 以 Linear issue 為需求、範圍與驗收標準的唯一來源，用 Superpowers
+`engineering-delivery` 以 Linear issue 為需求、範圍與驗收標準的唯一來源，用 Superpowers
 skill 集走完釐清 → worktree → TDD 實作 → PR + review → merge → 部署驗收 →
 Linear readback。指向一個 issue 並要求交付即為完整授權，流程中不逐項確認；只有
 真實歧義、重大架構或依賴變更、secret、缺少權限與高風險 rollback 才暫停。
