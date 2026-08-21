@@ -105,3 +105,53 @@ test("delivery-preflight 列出六項查證且每項都有出口", () => {
   const exitRows = source.split("\n").filter((line) => /\| .*halted|not_applicable|回 `ok`/.test(line));
   assert.ok(exitRows.length >= 6, `每項查證都要有出口，實際 ${exitRows.length} 列`);
 });
+
+test("engineering-delivery 定義 N0-N10 且每個節點都有出口", () => {
+  const source = readSkill("engineering-delivery");
+
+  for (let node = 0; node <= 10; node += 1) {
+    assert.match(source, new RegExp(`\\| N${node} `), `缺少節點 N${node}`);
+  }
+
+  assert.match(source, /`recoverableByCode` 為真 → \*\*回 N4\*\*/);
+  assert.match(source, /連續第三次/, "回頭邊必須有收斂保護");
+  assert.match(source, /awaiting_owner_acceptance/);
+
+  for (const field of ["`status`", "`stage`", "`issue`", "`branch`", "`pr`", "`blocked`"]) {
+    assert.ok(source.includes(field), `envelope schema 缺少欄位 ${field}`);
+  }
+  assert.match(source, /只有 Release Please 版號 PR 允許 `null`/);
+});
+
+test("engineering-delivery 調用而非重寫工法與關卡", () => {
+  const source = readSkill("engineering-delivery");
+
+  for (const dependency of [
+    "superpowers:test-driven-development",
+    "superpowers:systematic-debugging",
+    "superpowers:verification-before-completion",
+    "superpowers:requesting-code-review",
+    "superpowers:receiving-code-review",
+    "delivery-preflight",
+    "external-review-gate",
+    "merge-gate",
+    "acceptance-readback",
+  ]) {
+    assert.match(source, new RegExp(dependency.replace(/[-:]/g, "\\$&")), `缺少對 ${dependency} 的調用`);
+  }
+
+  assert.doesNotMatch(source, /@coderabbitai/, "審查管道細節屬於 coderabbit:code-review，不得複製到此");
+  assert.doesNotMatch(source, /mergeStateStatus/, "合併判定細節屬於 merge-gate");
+});
+
+test("案件記錄以 references 子檔承載，不是獨立 Skill", () => {
+  const record = readFileSync(
+    new URL("engineering-delivery/references/case-record.md", skillsDir),
+    "utf8",
+  );
+
+  assert.match(record, /去重/);
+  assert.match(record, /寫入失敗/);
+  assert.match(record, /Done 由 product owner 決定/);
+  assert.ok(!ALL_SKILLS.includes("linear-case-record"));
+});
