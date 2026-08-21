@@ -63,3 +63,23 @@ test("內部 Skill 宣告自己由 coordinator 調用", () => {
     );
   }
 });
+
+test("using-jt-workflow 承載三條紀律、具名依賴判別與紅旗表", () => {
+  const source = readSkill("using-jt-workflow");
+
+  assert.match(source, /可替換工具一律是例子/);
+  assert.match(source, /repo 事實去讀該 repo 自己宣告的定義/);
+  assert.match(source, /Linear 是案件檔案/);
+  assert.match(source, /具名依賴/);
+  assert.match(source, /來源優先序/);
+
+  const redFlagRows = source
+    .split("\n")
+    .filter((line) => line.startsWith("| 「"));
+  assert.ok(redFlagRows.length >= 7, `紅旗表至少七列，實際 ${redFlagRows.length}`);
+});
+
+test("using-jt-workflow 不執行動作", () => {
+  const source = readSkill("using-jt-workflow");
+  assert.doesNotMatch(source, /^```bash/m, "紀律 Skill 不應包含可執行指令區塊");
+});
