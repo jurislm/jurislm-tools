@@ -225,7 +225,7 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（c
 | 目標 repo 託管於 GitHub | `not_applicable` |
 | 可用的 GitHub 事實來源至少一種 | `halted / access_config` |
 | remote 解析唯一，且 fetch／push 目標一致 | `halted / ambiguity` |
-| 案件管理讀取管道可用 | 不停下：向使用者索取 issue 內容後回 `ok`，並記入 `notes`（案件記錄仍需寫回，寫入失敗時另依 case-record 的失敗規則處理） |
+| 案件管理讀取管道可用 | 不停下：向使用者索取 issue 內容後回 `ok`（貼上的內容**必須含 issue identifier**，並把 identifier 與「內容由使用者提供、未經 Linear 驗證」一併記入 `notes`；案件記錄仍需寫回，寫入失敗時另依 `engineering-delivery/references/case-record.md` 的失敗規則處理） |
 
 - 外部審查管道**不在此查證**，由 `external-review-gate` 在需要時查，避免提早阻擋。
 
@@ -244,8 +244,10 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（c
 | N4 實作 | 測試綠＋行為性驗收通過 | 通過 → N5 ／ 非預期行為 → 除錯後回 N4 |
 | N5 本地審查 | 品質＋資安＋資料三面過 | 過 → N6 ／ 有 finding → 回 N4 |
 | N6 開 PR | PR 存在且帶 Linear identifier | 建立 → N7 ／ 掃出 secret → 回 N4 清除後重來 |
+
+**入口分流：版號 PR 不進入本 graph。**graph 的入口是一個 Linear issue（N0），而 Release Please 這類版號 PR 不對應任何 issue，因此不會從 N0 進入，也永遠走不到 N6——N6 的 identifier 條件對它不適用，不是需要加例外。`merge-gate` 仍保留 `not_applicable` 一列，是為了在有人手動把它送進判定時仍有出口；`issue: null` 同理，描述的是那條手動路徑，不是本 graph 的產物。本流程對版號 PR 只做一件事：監看它的終態後回報。
 | N7 外部審查 | `external-review-gate` 回終態 | `ok` 且 `needsCodeChange` 為真 → **回 N4** ／ `ok` 且為假 → N8 ／ `not_applicable` → N8 ／ `halted` → 回傳 |
-| N8 合併 | `merge-gate` 回 `ok` | `ok` → 合併 → N9 ／ `halted` 且 `recoverableByCode` 為真 → **回 N4** ／ `halted` 且為假 → 回傳 ／ `not_applicable`（版號 PR）→ 回傳 |
+| N8 合併 | `merge-gate` 回 `ok` | `ok` → 合併 → N9 ／ `halted` 且 `recoverableByCode` 為真 → **回 N4** ／ `halted` 且為假 → 回傳 ／ `not_applicable` → 回傳（**本 graph 不會產生這種 PR**，見下方入口分流） |
 | N9 驗收 | `acceptance-readback` 回 `ok` | `ok` → N10 ／ `halted` 且 `recoverableByCode` 為真 → **回 N4** ／ `halted` 且為假（需授權、回退風險不明）→ 回傳 |
 | N10 結案 | Linear 已留完整記錄 | → `awaiting_owner_acceptance` |
 
@@ -325,7 +327,8 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（c
   - 所有 review thread 已 resolve，外部 reviewer 無未處理 finding
   - `external-review-gate` 已回 `ok` 或 `not_applicable`
 - 合併授權已包含在最初的交付授權裡，gate 全綠即合併，不再詢問。
-- **Release Please 版號 PR**（標題形如 `chore(<default>): release X.Y.Z`）→ `not_applicable`：
+- **Release Please 版號 PR**（標題形如 `chore(<default>): release X.Y.Z`）→ `not_applicable`
+  （本 graph 不會產生這種 PR，此出口是給手動送進判定的情況用的）：
   只監看終態，交由該 repo 自己的 validator 處理；沒有 validator 時回報現況交使用者決定。
   這類 PR 不對應 Linear issue，略過 identifier 與 readback 要求。
 
