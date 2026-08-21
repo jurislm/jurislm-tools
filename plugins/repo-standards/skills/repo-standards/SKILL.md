@@ -548,7 +548,7 @@ required checks 與部署方式客製化。建立 PR 後必須 invoke
 所有 review thread。合併前還必須符合 CI、`MERGEABLE`／`CLEAN`、Copilot 與
 CodeRabbit gate。
 
-目標 repo 使用 `jt-flow-one` 時，本地 review 由該 Skill invoke
+目標 repo 使用 `engineering-delivery` 時，本地 review 由該 Skill invoke
 `superpowers:requesting-code-review` 擁有；外部 review 交給 `coderabbit:code-review`
 skill，不另起第二套審查機制。
 

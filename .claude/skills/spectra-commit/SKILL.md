@@ -239,7 +239,7 @@ This is a **utility skill** (not a workflow step). It reads source file tracking
 9. **Secret preflight**
 
    Before committing, run the repository-approved secret scanner described by
-   the `jt-flow-one` secret-scanning contract. It must inspect the staged tree
+   the `engineering-delivery` secret-scanning contract. It must inspect the staged tree
    and every commit, tree, and blob that the branch will push relative to the
    refreshed remote `main`; if the scanner lacks a history/range mode, enumerate
    each commit patch and its added or modified text/binary content, plus the

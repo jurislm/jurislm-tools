@@ -211,3 +211,49 @@ test("acceptance-readback 涵蓋無部署管道的 repo", () => {
   assert.match(source, /migration/);
   assert.match(source, /superpowers:verification-before-completion/);
 });
+
+test("live 檔案不再引用 jt-flow-one", () => {
+  const EXCLUDED_DIRS = new Set([
+    ".git",
+    "node_modules",
+    ".claude/worktrees",
+    "openspec/changes/archive",
+    "docs/superpowers",
+    ".superpowers",
+  ]);
+  const EXCLUDED_FILES = new Set([
+    "CHANGELOG.md",
+    // 本測試檔必須指名退場的 Skill 才能斷言它不存在
+    "scripts/jt-flow-skills-policy.test.mjs",
+  ]);
+
+  const offenders = [];
+  const walk = (relativeDir) => {
+    const entries = readdirSync(new URL(relativeDir, repositoryRoot), { withFileTypes: true });
+    for (const entry of entries) {
+      const relativePath = relativeDir === "" ? entry.name : `${relativeDir}${entry.name}`;
+      if (entry.isDirectory()) {
+        if (EXCLUDED_DIRS.has(relativePath)) continue;
+        walk(`${relativePath}/`);
+        continue;
+      }
+      if (EXCLUDED_FILES.has(relativePath)) continue;
+      if (!/\.(md|json|yaml|yml|mjs|js)$/.test(entry.name)) continue;
+      const source = readFileSync(new URL(relativePath, repositoryRoot), "utf8");
+      if (source.includes("jt-flow-one")) offenders.push(relativePath);
+    }
+  };
+  walk("");
+
+  assert.deepEqual(offenders, [], `這些 live 檔案仍引用退場的 jt-flow-one：${offenders.join(", ")}`);
+});
+
+test("六個 Skill 都不使用需要拿捏的措辭", () => {
+  const HEDGES = ["合理時間", "適當", "看情況", "盡快"];
+  for (const name of ALL_SKILLS) {
+    const source = readSkill(name);
+    for (const hedge of HEDGES) {
+      assert.ok(!source.includes(hedge), `${name} 出現需要拿捏的措辭「${hedge}」`);
+    }
+  }
+});
