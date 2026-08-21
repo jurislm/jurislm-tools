@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Node.js 版本須符合 `^22.22.2 || ^24.15.0 || >=26.0.0`。
-- **禁止手動編輯任何版本號**：`plugins/*/. claude-plugin/plugin.json` 的 `version`、`.claude-plugin/marketplace.json` 的 `$.plugins[0].version` 由 Release Please 擁有。
+- **禁止手動編輯任何版本號**：`plugins/*/.claude-plugin/plugin.json` 的 `version`、`.claude-plugin/marketplace.json` 的 `$.plugins[0].version` 由 Release Please 擁有。
 - **`coolify` 必須維持 `marketplace.json` 的陣列索引 0。**
 - **不得改寫 `openspec/changes/archive/**`**（歷史證據）與 `CHANGELOG.md`（Release Please 擁有）。
 - 每個 commit 用 `feat:`／`fix:`／`docs:`／`chore:` 其中之一，且**逐一 `git add <path>`，不使用 `git add .` 或 `-A`**。

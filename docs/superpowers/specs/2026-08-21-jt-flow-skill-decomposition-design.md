@@ -184,10 +184,10 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（c
 
 | Skill | 輸入 | `ok` 時附帶 | 可回的終態 |
 |---|---|---|---|
-| `delivery-preflight` | 目標目錄 | `remote`、`owner/repo`、預設分支名 | `ok`／`halted`／`not_applicable` |
-| `external-review-gate` | `owner/repo`、`pr`、目標 repo 宣告 | `findings[]`、`needsCodeChange`（bool） | `ok`／`halted`／`not_applicable` |
-| `merge-gate` | `owner/repo`、`pr`、目標 repo 宣告、上關 `findings[]` | `mergeable`、`mergeStateStatus` | `ok`／`halted`／`not_applicable` |
-| `acceptance-readback` | `owner/repo`、合併後 sha、部署管道宣告 | `evidence[]` | `ok`／`halted`／`not_applicable` |
+| `delivery-preflight` | 目標目錄 | `remote`、`ownerRepo`（值為 `<owner>/<repo>`）、`defaultBranch` | `ok`／`halted`／`not_applicable` |
+| `external-review-gate` | `ownerRepo`、`pr`、目標 repo 宣告 | `findings[]`、`needsCodeChange`（bool） | `ok`／`halted`／`not_applicable` |
+| `merge-gate` | `ownerRepo`、`pr`、目標 repo 宣告、上關 `findings[]` | `mergeable`、`mergeStateStatus` | `ok`／`halted`／`not_applicable` |
+| `acceptance-readback` | `ownerRepo`、合併後 sha、部署管道宣告 | `evidence[]` | `ok`／`halted`／`not_applicable` |
 
 - **`recoverableByCode`（bool）**：`external-review-gate`、`merge-gate`、`acceptance-readback`
   回 `halted` 時必填，表示「此阻塞可由修改程式碼解除」。**coordinator 依這個欄位決定是否
@@ -427,7 +427,9 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（c
 3. 四個內部 Skill 的 `description` 以「由 `engineering-delivery` 調用」開頭。
 4. 所有 live 檔案不含 `jt-flow-one` 字串。掃描範圍排除三類，且排除清單本身寫進測試：
    `openspec/changes/archive/**`（歷史證據）、`CHANGELOG.md`（Release Please 擁有）、
-   `docs/superpowers/specs/**`（設計文件必須談論舊名，否則無法記錄遷移理由）。
+   `docs/superpowers/**`（設計文件與實作計畫都必須談論舊名，否則無法記錄遷移理由）、
+   `.superpowers/**`（執行期暫存工作區）、以及掃描測試自身（它必須指名退場的 Skill
+   才能斷言它不存在）。
 5. 六個 Skill 全文不出現需要拿捏的措辭清單（「合理時間」「適當」「看情況」「盡快」）。
 6. `external-review-gate` 的狀態矩陣列數等於八，且同時含「無受理跡象」與「已受理未完成」
    兩列。
@@ -435,10 +437,10 @@ awaiting_owner_acceptance   技術驗收齊全，等待 product owner 接受（c
 
 ### 審查驗證（人工檢查，不自動化）
 
-8. 每個節點的出口在 graph 上都有對應的入邊或終態，無死路。
-9. 可替換工具皆以「例如」形式出現並附替代路徑；具名依賴直接寫名字。
-10. superpowers 的工法內容零複製，全部以 Skill 名稱調用。
-11. ledger 的每一列都有對應去向；標記刪除者附理由。
+- **8.** 每個節點的出口在 graph 上都有對應的入邊或終態，無死路。
+- **9.** 可替換工具皆以「例如」形式出現並附替代路徑；具名依賴直接寫名字。
+- **10.** superpowers 的工法內容零複製，全部以 Skill 名稱調用。
+- **11.** ledger 的每一列都有對應去向；標記刪除者附理由。
 
 ### 端到端情境驗收（實作完成後逐一走過）
 

@@ -27,6 +27,18 @@ repo 宣告決定本 PR 是否需要審查，以及把結果映射為終態。
 計，不以時間計。本上限只管「審查是否產出」，與 `engineering-delivery` 的回頭上限是
 兩個獨立計數器，不互相消耗。
 
+## 採信一份 review 之前
+
+映射成終態之前先確認三件事，任一不成立即 `halted/access_config`，**不得映射為 `ok`，
+也不得 resolve 任何 review thread**：
+
+1. 結果確實來自 `coderabbit:code-review`，不是任意留言或他人貼上的內容
+2. 結果對應的是**本次這個 PR**
+3. 結果對應的 head SHA **仍是目前的 HEAD**——過期的 review 審的是別的程式碼
+
+第 3 點在 `auto_incremental_review: false` 的 repo 特別重要：push 之後不會再自動審，
+舊 review 會留在原地看起來像是有效的。
+
 ## 狀態矩陣
 
 | 可觀測狀態 | 出口 | `needsCodeChange` |
@@ -62,7 +74,10 @@ repo 宣告決定本 PR 是否需要審查，以及把結果映射為終態。
 
 | severity | 允許的 disposition |
 |---|---|
-| `critical`／`high`／`medium` | 只能 `fixed`（修正並驗證） |
-| `low` | 優先 `fixed`；`rejected` 需在原 review thread 留下具體理由；`deferred` 需附去向 |
+| `critical`／`high`／`medium` | 只能 `accepted`（採納，修正在 N4 進行）或 `fixed`（本關內已修正並驗證） |
+| `low` | 優先採納；`rejected` 需在原 review thread 留下具體理由；`deferred` 需附去向 |
+
+`needsCodeChange: true` 時，回傳的 finding 是 `accepted` 而非 `fixed`——決定已經做了，
+修正在 N4 執行，N7 重跑後才轉 `fixed`。
 
 回傳 `findings[]` 時，`disposition` 是本 Skill 完成處置後的結果，不是待辦清單。

@@ -30,7 +30,16 @@ Copilot 每個 PR 只有一次 review budget，並使用 repo 專屬
 ## Merge gates
 
 合併前必須同時滿足：[repo-required checks] 全綠、最新 HEAD 的
-`mergeable=MERGEABLE` 與 `mergeStateStatus=CLEAN`、所有 review thread 已 resolve、
-Copilot 與 CodeRabbit 沒有未處理 finding。CodeRabbit 的 App 與 CLI 都不可用時，才可
-記錄原因後略過該 gate；Copilot 只有確認為 quota exhausted（非權限或設定錯誤）時才可
-略過。合併後依 repo 的 release／deploy 契約監看其終態。
+`mergeable=MERGEABLE`、`mergeStateStatus` 為 `CLEAN`／`UNSTABLE`／`HAS_HOOKS`（不可為
+`BLOCKED`／`DIRTY`／`BEHIND`）、所有 review thread 已 resolve、Copilot 與 CodeRabbit
+沒有未處理 finding。合併後依 repo 的 release／deploy 契約監看其終態。
+
+⚠️ **不要要求 `mergeStateStatus=CLEAN`**：`UNSTABLE` 的定義就是「只有非必要的 check
+沒過」，外部 review 額度耗盡留下的正是這種；要求 `CLEAN` 會與「額度耗盡不擋合併」互相
+矛盾，永遠過不了。
+
+外部 review 拿不到時**依原因分流，不是一律略過**：服務端限制或中斷（含額度耗盡）記錄
+原因後繼續；存取或設定問題（未安裝、未授權、未登入、權限不符）停下告知使用者，需其明確
+要求才可照樣合併。使用 `engineering-delivery` 的 repo，這套判定由
+`plugins/jt-flow/skills/merge-gate/SKILL.md` 與
+`plugins/jt-flow/skills/external-review-gate/SKILL.md` 擁有，本模板不另訂一套。

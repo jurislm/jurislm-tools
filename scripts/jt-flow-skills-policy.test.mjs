@@ -282,7 +282,7 @@ test("merge-gate 區分 required check 未回報與已失敗，且涵蓋 HAS_HOO
 test("external-review-gate 綁定嚴重度與可用的處置", () => {
   const source = readSkill("external-review-gate");
 
-  assert.match(source, /只能 `fixed`/, "critical/high/medium 不得以 rejected 結案");
+  assert.match(source, /只能 `accepted`（採納，修正在 N4 進行）或 `fixed`/, "critical/high/medium 不得以 rejected 結案");
   assert.match(source, /`recoverableByCode: false`/);
 });
 
@@ -336,4 +336,58 @@ test("跨 Skill 引用的檔案路徑真的存在", () => {
       `引用的 ${relativePath} 在 plugins/jt-flow/skills/ 底下找不到對應檔案`,
     );
   }
+});
+
+test("halted/<kind> 的簡寫只定義一次，且不與 status 或 stage 混淆", () => {
+  const source = readSkill("engineering-delivery");
+
+  assert.match(source, /`halted\/<kind>` 是簡寫/);
+  assert.match(source, /不是 `status` 的第五個值，也不是\n\*\*`stage`\*\*|不是 `status` 的第五個值/);
+});
+
+test("findings 的 disposition 用 accepted 表達「已採納、修正在 N4」", () => {
+  const coordinator = readSkill("engineering-delivery");
+  const gate = readSkill("external-review-gate");
+
+  assert.match(coordinator, /`accepted`（已採納，修正在 N4 進行）/);
+  assert.doesNotMatch(coordinator, /`pending`(?!\s*這個值)/);
+  assert.match(gate, /`needsCodeChange: true` 時，回傳的 finding 是 `accepted`/);
+});
+
+test("external-review-gate 採信 review 前先驗證來源、PR 與 head SHA", () => {
+  const source = readSkill("external-review-gate");
+
+  assert.match(source, /## 採信一份 review 之前/);
+  assert.match(source, /head SHA \*\*仍是目前的 HEAD\*\*/, "過期的 review 審的是別的程式碼");
+  assert.match(source, /不得映射為 `ok`/);
+});
+
+test("acceptance-readback 綁定合併 commit 並要求遮罩證據", () => {
+  const source = readSkill("acceptance-readback");
+
+  assert.match(source, /head SHA \*\*必須等於本次的合併 commit\*\*/);
+  assert.match(source, /先遮罩/, "evidence 會寫進 Linear，不得夾帶 credential");
+});
+
+test("repo-standards 的 review 模板不與 jt-flow 的 merge gate 契約漂移", () => {
+  const template = readFileSync(
+    new URL(
+      "plugins/repo-standards/skills/repo-standards/references/review-orchestration-template.md",
+      repositoryRoot,
+    ),
+    "utf8",
+  );
+
+  assert.match(template, /`CLEAN`／`UNSTABLE`／`HAS_HOOKS`/);
+  assert.match(
+    template,
+    /\*\*不要要求 `mergeStateStatus=CLEAN`\*\*/,
+    "要求 CLEAN 會與「額度耗盡不擋合併」互相矛盾，模板必須明講",
+  );
+  assert.doesNotMatch(
+    template,
+    /滿足[\s\S]{0,200}`mergeStateStatus=CLEAN`/,
+    "gate 條件本身不得再要求 CLEAN",
+  );
+  assert.match(template, /依原因分流，不是一律略過/);
 });

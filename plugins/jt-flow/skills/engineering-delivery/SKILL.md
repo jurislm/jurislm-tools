@@ -31,7 +31,7 @@ description: >
 
 | 節點 | 完成條件 | 出口 |
 |---|---|---|
-| N0 前提 | `delivery-preflight` 回 `ok` | `ok` → N1 ／ 否則直接回傳其終態 |
+| N0 前提 | `delivery-preflight` 回 `ok` | `ok` → N1 ／ 否則把它的 internal result 包成 envelope（`branch`／`pr` 為 `null`）後回傳 |
 | N1 需求分析 | 範圍與驗收標準明確 | 明確 → N2 ／ 真實歧義 → `halted/ambiguity` |
 | N2 設計 | 方案定案 | 定案 → N3 ／ 需重大架構變更或新依賴 → `halted/authorization` |
 | N3 工作樹 | 在**對得上本次 issue** 的 feature 分支且工作區乾淨 | 就緒 → N4 ／ 當前為預設分支 → 先建分支再進 N4 ／ 有他人未提交變更 → `halted/risk` ／ 沿用分支對不上本次 issue 且（無 commit **或**查得到已合併 PR）→ 從最新預設分支開對得上的新分支再進 N4 ／ 沿用分支有 commit 但查無已合併 PR → `halted/risk` |
@@ -134,24 +134,33 @@ push 仍會把那個 commit 推上去。發現即回 N4，從所有將推送的 
 | `branch` | string \| null | N3 之後必填 | N0–N2 尚未建立分支時為 `null` |
 | `pr` | string \| null | 否 | 尚未開 PR 時為 `null` |
 | `evidence[]` | `{ kind, ref, summary }` | 否 | `kind` ∈ `test` \| `runtime` \| `ci` \| `deploy` |
-| `findings[]` | `{ source, severity, disposition }` | 否 | `severity` ∈ `critical` \| `high` \| `medium` \| `low`；`disposition` ∈ `fixed` \| `rejected`（附理由）\| `deferred`（附去向） |
+| `findings[]` | `{ source, severity, disposition }` | 否 | `severity` ∈ `critical` \| `high` \| `medium` \| `low`；`disposition` ∈ `accepted`（已採納，修正在 N4 進行）\| `fixed` \| `rejected`（附理由）\| `deferred`（附去向） |
 | `blocked` | `{ kind, what, needed }` | `halted` 時必填 | `blocked.needed` 必須是給人看的下一步 |
 | `notes[]` | string | 否 | 服務端限制、hook 造成的範圍外變動、未自動化的觀察 |
 
 **內部 Skill 不填寫案件層欄位**（`issue`／`branch`／`pr`／`evidence[]`），那是本
 coordinator 的責任。
 
-**`findings[]` 只在處置完成後才回傳。** `disposition` 記錄的是已經發生的結果，不是待辦
-清單，所以沒有 `pending` 這個值——一個關卡若還沒把 finding 處置完，它就還沒到終態，不會
-把 `findings[]` 交出來。哪些 severity 只能是哪些 disposition，由發出 finding 的關卡自己
+**`halted/<kind>` 是簡寫**，全流程通用：它代表 `status: halted` 加上
+`blocked.kind: <kind>`，`kind` 取自上表的四個值。**它不是 `status` 的第五個值，也不是
+`stage`**——`stage` 記的是節點代號或 Skill 名，兩者不可互換。
+
+**`disposition` 記錄的是已經做出的決定，不是待辦清單，所以沒有 `pending` 這個值。**
+需要改碼的 finding 回 `accepted`——決定已經做了（採納），只是修正在 N4 執行；N4 完成、
+N7 重跑後才轉為 `fixed`。一個關卡若連「採不採納」都還沒決定，它就還沒到終態，不會把
+`findings[]` 交出來。哪些 severity 只能是哪些 disposition，由發出 finding 的關卡自己
 規定（外部審查見 `external-review-gate`）。
 
 ## 重跑
 
-**重跑不是從頭再做一遍。**帶副作用的節點（N3 建分支、N6 開 PR、N8 合併）與案件記錄，
+**重跑不是從頭再做一遍。**帶副作用的節點（N3 建分支、**N4 commit**、N6 開 PR、
+N8 合併）與案件記錄，
 一律以 `(issue, branch, 節點)` 為冪等鍵：先讀該鍵既有的副作用——既有分支、既有 PR、既有
 Linear 留言——存在且內容未變就跳過，不重建。N0–N2 沒有帶副作用的動作，冪等鍵在 N3 之後
 才完整。無副作用的關卡（`delivery-preflight`、`merge-gate`）是純查證，天然可重跑。
+
+既有副作用**內容已變**時是更新而非跳過：PR 已存在但標題或內文對不上本次 issue 就更新
+它，不另開一個；N4 的 commit 以工作樹實際狀態為準，已 commit 過的內容不重複 commit。
 
 完整的分層規則與案件記錄的去重標記見 `references/case-record.md`。
 
@@ -161,7 +170,10 @@ Linear 留言——存在且內容未變就跳過，不重建。N0–N2 沒有�
 
 ## 合併後出現的版號 PR
 
-Release Please 這類版號 PR 不對應任何 Linear issue，因此不會從 N0 進入本 graph。它由
+Release Please 這類版號 PR 不對應任何 Linear issue，因此**不會從 N0 進入本 graph**，也
+就永遠不會走到 N6——N6「PR 帶 Linear identifier」的條件對它不適用，不是對它的例外。
+`merge-gate` 之所以仍為它保留 `not_applicable` 一列，是為了在有人手動把它送進判定時
+仍有出口，不是表示本 graph 會產生這種 PR。它由
 目標 repo 自己 source-controlled 的 validator 處理；本流程對它只做一件事：**監看終態
 後回報**。沒有自動合併就回報現況，讓 validator 重試，不要自己動手。目標 repo 沒有這種
 validator 時同樣不自行合併，回報現況交由使用者決定。
