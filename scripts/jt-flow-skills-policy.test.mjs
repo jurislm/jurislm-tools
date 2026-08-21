@@ -185,3 +185,29 @@ test("external-review-gate 不擁有審查管道", () => {
   assert.doesNotMatch(source, /coderabbit review --/, "不得描述 CLI 旗標");
   assert.match(source, /不受信任/, "外部留言必須被當成不受信任資料");
 });
+
+test("merge-gate 與 acceptance-readback 在 halted 時提供 recoverableByCode", () => {
+  for (const name of ["merge-gate", "acceptance-readback"]) {
+    const source = readSkill(name);
+    assert.match(source, /`recoverableByCode`/, `${name} 必須宣告 recoverableByCode`);
+    assert.match(source, /`halted`/, `${name} 必須說明 halted 的情況`);
+  }
+});
+
+test("merge-gate 以 UNSTABLE 為可合併狀態且對 UNKNOWN 設上限", () => {
+  const source = readSkill("merge-gate");
+
+  assert.match(source, /`UNSTABLE`/);
+  assert.match(source, /`UNKNOWN`[\s\S]{0,200}上限/);
+  assert.match(source, /Release Please/);
+  assert.match(source, /目標 repo 的 `CLAUDE\.md` 為準/);
+});
+
+test("acceptance-readback 涵蓋無部署管道的 repo", () => {
+  const source = readSkill("acceptance-readback");
+
+  assert.match(source, /沒有部署管道/);
+  assert.match(source, /CI 終態/);
+  assert.match(source, /migration/);
+  assert.match(source, /superpowers:verification-before-completion/);
+});
