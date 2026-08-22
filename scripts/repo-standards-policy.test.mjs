@@ -131,8 +131,8 @@ test("self-hosted Drone is the only CI and release platform", () => {
   for (const path of policyPaths) {
     assert.doesNotMatch(
       policies[path],
-      /預設[^\n]{0,24}GitHub Actions|GitHub Actions[^\n]{0,24}預設/,
-      `${path} must not describe GitHub Actions as a default platform`,
+      /(?:預設|改用|可選)[^\n]{0,16}(?:GitHub Actions|GHA)|(?:GitHub Actions|GHA)[^\n]{0,16}(?:預設|亦可|可選)/,
+      `${path} must not describe GitHub Actions as a default or selectable platform`,
     );
     assert.doesNotMatch(
       policies[path],
@@ -146,7 +146,7 @@ test("self-hosted Drone is the only CI and release platform", () => {
     );
     assert.doesNotMatch(
       policies[path],
-      /(?:若|如果|已)(?:明確)?選(?:擇)? *Drone|選擇 *Drone *後|GHA(?!\b *時代)/,
+      /(?:若|如果|已)(?:明確)?選(?:擇)? *Drone|選擇 *Drone *後|平台決策|依.{0,8}平台.{0,4}決定/,
       `${path} must not presuppose a platform choice that no longer exists`,
     );
     assert.doesNotMatch(
@@ -196,9 +196,49 @@ test("repo classification tables state the CI platform for every repo type", () 
 });
 
 test("upstream forks are excluded from the Drone-only requirement", () => {
-  assert.match(
-    policyText,
-    /firecrawl[\s\S]{0,160}(?:fork|上游)/i,
-    "standards must exclude upstream forks such as firecrawl from the platform rule",
-  );
+  const forkPaths = [
+    "plugins/repo-standards/skills/repo-standards/SKILL.md",
+    "openspec/specs/docs-and-standards/repo-standards-detail.md",
+    "plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md",
+  ];
+
+  for (const path of forkPaths) {
+    assert.match(
+      policies[path],
+      /上游 fork[\s\S]{0,120}firecrawl[\s\S]{0,120}(?:不受|保留上游)/,
+      `${path} must state the upstream-fork exception in full, not by adjacency`,
+    );
+  }
+});
+
+test("the workflow platform matrix marks every repo type as Drone", () => {
+  const template = policies[
+    "plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md"
+  ];
+
+  const rows = template
+    .split("\n")
+    .filter((line) => line.trim().startsWith("> |"))
+    .map((line) => line.replace(/^>\s*/, ""));
+  assert.ok(rows.length >= 6, "platform matrix looks truncated");
+
+  const header = rows[0].split("|").map((cell) => cell.trim());
+  const ciColumn = header.findIndex((cell) => cell.startsWith("CI"));
+  const releaseColumn = header.indexOf("release-please");
+  assert.ok(ciColumn > 0, "platform matrix needs a CI column");
+  assert.ok(releaseColumn > 0, "platform matrix needs a release-please column");
+
+  for (const row of rows.slice(2)) {
+    const cells = row.split("|").map((cell) => cell.trim());
+    assert.match(
+      cells[ciColumn],
+      /^Drone/,
+      `platform matrix CI column must be Drone, found "${cells[ciColumn]}" in: ${row.trim()}`,
+    );
+    assert.match(
+      cells[releaseColumn],
+      /^(?:Drone|release-please)/,
+      `platform matrix release column must stay on Drone, found "${cells[releaseColumn]}"`,
+    );
+  }
 });

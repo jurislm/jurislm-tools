@@ -39,8 +39,8 @@ argument-hint: "[repo-name]"
 Next.js → 模板 A（Coolify web app）、Monorepo → 模板 B、Node/TS → 模板 C（npm / MCP）、
 Plugin → 模板 D。
 
-⚠️ **上游 fork 不受此規範約束**：從外部專案 fork 的 repo（例如 `jurislm/firecrawl`）保留
-上游自己的 workflow，那些檔案是上游資產。本規範只涵蓋 JurisLM 自有的 repo。
+⚠️ 上游 fork（例如 `jurislm/firecrawl`）保留上游自己的 workflow，不受本規範約束——
+那些檔案是上游資產。本規範只涵蓋 JurisLM 自有的 repo。
 
 ## Verified Reference 與導入目標
 
@@ -505,9 +505,11 @@ for repo in $(gh repo list jurislm --limit 50 \
 done
 ```
 
-單一平台原則：每個 repo 的 CI 與 release 只由 Drone 擁有。既有 repo 遷移時，
-舊平台的 `.github/workflows/ci.yml`、`release.yml`、`version-check.yml` 必須和
-Drone 設定在同一次交付中移除，避免雙跑。
+單一平台原則：每個 repo 的 CI 與 release 只由 Drone 擁有。既有 repo 遷移時，舊平台上所有負責 CI、release 或版本檢查的 workflow 都必須和 Drone
+設定在同一次交付中移除，避免雙跑。**認定依用途，不依檔名**——常見的是
+`.github/workflows/` 底下的 `ci.yml`、`release.yml`、`version-check.yml`，但實際檔名
+由各 repo 自訂，audit 時要讀 workflow 內容而不是比對這份清單。與 CI／release 無關、
+具獨立語意的 workflow 不在此列。
 
 ### 規範回填協議
 
@@ -583,6 +585,6 @@ repo 設定必須提供以下前置條件：
 - **Delivery subject**：資格閘門必須對 immutable `DRONE_COMMIT` 走 first-parent mainline；對 Conventional Commit target，GitHub merge setting 預設 readback 為 squash-only + pull-request title 作 squash title
 - **Monorepo**：所有 JurisLM monorepo 必須有 root `turbo.json`；已知 workspace 用 `--filter`，可信 Git base／head 才能用 `--affected`，否則完整 validation／deploy，cache inputs 必須涵蓋 task 讀取的全部檔案
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.claude/worktrees/`
-- **CI**：檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；既有 repo 遷移時，舊平台的 `ci.yml` 與 `release.yml` 在同一次交付移除
+- **CI**：檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；既有 repo 遷移時，舊平台上所有 CI、release 與版本檢查用途的 workflow 在同一次交付移除（依用途認定，不依檔名）
 - **CD**（Coolify web app）：`.drone.yml` 加 `build`、`deploy`、`release-pr-auto-merge` 三個 pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
 - **Code Review**：將 packaged review contract 寫入目標 `CLAUDE.md` 後，依其 invoke Skill-driven review；CodeRabbit 一次明確 App request、Copilot 一次、Codex 被動；**無**自動 Claude review

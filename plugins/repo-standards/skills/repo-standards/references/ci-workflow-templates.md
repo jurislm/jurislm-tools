@@ -342,9 +342,16 @@ steps:
     commands:
       - npm ci
       - npm run validate
-# + release pipeline（同模板 A，push main only，github-release → release-pr）
-# + release-pr-auto-merge pipeline（depends_on: [validate, release]；遵守上方 protected PR merge contract）
+# + release pipeline（push main only）：完整 step 定義見上方標準模板 A 的 release pipeline，
+#   Plugin repo 另須在 release-pr 前加上 release-eligibility step（見本檔「Release eligibility
+#   的 mainline guard」）。
+# + release-pr-auto-merge pipeline（depends_on: [validate, release]）：完整 step 定義見標準
+#   模板 C 的 npm／MCP release PR auto-merge，並遵守上方 protected PR merge contract。
 ```
+
+⚠️ 上面兩行是**交叉引用，不是可以留在 `.drone.yml` 裡的註解**。套用本模板時，必須把模板 A
+的 release pipeline 與模板 C 的 auto-merge pipeline 實際展開寫進 repo 的 `.drone.yml`，
+否則 validation 會通過但 release 永遠不會發生。
 
 > Plugin repo 遷移到 Drone 時，舊平台的驗證與 release workflow 必須在同一次
 > 交付中移除，避免雙跑。若 repo 另有與 CI／release 無關、具獨立語意的 workflow
@@ -453,9 +460,10 @@ for repo in $(gh repo list jurislm --limit 50 \
 done
 ```
 
-單一平台檢查：每個 repo 的 CI 與 release 只由 Drone 擁有。audit 時若發現 repo
-仍有 `.github/workflows/ci.yml`、`release.yml`、`version-check.yml` 這類舊平台的
-驗證與 release workflow，在遷移交付中一併移除，避免雙跑。
+單一平台檢查：每個 repo 的 CI 與 release 只由 Drone 擁有。audit 要讀 workflow 的
+內容判斷用途，不能只比對檔名——常見命名是 `.github/workflows/` 底下的 `ci.yml`、
+`release.yml`、`version-check.yml`，但各 repo 可能自訂。任何負責 CI、release 或版本
+檢查的舊平台 workflow，都在遷移交付中一併移除，避免雙跑。
 Code Review 的 `claude-code-review.yml` / `claude.yml`（及 Drone
 `claude-review` pipeline）已從標準移除，audit 時應一併清除。
 
