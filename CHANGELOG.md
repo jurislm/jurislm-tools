@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.41.2](https://github.com/jurislm/jurislm-tools/compare/v1.41.1...v1.41.2) (2026-08-22)
+
+
+### 🐛 Bug Fixes
+
+* **repo-standards:** GitHub token secret 統一為 GITHUB_API_TOKEN，並修正其權限與共用範圍的描述 ([764e7e0](https://github.com/jurislm/jurislm-tools/commit/764e7e0c9d9b7ee2f7cd073355789f2ae47be21f))
+
 ## [1.41.1](https://github.com/jurislm/jurislm-tools/compare/v1.41.0...v1.41.1) (2026-08-22)
 
 
