@@ -330,7 +330,8 @@ steps:
 - **`GITHUB_API_TOKEN`** 為 Drone repo-scope secret（Drone Web UI Settings → Secrets）。classic PAT 最小需求是 `repo` 一個 scope；
   `workflow` 僅在該 repo 有 `.github/workflows/` 時才需要（實查七個 JurisLM repo 皆無）。⚠️ 現行那顆開了 21 個 scope，屬過度授權。
   ⚠️ 它是**跨 JurisLM 各 repo 共用的同一份憑證**，且用途不只 release-please（`release-pr-auto-merge`、`deploy` 也用它）。
-  輪替時必須同步更新每一個 repo 的同名 secret；fine-grained PAT 另需 Issues: Read and write（`autorelease:` label）。
+  輪替時必須同步更新每一個 repo 的同名 secret；fine-grained PAT 另需 Issues: Read and write（`autorelease:` label），
+  有 `release-pr-auto-merge` 的 repo 再加 Administration: Read（讀 branch protection）。
 - **`release-type` 不可寫在 pipeline** — 必須只放在 `release-please-config.json`（否則 Release Please 會忽略 config 的 `extra-files`，導致 `plugin.json` / `marketplace.json` 版本號不被更新）。
 - **`--config-file` + `--manifest-file` 必填** — 明確引用 config，避免隱性 drift。
 - ⚠️ **合併 release PR 後須確認 push webhook 有觸發 build**（GitHub 偶爾漏發 → release 卡住沒 cut）。若 trusted delivery 沒有建立，保留候選 PR，修復後由新的 trusted main delivery 重試；不得人工合併或手動執行 write command 繞過 validator。
