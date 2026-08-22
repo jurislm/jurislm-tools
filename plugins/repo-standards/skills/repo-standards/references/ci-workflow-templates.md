@@ -151,7 +151,8 @@ steps:
     resources: { limits: { cpu: 2000, memory: 3221225472 } }
 
 ---
-# release-please：只在 push main 跑（含 release commit 本身）。RELEASE_PLEASE_TOKEN 為 Drone repo-scope secret。
+# release-please：只在 push main 跑（含 release commit 本身）。GITHUB_API_TOKEN 為 Drone repo-scope secret，
+# 且是跨 JurisLM 各 repo 共用的同一份憑證（用途不只 release-please，詳見本檔末尾的 secret 表）。
 # `scripts/release-eligibility.mjs` 必須與此模板一同放入 repo，使用 DRONE_REPO／DRONE_BRANCH／DRONE_COMMIT。
 # Compare 綁定 immutable delivery SHA；只有 first-parent mainline 的 feat／fix 才建立 release PR。
 kind: pipeline
@@ -165,14 +166,14 @@ steps:
   - name: github-release
     image: node:20-alpine
     environment:
-      RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
+      GITHUB_API_TOKEN: { from_secret: GITHUB_API_TOKEN }
     commands:
-      - npx --yes release-please@<EXACT-RELEASE-PLEASE-VERSION> github-release --repo-url=https://github.com/$DRONE_REPO --target-branch=$DRONE_BRANCH --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+      - npx --yes release-please@<EXACT-RELEASE-PLEASE-VERSION> github-release --repo-url=https://github.com/$DRONE_REPO --target-branch=$DRONE_BRANCH --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$GITHUB_API_TOKEN
   - name: release-pr
     image: node:20-alpine
     depends_on: [github-release]
     environment:
-      RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
+      GITHUB_API_TOKEN: { from_secret: GITHUB_API_TOKEN }
     commands:
       - |
         set +e
@@ -181,7 +182,7 @@ steps:
         set -e
         case "$eligibility_status" in
           0)
-            npx --yes release-please@<EXACT-RELEASE-PLEASE-VERSION> release-pr --repo-url=https://github.com/$DRONE_REPO --target-branch=$DRONE_BRANCH --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+            npx --yes release-please@<EXACT-RELEASE-PLEASE-VERSION> release-pr --repo-url=https://github.com/$DRONE_REPO --target-branch=$DRONE_BRANCH --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$GITHUB_API_TOKEN
             ;;
           10)
             echo "release-pr skipped: no feat/fix commit in the unreleased range"
@@ -235,7 +236,7 @@ steps:
   - name: merge-release-pr
     image: oven/bun:1.3.14
     environment:
-      RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
+      GITHUB_API_TOKEN: { from_secret: GITHUB_API_TOKEN }
     commands:
       - bun run scripts/ci/release-pr-auto-merge.ts
 ```
@@ -305,7 +306,7 @@ steps:
   - name: merge-release-pr
     image: oven/bun:1.3.14
     environment:
-      RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
+      GITHUB_API_TOKEN: { from_secret: GITHUB_API_TOKEN }
     commands:
       - bun run scripts/ci/release-pr-auto-merge.ts
 ```
@@ -407,7 +408,7 @@ echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'
 
 | Secret | 用途 | 設定 |
 |--------|------|------|
-| `RELEASE_PLEASE_TOKEN` | release-please 寫 GitHub release PR / tag | **classic PAT** scopes `repo` + `workflow`（fine-grained PAT 為 per-endpoint 權限模型，不同），90 天到期須輪替 |
+| `GITHUB_API_TOKEN` | 所有需要寫 GitHub 的 pipeline：release-please 建 release PR／tag／release、`release-pr-auto-merge` 合併 release PR、`deploy` 讀 live main commit | ⚠️ **跨 JurisLM 各 repo 共用的同一份憑證**，不是每個 repo 各自一把——輪替時必須同步更新每一個 repo 的同名 secret，漏掉的 repo 會在那一邊靜默失敗，從你當下操作的 repo 完全看不到。**classic PAT** scopes `repo` + `workflow`；改用 **fine-grained PAT** 則 Contents／Pull requests／**Issues** 三者皆 Read and write （Issues 最常被漏掉：release-please 以 `autorelease: pending`／`tagged` label 追蹤狀態，label 端點在 fine-grained 權限下歸 Issues 而非 Pull requests）。`pull_request: false` |
 | `COOLIFY_DEPLOY_TOKEN` | `deploy` pipeline 觸發 Coolify deploy API | `pull_request: false`（不暴露給 PR build）|
 | `NPM_TOKEN` | npm 套件 repo 的 publish step | 僅 npm 套件 repo 需要 |
 

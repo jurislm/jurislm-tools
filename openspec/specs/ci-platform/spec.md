@@ -40,7 +40,7 @@ Drone secret indirection. It MUST attempt `github-release` before
 
 - **WHEN** Drone evaluates a pull request
 - **THEN** no release step runs
-- **AND** the release token is unavailable to the validation pipeline
+- **AND** the shared GitHub API token is unavailable to the validation pipeline
 
 ### Requirement: Release eligibility classifies immutable mainline delivery units
 
@@ -53,7 +53,7 @@ Compare reachability 不得把 side branch commit 當作 main delivery。標準 
 delivery 使用其 subject；為了相容既有 GitHub default merge delivery，只有當
 merge subject 精確符合 GitHub 預設 PR merge 格式，且 body 第一個非空白行本身
 通過 Conventional Commit 驗證時，閘門才可使用該行。缺失、斷裂、循環或不可信的
-path 必須 fail closed，且不得暴露 release token。
+path 必須 fail closed，且不得暴露這顆共用的 GitHub API token。
 
 #### Scenario: 只有文件或維護提交尚未發布
 

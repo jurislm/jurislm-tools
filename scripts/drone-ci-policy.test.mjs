@@ -67,8 +67,8 @@ function makeAutoMergePipeline() {
         name: "merge-release-pr",
         image: "node:22.22.2-bookworm-slim",
         environment: {
-          RELEASE_PLEASE_TOKEN: {
-            from_secret: "RELEASE_PLEASE_TOKEN",
+          GITHUB_API_TOKEN: {
+            from_secret: "GITHUB_API_TOKEN",
           },
         },
         commands: ["node scripts/release-pr-auto-merge.mjs"],
@@ -107,7 +107,7 @@ test("the auto-merge credential is confined to its source-controlled validator s
   const pipelines = readDroneConfig();
   const pipeline = requirePipeline(pipelines, "release-pr-auto-merge");
   const tokenSteps = list(pipeline.steps).filter(
-    (step) => step.environment?.RELEASE_PLEASE_TOKEN?.from_secret === "RELEASE_PLEASE_TOKEN",
+    (step) => step.environment?.GITHUB_API_TOKEN?.from_secret === "GITHUB_API_TOKEN",
   );
 
   assert.equal(tokenSteps.length, 1);
@@ -119,9 +119,9 @@ test("the auto-merge credential is confined to its source-controlled validator s
     if (!list(candidate.trigger?.event).includes("pull_request")) continue;
     for (const step of list(candidate.steps)) {
       assert.equal(
-        step.environment?.RELEASE_PLEASE_TOKEN,
+        step.environment?.GITHUB_API_TOKEN,
         undefined,
-        `${candidate.name}/${step.name} must not receive the release token`,
+        `${candidate.name}/${step.name} must not receive the shared GitHub API token`,
       );
     }
   }
@@ -130,7 +130,7 @@ test("the auto-merge credential is confined to its source-controlled validator s
 test("release write commands expose the exact Release Please 17.10.4 contract", () => {
   const release = requirePipeline(readDroneConfig(), "release");
   const expectedOptions =
-    "--token=$RELEASE_PLEASE_TOKEN --repo-url=https://github.com/jurislm/jurislm-tools " +
+    "--token=$GITHUB_API_TOKEN --repo-url=https://github.com/jurislm/jurislm-tools " +
     "--target-branch=main --config-file=release-please-config.json " +
     "--manifest-file=.release-please-manifest.json";
 
@@ -206,15 +206,15 @@ steps:
   - name: release-pr
     image: node:22.22.2-bookworm-slim
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - npx release-please release-pr --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
   - name: github-release
     image: node:22.22.2-bookworm-slim
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - npx release-please github-release --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
 `,
@@ -265,16 +265,16 @@ steps:
   - name: github-release
     image: node:22.22.2-bookworm-slim
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
   - name: release-pr
     image: node:22.22.2-bookworm-slim
     depends_on: [github-release]
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - npx --yes release-please@17.10.4 release-pr --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
 `,
@@ -324,16 +324,16 @@ steps:
   - name: github-release
     image: node:22.22.2-bookworm-slim
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
   - name: release-pr
     image: node:22.22.2-bookworm-slim
     depends_on: [github-release]
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - npx --yes release-please@17.10.4 release-pr --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
 `,
@@ -371,8 +371,8 @@ steps:
   - name: validate
     image: node:latest
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands: [npm ci, npm run validate]
 ---
 kind: pipeline
@@ -385,16 +385,16 @@ steps:
   - name: github-release
     image: node:22.22.2-bookworm-slim
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
   - name: release-pr
     image: node:22.22.2-bookworm-slim
     depends_on: [github-release]
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - npx --yes release-please@17.10.4 release-pr --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
 `,
@@ -441,16 +441,16 @@ steps:
   - name: github-release
     image: node:22.22.2-bookworm-slim
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
   - name: release-pr
     image: node:22.22.2-bookworm-slim
     depends_on: [github-release]
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - npx --yes release-please@17.10.4 release-pr --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
 `,
@@ -497,16 +497,16 @@ steps:
   - name: github-release
     image: node:22.22.2-bookworm-slim
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - npx --yes release-please@17.10.4 github-release --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
   - name: release-pr
     image: node:22.22.2-bookworm-slim
     depends_on: [github-release]
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - |
         set +e

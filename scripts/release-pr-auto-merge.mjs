@@ -419,7 +419,7 @@ export async function runReleasePrAutoMerge({
   requestTimeoutMs = REQUEST_TIMEOUT_MS,
 } = {}) {
   if (typeof token !== "string" || token.length === 0) {
-    throw new Error("RELEASE_PLEASE_TOKEN is required");
+    throw new Error("GITHUB_API_TOKEN is required");
   }
   const expectedCommitSha = requiredSha(commitSha, "DRONE_COMMIT");
   if (typeof sleep !== "function") throw new Error("sleep must be a function");
@@ -563,7 +563,7 @@ export async function runReleasePrAutoMerge({
 
 async function main() {
   const result = await runReleasePrAutoMerge({
-    token: process.env.RELEASE_PLEASE_TOKEN,
+    token: process.env.GITHUB_API_TOKEN,
     commitSha: process.env.DRONE_COMMIT,
   });
   if (result.status === "merged") {

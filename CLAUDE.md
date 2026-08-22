@@ -126,7 +126,7 @@ and the parser now rejects that outright.
 Repository quality and Release Please run on the self-hosted Drone instance
 through `.drone.yml`. The `validate` pipeline covers pull requests and pushes
 to `main`; the `release` pipeline runs only after pushes to `main`, reads
-`RELEASE_PLEASE_TOKEN` from a repo-scoped Drone secret, cuts any outstanding
+`GITHUB_API_TOKEN` from a repo-scoped Drone secret, cuts any outstanding
 merged release before opening or updating the next release PR, and never
 receives that token in pull-request builds. Do not add overlapping GitHub
 Actions validation or release workflows.

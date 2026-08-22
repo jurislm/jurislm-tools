@@ -224,7 +224,7 @@ export async function fetchCompareCommits({
   token,
   fetchImpl = globalThis.fetch,
 }) {
-  requireNonEmptyString(token, "RELEASE_PLEASE_TOKEN");
+  requireNonEmptyString(token, "GITHUB_API_TOKEN");
   if (typeof fetchImpl !== "function") throw new Error("GitHub Compare fetch is unavailable.");
 
   const headers = {
@@ -308,7 +308,7 @@ export async function evaluateReleaseEligibility({
   manifestPath = path.join(process.cwd(), ".release-please-manifest.json"),
   fetchImpl = globalThis.fetch,
 } = {}) {
-  const token = requireNonEmptyString(env.RELEASE_PLEASE_TOKEN, "RELEASE_PLEASE_TOKEN");
+  const token = requireNonEmptyString(env.GITHUB_API_TOKEN, "GITHUB_API_TOKEN");
   const repository = requireNonEmptyString(env.DRONE_REPO, "DRONE_REPO");
   requireNonEmptyString(env.DRONE_BRANCH, "DRONE_BRANCH");
   const commitSha = requireSha(env.DRONE_COMMIT, "DRONE_COMMIT");
@@ -349,7 +349,7 @@ export async function runCli(env = process.env) {
     console.error(
       `Release eligibility unavailable; release-pr will not run: ${redactToken(
         message,
-        env.RELEASE_PLEASE_TOKEN,
+        env.GITHUB_API_TOKEN,
       )}`,
     );
     return 1;

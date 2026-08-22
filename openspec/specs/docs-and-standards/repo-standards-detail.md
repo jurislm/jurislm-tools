@@ -157,7 +157,7 @@ mainline，不把 side branch 的提交當成 release subject。只有這條 mai
 - 沒有提交，或只有有效的 `docs`／`chore` → exit `10`，成功跳過 `release-pr`。
 - 缺少 metadata、token、manifest 版本、Compare page、回應資料或有效 subject → 非 `10`
   的錯誤，pipeline fail closed，不得呼叫 Release Please。
-- `RELEASE_PLEASE_TOKEN` 只能透過 Drone secret indirection 提供，任何輸出不得包含 token。
+- `GITHUB_API_TOKEN` 只能透過 Drone secret indirection 提供，任何輸出不得包含 token。
 - 範本必須使用 Drone 提供的 `DRONE_REPO`、`DRONE_BRANCH`、`DRONE_COMMIT`，不得把 consumer repo 名稱或 mutable Compare target 寫死。
 
 ## 觸發條件
