@@ -312,22 +312,26 @@ steps:
   - name: github-release
     image: node:20-alpine
     environment:
-      RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
+      GITHUB_API_TOKEN: { from_secret: GITHUB_API_TOKEN }
     commands:
-      - npx --yes release-please@<EXACT-RELEASE-PLEASE-VERSION> github-release --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+      - npx --yes release-please@<EXACT-RELEASE-PLEASE-VERSION> github-release --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$GITHUB_API_TOKEN
   - name: release-pr
     image: node:20-alpine
     depends_on: [github-release]
     environment:
-      RELEASE_PLEASE_TOKEN: { from_secret: RELEASE_PLEASE_TOKEN }
+      GITHUB_API_TOKEN: { from_secret: GITHUB_API_TOKEN }
     commands:
-      - npx --yes release-please@<EXACT-RELEASE-PLEASE-VERSION> release-pr --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$RELEASE_PLEASE_TOKEN
+      - npx --yes release-please@<EXACT-RELEASE-PLEASE-VERSION> release-pr --repo-url=https://github.com/jurislm/<REPO> --config-file=release-please-config.json --manifest-file=.release-please-manifest.json --token=$GITHUB_API_TOKEN
 ```
 
 **規則**：
 - 先 `github-release`（建 tag / release）再 `release-pr`（維護下一個版本 PR），兩者皆冪等；若反過來，尚未 cut 的已合併 release PR 可能阻擋新 release PR。
 - 所有會寫 GitHub 的 Release Please command 都必須使用 `release-please@<EXACT-RELEASE-PLEASE-VERSION>`；目標 repo 必須替換為經測試的精確版本，禁止 unpinned command。
-- **`RELEASE_PLEASE_TOKEN`** 為 Drone repo-scope secret（scopes `repo` + `workflow`；Drone Web UI Settings → Secrets）。
+- **`GITHUB_API_TOKEN`** 為 Drone repo-scope secret（Drone Web UI Settings → Secrets）。classic PAT 最小需求是 `repo` 一個 scope；
+  `workflow` 僅在該 repo 有 `.github/workflows/` 時才需要（實查七個 JurisLM repo 皆無）。⚠️ 現行那顆開了 21 個 scope，屬過度授權。
+  ⚠️ 它是**跨 JurisLM 各 repo 共用的同一份憑證**，且用途不只 release-please（`release-pr-auto-merge`、`deploy` 也用它）。
+  輪替時必須同步更新每一個 repo 的同名 secret；fine-grained PAT 另需 Issues: Read and write（`autorelease:` label），
+  有 `release-pr-auto-merge` 的 repo 再加 Administration: Read（讀 branch protection）。
 - **`release-type` 不可寫在 pipeline** — 必須只放在 `release-please-config.json`（否則 Release Please 會忽略 config 的 `extra-files`，導致 `plugin.json` / `marketplace.json` 版本號不被更新）。
 - **`--config-file` + `--manifest-file` 必填** — 明確引用 config，避免隱性 drift。
 - ⚠️ **合併 release PR 後須確認 push webhook 有觸發 build**（GitHub 偶爾漏發 → release 卡住沒 cut）。若 trusted delivery 沒有建立，保留候選 PR，修復後由新的 trusted main delivery 重試；不得人工合併或手動執行 write command 繞過 validator。
@@ -580,7 +584,7 @@ repo 設定必須提供以下前置條件：
 - **變更追蹤**：預設用 Linear issue 記錄需求、範圍與驗收；跨 repo 目標用 Linear 的 project 與 issue 關聯表示。僅在使用者明確要求時改用 Spectra 四件套
 - **Worktree**：feature worktree 直接從 main 建立於 `.claude/worktrees/<change-name>`，不建立 develop；`.claude/worktrees/` 不進 `.gitignore`（由 Claude Code runtime 本地排除）
 - **Bun**：`"packageManager": "bun@1.3.14"`，scripts 換成 `bun run vitest` 等
-- **Release**：使用 `main`-only release pipeline，依序執行固定精確版本的 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`，並由同一 trusted delivery 的 source-controlled validator 自動合併 release PR；無人工 fallback
+- **Release**：使用 `main`-only release pipeline，依序執行固定精確版本的 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `GITHUB_API_TOKEN`，並由同一 trusted delivery 的 source-controlled validator 自動合併 release PR；無人工 fallback
 - **Release 資格閘門**：使用 `release-type: simple` 的 Plugin repo 必須在 `release-pr` 前執行 `scripts/release-eligibility.mjs`；只有 exit `0` 才呼叫 Release Please，exit `10` 成功跳過，其他錯誤 fail closed；完整模板見 `references/ci-workflow-templates.md`
 - **Delivery subject**：資格閘門必須對 immutable `DRONE_COMMIT` 走 first-parent mainline；對 Conventional Commit target，GitHub merge setting 預設 readback 為 squash-only + pull-request title 作 squash title
 - **Monorepo**：所有 JurisLM monorepo 必須有 root `turbo.json`；已知 workspace 用 `--filter`，可信 Git base／head 才能用 `--affected`，否則完整 validation／deploy，cache inputs 必須涵蓋 task 讀取的全部檔案

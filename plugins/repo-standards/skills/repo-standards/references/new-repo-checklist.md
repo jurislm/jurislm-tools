@@ -37,7 +37,7 @@
 
 ## Release
 
-18. [ ] release-please pipeline 寫在 `.drone.yml`（push main only，**不指定 `release-type`**）；每個 write command 必須使用 `release-please@<EXACT-RELEASE-PLEASE-VERSION>`，目標 repo 替換成經測試的精確版本；secret `RELEASE_PLEASE_TOKEN` 見項 28
+18. [ ] release-please pipeline 寫在 `.drone.yml`（push main only，**不指定 `release-type`**）；每個 write command 必須使用 `release-please@<EXACT-RELEASE-PLEASE-VERSION>`，目標 repo 替換成經測試的精確版本；secret `GITHUB_API_TOKEN` 見項 28
 19. [ ] 建立 `release-please-config.json`（依統一模板，`release-type` 寫在這裡）
 20. [ ] Plugin repo：加 `extra-files`，確認目標在陣列第一位
 
@@ -53,7 +53,7 @@
 25. [ ] 建立 `.drone.yml`（依 `references/ci-workflow-templates.md` 對應 repo 類型：Coolify web app / monorepo / npm 套件 / plugin）；JurisLM monorepo 必須在 root 提供 `turbo.json`
 26. [ ] 各 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**禁止** `refs/heads/develop`，否則 push + PR 雙 build 競爭 runner）
 27. [ ] 各 step `bun install --frozen-lockfile`；lint / typecheck / test 各自獨立 pipeline（各自 clone + install）；monorepo 已知 fixed workspace gate 用 `--filter`，只有 trustworthy Git base／head 才能用 `--affected`，無法建立時執行 full validation／full deployment；Turbo cache inputs 必須涵蓋 task 讀取的全部 source/config/test/lockfile
-28. [ ] Drone repo-scope secret 加 `RELEASE_PLEASE_TOKEN`（release-please pipeline 用）
+28. [ ] Drone repo-scope secret 加 `GITHUB_API_TOKEN`，`pull_request: false`——**值取自現有的那一份跨 repo 共用憑證，不要為新 repo 另鑄一把**（另鑄會讓日後輪替漏掉這個 repo，而它是在這邊靜默失敗）；權限需求見 `references/ci-workflow-templates.md` 的 secret 表
 29. [ ] 開 PR 確認 GitHub 只顯示 1 個 aggregated check（`drone/pr`），且 push develop **不** build
 
 ## CD（部署 — 僅 Coolify web app；npm / MCP repo 跳過此段）

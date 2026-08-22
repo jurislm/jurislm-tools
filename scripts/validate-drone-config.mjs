@@ -59,8 +59,8 @@ requireValue(
   "validate must install locked dependencies and run npm run validate",
 );
 requireValue(
-  validateStep?.environment?.RELEASE_PLEASE_TOKEN === undefined,
-  "validate must not receive the release token",
+  validateStep?.environment?.GITHUB_API_TOKEN === undefined,
+  "validate must not receive the shared GitHub API token",
 );
 
 // Commit-type guardrails (design D3/D4): a pull-request build with an
@@ -204,9 +204,9 @@ requireValue(
 
 for (const step of releaseSteps) {
   requireValue(
-    step.environment?.RELEASE_PLEASE_TOKEN?.from_secret ===
-      "RELEASE_PLEASE_TOKEN",
-    `${step.name} must use Drone release-token secret indirection`,
+    step.environment?.GITHUB_API_TOKEN?.from_secret ===
+      "GITHUB_API_TOKEN",
+    `${step.name} must use Drone GitHub-API-token secret indirection`,
   );
   const command = list(step.commands).join("\n");
   const releasePleaseCommands = command
@@ -259,9 +259,9 @@ requireValue(
   "release-pr-auto-merge must use the exact supported Node image",
 );
 requireValue(
-  autoMergeStep?.environment?.RELEASE_PLEASE_TOKEN?.from_secret ===
-    "RELEASE_PLEASE_TOKEN",
-  "release-pr-auto-merge must use Drone release-token secret indirection",
+  autoMergeStep?.environment?.GITHUB_API_TOKEN?.from_secret ===
+    "GITHUB_API_TOKEN",
+  "release-pr-auto-merge must use Drone GitHub-API-token secret indirection",
 );
 requireValue(
   list(autoMergeStep?.commands).length === 1 &&

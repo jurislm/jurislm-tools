@@ -32,7 +32,7 @@ function makeManifest(version = "1.37.1") {
 
 function makeEnvironment(overrides = {}) {
   return {
-    RELEASE_PLEASE_TOKEN: "test-token-that-must-not-leak",
+    GITHUB_API_TOKEN: "test-token-that-must-not-leak",
     DRONE_REPO: "jurislm/jurislm-tools",
     DRONE_BRANCH: "main",
     DRONE_COMMIT: HEAD_SHA,
@@ -359,7 +359,7 @@ test("the CLI returns a non-skip error without printing the release token", () =
     encoding: "utf8",
     env: {
       ...process.env,
-      RELEASE_PLEASE_TOKEN: "secret-release-token",
+      GITHUB_API_TOKEN: "secret-release-token",
       DRONE_REPO: "jurislm/jurislm-tools",
       DRONE_BRANCH: "main",
       DRONE_COMMIT: "",

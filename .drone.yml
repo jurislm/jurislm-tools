@@ -42,17 +42,17 @@ steps:
   - name: github-release
     image: node:22.22.2-bookworm-slim
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
-      - npx --yes release-please@17.10.4 github-release --token=$RELEASE_PLEASE_TOKEN --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+      - npx --yes release-please@17.10.4 github-release --token=$GITHUB_API_TOKEN --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
   - name: release-pr
     image: node:22.22.2-bookworm-slim
     depends_on:
       - github-release
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - |
         set +e
@@ -61,7 +61,7 @@ steps:
         set -e
         case "$eligibility_status" in
           0)
-            npx --yes release-please@17.10.4 release-pr --token=$RELEASE_PLEASE_TOKEN --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
+            npx --yes release-please@17.10.4 release-pr --token=$GITHUB_API_TOKEN --repo-url=https://github.com/jurislm/jurislm-tools --target-branch=main --config-file=release-please-config.json --manifest-file=.release-please-manifest.json
             ;;
           10)
             echo "release-pr skipped: no feat/fix commit in the unreleased range"
@@ -97,7 +97,7 @@ steps:
   - name: merge-release-pr
     image: node:22.22.2-bookworm-slim
     environment:
-      RELEASE_PLEASE_TOKEN:
-        from_secret: RELEASE_PLEASE_TOKEN
+      GITHUB_API_TOKEN:
+        from_secret: GITHUB_API_TOKEN
     commands:
       - node scripts/release-pr-auto-merge.mjs
