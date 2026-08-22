@@ -408,7 +408,7 @@ echo "$DRONE_COMMIT_MESSAGE" | grep -qE '^chore(\(.+\))?: release [0-9]'
 
 | Secret | 用途 | 設定 |
 |--------|------|------|
-| `GITHUB_API_TOKEN` | 所有需要寫 GitHub 的 pipeline：release-please 建 release PR／tag／release、`release-pr-auto-merge` 合併 release PR、`deploy` 讀 live main commit | ⚠️ **跨 JurisLM 各 repo 共用的同一份憑證**，不是每個 repo 各自一把——輪替時必須同步更新每一個 repo 的同名 secret，漏掉的 repo 會在那一邊靜默失敗，從你當下操作的 repo 完全看不到。**classic PAT** scopes `repo` + `workflow`；改用 **fine-grained PAT** 則 Contents／Pull requests／**Issues** 三者皆 Read and write （Issues 最常被漏掉：release-please 以 `autorelease: pending`／`tagged` label 追蹤狀態，label 端點在 fine-grained 權限下歸 Issues 而非 Pull requests）。`pull_request: false` |
+| `GITHUB_API_TOKEN` | 所有需要寫 GitHub 的 pipeline：release-please 建 release PR／tag／release、`release-pr-auto-merge` 合併 release PR、`deploy` 讀 live main commit | ⚠️ **跨 JurisLM 各 repo 共用的同一份憑證**，不是每個 repo 各自一把——輪替時必須同步更新每一個 repo 的同名 secret，漏掉的 repo 會在那一邊靜默失敗，從你當下操作的 repo 完全看不到。**classic PAT** 最小需求是 `repo` 這一個 scope（已涵蓋建 PR／tag／release、貼 label、合併 PR）；`workflow` 只有在該 repo 有 `.github/workflows/` 且 release-please 會改動它時才需要——2026-08-22 實查七個 JurisLM repo 皆無該目錄。⚠️ 現行實際使用的那顆 classic PAT 開了 **21 個 scope**（含 `admin:org`、`admin:enterprise`、`delete_repo`），遠超所需，是既有的過度授權，下次輪替應收斂到最小集合。改用 **fine-grained PAT** 則 Contents／Pull requests／**Issues** 三者皆 Read and write （Issues 最常被漏掉：release-please 以 `autorelease: pending`／`tagged` label 追蹤狀態，label 端點在 fine-grained 權限下歸 Issues 而非 Pull requests）。`pull_request: false` |
 | `COOLIFY_DEPLOY_TOKEN` | `deploy` pipeline 觸發 Coolify deploy API | `pull_request: false`（不暴露給 PR build）|
 | `NPM_TOKEN` | npm 套件 repo 的 publish step | 僅 npm 套件 repo 需要 |
 

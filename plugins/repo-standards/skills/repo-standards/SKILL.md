@@ -327,7 +327,8 @@ steps:
 **規則**：
 - 先 `github-release`（建 tag / release）再 `release-pr`（維護下一個版本 PR），兩者皆冪等；若反過來，尚未 cut 的已合併 release PR 可能阻擋新 release PR。
 - 所有會寫 GitHub 的 Release Please command 都必須使用 `release-please@<EXACT-RELEASE-PLEASE-VERSION>`；目標 repo 必須替換為經測試的精確版本，禁止 unpinned command。
-- **`GITHUB_API_TOKEN`** 為 Drone repo-scope secret（classic PAT scopes `repo` + `workflow`；Drone Web UI Settings → Secrets）。
+- **`GITHUB_API_TOKEN`** 為 Drone repo-scope secret（Drone Web UI Settings → Secrets）。classic PAT 最小需求是 `repo` 一個 scope；
+  `workflow` 僅在該 repo 有 `.github/workflows/` 時才需要（實查七個 JurisLM repo 皆無）。⚠️ 現行那顆開了 21 個 scope，屬過度授權。
   ⚠️ 它是**跨 JurisLM 各 repo 共用的同一份憑證**，且用途不只 release-please（`release-pr-auto-merge`、`deploy` 也用它）。
   輪替時必須同步更新每一個 repo 的同名 secret；fine-grained PAT 另需 Issues: Read and write（`autorelease:` label）。
 - **`release-type` 不可寫在 pipeline** — 必須只放在 `release-please-config.json`（否則 Release Please 會忽略 config 的 `extra-files`，導致 `plugin.json` / `marketplace.json` 版本號不被更新）。
