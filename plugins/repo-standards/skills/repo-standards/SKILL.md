@@ -25,12 +25,18 @@ argument-hint: "[repo-name]"
 
 ## Repo 分類
 
-| 類型 | 適用 Repo | release-type | Runtime | ESLint 基礎 |
-|------|---------|-------------|---------|------------|
-| **Next.js** | Next.js web app repos | `node` | Bun | `eslint-config-next` |
-| **Node/TS** | Node／TypeScript service repos | `node` | Bun | `@eslint/js` + `typescript-eslint` |
-| **Plugin** | Content-first plugin repos | `simple` | — | 無 TS 原始碼，不需要 ESLint |
-| **Monorepo** | `jurislm/entire`（唯一已驗證 reference）及其他待驗收 monorepo | `node` | Bun | `@entire/eslint-config` 或目標 repo 的既有設定 |
+| 類型 | 適用 Repo | CI 平台 | release-type | Runtime | ESLint 基礎 |
+|------|---------|--------|-------------|---------|------------|
+| **Next.js** | Next.js web app repos | Drone | `node` | Bun | `eslint-config-next` |
+| **Node/TS** | Node／TypeScript service repos | Drone | `node` | Bun | `@eslint/js` + `typescript-eslint` |
+| **Plugin** | Content-first plugin repos | Drone | `simple` | — | 無 TS 原始碼，不需要 ESLint |
+| **Monorepo** | `jurislm/entire`（唯一已驗證 reference）及其他待驗收 monorepo | Drone | `node` | Bun | `@entire/eslint-config` 或目標 repo 的既有設定 |
+
+自架 Drone（`https://ci.jurislm.com`）是唯一的 CI 與 release 平台，四種 repo 類型一律適用。
+新 repo 直接建立 `.drone.yml`；既有 repo 若仍在其他平台，遷移與移除舊 workflow 屬同一次交付。
+
+⚠️ **上游 fork 不受此規範約束**：從外部專案 fork 的 repo（例如 `jurislm/firecrawl`）保留
+上游自己的 workflow，那些檔案是上游資產。本規範只涵蓋 JurisLM 自有的 repo。
 
 ## Verified Reference 與導入目標
 
@@ -283,13 +289,10 @@ describe('MyModule', () => {
 
 ## Release 設定
 
-release-please 依 repo 類型與明確的平台決策執行：**Coolify web app /
-npm-MCP / monorepo** 使用 Drone；**plugin 類型**預設使用 GitHub Actions，
-但可像 `jurislm-tools` 一樣明確選擇 Drone。選擇 Drone 的 plugin repo
-必須把驗證與 release 一起遷移，不得保留功能重疊的 GitHub Actions。
-Drone 的標準順序是先 `github-release`（cut 已合併 release PR），再
-`release-pr`（維護下一個版本 PR）。完整模板與變體見
-`references/ci-workflow-templates.md`。
+release-please 一律在 Drone 執行，四種 repo 類型皆同——**Coolify web app /
+npm-MCP / monorepo / plugin** 都使用 repo 根目錄的 `.drone.yml`。標準順序是
+先 `github-release`（cut 已合併 release PR），再 `release-pr`（維護下一個版本
+PR）。完整模板與變體見 `references/ci-workflow-templates.md`。
 
 ### `.drone.yml` 的 release-please pipeline（只在 push main 跑）
 
@@ -383,7 +386,7 @@ Validator 只能在 trusted main-delivery pipeline 執行。禁止 `pull_request
 
 ### Plugin Repo 額外設定
 
-`jurislm-tools` 和 `jurislm-plugins` 需加 `extra-files` 同步版本號：
+Plugin repo（如 `jurislm-tools`）需加 `extra-files` 同步版本號：
 
 ```json
 "extra-files": [
@@ -404,15 +407,9 @@ Validator 只能在 trusted main-delivery pipeline 執行。禁止 `pull_request
 
 ### Plugin 類型的 release / 驗證
 
-Plugin 類型預設以 GitHub Actions `release.yml` 跑 Release Please，並以
-`version-check.yml` 跑驗證。Repo 也可以明確選擇 Drone；此時
-`.drone.yml` 必須同時提供 PR / `main` 的 aggregate validation 與
-`main`-only release pipeline，並移除功能重疊的 `release.yml` /
-`version-check.yml`。採用 Drone 的 plugin repo 仍須完成自己的 observable acceptance。
-
-部分 plugin（如 `jurislm-plugins`）另有 `sync-plugins.yml`：發版後同步 plugin 定義到 PostgreSQL DB（dev + prod）。
-
-**觸發方式**：手動（`workflow_dispatch` only）——原因：`GITHUB_TOKEN` 建立的 release 不會自動觸發其他 workflow（GitHub 安全限制）。
+Plugin 類型的 `.drone.yml` 必須同時提供 PR / `main` 的 aggregate validation 與
+`main`-only release pipeline。每個 plugin repo 仍須完成自己的 observable
+acceptance，才算符合本標準。
 
 ## Monorepo CI/CD（Turborepo）
 
@@ -465,12 +462,10 @@ bun add -d eslint @eslint/js typescript-eslint eslint-config-prettier globals pr
 
 ## CI Workflow 設定（Drone CI）
 
-**lint / typecheck / test 在 Drone（`https://ci.jurislm.com`）執行**——
-Coolify web app / npm-MCP / monorepo 類型使用 repo 根目錄
-`.drone.yml`。Plugin 類型預設用 GitHub Actions，但允許明確選擇 Drone；
-選擇後 validation 與 release 必須都由 Drone 擁有。大型 repo 可把檢查
-拆成多個 pipeline；小型 plugin repo 可用單一 aggregate `validate`
-pipeline。GitHub PR 顯示一個 aggregated check（`drone/pr`）。
+**lint / typecheck / test 一律在自架 Drone（`https://ci.jurislm.com`）執行**——
+四種 repo 類型都使用 repo 根目錄的 `.drone.yml`，validation 與 release 都由
+Drone 擁有。大型 repo 可把檢查拆成多個 pipeline；小型 plugin repo 可用單一
+aggregate `validate` pipeline。GitHub PR 顯示一個 aggregated check（`drone/pr`）。
 
 > 完整模板（Coolify Web App / Monorepo / npm 套件 / Plugin 變體 + deploy + secrets）見 `references/ci-workflow-templates.md`。
 
@@ -503,10 +498,8 @@ for repo in $(gh repo list jurislm --limit 50 \
 done
 ```
 
-單一平台原則：每個 repo 的 CI / release 應只使用一套已選定平台。
-Plugin repo 預設的 `release.yml` / `version-check.yml` 不是殘留；但當該
-repo 已明確選擇 Drone，它們就必須和 Drone 設定在同一個 migration
-中移除，避免雙跑。
+單一平台原則：每個 repo 的 CI 與 release 只由 Drone 擁有。既有 repo 遷移時，
+舊平台的 workflow 必須和 Drone 設定在同一次交付中移除，避免雙跑。
 
 ### 規範回填協議
 

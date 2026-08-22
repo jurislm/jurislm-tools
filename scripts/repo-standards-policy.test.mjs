@@ -120,3 +120,64 @@ test("portable review contract preserves jt-flow review ownership", () => {
   assert.match(template, /外部 review 交給 `coderabbit:code-review`/s);
   assert.doesNotMatch(template, /jt-flow-all/);
 });
+
+test("self-hosted Drone is the only CI and release platform", () => {
+  assert.match(
+    policyText,
+    /唯一[^\n]{0,40}(?:CI|平台)[^\n]{0,60}Drone|Drone[^\n]{0,40}唯一[^\n]{0,40}(?:CI|平台)/,
+    "standards must name self-hosted Drone as the only CI and release platform",
+  );
+
+  for (const path of policyPaths) {
+    assert.doesNotMatch(
+      policies[path],
+      /預設[^\n]{0,24}GitHub Actions|GitHub Actions[^\n]{0,24}預設/,
+      `${path} must not describe GitHub Actions as a default platform`,
+    );
+    assert.doesNotMatch(
+      policies[path],
+      /version-check\.yml|sync-plugins\.yml/,
+      `${path} must not reference GitHub Actions workflow files`,
+    );
+    assert.doesNotMatch(
+      policies[path],
+      /release\.yml/,
+      `${path} must not offer a GitHub Actions release workflow path`,
+    );
+    assert.doesNotMatch(
+      policies[path],
+      /jurislm-plugins/,
+      `${path} must not reference the archived jurislm-plugins repository`,
+    );
+  }
+});
+
+test("repo classification tables state the CI platform for every repo type", () => {
+  const tablePaths = [
+    "plugins/repo-standards/skills/repo-standards/SKILL.md",
+    "openspec/specs/docs-and-standards/repo-standards-detail.md",
+  ];
+
+  for (const path of tablePaths) {
+    const body = policies[path];
+    const start = body.indexOf("## Repo 分類");
+    assert.ok(start >= 0, `${path} must keep a repo classification section`);
+    const table = body.slice(start, start + 1200);
+
+    assert.match(table, /CI 平台/, `${path} classification table needs a CI platform column`);
+
+    const droneCells = table.match(/\|\s*Drone\s*\|/g) ?? [];
+    assert.ok(
+      droneCells.length >= 4,
+      `${path} must mark all four repo types as Drone, found ${droneCells.length}`,
+    );
+  }
+});
+
+test("upstream forks are excluded from the Drone-only requirement", () => {
+  assert.match(
+    policyText,
+    /firecrawl[\s\S]{0,160}(?:fork|上游)/i,
+    "standards must exclude upstream forks such as firecrawl from the platform rule",
+  );
+});

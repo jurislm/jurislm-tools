@@ -37,7 +37,7 @@
 
 ## Release
 
-18. [ ] release-please pipeline（push main only，**不指定 `release-type`**）—— Drone repo（`.drone.yml`）或 plugin repo 的 GHA `release.yml`；每個 write command 必須使用 `release-please@<EXACT-RELEASE-PLEASE-VERSION>`，目標 repo 替換成經測試的精確版本；secret `RELEASE_PLEASE_TOKEN` 見項 28
+18. [ ] release-please pipeline 寫在 `.drone.yml`（push main only，**不指定 `release-type`**）；每個 write command 必須使用 `release-please@<EXACT-RELEASE-PLEASE-VERSION>`，目標 repo 替換成經測試的精確版本；secret `RELEASE_PLEASE_TOKEN` 見項 28
 19. [ ] 建立 `release-please-config.json`（依統一模板，`release-type` 寫在這裡）
 20. [ ] Plugin repo：加 `extra-files`，確認目標在陣列第一位
 
