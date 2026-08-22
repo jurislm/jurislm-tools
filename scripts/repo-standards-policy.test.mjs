@@ -120,3 +120,125 @@ test("portable review contract preserves jt-flow review ownership", () => {
   assert.match(template, /外部 review 交給 `coderabbit:code-review`/s);
   assert.doesNotMatch(template, /jt-flow-all/);
 });
+
+test("self-hosted Drone is the only CI and release platform", () => {
+  assert.match(
+    policies["plugins/repo-standards/skills/repo-standards/SKILL.md"],
+    /Drone[\s\S]{0,80}唯一[\s\S]{0,40}(?:CI|平台)|唯一[\s\S]{0,60}(?:CI|平台)[\s\S]{0,80}Drone/,
+    "SKILL.md itself must name self-hosted Drone as the only CI and release platform",
+  );
+
+  for (const path of policyPaths) {
+    assert.doesNotMatch(
+      policies[path],
+      /(?:預設|改用|可選)[^\n]{0,16}(?:GitHub Actions|GHA)|(?:GitHub Actions|GHA)[^\n]{0,16}(?:預設|亦可|可選)/,
+      `${path} must not describe GitHub Actions as a default or selectable platform`,
+    );
+    assert.doesNotMatch(
+      policies[path],
+      /sync-plugins\.yml/,
+      `${path} must not reference a workflow owned by an archived repository`,
+    );
+    assert.doesNotMatch(
+      policies[path],
+      /(?:預設|可以|也可|亦可|或)[^\n]{0,30}`?(?:release|version-check)\.yml/,
+      `${path} must not offer a GitHub Actions workflow as an alternative path`,
+    );
+    assert.doesNotMatch(
+      policies[path],
+      /(?:若|如果|已)(?:明確)?選(?:擇)? *Drone|選擇 *Drone *後|平台決策|依.{0,8}平台.{0,4}決定/,
+      `${path} must not presuppose a platform choice that no longer exists`,
+    );
+    assert.doesNotMatch(
+      policies[path],
+      /jurislm-plugins/,
+      `${path} must not reference the archived jurislm-plugins repository`,
+    );
+  }
+});
+
+test("repo classification tables state the CI platform for every repo type", () => {
+  const tablePaths = [
+    "plugins/repo-standards/skills/repo-standards/SKILL.md",
+    "openspec/specs/docs-and-standards/repo-standards-detail.md",
+  ];
+
+  for (const path of tablePaths) {
+    const body = policies[path];
+    const start = body.indexOf("## Repo 分類");
+    assert.ok(start >= 0, `${path} must keep a repo classification section`);
+    const nextHeading = body.indexOf("\n## ", start + 1);
+    const section = body.slice(start, nextHeading === -1 ? undefined : nextHeading);
+
+    const rows = section.split("\n").filter((line) => line.trim().startsWith("|"));
+    assert.ok(rows.length >= 6, `${path} classification table looks truncated`);
+
+    const header = rows[0].split("|").map((cell) => cell.trim());
+    const ciColumn = header.indexOf("CI 平台");
+    assert.ok(ciColumn > 0, `${path} classification table needs a CI platform column`);
+
+    const separator = rows[1].split("|").length;
+    assert.equal(
+      separator,
+      header.length,
+      `${path} classification table separator row column count must match the header`,
+    );
+
+    for (const row of rows.slice(2)) {
+      const cells = row.split("|").map((cell) => cell.trim());
+      assert.equal(
+        cells[ciColumn],
+        "Drone",
+        `${path} must mark every repo type as Drone, found "${cells[ciColumn]}" in: ${row.trim()}`,
+      );
+    }
+  }
+});
+
+test("upstream forks are excluded from the Drone-only requirement", () => {
+  const forkPaths = [
+    "plugins/repo-standards/skills/repo-standards/SKILL.md",
+    "openspec/specs/docs-and-standards/repo-standards-detail.md",
+    "plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md",
+  ];
+
+  for (const path of forkPaths) {
+    assert.match(
+      policies[path],
+      /上游 fork[\s\S]{0,120}firecrawl[\s\S]{0,120}(?:不受|保留上游)/,
+      `${path} must state the upstream-fork exception in full, not by adjacency`,
+    );
+  }
+});
+
+test("the workflow platform matrix marks every repo type as Drone", () => {
+  const template = policies[
+    "plugins/repo-standards/skills/repo-standards/references/ci-workflow-templates.md"
+  ];
+
+  const rows = template
+    .split("\n")
+    .filter((line) => line.trim().startsWith("> |"))
+    .map((line) => line.replace(/^>\s*/, ""));
+  assert.ok(rows.length >= 6, "platform matrix looks truncated");
+
+  const header = rows[0].split("|").map((cell) => cell.trim());
+  const ciColumn = header.findIndex((cell) => cell.startsWith("CI"));
+  const releaseColumn = header.indexOf("release-please");
+  assert.ok(ciColumn > 0, "platform matrix needs a CI column");
+  assert.ok(releaseColumn > 0, "platform matrix needs a release-please column");
+
+  for (const row of rows.slice(2)) {
+    const cells = row.split("|").map((cell) => cell.trim());
+    assert.match(
+      cells[ciColumn],
+      /^Drone/,
+      `platform matrix CI column must be Drone, found "${cells[ciColumn]}" in: ${row.trim()}`,
+    );
+    assert.match(
+      cells[releaseColumn],
+      /^(?:Drone|release-please)/,
+      `platform matrix release column must stay on Drone, found "${cells[releaseColumn]}"`,
+    );
+  }
+});

@@ -35,12 +35,17 @@ App review、Copilot 指示與無自動 Claude review pipeline 等前置條件�
 
 ## Repo 分類
 
-| 類型 | 適用 Repo | release-type | Runtime | ESLint 基礎 |
-|------|---------|-------------|---------|------------|
-| Next.js | lawyer, stock | `node` | Bun | `eslint-config-next` |
-| Node/TS | coolify-mcp, hetzner-mcp, langfuse-mcp, judicial-mcp | `node` | Bun | `@eslint/js` + `typescript-eslint` |
-| Plugin | jurislm-tools, jurislm-plugins | `simple` | — | 無 TS 原始碼，不需要 ESLint |
-| Monorepo | entire | `node` | Bun | `@entire/eslint-config` |
+| 類型 | 適用 Repo | CI 平台 | release-type | Runtime | ESLint 基礎 |
+|------|---------|--------|-------------|---------|------------|
+| Next.js | lawyer, stock | Drone | `node` | Bun | `eslint-config-next` |
+| Node/TS | coolify-mcp, hetzner-mcp, langfuse-mcp, judicial-mcp | Drone | `node` | Bun | `@eslint/js` + `typescript-eslint` |
+| Plugin | jurislm-tools | Drone | `simple` | — | 無 TS 原始碼，不需要 ESLint |
+| Monorepo | entire | Drone | `node` | Bun | `@entire/eslint-config` |
+
+自架 Drone（`https://ci.jurislm.com`）是唯一的 CI 與 release 平台，四種類型一律適用。
+上游 fork（例如 `jurislm/firecrawl`）保留上游自己的 workflow，不受本規範約束。
+「CI 平台」欄記的是標準要求，不是各 repo 的現況；仍在其他平台的 repo，遷移與移除
+舊 workflow 屬同一次交付。
 
 ## 參考實作與導入狀態
 

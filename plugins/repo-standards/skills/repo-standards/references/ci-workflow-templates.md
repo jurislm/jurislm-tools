@@ -1,13 +1,15 @@
 # Drone CI/CD 模板（lint / typecheck / test / release / deploy）
 
-> CI / release / 部署觸發的標準平台是自架 Drone（`https://ci.jurislm.com`），設定檔為 repo 根目錄的 **`.drone.yml`**。平台依 **repo 類型**決定（repo 名僅為範例）：
+> CI / release / 部署觸發的平台一律是自架 Drone（`https://ci.jurislm.com`），設定檔為 repo 根目錄的 **`.drone.yml`**。**pipeline 形狀與部署／發布 target** 依 repo 類型決定（repo 名僅為範例）：
 >
 > | repo 類型 | CI（lint/typecheck/test）| release-please | 部署 / 發布 |
 > |---|---|---|---|
 > | Coolify web app | Drone | Drone | Drone `deploy` pipeline（deploy-gating，模板 A）|
 > | Monorepo（`entire` 是唯一已驗證 reference）| Drone（per-package pipeline）| Drone | 依目標 repo 的部署 targets 設定 |
 > | npm / MCP | Drone | release-please + npm publish | npm（無 Coolify 部署）|
-> | Plugin（content-first）| GitHub Actions（預設）或 Drone aggregate validation（須明確選擇）| 與 CI 使用同一平台 | — |
+> | Plugin（content-first）| Drone aggregate validation | Drone | — |
+>
+> 四種類型的 CI 與 release 都由自架 Drone（`https://ci.jurislm.com`）擁有。上游 fork（例如 `jurislm/firecrawl`）保留上游自己的 workflow，不受本表約束。
 >
 > Code review：依目標 repo `CLAUDE.md` 的 Skill-driven contract 執行；缺少時先採用 `references/review-orchestration-template.md` 並客製化。CodeRabbit auto-review 關閉並明確 request App 一次、Copilot 一次、Codex 被動。**自動 Claude PR 審查已從標準移除**，不再設 `claude-code-review.yml` / `claude.yml` 或 Drone `claude-review` pipeline。Copilot 自訂指示模板見 `references/code-review-setup.md`。
 
@@ -312,15 +314,12 @@ steps:
 
 ---
 
-## 標準模板 D：Plugin repo（jurislm-tools / jurislm-plugins）
+## 標準模板 D：Plugin repo（jurislm-tools）
 
 - Content-first plugin 不需 compilation，但仍可有 repository tests、JSON /
   version integrity 與 Markdown lint。
-- 預設平台是 GitHub Actions：驗證用 `version-check.yml`，release-please
-  用 `release.yml`。
 - `release-please` 用 `release-type: simple` + `extra-files` 同步 `plugin.json` / `marketplace.json` 版本號（見 SKILL.md「Release 設定」）。
-- 若明確選擇 Drone，validation 與 release 必須一起遷移，並刪除功能
-  重疊的 GHA。小型 repo 使用 aggregate validate pipeline：
+- validation 與 release 都由 Drone 擁有。小型 repo 使用 aggregate validate pipeline：
 
 - Plugin 沒有 Coolify deploy pipeline，仍必須在 trusted main delivery 的
   `validate`／`release` 完成後自動處理 release PR；不得改成人工合併 fallback。
@@ -343,15 +342,21 @@ steps:
     commands:
       - npm ci
       - npm run validate
-# + release pipeline（同模板 A，push main only，github-release → release-pr）
-# + release-pr-auto-merge pipeline（depends_on: [validate, release]；遵守上方 protected PR merge contract）
+# + release pipeline（push main only）：完整 step 定義見上方標準模板 A 的 release pipeline，
+#   Plugin repo 另須在 release-pr 前加上 release-eligibility step（見本檔「Release eligibility
+#   的 mainline guard」）。
+# + release-pr-auto-merge pipeline（depends_on: [validate, release]）：完整 step 定義見標準
+#   模板 C 的 npm／MCP release PR auto-merge，並遵守上方 protected PR merge contract。
 ```
 
-- **部分 plugin（如 `jurislm-plugins`）有 `sync-plugins.yml`**（GHA）：發版後把 plugin 定義同步到 PostgreSQL DB（dev + prod）。觸發為**手動 `workflow_dispatch`**——因 `GITHUB_TOKEN` 建立的 release 不會自動觸發其他 workflow（GitHub 安全限制）。設定需 DB 連線 secret。
+⚠️ 上面兩行是**交叉引用，不是可以留在 `.drone.yml` 裡的註解**。套用本模板時，必須把模板 A
+的 release pipeline 與模板 C 的 auto-merge pipeline 實際展開寫進 repo 的 `.drone.yml`，
+否則 validation 會通過但 release 永遠不會發生。
 
-> Plugin repo 未選 Drone 時，`release.yml` / `version-check.yml` /
-> `sync-plugins.yml` 是正常機制，不應誤刪。已選 Drone 時，移除前兩個
-> 重疊 workflow；具獨立手動同步語意的 `sync-plugins.yml` 不在此規則內。
+> Plugin repo 遷移到 Drone 時，舊平台的驗證與 release workflow 必須在同一次
+> 交付中移除，避免雙跑。若 repo 另有與 CI／release 無關、具獨立語意的 workflow
+> （例如發版後手動觸發的資料同步），是否保留由該 repo 自己的交付判斷，並在它的
+> `CLAUDE.md` 載明保留理由。
 
 ---
 
@@ -455,10 +460,10 @@ for repo in $(gh repo list jurislm --limit 50 \
 done
 ```
 
-單一平台檢查：每個 repo 的 CI / release 只應有一套已選定機制。若
-同時存在 Drone `.drone.yml` 與功能重疊的舊 GHA `ci.yml` /
-`release.yml`，移除其一避免雙跑。Plugin repo 預設的 `release.yml` /
-`version-check.yml` 不應誤刪；但明確選擇 Drone 後，兩者必須一起移除。
+單一平台檢查：每個 repo 的 CI 與 release 只由 Drone 擁有。audit 要讀 workflow 的
+內容判斷用途，不能只比對檔名——常見命名是 `.github/workflows/` 底下的 `ci.yml`、
+`release.yml`、`version-check.yml`，但各 repo 可能自訂。任何負責 CI、release 或版本
+檢查的舊平台 workflow，都在遷移交付中一併移除，避免雙跑。
 Code Review 的 `claude-code-review.yml` / `claude.yml`（及 Drone
 `claude-review` pipeline）已從標準移除，audit 時應一併清除。
 
