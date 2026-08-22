@@ -1,7 +1,7 @@
 {
   "name": "jt-flow",
   "description": "以 Linear issue 為需求來源的端到端交付工作流：using-jt-workflow 承載紀律，engineering-delivery 以 N0-N10 graph 走完釐清、TDD、PR、外部審查、合併、驗收與 Linear readback",
-  "version": "1.41.1",
+  "version": "1.41.2",
   "author": {
     "name": "Terry Chen"
   },
