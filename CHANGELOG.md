@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.41.1](https://github.com/jurislm/jurislm-tools/compare/v1.41.0...v1.41.1) (2026-08-22)
+
+
+### 🐛 Bug Fixes
+
+* **repo-standards:** 唯一 CI/release 平台改為自架 Drone（JUR-109） ([ee94d29](https://github.com/jurislm/jurislm-tools/commit/ee94d29029d0eac46b490667e2917214fdd61840))
+
 ## [1.41.0](https://github.com/jurislm/jurislm-tools/compare/v1.40.5...v1.41.0) (2026-08-21)
 
 
