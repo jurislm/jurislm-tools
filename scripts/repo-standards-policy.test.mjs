@@ -123,9 +123,9 @@ test("portable review contract preserves jt-flow review ownership", () => {
 
 test("self-hosted Drone is the only CI and release platform", () => {
   assert.match(
-    policyText,
-    /唯一[^\n]{0,40}(?:CI|平台)[^\n]{0,60}Drone|Drone[^\n]{0,40}唯一[^\n]{0,40}(?:CI|平台)/,
-    "standards must name self-hosted Drone as the only CI and release platform",
+    policies["plugins/repo-standards/skills/repo-standards/SKILL.md"],
+    /Drone[\s\S]{0,80}唯一[\s\S]{0,40}(?:CI|平台)|唯一[\s\S]{0,60}(?:CI|平台)[\s\S]{0,80}Drone/,
+    "SKILL.md itself must name self-hosted Drone as the only CI and release platform",
   );
 
   for (const path of policyPaths) {
@@ -136,13 +136,18 @@ test("self-hosted Drone is the only CI and release platform", () => {
     );
     assert.doesNotMatch(
       policies[path],
-      /version-check\.yml|sync-plugins\.yml/,
-      `${path} must not reference GitHub Actions workflow files`,
+      /sync-plugins\.yml/,
+      `${path} must not reference a workflow owned by an archived repository`,
     );
     assert.doesNotMatch(
       policies[path],
-      /release\.yml/,
-      `${path} must not offer a GitHub Actions release workflow path`,
+      /(?:預設|可以|也可|亦可|或)[^\n]{0,30}`?(?:release|version-check)\.yml/,
+      `${path} must not offer a GitHub Actions workflow as an alternative path`,
+    );
+    assert.doesNotMatch(
+      policies[path],
+      /(?:若|如果|已)(?:明確)?選(?:擇)? *Drone|選擇 *Drone *後|GHA(?!\b *時代)/,
+      `${path} must not presuppose a platform choice that no longer exists`,
     );
     assert.doesNotMatch(
       policies[path],
@@ -162,15 +167,31 @@ test("repo classification tables state the CI platform for every repo type", () 
     const body = policies[path];
     const start = body.indexOf("## Repo 分類");
     assert.ok(start >= 0, `${path} must keep a repo classification section`);
-    const table = body.slice(start, start + 1200);
+    const nextHeading = body.indexOf("\n## ", start + 1);
+    const section = body.slice(start, nextHeading === -1 ? undefined : nextHeading);
 
-    assert.match(table, /CI 平台/, `${path} classification table needs a CI platform column`);
+    const rows = section.split("\n").filter((line) => line.trim().startsWith("|"));
+    assert.ok(rows.length >= 6, `${path} classification table looks truncated`);
 
-    const droneCells = table.match(/\|\s*Drone\s*\|/g) ?? [];
-    assert.ok(
-      droneCells.length >= 4,
-      `${path} must mark all four repo types as Drone, found ${droneCells.length}`,
+    const header = rows[0].split("|").map((cell) => cell.trim());
+    const ciColumn = header.indexOf("CI 平台");
+    assert.ok(ciColumn > 0, `${path} classification table needs a CI platform column`);
+
+    const separator = rows[1].split("|").length;
+    assert.equal(
+      separator,
+      header.length,
+      `${path} classification table separator row column count must match the header`,
     );
+
+    for (const row of rows.slice(2)) {
+      const cells = row.split("|").map((cell) => cell.trim());
+      assert.equal(
+        cells[ciColumn],
+        "Drone",
+        `${path} must mark every repo type as Drone, found "${cells[ciColumn]}" in: ${row.trim()}`,
+      );
+    }
   }
 });
 

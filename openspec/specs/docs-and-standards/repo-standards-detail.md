@@ -44,6 +44,8 @@ App review、Copilot 指示與無自動 Claude review pipeline 等前置條件�
 
 自架 Drone（`https://ci.jurislm.com`）是唯一的 CI 與 release 平台，四種類型一律適用。
 上游 fork（例如 `jurislm/firecrawl`）保留上游自己的 workflow，不受本規範約束。
+「CI 平台」欄記的是標準要求，不是各 repo 的現況；仍在其他平台的 repo，遷移與移除
+舊 workflow 屬同一次交付。
 
 ## 參考實作與導入狀態
 

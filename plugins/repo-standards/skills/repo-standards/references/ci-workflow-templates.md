@@ -1,6 +1,6 @@
 # Drone CI/CD 模板（lint / typecheck / test / release / deploy）
 
-> CI / release / 部署觸發的標準平台是自架 Drone（`https://ci.jurislm.com`），設定檔為 repo 根目錄的 **`.drone.yml`**。平台依 **repo 類型**決定（repo 名僅為範例）：
+> CI / release / 部署觸發的平台一律是自架 Drone（`https://ci.jurislm.com`），設定檔為 repo 根目錄的 **`.drone.yml`**。**pipeline 形狀與部署／發布 target** 依 repo 類型決定（repo 名僅為範例）：
 >
 > | repo 類型 | CI（lint/typecheck/test）| release-please | 部署 / 發布 |
 > |---|---|---|---|
@@ -453,8 +453,9 @@ for repo in $(gh repo list jurislm --limit 50 \
 done
 ```
 
-單一平台檢查：每個 repo 的 CI 與 release 只由 Drone 擁有。audit 時若發現
-repo 仍有舊平台的驗證或 release workflow，在遷移交付中一併移除，避免雙跑。
+單一平台檢查：每個 repo 的 CI 與 release 只由 Drone 擁有。audit 時若發現 repo
+仍有 `.github/workflows/ci.yml`、`release.yml`、`version-check.yml` 這類舊平台的
+驗證與 release workflow，在遷移交付中一併移除，避免雙跑。
 Code Review 的 `claude-code-review.yml` / `claude.yml`（及 Drone
 `claude-review` pipeline）已從標準移除，audit 時應一併清除。
 

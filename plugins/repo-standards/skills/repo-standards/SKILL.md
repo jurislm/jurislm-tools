@@ -35,6 +35,10 @@ argument-hint: "[repo-name]"
 自架 Drone（`https://ci.jurislm.com`）是唯一的 CI 與 release 平台，四種 repo 類型一律適用。
 新 repo 直接建立 `.drone.yml`；既有 repo 若仍在其他平台，遷移與移除舊 workflow 屬同一次交付。
 
+`references/ci-workflow-templates.md` 的模板以部署形態命名，對應關係是
+Next.js → 模板 A（Coolify web app）、Monorepo → 模板 B、Node/TS → 模板 C（npm / MCP）、
+Plugin → 模板 D。
+
 ⚠️ **上游 fork 不受此規範約束**：從外部專案 fork 的 repo（例如 `jurislm/firecrawl`）保留
 上游自己的 workflow，那些檔案是上游資產。本規範只涵蓋 JurisLM 自有的 repo。
 
@@ -411,6 +415,9 @@ Plugin 類型的 `.drone.yml` 必須同時提供 PR / `main` 的 aggregate valid
 `main`-only release pipeline。每個 plugin repo 仍須完成自己的 observable
 acceptance，才算符合本標準。
 
+repo 若另有與 CI／release 無關、具獨立語意的 workflow（例如發版後手動觸發的資料
+同步），保留與否的判準見 `references/ci-workflow-templates.md`。
+
 ## Monorepo CI/CD（Turborepo）
 
 所有 JurisLM monorepo 必須在 repo root 提供 `turbo.json`，並以 Turborepo 定義 workspace task 與 cache。`entire` 是唯一已驗證 reference；其他 monorepo 只有完成自己的 observable acceptance 後，才能宣稱符合。
@@ -499,7 +506,8 @@ done
 ```
 
 單一平台原則：每個 repo 的 CI 與 release 只由 Drone 擁有。既有 repo 遷移時，
-舊平台的 workflow 必須和 Drone 設定在同一次交付中移除，避免雙跑。
+舊平台的 `.github/workflows/ci.yml`、`release.yml`、`version-check.yml` 必須和
+Drone 設定在同一次交付中移除，避免雙跑。
 
 ### 規範回填協議
 
@@ -570,11 +578,11 @@ repo 設定必須提供以下前置條件：
 - **變更追蹤**：預設用 Linear issue 記錄需求、範圍與驗收；跨 repo 目標用 Linear 的 project 與 issue 關聯表示。僅在使用者明確要求時改用 Spectra 四件套
 - **Worktree**：feature worktree 直接從 main 建立於 `.claude/worktrees/<change-name>`，不建立 develop；`.claude/worktrees/` 不進 `.gitignore`（由 Claude Code runtime 本地排除）
 - **Bun**：`"packageManager": "bun@1.3.14"`，scripts 換成 `bun run vitest` 等
-- **Release**：Drone repo 使用 `main`-only release pipeline，依序執行固定精確版本的 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`，並由同一 trusted delivery 的 source-controlled validator 自動合併 release PR；無人工 fallback
-- **Release 資格閘門**：使用 `release-type: simple` 的 Drone Plugin repo 必須在 `release-pr` 前執行 `scripts/release-eligibility.mjs`；只有 exit `0` 才呼叫 Release Please，exit `10` 成功跳過，其他錯誤 fail closed；完整模板見 `references/ci-workflow-templates.md`
+- **Release**：使用 `main`-only release pipeline，依序執行固定精確版本的 `github-release`、`release-pr`；`release-type` 放在 config，Plugin repo 加 `extra-files`，secret 使用 `RELEASE_PLEASE_TOKEN`，並由同一 trusted delivery 的 source-controlled validator 自動合併 release PR；無人工 fallback
+- **Release 資格閘門**：使用 `release-type: simple` 的 Plugin repo 必須在 `release-pr` 前執行 `scripts/release-eligibility.mjs`；只有 exit `0` 才呼叫 Release Please，exit `10` 成功跳過，其他錯誤 fail closed；完整模板見 `references/ci-workflow-templates.md`
 - **Delivery subject**：資格閘門必須對 immutable `DRONE_COMMIT` 走 first-parent mainline；對 Conventional Commit target，GitHub merge setting 預設 readback 為 squash-only + pull-request title 作 squash title
 - **Monorepo**：所有 JurisLM monorepo 必須有 root `turbo.json`；已知 workspace 用 `--filter`，可信 Git base／head 才能用 `--affected`，否則完整 validation／deploy，cache inputs 必須涵蓋 task 讀取的全部檔案
 - **ESLint**：`eslint --max-warnings=0`，`.prettierignore` 加 `.claude/worktrees/`
-- **CI**：Drone repo 的檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；plugin repo 若選 Drone，validation 與 release 一起遷移並移除重疊 GHA
+- **CI**：檢查 pipeline `trigger.ref` 只列 `refs/heads/main` + `refs/pull/*/head`（**勿**列 develop）；既有 repo 遷移時，舊平台的 `ci.yml` 與 `release.yml` 在同一次交付移除
 - **CD**（Coolify web app）：`.drone.yml` 加 `build`、`deploy`、`release-pr-auto-merge` 三個 pipeline + release-commit 守衛 + 關閉 Coolify auto-deploy + secret `COOLIFY_DEPLOY_TOKEN`（npm/MCP repo 不需要）
 - **Code Review**：將 packaged review contract 寫入目標 `CLAUDE.md` 後，依其 invoke Skill-driven review；CodeRabbit 一次明確 App request、Copilot 一次、Codex 被動；**無**自動 Claude review
