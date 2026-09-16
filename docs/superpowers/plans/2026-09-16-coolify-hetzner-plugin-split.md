@@ -29,9 +29,11 @@ Use `/Users/terrychen/Documents/Github/jurislm/woodpecker-ci-plugin` and commit
   Release Please (`release.yml`) and serialized release-PR auto-merge
   (`release-pr-auto-merge.yml`); tag events run verify/publish only through
   `npm-release.yml`. No production deploy pipeline is added.
-- New packages are `@jurislm/coolify-plugin` and
-  `@jurislm/hetzner-plugin`, starting at `0.1.0`; no old package/tool/env
-  compatibility.
+- New packages preserve the latest MCP version line as their bootstrap: Coolify
+  `3.6.0` with first Release Please publish `3.7.0`; Hetzner `1.5.0` with first
+  Release Please publish `1.6.0`. The Release Please manifest baseline and
+  plugin manifests match the bootstrap version; no `v0.1.0` release is made.
+  No old package/tool/env compatibility is provided.
 
 ### Task 1: Coolify plugin
 
@@ -45,6 +47,8 @@ Use `/Users/terrychen/Documents/Github/jurislm/woodpecker-ci-plugin` and commit
 - Add tests for config, client, generated contract, stdio protocol, metadata,
   annotations, output, redaction, and package contents.
 - Add Release Please metadata and the local release automation tests/scripts.
+- Use `bootstrap-sha=a926368c01ce0811fc85bac488629316134021af`; the first
+  release tag is `v3.7.0`.
 
 ### Task 2: Hetzner plugin
 
@@ -59,6 +63,8 @@ Use `/Users/terrychen/Documents/Github/jurislm/woodpecker-ci-plugin` and commit
   fallback.
 - Add the same test categories as Task 1.
 - Add Release Please metadata and the local release automation tests/scripts.
+- Use `bootstrap-sha=7c99e1e10753823d740b201acdb97b8e5b38ab67`; the first
+  release tag is `v1.6.0`.
 
 ### Task 3: jurislm-tools extraction
 
