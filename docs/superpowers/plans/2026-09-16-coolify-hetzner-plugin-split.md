@@ -25,6 +25,10 @@ Use `/Users/terrychen/Documents/Github/jurislm/woodpecker-ci-plugin` and commit
 - Use official snapshots: Coolify `https://raw.githubusercontent.com/coollabsio/coolify/main/openapi.json`; Hetzner Cloud `https://docs.hetzner.cloud/cloud.spec.json`; Hetzner unified API `https://docs.hetzner.cloud/hetzner.spec.json`.
 - Local stdio is the only enabled transport. Do not add HTTP, OAuth, vault,
   hosting, or public Plugin Directory submission.
+- Release topology matches the latest Woodpecker readback: main push runs
+  Release Please (`release.yml`) and serialized release-PR auto-merge
+  (`release-pr-auto-merge.yml`); tag events run verify/publish only through
+  `npm-release.yml`. No production deploy pipeline is added.
 - New packages are `@jurislm/coolify-plugin` and
   `@jurislm/hetzner-plugin`, starting at `0.1.0`; no old package/tool/env
   compatibility.
@@ -40,6 +44,7 @@ Use `/Users/terrychen/Documents/Github/jurislm/woodpecker-ci-plugin` and commit
 - Use `COOLIFY_URL` and `COOLIFY_TOKEN` only.
 - Add tests for config, client, generated contract, stdio protocol, metadata,
   annotations, output, redaction, and package contents.
+- Add Release Please metadata and the local release automation tests/scripts.
 
 ### Task 2: Hetzner plugin
 
@@ -53,6 +58,7 @@ Use `/Users/terrychen/Documents/Github/jurislm/woodpecker-ci-plugin` and commit
 - Use `HETZNER_API_TOKEN` and `HETZNER_API_TOKEN_UNIFIED`; no Storage Box token
   fallback.
 - Add the same test categories as Task 1.
+- Add Release Please metadata and the local release automation tests/scripts.
 
 ### Task 3: jurislm-tools extraction
 
@@ -72,7 +78,8 @@ Use `/Users/terrychen/Documents/Github/jurislm/woodpecker-ci-plugin` and commit
 
 - Both targets have the same outer tree and local stdio MCP contract.
 - Portable/fallback manifests, OpenAPI snapshots, generated artifacts, tools,
-  schemas, annotations, tests, package dry-runs, and CI configs validate.
+  schemas, annotations, tests, package dry-runs, and all four Woodpecker
+  pipeline files validate.
 - `jurislm-tools` validation passes after extraction.
 - Public GitHub/npm and old-repo deprecation/archive claims require fresh
   readback; missing npm authentication or live provider credentials is a
