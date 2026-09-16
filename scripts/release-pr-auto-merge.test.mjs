@@ -29,16 +29,6 @@ This PR was generated with [Release Please](https://github.com/googleapis/releas
 
 const PLUGIN_DEFINITIONS = [
   {
-    name: "coolify",
-    description: "管理 Coolify 基礎設施 — 部署應用、資料庫管理與問題診斷",
-    keywords: ["coolify", "deployment", "infrastructure", "mcp"],
-  },
-  {
-    name: "hetzner",
-    description: "管理 Hetzner Cloud 資源 — 伺服器、SSH 金鑰、Volume 與 Storage Box",
-    keywords: ["hetzner", "vps", "cloud", "mcp"],
-  },
-  {
     name: "langfuse",
     description: "Langfuse LLM 可觀測性 — Prompt 版本、Trace、Observation 與評分管理",
     keywords: ["langfuse", "observability", "tracing", "llm"],

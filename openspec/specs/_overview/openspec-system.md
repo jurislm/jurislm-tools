@@ -86,7 +86,7 @@ schema: spec-driven
 
 context: |
   Tech stack: Claude Code Plugin Marketplace (YAML/Markdown only, no compilation step)
-  Domain: jurislm-tools — 9-plugin marketplace for JurisLM development workflows
+  Domain: jurislm-tools — 8-plugin marketplace for JurisLM development workflows
   Branch workflow: feature worktree → PR → main.
 ```
 

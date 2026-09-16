@@ -2,36 +2,21 @@
 
 ## Purpose
 
-描述 `coolify` Hybrid plugin 的工具集、核心概念與操作模式，管理 Coolify 自託管 PaaS 平台上的應用程式、資料庫與伺服器。
+描述外部 `coolify-plugin` 的工具集、核心概念與操作模式。實作與發布由獨立 repository 負責，非 `jurislm-tools` marketplace artifact。
 
 ## 產物
 
 | 產物 | 路徑 | 說明 |
 |------|------|------|
-| MCP Server | `plugins/coolify/.mcp.json` | `@jurislm/coolify-mcp@3.6.0` |
-| `coolify` skill | `plugins/coolify/skills/coolify/SKILL.md` | 使用指南 |
-| api-reference | `plugins/coolify/skills/coolify/references/api-reference.md` | API 工具完整參數 |
-| deployment-patterns | `plugins/coolify/skills/coolify/references/deployment-patterns.md` | 部署模式參考 |
-| troubleshooting | `plugins/coolify/skills/coolify/references/troubleshooting.md` | 問題排查 SOP |
+| Plugin repository | `https://github.com/jurislm/coolify-plugin` | portable Plugin + local stdio MCP |
+| npm package | `@jurislm/coolify-plugin` | package-first runtime |
+| skill | `skills/coolify/SKILL.md` in the independent repo | 使用指南 |
 
-## 外部依賴
+## Runtime
 
-```json
-{
-  "command": "zsh",
-  "args": [
-    "-lc",
-    "exec env -i HOME=\"$HOME\" PATH=\"$PATH\" USER=\"$USER\" SHELL=\"$SHELL\" TERM=\"$TERM\" LOGNAME=\"$LOGNAME\" COOLIFY_ACCESS_TOKEN=\"$COOLIFY_ACCESS_TOKEN\" COOLIFY_BASE_URL=\"$COOLIFY_BASE_URL\" npx -y @jurislm/coolify-mcp@3.6.0"
-  ]
-}
-```
-
-npm 套件：`@jurislm/coolify-mcp@3.6.0`（jurislm/coolify-mcp repo）
-
-MCP launcher 使用 login shell 與 `env -i` allowlist，避免桌面啟動環境
-遺失 `~/.zshenv` 變數或把其他 shell secrets 傳給 MCP。`~/.zshenv`、
-`~/.zprofile`、`~/.zlogin` 不得向 stdout 輸出內容，以免污染 stdio
-JSON-RPC handshake。
+runtime 使用 `@jurislm/coolify-plugin`，由獨立 repo 的 portable `mcp.json`
+與 `.mcp.json.example` 提供 local stdio 設定。Credentials 不進 repository 或
+stdout。
 
 ## MCP 工具分類
 
@@ -67,5 +52,5 @@ labels 控制 FQDN。請依實際 Application build pack 選擇欄位。
 
 ## 環境變數
 
-- `COOLIFY_ACCESS_TOKEN`：Coolify API 認證 token，寫入 `~/.zshenv`
-- `COOLIFY_BASE_URL`：Coolify 實例 URL（如 `https://coolify.jurislm.com`），寫入 `~/.zshenv`
+- `COOLIFY_TOKEN`：Coolify API 認證 token
+- `COOLIFY_URL`：Coolify 實例 URL（如 `https://coolify.jurislm.com`）

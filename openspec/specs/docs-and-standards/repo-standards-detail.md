@@ -37,7 +37,7 @@ App review 與無自動 Claude review pipeline 等前置條件。
 | 類型 | 適用 Repo | CI 平台 | release-type | Runtime | ESLint 基礎 |
 |------|---------|--------|-------------|---------|------------|
 | Next.js | lawyer, stock | Drone | `node` | Bun | `eslint-config-next` |
-| Node/TS | coolify-mcp, hetzner-mcp, langfuse-mcp, judicial-mcp | Drone | `node` | Bun | `@eslint/js` + `typescript-eslint` |
+| Node/TS | coolify-plugin, hetzner-plugin, langfuse-mcp, judicial-mcp | Drone | `node` | Bun | `@eslint/js` + `typescript-eslint` |
 | Plugin | jurislm-tools | Drone | `simple` | — | 無 TS 原始碼，不需要 ESLint |
 | Monorepo | entire | Drone | `node` | Bun | `@entire/eslint-config` |
 

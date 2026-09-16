@@ -13,13 +13,13 @@ claude plugin marketplace add https://github.com/jurislm/jurislm-tools.git
 再安裝需要的 plugin；識別字格式固定為 `plugin@marketplace`：
 
 ```bash
-claude plugin install coolify@jurislm-tools
+claude plugin install langfuse@jurislm-tools
 ```
 
 更新已安裝的 plugin：
 
 ```bash
-claude plugin update coolify@jurislm-tools
+claude plugin update langfuse@jurislm-tools
 ```
 
 安裝或更新後請開啟新的 Claude Code／Codex session，讓 Skills 與 MCP tools 重新載入。
@@ -28,8 +28,6 @@ claude plugin update coolify@jurislm-tools
 
 | Plugin | 類型 | 安裝命令 | 功能 |
 |---|---|---|---|
-| `coolify` | MCP + Skill | `claude plugin install coolify@jurislm-tools` | Coolify 部署、資料庫與基礎設施管理 |
-| `hetzner` | MCP + Skill | `claude plugin install hetzner@jurislm-tools` | Hetzner Cloud、Volume 與 Storage Box 管理 |
 | `langfuse` | MCP + Skill | `claude plugin install langfuse@jurislm-tools` | Prompt、Trace、Observation 與評分管理 |
 | `higgsfield` | Remote MCP + Skills | `claude plugin install higgsfield@jurislm-tools` | AI 圖像、影片、3D、音訊、遊戲與網站生成 |
 | `repo-standards` | Skill | `claude plugin install repo-standards@jurislm-tools` | JurisLM repository 標準檢查與設定 |
@@ -52,13 +50,16 @@ blocks／blocked-by）。舊版的 `jt-flow-all` change queue 已退役，紀錄
 
 ## MCP 套件政策
 
-會接收基礎設施憑證的本機 MCP launcher 一律鎖定精確 npm 版本：
+會接收憑證的本機 MCP launcher 一律鎖定精確 npm 版本：
 
 | Plugin | 套件 |
 |---|---|
-| `coolify` | `@jurislm/coolify-mcp@3.6.0` |
-| `hetzner` | `@jurislm/hetzner-mcp@1.5.0` |
 | `langfuse` | `@jurislm/langfuse-mcp@1.3.2` |
+
+Coolify 與 Hetzner 已移至獨立 repositories：
+
+- [coolify-plugin](https://github.com/jurislm/coolify-plugin)
+- [hetzner-plugin](https://github.com/jurislm/hetzner-plugin)
 
 升級必須透過明確的 dependency PR；不得改回 `@latest` 或版本範圍。
 
@@ -67,11 +68,6 @@ blocks／blocked-by）。舊版的 `jt-flow-all` change queue 已退役，紀錄
 本機 MCP server 由非互動式 login shell 啟動，因此環境變數必須設於 `~/.zshenv`，而非 `~/.zshrc`：
 
 ```bash
-export COOLIFY_ACCESS_TOKEN="your-token"
-export COOLIFY_BASE_URL="https://your-coolify-instance.com"
-
-export HETZNER_API_TOKEN="your-token"
-
 export LANGFUSE_PUBLIC_KEY="pk-lf-..."
 export LANGFUSE_SECRET_KEY="sk-lf-..."
 export LANGFUSE_HOST="https://us.cloud.langfuse.com"

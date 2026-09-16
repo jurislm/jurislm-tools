@@ -2,34 +2,21 @@
 
 ## Purpose
 
-描述 `hetzner` Hybrid plugin 的工具集與操作模式，管理 Hetzner Cloud 的伺服器建立、刪除、電源控制、SSH 金鑰、Volume 掛載與 Storage Box（含空間用量查詢、備份前空間預檢查）。
+描述外部 `hetzner-plugin` 的工具集與操作模式。實作與發布由獨立 repository 負責，非 `jurislm-tools` marketplace artifact。
 
 ## 產物
 
 | 產物 | 路徑 | 說明 |
 |------|------|------|
-| MCP Server | `plugins/hetzner/.mcp.json` | `@jurislm/hetzner-mcp@1.5.0` |
-| `hetzner` skill | `plugins/hetzner/skills/hetzner/SKILL.md` | 使用指南 |
-| locations reference | `plugins/hetzner/skills/hetzner/references/locations.md` | 資料中心位置參考 |
-| server-types reference | `plugins/hetzner/skills/hetzner/references/server-types.md` | 伺服器規格與定價 |
+| Plugin repository | `https://github.com/jurislm/hetzner-plugin` | portable Plugin + local stdio MCP |
+| npm package | `@jurislm/hetzner-plugin` | package-first runtime |
+| skill | `skills/hetzner/SKILL.md` in the independent repo | 使用指南 |
 
-## 外部依賴
+## Runtime
 
-```json
-{
-  "command": "zsh",
-  "args": [
-    "-lc",
-    "exec env -i HOME=\"$HOME\" PATH=\"$PATH\" USER=\"$USER\" SHELL=\"$SHELL\" TERM=\"$TERM\" LOGNAME=\"$LOGNAME\" HETZNER_API_TOKEN=\"$HETZNER_API_TOKEN\" npx -y @jurislm/hetzner-mcp@1.5.0"
-  ]
-}
-```
-
-npm 套件：`@jurislm/hetzner-mcp@1.5.0`（jurislm/hetzner-mcp repo）
-
-MCP launcher 使用 login shell 與 `env -i` allowlist。`~/.zshenv`、
-`~/.zprofile`、`~/.zlogin` 不得向 stdout 輸出內容，以免污染 stdio
-JSON-RPC handshake；token 應只放在 `~/.zshenv`。
+runtime 使用 `@jurislm/hetzner-plugin`，由獨立 repo 的 portable `mcp.json`
+與 `.mcp.json.example` 提供 local stdio 設定。Credentials 不進 repository 或
+stdout。
 
 ## MCP 工具分類
 
@@ -128,6 +115,7 @@ mount -a
 ## 環境變數
 
 - `HETZNER_API_TOKEN`：Hetzner Cloud API token，寫入 `~/.zshenv`（**不是** `HCLOUD_TOKEN`）
+- `HETZNER_API_TOKEN_UNIFIED`：Hetzner Storage Box API token，寫入 `~/.zshenv`
 
 ## Storage Box 邊界
 

@@ -32,7 +32,7 @@ This file provides project-specific guidance for `jurislm-tools`. Also follow th
 
 ## Repository overview
 
-`jurislm-tools` is a ten-entry Claude Code Plugin Marketplace for JurisLM infrastructure, observability, content, and development workflows. Codex consumes the same `.claude-plugin` marketplace through its supported compatibility path; do not create a parallel `.codex-plugin` or `.agents` tree without a demonstrated incompatibility.
+`jurislm-tools` is an eight-entry Claude Code Plugin Marketplace for JurisLM observability, content, and development workflows. Coolify and Hetzner are maintained in separate public plugin repositories. Codex consumes the same `.claude-plugin` marketplace through its supported compatibility path; do not create a parallel `.codex-plugin` or `.agents` tree without a demonstrated incompatibility.
 
 The repository is primarily JSON, YAML, JavaScript validation scripts, and Markdown. It has no application build or deployment pipeline.
 
@@ -77,8 +77,6 @@ Skills and commands are auto-discovered. A plugin manifest owns metadata; it doe
 
 | Plugin | Type | Primary surface |
 |---|---|---|
-| `coolify` | Hybrid | `@jurislm/coolify-mcp@3.6.0` + Skill |
-| `hetzner` | Hybrid | `@jurislm/hetzner-mcp@1.5.0` + Skill |
 | `langfuse` | Hybrid | `@jurislm/langfuse-mcp@1.3.2` + Skill |
 | `higgsfield` | Hybrid | OAuth remote MCP + seven Skills |
 | `repo-standards` | Skill | Repository standards |
@@ -98,8 +96,6 @@ MCP environment variables belong in `~/.zshenv`, not `~/.zshrc`:
 
 | Plugin | Required variables |
 |---|---|
-| `coolify` | `COOLIFY_ACCESS_TOKEN`, `COOLIFY_BASE_URL` |
-| `hetzner` | `HETZNER_API_TOKEN` |
 | `langfuse` | `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` |
 | `higgsfield` | None; browser OAuth |
 
@@ -109,10 +105,10 @@ Never print credentials or shell environment values during validation.
 
 Never manually edit plugin or marketplace release versions. Release Please owns:
 
-- All ten `plugins/<name>/.claude-plugin/plugin.json` version fields.
+- All active `plugins/<name>/.claude-plugin/plugin.json` version fields.
 - `.claude-plugin/marketplace.json` at `$.plugins[0].version`.
 
-`coolify` must remain the first marketplace entry because Release Please uses array index zero. Append new plugins unless the release configuration is changed atomically.
+`langfuse` remains the first marketplace entry because Release Please uses array index zero. Append new plugins unless the release configuration is changed atomically.
 
 Commit types:
 
@@ -203,8 +199,8 @@ Identifiers use `plugin@marketplace`, never the reverse:
 
 ```bash
 claude plugin marketplace add https://github.com/jurislm/jurislm-tools.git
-claude plugin install coolify@jurislm-tools
-claude plugin update coolify@jurislm-tools
+claude plugin install langfuse@jurislm-tools
+claude plugin update langfuse@jurislm-tools
 ```
 
 For a local directory marketplace, add the repository path instead of the GitHub URL. Start a new Claude Code or Codex session after installation or update.
@@ -212,7 +208,7 @@ For a local directory marketplace, add the repository path instead of the GitHub
 ## Review checklist
 
 - No release-managed version was edited manually.
-- `coolify` remains marketplace entry zero.
+- `langfuse` remains marketplace entry zero.
 - Marketplace name, source folder, and manifest name agree.
 - Credential-bearing npm launchers use exact versions.
 - Install identifiers use `plugin@jurislm-tools`.

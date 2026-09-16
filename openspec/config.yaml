@@ -2,10 +2,10 @@ schema: spec-driven
 
 context: |
   Tech stack: Claude Code Plugin Marketplace (YAML/Markdown only, no compilation step)
-  Domain: jurislm-tools — 9-plugin marketplace for JurisLM development workflows
+  Domain: jurislm-tools — 8-plugin marketplace for JurisLM development workflows
 
   Plugin types:
-    - Credential-bearing local MCP: exact-version .mcp.json launcher + skill (coolify, hetzner, langfuse)
+    - Credential-bearing local MCP: exact-version .mcp.json launcher + skill (langfuse)
     - OAuth remote MCP: remote server configuration + skills (higgsfield)
     - Skill: SKILL.md with optional compatibility command (repo-standards, podcast-to-blog, codebase-sync, learn-eval)
     - jt-flow: using-jt-workflow discipline plus engineering-delivery coordinator for Linear-issue-driven delivery
@@ -26,7 +26,7 @@ context: |
     development-dependency-security/ — npm development dependency policy
     docs-and-standards/ — repo-standards-detail, codebase-sync-detail, standards requirements
     github-flow-entry-documentation/ — entry-document branch-model requirements
-    infra/      — infra-overview, coolify-detail, hetzner-detail
+    infra/      — infra-overview
     learning/   — learn-eval-detail
     observability/ — langfuse-detail
     plugin-packaging-integrity/ — marketplace and launcher invariants
