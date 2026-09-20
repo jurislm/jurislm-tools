@@ -188,15 +188,15 @@ test("destructive-guard 的行為與 catalog 記載的邊界相符", () => {
   assert.equal(decide("git status"), null);
 });
 
-test("marketplace 收錄 hook-standards，且 coolify 仍在索引 0", () => {
+test("marketplace 收錄 hook-standards，且 langfuse 位於索引 0", () => {
   const marketplace = JSON.parse(
     read(new URL(".claude-plugin/marketplace.json", repositoryRoot)),
   );
 
   assert.equal(
     marketplace.plugins[0].name,
-    "coolify",
-    "Release Please 以索引 0 寫版號，coolify 必須留在第一個",
+    "langfuse",
+    "Release Please 以索引 0 寫版號，抽離 Coolify／Hetzner 後 langfuse 位於第一個",
   );
 
   const entry = marketplace.plugins.find((plugin) => plugin.name === "hook-standards");

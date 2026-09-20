@@ -111,14 +111,14 @@ test("plugin release templates bind eligibility to DRONE_COMMIT instead of a raw
   assert.match(detail, /first-parent mainline/);
 });
 
-test("portable review contract preserves jt-flow review ownership", () => {
+test("portable review contract preserves JT Harness review ownership", () => {
   const template = policies[
     "plugins/repo-standards/skills/repo-standards/references/review-orchestration-template.md"
   ];
 
   assert.match(template, /`engineering-delivery`.*invoke.*`superpowers:requesting-code-review`/s);
   assert.match(template, /外部 review 交給 `coderabbit:code-review`/s);
-  assert.doesNotMatch(template, /jt-flow-all/);
+  assert.match(template, /jt-harness-plugin/);
 });
 
 test("self-hosted Drone is the only CI and release platform", () => {

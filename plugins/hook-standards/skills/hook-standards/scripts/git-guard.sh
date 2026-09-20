@@ -125,7 +125,7 @@ remote=$(git_target remote 2>/dev/null | head -1)
 default=$(git_target symbolic-ref --short "refs/remotes/${remote}/HEAD" 2>/dev/null | sed "s#^${remote}/##")
 [ -z "$default" ] && exit 0
 
-reason="全域安全禁令：不直接 push 到預設分支 ${default}（等同觸發 production 部署）。走 feature 分支開 PR；一件工程案件請用 jt-flow:engineering-delivery。"
+reason="全域安全禁令：不直接 push 到預設分支 ${default}（等同觸發 production 部署）。走 feature 分支開 PR；一件工程案件請用 jt-harness-plugin:engineering-delivery。"
 
 case " $cmd " in
   *" ${default} "* | *":${default} "* | *" ${default}:"*)

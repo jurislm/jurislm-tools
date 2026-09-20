@@ -2,37 +2,21 @@
 
 ## Purpose
 
-說明 `coolify` 與 `hetzner` Hybrid plugins 的共同安全模式，以及 JurisLM 基礎設施管理中的角色分工。
+說明外部 `coolify-plugin` 與 `hetzner-plugin` 的角色分工。兩者已不屬於 `jurislm-tools` marketplace。
 
 ## Roles
 
 | Plugin | Layer | Primary operations |
 |---|---|---|
-| `hetzner` | Infrastructure | Servers, SSH keys, Volumes, and Storage Box |
-| `coolify` | Platform | Applications, databases, domains, deployments, and diagnostics |
+| `hetzner-plugin` | Infrastructure | Servers, SSH keys, Volumes, and Storage Box |
+| `coolify-plugin` | Platform | Applications, databases, domains, deployments, and diagnostics |
 
-典型流程先由 `hetzner` 建立或確認運算資源，再由 `coolify` 部署應用程式與資料庫。
+典型流程先由 `hetzner-plugin` 建立或確認運算資源，再由 `coolify-plugin` 部署應用程式與資料庫。
 
-## Hybrid plugin structure
+兩個獨立 plugin repository：
 
-```text
-plugins/<name>/
-├── .claude-plugin/plugin.json
-├── .mcp.json
-├── README.md
-└── skills/<name>/
-    ├── SKILL.md
-    └── references/
-```
-
-兩個本機 MCP launchers 都以 `env -i` 限縮傳入環境，並鎖定精確 npm 版本：
-
-- Coolify：`@jurislm/coolify-mcp@3.6.0`
-- Hetzner：`@jurislm/hetzner-mcp@1.5.0`
-
-Credential-bearing local MCP launchers must use exact semantic versions; the
-repository validator enforces this policy for supported launcher/package
-runner configurations.
+- [coolify-plugin](https://github.com/jurislm/coolify-plugin)
+- [hetzner-plugin](https://github.com/jurislm/hetzner-plugin)
 
 ## Environment variables
 
@@ -40,13 +24,9 @@ runner configurations.
 
 | Plugin | Variable | Purpose |
 |---|---|---|
-| `coolify` | `COOLIFY_ACCESS_TOKEN` | Coolify API authentication |
-| `coolify` | `COOLIFY_BASE_URL` | Coolify instance URL |
-| `hetzner` | `HETZNER_API_TOKEN` | Hetzner Cloud authentication |
+| `coolify-plugin` | `COOLIFY_TOKEN` | Coolify API authentication |
+| `coolify-plugin` | `COOLIFY_URL` | Coolify instance URL |
+| `hetzner-plugin` | `HETZNER_API_TOKEN` | Hetzner Cloud authentication |
+| `hetzner-plugin` | `HETZNER_API_TOKEN_UNIFIED` | Hetzner Storage Box authentication |
 
 不得把 token 值寫入 repository、log 或驗證輸出。
-
-## Detail specs
-
-- [Coolify detail](./coolify-detail.md)
-- [Hetzner detail](./hetzner-detail.md)

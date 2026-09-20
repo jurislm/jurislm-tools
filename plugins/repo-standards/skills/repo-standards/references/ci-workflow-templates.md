@@ -262,7 +262,7 @@ steps:
 
 ---
 
-## 標準模板 C：npm 套件 / MCP server（coolify-mcp / hetzner-mcp / langfuse-mcp / judicial-mcp）
+## 標準模板 C：npm 套件 / MCP server（coolify-plugin / hetzner-plugin / langfuse-mcp / judicial-mcp）
 
 - **CI**（lint / typecheck / test）：Drone `.drone.yml`，同模板 A 的觸發語意。
 - **無 `deploy` pipeline**：發布到 **npm**，不部署到 Coolify → **無重複部署問題、不需 deploy-gating**（npm publish 只在 release 時發生一次，本質無「每次 push 都部署」的問題）。

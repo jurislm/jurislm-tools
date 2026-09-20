@@ -7,26 +7,10 @@
   },
   "plugins": [
     {
-      "name": "coolify",
-      "source": "./plugins/coolify",
-      "description": "管理 Coolify 基礎設施 — 部署應用、資料庫管理與問題診斷",
-      "version": "1.44.0",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
-      "name": "hetzner",
-      "source": "./plugins/hetzner",
-      "description": "管理 Hetzner Cloud 資源 — 伺服器、SSH 金鑰、Volume 與 Storage Box",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
       "name": "langfuse",
       "source": "./plugins/langfuse",
       "description": "Langfuse LLM 可觀測性 — Prompt 版本、Trace、Observation 與評分管理",
+      "version": "1.44.0",
       "author": {
         "name": "Terry Chen"
       }
@@ -59,14 +43,6 @@
       "name": "learn-eval",
       "source": "./plugins/learn-eval",
       "description": "從 session 萃取可重複利用 pattern — 品質閘 + dedup 檢查 + Global/Project 儲存路徑判斷",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
-      "name": "jt-flow",
-      "source": "./plugins/jt-flow",
-      "description": "以 Linear issue 為需求來源的端到端交付工作流：using-jt-workflow 承載紀律，engineering-delivery 以 N0-N10 graph 走完釐清、TDD、PR、外部審查、合併、驗收與 Linear readback",
       "author": {
         "name": "Terry Chen"
       }

@@ -29,16 +29,6 @@ This PR was generated with [Release Please](https://github.com/googleapis/releas
 
 const PLUGIN_DEFINITIONS = [
   {
-    name: "coolify",
-    description: "管理 Coolify 基礎設施 — 部署應用、資料庫管理與問題診斷",
-    keywords: ["coolify", "deployment", "infrastructure", "mcp"],
-  },
-  {
-    name: "hetzner",
-    description: "管理 Hetzner Cloud 資源 — 伺服器、SSH 金鑰、Volume 與 Storage Box",
-    keywords: ["hetzner", "vps", "cloud", "mcp"],
-  },
-  {
     name: "langfuse",
     description: "Langfuse LLM 可觀測性 — Prompt 版本、Trace、Observation 與評分管理",
     keywords: ["langfuse", "observability", "tracing", "llm"],
@@ -62,11 +52,6 @@ const PLUGIN_DEFINITIONS = [
     name: "learn-eval",
     description: "從 session 萃取可重複利用 pattern — 品質閘與 dedup 檢查",
     keywords: ["learning", "skills", "patterns", "session-analysis"],
-  },
-  {
-    name: "jt-flow",
-    description: "以 Linear issue 為需求來源的端到端交付工作流 — GitHub Flow 與交付驗證",
-    keywords: ["workflow", "linear", "github-flow", "delivery"],
   },
   {
     name: "higgsfield",

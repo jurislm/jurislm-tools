@@ -24,30 +24,25 @@ Marketplace entry name、source folder basename 與 manifest name 必須一致�
 
 | Plugin | Type | Primary artifact |
 |---|---|---|
-| `coolify` | Hybrid | Exact-version MCP launcher + Skill |
-| `hetzner` | Hybrid | Exact-version MCP launcher + Skill |
 | `langfuse` | Hybrid | Exact-version MCP launcher + Skill |
 | `higgsfield` | Hybrid | OAuth remote MCP + Skills |
 | `repo-standards` | Skill | Repository standards |
 | `podcast-to-blog` | Skill | Transcription and writing workflow |
 | `codebase-sync` | Skill | Documentation synchronization |
 | `learn-eval` | Skill | Session-pattern extraction |
-| `jt-flow` | Skill | `engineering-delivery` Linear-issue-driven single-request delivery |
 | `hook-standards` | Skill | Claude Code hook standard and current guard scripts |
 
 ## Dependency integrity
 
 Local MCP launchers that receive credentials must pin exact semantic versions. Current approved packages are:
 
-- `@jurislm/coolify-mcp@3.6.0`
-- `@jurislm/hetzner-mcp@1.5.0`
 - `@jurislm/langfuse-mcp@1.3.2`
 
 Mutable tags, unversioned packages, and ranges are rejected by repository validation.
 
 ## Versioning
 
-Release Please owns all ten plugin manifest versions and `.claude-plugin/marketplace.json` at `$.plugins[0].version`. `coolify` must remain entry zero unless the release configuration changes in the same proposal. New entries append by default.
+Release Please owns all active plugin manifest versions and `.claude-plugin/marketplace.json` at `$.plugins[0].version`. `langfuse` remains entry zero unless the release configuration changes in the same proposal. New entries append by default.
 
 ## Delivery
 
@@ -63,7 +58,7 @@ Claude identifiers use `plugin@marketplace`:
 
 ```bash
 claude plugin marketplace add https://github.com/jurislm/jurislm-tools.git
-claude plugin install coolify@jurislm-tools
+claude plugin install langfuse@jurislm-tools
 ```
 
 After install or update, start a new Claude Code or Codex session.
@@ -85,8 +80,6 @@ The aggregate command checks tests, marketplace integrity, immutable dependencie
 - [Development dependency security](../development-dependency-security/spec.md)
 - [Documentation and standards](../docs-and-standards/spec.md)
 - [Infrastructure overview](../infra/infra-overview.md)
-- [Coolify detail](../infra/coolify-detail.md)
-- [Hetzner detail](../infra/hetzner-detail.md)
 - [GitHub Flow entry documentation](../github-flow-entry-documentation/spec.md)
 - [Langfuse detail](../observability/langfuse-detail.md)
 - [Repository standards detail](../docs-and-standards/repo-standards-detail.md)
