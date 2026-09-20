@@ -236,12 +236,12 @@ title and the permitted types.
 
 #### Scenario: Pull request uses a type outside the policy
 
-- **WHEN** a pull request is opened with the title `style(jt-flow): 統一 metadata 不加引號`
+- **WHEN** a pull request is opened with the title `style(jt-harness): 統一 metadata 不加引號`
 - **THEN** the `validate` pipeline fails and reports the rejected title and the permitted types
 
 #### Scenario: Pull request uses a permitted type
 
-- **WHEN** a pull request is opened with the title `feat(jt-flow): 阻塞時走封閉迴圈`
+- **WHEN** a pull request is opened with the title `feat(jt-harness): 阻塞時走封閉迴圈`
 - **THEN** the title check passes and the remaining `validate` steps run unchanged
 
 #### Scenario: Release Please opens a release pull request
@@ -271,7 +271,7 @@ applied at merge time is surfaced on the commit that introduced it.
 
 #### Scenario: Merge overrides the subject with an out-of-policy type
 
-- **WHEN** a pull request is squash-merged with an explicit subject `style(jt-flow): …` that
+- **WHEN** a pull request is squash-merged with an explicit subject `style(jt-harness): …` that
   bypassed the validated pull-request title
 - **THEN** the `push` build on `main` fails and identifies the offending subject
 

@@ -10,7 +10,7 @@
 thread 留下具體理由；完成後 resolve 每一個 review thread。修正後的 HEAD 由本地驗證、
 CI 與 mergeability 覆核，不重啟外部 review。
 
-使用 `engineering-delivery` 時，本地 review 由該 Skill invoke
+使用 JT Harness 的 `engineering-delivery` 時，本地 review 由該 Skill invoke
 `superpowers:requesting-code-review` 擁有；外部 review 交給 `coderabbit:code-review`
 skill，不另起第二套審查機制。
 
@@ -41,5 +41,4 @@ finding。合併後依 repo 的 release／deploy 契約監看其終態。
 外部 review 拿不到時**依原因分流，不是一律略過**：服務端限制或中斷（含額度耗盡）記錄
 原因後繼續；存取或設定問題（未安裝、未授權、未登入、權限不符）停下告知使用者，需其明確
 要求才可照樣合併。使用 `engineering-delivery` 的 repo，這套判定由
-`plugins/jt-flow/skills/merge-gate/SKILL.md` 與
-`plugins/jt-flow/skills/external-review-gate/SKILL.md` 擁有，本模板不另訂一套。
+`jt-harness-plugin` 的 `merge-gate` 與 `external-review-gate` Skills 擁有，本模板不另訂一套。

@@ -54,11 +54,6 @@ const PLUGIN_DEFINITIONS = [
     keywords: ["learning", "skills", "patterns", "session-analysis"],
   },
   {
-    name: "jt-flow",
-    description: "以 Linear issue 為需求來源的端到端交付工作流 — GitHub Flow 與交付驗證",
-    keywords: ["workflow", "linear", "github-flow", "delivery"],
-  },
-  {
     name: "higgsfield",
     description: "Higgsfield AI 圖像、影片、3D 與音訊生成 — 官方 remote MCP 與 CLI skills",
     keywords: ["image-generation", "video", "audio", "mcp"],

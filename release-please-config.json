@@ -36,11 +36,6 @@
         },
         {
           "type": "json",
-          "path": "plugins/jt-flow/.claude-plugin/plugin.json",
-          "jsonpath": "$.version"
-        },
-        {
-          "type": "json",
           "path": "plugins/higgsfield/.claude-plugin/plugin.json",
           "jsonpath": "$.version"
         },

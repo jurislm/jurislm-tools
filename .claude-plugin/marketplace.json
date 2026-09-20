@@ -48,14 +48,6 @@
       }
     },
     {
-      "name": "jt-flow",
-      "source": "./plugins/jt-flow",
-      "description": "以 Linear issue 為需求來源的端到端交付工作流：using-jt-workflow 承載紀律，engineering-delivery 以 N0-N10 graph 走完釐清、TDD、PR、外部審查、合併、驗收與 Linear readback",
-      "author": {
-        "name": "Terry Chen"
-      }
-    },
-    {
       "name": "higgsfield",
       "source": "./plugins/higgsfield",
       "description": "Higgsfield AI 圖像/影片/3D/音訊生成 — 官方 remote MCP（OAuth）+ 7 個 CLI skills",

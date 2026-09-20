@@ -12,12 +12,12 @@ test("each permitted type passes", () => {
 });
 
 test("a scope passes", () => {
-  const result = validateTitle("feat(jt-flow): add a new checker");
+  const result = validateTitle("feat(jt-harness): add a new checker");
   assert.equal(result.valid, true);
 });
 
 test("a breaking-change marker passes", () => {
-  const result = validateTitle("feat(jt-flow)!: change the checker contract");
+  const result = validateTitle("feat(jt-harness)!: change the checker contract");
   assert.equal(result.valid, true);
 });
 
@@ -139,7 +139,7 @@ test("a title that is only a zero-width space after the colon is rejected, not t
 });
 
 test("a Traditional Chinese description still passes — CJK characters are not whitespace", () => {
-  const result = validateTitle("feat(jt-flow): 阻塞時走封閉迴圈，不停在問題回報");
+  const result = validateTitle("feat(jt-harness): 阻塞時走封閉迴圈，不停在問題回報");
 
   assert.equal(result.valid, true);
 });
@@ -154,7 +154,7 @@ test("DRONE_PULL_REQUEST empty skips the check", () => {
 test("DRONE_PULL_REQUEST set with a permitted title validates and passes", () => {
   const result = checkPullRequestTitle({
     DRONE_PULL_REQUEST: "179",
-    DRONE_PULL_REQUEST_TITLE: "feat(jt-flow): add a new checker",
+    DRONE_PULL_REQUEST_TITLE: "feat(jt-harness): add a new checker",
   });
 
   assert.equal(result.exitCode, 0);

@@ -6,7 +6,7 @@ import { checkSquashSubject } from "./validate-squash-subject.mjs";
 test("a conforming first line passes", () => {
   const result = checkSquashSubject({
     DRONE_PULL_REQUEST: "",
-    DRONE_COMMIT_MESSAGE: "feat(jt-flow): add a new checker",
+    DRONE_COMMIT_MESSAGE: "feat(jt-harness): add a new checker",
   });
 
   assert.equal(result.exitCode, 0);
@@ -25,7 +25,7 @@ test("only the first line of a multi-line commit message is considered", () => {
   const result = checkSquashSubject({
     DRONE_PULL_REQUEST: "",
     DRONE_COMMIT_MESSAGE:
-      "feat(jt-flow): add a new checker\n\nstyle: this body line must not be read as the subject",
+      "feat(jt-harness): add a new checker\n\nstyle: this body line must not be read as the subject",
   });
 
   assert.equal(result.exitCode, 0);

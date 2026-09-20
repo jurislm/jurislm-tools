@@ -30,7 +30,6 @@ Marketplace entry name、source folder basename 與 manifest name 必須一致�
 | `podcast-to-blog` | Skill | Transcription and writing workflow |
 | `codebase-sync` | Skill | Documentation synchronization |
 | `learn-eval` | Skill | Session-pattern extraction |
-| `jt-flow` | Skill | `engineering-delivery` Linear-issue-driven single-request delivery |
 | `hook-standards` | Skill | Claude Code hook standard and current guard scripts |
 
 ## Dependency integrity
